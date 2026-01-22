@@ -1,7 +1,8 @@
 local MyAddon = _G.MyAddon
 local LPS = MyAddon.LPS
-local LPS_DB = MyAddon.LPS_DB
 local L = MyAddon.L
+
+LPS_DB = LPS_DB or {}
 
 local OVERRIDE_ICON = [[Interface\EncounterJournal\UI-EJ-Dungeonbutton-%s]]
 
@@ -295,7 +296,7 @@ end
 function LPS:BuildTimeTooltip()
 	local raids = {}
 	local dungeons = {}
-	local r, g, b = unpack(_G.MyAddon.COLORS)
+	local r, g, b = unpack(LPS_DB.colors)
 
 	if not collectedImages then
 			LPS:CollectImages()

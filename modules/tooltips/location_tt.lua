@@ -2,8 +2,9 @@ local Tourist = LibStub("LibTourist-3.0") -- подключаем Tourist
 
 local MyAddon = _G.MyAddon
 local LPS = MyAddon.LPS
-local LPS_DB = MyAddon.LPS_DB
 local L = MyAddon.L
+
+LPS_DB = LPS_DB or {}
 
 -- Icons on Location Panel
 local PET_ICON = "|TInterface\\AddOns\\LocationPlus\\media\\pet.tga:14:14|t"
@@ -29,7 +30,7 @@ end
 
 -- PetBattle Range
 local function GetBattlePetLvl(zoneText)
-	local uniqueZone = Tourist:GetUniqueZoneNameForLookup(zoneText, LPS:getContinentID())
+	local uniqueZone = Tourist:GetUniqueZoneNameForLookup(zoneText, LPS:GetContinentID())
 	local low,high = Tourist:GetBattlePetLevel(uniqueZone)
 	local plevel
 	if low ~= nil or high ~= nil then
@@ -48,7 +49,7 @@ end
 function LPS:BuildLocationTooltip()	
 	local mapID = C_Map.GetBestMapForUnit("player")
 	local zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;
-	local r, g, b = unpack(_G.MyAddon.COLORS)
+	local r, g, b = unpack(LPS_DB.colors)
 
   GameTooltip:ClearLines()
 

@@ -1,109 +1,116 @@
-local LPS_DB = _G.MyAddon and _G.MyAddon.LPS_DB
 local LPS = _G.MyAddon and _G.MyAddon.LPS
 if not LPS then return end
 
--------------------------------------------------
--- ФРЕЙМ ЛОКАЦИИ
--------------------------------------------------
-local f = CreateFrame("Frame", "LPS_Location", LPS.holder, "BackdropTemplate")
-f:ClearAllPoints()
-f:SetPoint("CENTER", LPS.holder, "CENTER")
-f:EnableMouse(true)
+-- Ждём, чтобы SavedVariables точно загрузились
+C_Timer.After(0, function()
+	if not LPS_DB then return end
 
--------------------------------------------------
--- СТИЛЬ ПАНЕЛИ
--------------------------------------------------
-local COLORS = _G.MyAddon.COLORS
-local FONT_SIZE = _G.MyAddon.FONT_SIZE or 12
+	-------------------------------------------------
+	-- ФРЕЙМ ЛОКАЦИИ
+	-------------------------------------------------
+	local f = CreateFrame("Frame", "LPS_Location", LPS.holder, "BackdropTemplate")
+	f:ClearAllPoints()
+	f:SetPoint("CENTER", LPS.holder, "CENTER")
+	f:EnableMouse(true)
 
--- отступы панели
-local PADDING_X = 10
-local PADDING_Y = 6
-local MIN_WIDTH = 60
-local MIN_HEIGHT = 26
+	-------------------------------------------------
+	-- СТИЛЬ ПАНЕЛИ
+	-------------------------------------------------
+	local COLORS = LPS_DB.colors
+	local FONT_SIZE = LPS_DB.fontSize or 12
 
-f:SetBackdrop({
-	bgFile   = "Interface\\Buttons\\WHITE8x8",
-	edgeFile = "Interface\\Buttons\\WHITE8x8",
-	tile     = false,
-	edgeSize = 1,
-	insets   = { left = 1, right = 1, top = 1, bottom = 1 },
-})
+	-- отступы панели
+	local PADDING_X = 10
+	local PADDING_Y = 6
+	local MIN_WIDTH = 60
+	local MIN_HEIGHT = 26
 
-f:SetBackdropColor(unpack(COLORS.bg))
-f:SetBackdropBorderColor(unpack(COLORS.border))
+	f:SetBackdrop({
+		bgFile   = "Interface\\Buttons\\WHITE8x8",
+		edgeFile = "Interface\\Buttons\\WHITE8x8",
+		tile     = false,
+		edgeSize = 1,
+		insets   = { left = 1, right = 1, top = 1, bottom = 1 },
+	})
 
--------------------------------------------------
--- ТЕКСТ
--------------------------------------------------
-f.text = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-f.text:SetPoint("CENTER")
-f.text:SetJustifyH("CENTER")
-f.text:SetFontHeight(FONT_SIZE)
+	f:SetBackdropColor(unpack(COLORS.bg))
+	f:SetBackdropBorderColor(unpack(COLORS.border))
 
--------------------------------------------------
--- ОБНОВЛЕНИЕ ТЕКСТА + РАЗМЕРА
--------------------------------------------------
-local function Update()
-	local zone = GetZoneText()
-	local sub  = GetSubZoneText()
-	local text = (sub ~= "" and sub or zone) or ""
+	-------------------------------------------------
+	-- ТЕКСТ
+	-------------------------------------------------
+	f.text = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	f.text:SetPoint("CENTER")
+	f.text:SetJustifyH("CENTER")
+	f.text:SetFontHeight(FONT_SIZE)
 
-	f.text:SetText(text)
-	f.text:SetTextColor(LPS:GetZoneStatus(true))
+	-------------------------------------------------
+	-- ОБНОВЛЕНИЕ ТЕКСТА + РАЗМЕРА
+	-------------------------------------------------
+	local function Update()
+		local zone = GetZoneText()
+		local sub  = GetSubZoneText()
+		local text = (sub ~= "" and sub or zone) or ""
 
-	-- авторазмер
-	local w = f.text:GetStringWidth()
-	local h = f.text:GetStringHeight()
+		f.text:SetText(text)
+		f.text:SetTextColor(LPS:GetZoneStatus(true))
 
-	f:SetSize(
-		math.max(MIN_WIDTH,  w + PADDING_X * 2),
-		math.max(MIN_HEIGHT, h + PADDING_Y * 2)
-	)
-end
+		-- авторазмер
+		local w = f.text:GetStringWidth()
+		local h = f.text:GetStringHeight()
 
--------------------------------------------------
--- TOOLTIP (СТАНДАРТНЫЙ BLIZZARD)
--------------------------------------------------
-f:SetScript("OnEnter", function(self)
-	if not LPS_DB.tooltips.location.enable then return end
+		f:SetSize(
+			math.max(MIN_WIDTH,  w + PADDING_X * 2),
+			math.max(MIN_HEIGHT, h + PADDING_Y * 2)
+		)
+	end
 
-	GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
-	GameTooltip:ClearLines()
-	LPS:BuildLocationTooltip(GameTooltip)
-	GameTooltip:Show()
+	-------------------------------------------------
+	-- TOOLTIP (СТАНДАРТНЫЙ BLIZZARD)
+	-------------------------------------------------
+	f:SetScript("OnEnter", function(self)
+		if not LPS_DB.tooltips.location.enable then return end
 
-	self.updateTooltip = function()
-		if GameTooltip:IsOwned(self) then
-			GameTooltip:ClearLines()
-			LPS:BuildLocationTooltip(GameTooltip)
-			GameTooltip:Show()
+		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:ClearLines()
+		LPS:BuildLocationTooltip(GameTooltip)
+		GameTooltip:Show()
+
+		self.updateTooltip = function()
+			if GameTooltip:IsOwned(self) then
+				GameTooltip:ClearLines()
+				LPS:BuildLocationTooltip(GameTooltip)
+				GameTooltip:Show()
+			end
 		end
-	end
-end)
+	end)
 
--------------------------------------------------
--- СОБЫТИЯ СМЕНЫ ЗОНЫ
--------------------------------------------------
-f:RegisterEvent("ZONE_CHANGED")
-f:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-f:RegisterEvent("ZONE_CHANGED_INDOORS")
+	-------------------------------------------------
+	-- СОБЫТИЯ СМЕНЫ ЗОНЫ
+	-------------------------------------------------
+	f:RegisterEvent("ZONE_CHANGED")
+	f:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+	f:RegisterEvent("ZONE_CHANGED_INDOORS")
 
-f:SetScript("OnEvent", function(self)
+	f:SetScript("OnEvent", function(self)
+		Update()
+		if self.updateTooltip then
+			self.updateTooltip()
+		end
+	end)
+
+	f:SetScript("OnLeave", function(self)
+		GameTooltip_Hide()
+		self.updateTooltip = nil
+	end)
+
 	Update()
-	if self.updateTooltip then
-		self.updateTooltip()
-	end
+
+	-------------------------------------------------
+	-- EXPORT
+	-------------------------------------------------
+	LPS.locationFrame = f
+
+
+
 end)
-
-f:SetScript("OnLeave", function(self)
-	GameTooltip_Hide()
-	self.updateTooltip = nil
-end)
-
-Update()
-
--------------------------------------------------
--- EXPORT
--------------------------------------------------
-LPS.locationFrame = f
