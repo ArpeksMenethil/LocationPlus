@@ -5,7 +5,8 @@ if not LPS_DB or not LPS then return end
 
 local f = CreateFrame("Button", "LPS_Coords", LPS.holder, "BackdropTemplate")
 f:SetSize(100, 22)
-f:SetPoint("LEFT", LPS.holder, "LEFT", 0, 0)
+f:ClearAllPoints()
+f:SetPoint("RIGHT", LPS.locationFrame, "LEFT", -5, 0)
 
 local COLORS = _G.MyAddon.COLORS
 local FONT_SIZE = _G.MyAddon.FONT_SIZE or 12

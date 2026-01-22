@@ -1,7 +1,7 @@
 ## Interface: 120000
 ## Title: |cff1784d1Location Plus|r
 ## Author: Dmitry
-## Version: 0.1
+## Version: 0.2
 ## Notes: Location, Coords and Reset Timers
 ## SavedVariables: LPS_DB
 ## Category-enUS: UI Overhaul
@@ -13,8 +13,8 @@ libs/load_libs.xml
 core.lua
 config.lua
 locales/load_locales.xml
-modules/coords.lua
 modules/location.lua
+modules/coords.lua
 modules/time.lua
 modules/tooltips/location_tt.lua
 modules/tooltips/time_tt.lua

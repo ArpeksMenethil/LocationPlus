@@ -8,6 +8,7 @@ local formatStr = "|cFFFFFFFF%H|r:|cFFFFFFFF%M|r"
 -- Фрейм для времени
 local f = CreateFrame("Frame", "LPS_Time", LPS.holder, "BackdropTemplate")
 f:SetSize(100, 22)
+f:ClearAllPoints()
 f:SetPoint("LEFT", LPS.locationFrame, "RIGHT", 5, 0)
 
 local COLORS = _G.MyAddon.COLORS

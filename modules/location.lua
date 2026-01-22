@@ -6,8 +6,8 @@ if not LPS then return end
 -- ФРЕЙМ ЛОКАЦИИ
 -------------------------------------------------
 local f = CreateFrame("Frame", "LPS_Location", LPS.holder, "BackdropTemplate")
-f:SetSize(180, 28)
-f:SetPoint("LEFT", LPS.coordsFrame, "RIGHT", 5, 0)
+f:ClearAllPoints()
+f:SetPoint("CENTER", LPS.holder, "CENTER")
 f:EnableMouse(true)
 
 -------------------------------------------------
@@ -15,6 +15,12 @@ f:EnableMouse(true)
 -------------------------------------------------
 local COLORS = _G.MyAddon.COLORS
 local FONT_SIZE = _G.MyAddon.FONT_SIZE or 12
+
+-- отступы панели
+local PADDING_X = 10
+local PADDING_Y = 6
+local MIN_WIDTH = 60
+local MIN_HEIGHT = 26
 
 f:SetBackdrop({
 	bgFile   = "Interface\\Buttons\\WHITE8x8",
@@ -27,19 +33,33 @@ f:SetBackdrop({
 f:SetBackdropColor(unpack(COLORS.bg))
 f:SetBackdropBorderColor(unpack(COLORS.border))
 
+-------------------------------------------------
+-- ТЕКСТ
+-------------------------------------------------
 f.text = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-f.text:SetAllPoints()
+f.text:SetPoint("CENTER")
 f.text:SetJustifyH("CENTER")
 f.text:SetFontHeight(FONT_SIZE)
 
 -------------------------------------------------
--- ОБНОВЛЕНИЕ ТЕКСТА
+-- ОБНОВЛЕНИЕ ТЕКСТА + РАЗМЕРА
 -------------------------------------------------
 local function Update()
 	local zone = GetZoneText()
 	local sub  = GetSubZoneText()
-	f.text:SetText(sub ~= "" and sub or zone)
+	local text = (sub ~= "" and sub or zone) or ""
+
+	f.text:SetText(text)
 	f.text:SetTextColor(LPS:GetZoneStatus(true))
+
+	-- авторазмер
+	local w = f.text:GetStringWidth()
+	local h = f.text:GetStringHeight()
+
+	f:SetSize(
+		math.max(MIN_WIDTH,  w + PADDING_X * 2),
+		math.max(MIN_HEIGHT, h + PADDING_Y * 2)
+	)
 end
 
 -------------------------------------------------
@@ -48,13 +68,11 @@ end
 f:SetScript("OnEnter", function(self)
 	if not LPS_DB.tooltips.location.enable then return end
 
-	-- стандартный тултип
 	GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
 	GameTooltip:ClearLines()
 	LPS:BuildLocationTooltip(GameTooltip)
 	GameTooltip:Show()
 
-	-- создаем обновление при изменении зоны
 	self.updateTooltip = function()
 		if GameTooltip:IsOwned(self) then
 			GameTooltip:ClearLines()
@@ -64,23 +82,26 @@ f:SetScript("OnEnter", function(self)
 	end
 end)
 
--- динамически обновляем tooltip при событиях смены зоны
+-------------------------------------------------
+-- СОБЫТИЯ СМЕНЫ ЗОНЫ
+-------------------------------------------------
 f:RegisterEvent("ZONE_CHANGED")
 f:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 f:RegisterEvent("ZONE_CHANGED_INDOORS")
+
 f:SetScript("OnEvent", function(self)
-	Update()  -- обновляем текст
+	Update()
 	if self.updateTooltip then
-		self.updateTooltip() -- обновляем tooltip, если он открыт
+		self.updateTooltip()
 	end
 end)
-Update()
 
 f:SetScript("OnLeave", function(self)
 	GameTooltip_Hide()
 	self.updateTooltip = nil
 end)
 
+Update()
 
 -------------------------------------------------
 -- EXPORT
