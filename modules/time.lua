@@ -1,4 +1,4 @@
-local LPS = _G.MyAddon and _G.MyAddon.LPS
+local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
 
@@ -24,8 +24,8 @@ C_Timer.After(0.1, function()
         edgeSize = 1,
         insets   = { left = 1, right = 1, top = 1, bottom = 1 },
     })
-    f:SetBackdropColor(unpack(COLORS.bg))
-    f:SetBackdropBorderColor(unpack(COLORS.border))
+    f:SetBackdropColor(LPS:GetColor("bg"))
+	f:SetBackdropBorderColor(LPS:GetColor("border"))
     f:EnableMouse(true)
     f:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 

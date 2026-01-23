@@ -1,7 +1,7 @@
 ## Interface: 120000
 ## Title: |cff1784d1Location Plus|r
 ## Author: Dmitry
-## Version: 0.4
+## Version: 0.5
 ## Notes: Location, Coords and Reset Timers
 ## SavedVariables: LPS_DB
 ## Category-enUS: UI Overhaul
@@ -13,11 +13,15 @@
 ## AddonCompartmentFuncOnLeave: LPS_OnAddonCompartmentLeave
 
 libs/load_libs.xml
+defaults.lua
 core.lua
+utils.lua
 locales/load_locales.xml
 compartment.lua
 modules/location.lua
 modules/coords.lua
 modules/time.lua
+modules/tooltips/coords_tt.lua
 modules/tooltips/location_tt.lua
 modules/tooltips/time_tt.lua
+options.lua

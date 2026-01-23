@@ -1,6 +1,6 @@
-local Tourist = LibStub("LibTourist-3.0") -- подключаем Tourist
+local Tourist = LibStub("LibTourist-3.0")
 
-local MyAddon = _G.MyAddon
+local MyAddon = _G.ArpeksLPS
 local LPS = MyAddon.LPS
 local L = MyAddon.L
 
@@ -49,11 +49,10 @@ end
 function LPS:BuildLocationTooltip()	
 	local mapID = C_Map.GetBestMapForUnit("player")
 	local zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;
-	local r, g, b = unpack(LPS_DB.colors)
+	local r, g, b = LPS:GetColor("tooltip")
+	local rB, gB, bB = LPS:GetColor("tooltipSetting")
 
-  GameTooltip:ClearLines()
-
-    -- Zone
+  -- Zone
 	GameTooltip:AddDoubleLine(L["Zone"]..": ", zoneText, r, g, b)
 
 	-- Continent
@@ -84,8 +83,19 @@ function LPS:BuildLocationTooltip()
 				GameTooltip:AddDoubleLine(L["Battle Pet level"].. ": ", checkbpet, r, g, b)
 		end
 	end
+	
+	GameTooltip:AddDoubleLine(" ")
+	GameTooltip:AddDoubleLine(L["LMB"], L["Toggle Configuration"], rB, gB, bB, rB, gB, bB)
+
 
 	if GameTooltipTextLeft1 then
-			GameTooltipTextLeft1:SetFontObject(GameTooltipText)
+		local rT, gT, bT = GameTooltipTextLeft1:GetTextColor()
+		GameTooltipTextLeft1:SetFontObject(GameTooltipText)
+		GameTooltipTextLeft1:SetTextColor(rT, gT, bT)
+	end
+	if GameTooltipTextRight1 then
+		local rT, gT, bT = GameTooltipTextRight1:GetTextColor()
+		GameTooltipTextRight1:SetFontObject(GameTooltipText)
+		GameTooltipTextRight1:SetTextColor(rT, gT, bT)
 	end
 end

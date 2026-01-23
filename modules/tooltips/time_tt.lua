@@ -1,4 +1,4 @@
-local MyAddon = _G.MyAddon
+local MyAddon = _G.ArpeksLPS
 local LPS = MyAddon.LPS
 local L = MyAddon.L
 
@@ -296,7 +296,8 @@ end
 function LPS:BuildTimeTooltip()
 	local raids = {}
 	local dungeons = {}
-	local r, g, b = unpack(LPS_DB.colors)
+	local r, g, b = LPS:GetColor("tooltip")
+	local rB, gB, bB = LPS:GetColor("tooltipSetting")
 
 	if not collectedImages then
 			LPS:CollectImages()
@@ -330,9 +331,6 @@ function LPS:BuildTimeTooltip()
 					end
 			end
 	end
-
-
-	GameTooltip:ClearLines()
 	
 	-- рейды
 	GameTooltip:AddLine(L["Cooldown raids"], r, g, b)
@@ -350,22 +348,27 @@ function LPS:BuildTimeTooltip()
 
 	-- таймеры внизу
 	local dailySeconds = C_DateAndTime.GetSecondsUntilDailyReset()
-	GameTooltip:AddDoubleLine(L['Daily reset'], LPS:FormatTime(dailySeconds), r, g, b, 0.41, 0.8, 0.94)
+	GameTooltip:AddDoubleLine(L['Daily reset'], LPS:FormatTime(dailySeconds), r, g, b, rB, gB, bB)
 
 	local weeklySeconds = C_DateAndTime.GetSecondsUntilWeeklyReset()
-	GameTooltip:AddDoubleLine(L["Weekly reset"], LPS:FormatTime(weeklySeconds), r, g, b, 0.41, 0.8, 0.94)
+	GameTooltip:AddDoubleLine(L["Weekly reset"], LPS:FormatTime(weeklySeconds), r, g, b, rB, gB, bB)
 
 	local calTime = C_DateAndTime.GetCurrentCalendarTime()
-	GameTooltip:AddDoubleLine(L["Server time"], string.format("%02d:%02d", calTime.hour, calTime.minute), r, g, b, 0.41, 0.8, 0.94)
+	GameTooltip:AddDoubleLine(L["Server time"], string.format("%02d:%02d", calTime.hour, calTime.minute), r, g, b, rB, gB, bB)
 
 	GameTooltip:AddDoubleLine(" ")
-	GameTooltip:AddDoubleLine(L["LMB"], L["Open time"], r, g, b, 0.41, 0.8, 0.94)
-	GameTooltip:AddDoubleLine(L["RMB"], L["Open calendar"], r, g, b, 0.41, 0.8, 0.94)
+	GameTooltip:AddDoubleLine(L["LMB"], L["Toggle time"], rB, gB, bB, rB, gB, bB)
+	GameTooltip:AddDoubleLine(L["RMB"], L["Toggle calendar"], rB, gB, bB, rB, gB, bB)
 
 	if GameTooltipTextLeft1 then
-			GameTooltipTextLeft1:SetFontObject(GameTooltipText)
+		local rT, gT, bT = GameTooltipTextLeft1:GetTextColor()
+		GameTooltipTextLeft1:SetFontObject(GameTooltipText)
+		GameTooltipTextLeft1:SetTextColor(rT, gT, bT)
 	end
-
-
+	if GameTooltipTextRight1 then
+		local rT, gT, bT = GameTooltipTextRight1:GetTextColor()
+		GameTooltipTextRight1:SetFontObject(GameTooltipText)
+		GameTooltipTextRight1:SetTextColor(rT, gT, bT)
+	end
 end
 

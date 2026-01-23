@@ -1,7 +1,7 @@
-local LPS = _G.MyAddon and _G.MyAddon.LPS
+local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
-local L = _G.MyAddon.L
+local L = _G.ArpeksLPS.L
 
 ----------------------------------------------------------------
 -- Addon Compartment

@@ -1,6 +1,6 @@
 if GetLocale() ~= "ruRU" then return end
 
-local L = _G.MyAddon and _G.MyAddon.L
+local L = _G.ArpeksLPS and _G.ArpeksLPS.L
 if not L then return end
 
 L["Shows your location and coordinates on screen"] = "Отображает местоположение и координаты"
@@ -19,10 +19,10 @@ L["Server time"] = "Серверное время"
 L["day"] = "д"
 L["hour"] = "ч"
 L["minute"] = "мин"
-L["Open time"] = "открыть часы"
-L["Open calendar"] = "открыть календарь"
-L["The frame position is reset"] = "положение сброшено"
-
+L["Toggle time"] = "Переключить часы"
+L["Toggle calendar"] = "Переключить календарь"
+L["Toggle WorldMap"] = "Переключить карту мира"
+L["Toggle Configuration"] = "Открыть настройки"
 L["Toggle move mode"] = "Переключить редактирование"
 L["Reset position"] = "Сбросить позицию"
 
@@ -30,3 +30,5 @@ L["LMB"] = "ЛКМ"
 L["RMB"] = "ПКМ"
 L["MMB"] = "СКМ"
 L["Shift+LMB"] = "Shift+ЛКМ"
+
+L["The frame position is reset"] = "положение сброшено"
