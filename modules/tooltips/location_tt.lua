@@ -57,13 +57,13 @@ function LPS:BuildLocationTooltip()
 	GameTooltip:AddDoubleLine(L["Zone"]..": ", zoneText, r, g, b)
 
 	-- Continent
-	GameTooltip:AddDoubleLine(CONTINENT..": ", Tourist:GetContinent(zoneText), r, g, b)
+	GameTooltip:AddDoubleLine(L["Continent"]..": ", Tourist:GetContinent(zoneText), r, g, b)
 
 	-- Home
 	GameTooltip:AddDoubleLine(L["Home"]..": ", GetBindLocation(), r, g, b, 0.41, 0.8, 0.94)
 
 	-- Status
-	GameTooltip:AddDoubleLine(STATUS..": ", LPS:GetZoneStatus(), r, g, b)
+	GameTooltip:AddDoubleLine(L["Status"]..": ", LPS:GetZoneStatus(), r, g, b)
 
 	if LPS_DB.tooltips.location.zoneLevel or LPS_DB.tooltips.location.battlePets then
 		GameTooltip:AddLine(" ")
@@ -73,7 +73,7 @@ function LPS:BuildLocationTooltip()
 	if LPS_DB.tooltips.location.zoneLevel then
 		local checklvl = GetLevelRange(zoneText)
 		if checklvl ~= "" then
-				GameTooltip:AddDoubleLine(LEVEL_RANGE..": ", checklvl, r, g, b)
+				GameTooltip:AddDoubleLine(L["Level range"]..": ", checklvl, r, g, b)
 		end
 	end
 
@@ -83,5 +83,9 @@ function LPS:BuildLocationTooltip()
 		if checkbpet ~= "" then
 				GameTooltip:AddDoubleLine(L["Battle Pet level"].. ": ", checkbpet, r, g, b)
 		end
+	end
+
+	if GameTooltipTextLeft1 then
+			GameTooltipTextLeft1:SetFontObject(GameTooltipText)
 	end
 end

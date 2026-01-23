@@ -1,8 +1,6 @@
 local LPS = _G.MyAddon and _G.MyAddon.LPS
 if not LPS then return end
 
-local formatStr = "|cFFFFFFFF%H|r:|cFFFFFFFF%M|r"
-
 
 -- Ждём, чтобы SavedVariables точно загрузились
 C_Timer.After(0.1, function()
@@ -10,7 +8,7 @@ C_Timer.After(0.1, function()
 
 
     -- Фрейм для времени
-    local f = CreateFrame("Frame", "LPS_Time", LPS.holder, "BackdropTemplate")
+    local f = CreateFrame("Button", "LPS_Time", LPS.holder, "BackdropTemplate")
     f:SetSize(100, 22)
     f:ClearAllPoints()
     f:SetPoint("LEFT", LPS.locationFrame, "RIGHT", 5, 0)
@@ -28,6 +26,8 @@ C_Timer.After(0.1, function()
     })
     f:SetBackdropColor(unpack(COLORS.bg))
     f:SetBackdropBorderColor(unpack(COLORS.border))
+    f:EnableMouse(true)
+    f:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 
     f.text = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     f.text:SetAllPoints()
@@ -38,15 +38,22 @@ C_Timer.After(0.1, function()
     f.isTimeTooltip = true
 
     -- обновление времени каждую секунду
+    local lastDisplay = ""
     C_Timer.NewTicker(1, function()
-        -- всегда обновляем текст панели
-        f.text:SetText(date(formatStr))
+        local newText = LPS:GetFormattedGameTime()
 
-        -- обновляем тултип только если он виден и это тултип времени
-        if GameTooltip:IsVisible() and GameTooltip.isTimeTooltip then
-            LPS:BuildTimeTooltip()
+        if newText ~= lastDisplay then
+            lastDisplay = newText
+            f.text:SetText(newText)
+
+            -- если тултип открыт — обновляем его
+            if GameTooltip:IsVisible() and GameTooltip.isTimeTooltip then
+                LPS:BuildTimeTooltip()
+            end
         end
     end)
+
+
 
     -- === TOOLTIP ===
     f:SetScript("OnEnter", function(self)
@@ -62,6 +69,14 @@ C_Timer.After(0.1, function()
     f:SetScript("OnLeave", function(self)
         GameTooltip_Hide()
         GameTooltip.isTimeTooltip = false -- сбрасываем флаг
+    end)
+
+    f:SetScript("OnClick", function(self, button)
+        if button == "LeftButton" then
+            ToggleTimeManager() -- открыть часы
+        elseif button == "RightButton" then
+            ToggleCalendar() -- открыть календарь
+        end
     end)
 
     LPS.timeFrame = f

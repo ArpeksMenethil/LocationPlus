@@ -1,13 +1,23 @@
-local addonName, LPS, _, L = ...
+local addonName, LPS = ...
+local DEBUG = true
+
 _G.MyAddon = _G.MyAddon or {}
 _G.MyAddon.LPS = LPS or {}
-_G.MyAddon.L = L or {}
+_G.MyAddon.L = setmetatable({}, {
+    __index = function(t, key)
+        if DEBUG then
+            print("|cff1784d1LocationPlus|r: Missing locale:", key)
+        end
+        return key
+    end
+})
 
 -- SavedVariables
 LPS_DB = LPS_DB or {}
 
 -- Libs
 local Tourist = LibStub("LibTourist-3.0")
+local L = _G.MyAddon.L
 
 -- Версия аддона
 local addonVersion = C_AddOns.GetAddOnMetadata(addonName, "Version") or "?.?.?"
@@ -56,7 +66,7 @@ LPS.holder:SetScript("OnEvent", function(self, event, name)
     -- Применяем позицию holder
     LPS:ApplyHolderPosition()
 
-    print("|cff1784d1" .. addonName .. "|r загружен. Версия: |cff1784d1" .. addonVersion .. "|r")
+    print("|cff1784d1" .. addonName .. "|r loaded. Current version: |cff1784d1" .. addonVersion .. "|r")
 end)
 
 ----------------------------------------------------------------
@@ -188,23 +198,26 @@ end
 ----------------------------------------------------------------
 SLASH_LPSMOVE1 = "/lpsmove"
 SlashCmdList.LPSMOVE = function()
-    -- проверяем, включен ли режим
-    local moving = LPS.holder.isMoving or false
-    if moving then
-        -- выключаем
-        LPS:SetMoveMode(false)
-        LPS.holder.isMoving = false
-    else
-        -- включаем
-        LPS:SetMoveMode(true)
-        LPS.holder.isMoving = true
-    end
+    LPS:ToggleMove()
 end
 ----------------------------------------------------------------
 -- Reset Holder Position
 ----------------------------------------------------------------
 SLASH_LPSRESET1 = "/lpsreset"
 SlashCmdList.LPSRESET = function()
+    LPS:ResetPosition()
+end
+
+
+
+----------------------------------------------------------------
+-- Utils
+----------------------------------------------------------------
+function LPS:print(msg)
+    print("|cff1784d1LocationPlus|r: " .. L[msg])
+end
+
+function LPS:ResetPosition()
     -- дефолтные координаты
     local defaultPos = { point = "TOP", relativePoint = "TOP", x = 0, y = -10 }
 
@@ -217,14 +230,23 @@ SlashCmdList.LPSRESET = function()
     -- применяем позицию
     LPS:ApplyHolderPosition()
 
-    print("|cff1784d1LocationPlus|r: позиция holder сброшена на дефолтную.")
+    LPS:print("The frame position is reset")
 end
 
+function LPS:ToggleMove()
+    -- проверяем, включен ли режим
+    local moving = LPS.holder.isMoving or false
+    if moving then
+        -- выключаем
+        LPS:SetMoveMode(false)
+        LPS.holder.isMoving = false
+    else
+        -- включаем
+        LPS:SetMoveMode(true)
+        LPS.holder.isMoving = true
+    end
+end
 
-
-----------------------------------------------------------------
--- Utils
-----------------------------------------------------------------
 function LPS:GetContinentID()
     local mapID = C_Map.GetBestMapForUnit("player")
     if not mapID then return end
@@ -258,4 +280,26 @@ function LPS:GetZoneStatus(color)
         return r, g, b
     end
     return format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, status)
+end
+
+function LPS:GetFormattedGameTime()
+    local is24h = GetCVarBool("timeMgrUseMilitaryTime")
+    local useLocal = GetCVarBool("timeMgrUseLocalTime")
+
+    local h, m
+    if useLocal then
+        h = tonumber(date("%H"))
+        m = tonumber(date("%M"))
+    else
+        h, m = GetGameTime()
+    end
+
+    if not is24h then
+        local suffix = (h >= 12) and "PM" or "AM"
+        h = h % 12
+        if h == 0 then h = 12 end
+        return string.format("|cFFFFFFFF%d|r:|cFFFFFFFF%02d|r %s", h, m, suffix)
+    end
+
+    return string.format("|cFFFFFFFF%02d|r:|cFFFFFFFF%02d|r", h, m)
 end

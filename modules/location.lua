@@ -8,7 +8,7 @@ C_Timer.After(0, function()
 	-------------------------------------------------
 	-- ФРЕЙМ ЛОКАЦИИ
 	-------------------------------------------------
-	local f = CreateFrame("Frame", "LPS_Location", LPS.holder, "BackdropTemplate")
+	local f = CreateFrame("Button", "LPS_Location", LPS.holder, "BackdropTemplate")
 	f:ClearAllPoints()
 	f:SetPoint("CENTER", LPS.holder, "CENTER")
 	f:EnableMouse(true)

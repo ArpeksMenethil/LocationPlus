@@ -335,13 +335,13 @@ function LPS:BuildTimeTooltip()
 	GameTooltip:ClearLines()
 	
 	-- рейды
-	GameTooltip:AddLine(L["Cooldown raids"], 1,1,0)
+	GameTooltip:AddLine(L["Cooldown raids"], r, g, b)
 	for _, v in ipairs(raids) do
 			GameTooltip:AddDoubleLine(v.left, v.right)
 	end
 
 	GameTooltip:AddLine(" ")
-	GameTooltip:AddLine(L["Cooldown dungeons"], 1,1,0)
+	GameTooltip:AddLine(L["Cooldown dungeons"], r, g, b)
 	for _, v in ipairs(dungeons) do
 			GameTooltip:AddDoubleLine(v.left, v.right)
 	end
@@ -357,5 +357,15 @@ function LPS:BuildTimeTooltip()
 
 	local calTime = C_DateAndTime.GetCurrentCalendarTime()
 	GameTooltip:AddDoubleLine(L["Server time"], string.format("%02d:%02d", calTime.hour, calTime.minute), r, g, b, 0.41, 0.8, 0.94)
+
+	GameTooltip:AddDoubleLine(" ")
+	GameTooltip:AddDoubleLine(L["LMB"], L["Open time"], r, g, b, 0.41, 0.8, 0.94)
+	GameTooltip:AddDoubleLine(L["RMB"], L["Open calendar"], r, g, b, 0.41, 0.8, 0.94)
+
+	if GameTooltipTextLeft1 then
+			GameTooltipTextLeft1:SetFontObject(GameTooltipText)
+	end
+
+
 end
 
