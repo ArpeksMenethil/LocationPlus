@@ -1,0 +1,15 @@
+## Interface: 20505
+## Title: |cff1784d1Location Plus|r |cfd9b9b9bClassic|r
+## Author: Dmitry
+## Version: 0.6
+## Notes: Location, Coords and Reset Timers
+## SavedVariables: LPS_DB
+## Category-enUS: UI Overhaul
+## Category-ruRU: Переработка интерфейса
+## OptionalDeps: LibTouristClassic-1.0
+## IconTexture: Interface\AddOns\LocationPlus\media\logo
+
+Libs/!load_wrath.xml
+!load.xml
+Locales/!load.xml
+Modules/!load.xml

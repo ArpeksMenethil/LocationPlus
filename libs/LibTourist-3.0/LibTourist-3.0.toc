@@ -1,7 +1,7 @@
-## Interface: 110205
+## Interface: 110105
 ## LoadOnDemand: 1
-## Title: LibTourist-3.0
-## Notes: A library to provide information about zones and instances (retail version).
+## Title: Lib: Tourist-3.0
+## Notes: A library to provide information about zones and instances.
 ## Author: Odica
 ## X-Category: Library
 

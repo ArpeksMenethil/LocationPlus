@@ -1,27 +1,20 @@
-## Interface: 120000
+## Interface: 120000, 120001
 ## Title: |cff1784d1Location Plus|r
 ## Author: Dmitry
-## Version: 0.5
+## Version: 0.6
 ## Notes: Location, Coords and Reset Timers
 ## SavedVariables: LPS_DB
 ## Category-enUS: UI Overhaul
 ## Category-ruRU: Переработка интерфейса
 ## OptionalDeps: LibTourist-3.0
-## IconTexture: Interface\ICONS\INV_Misc_Map02
+## IconTexture: Interface\AddOns\LocationPlus\media\logo
 ## AddonCompartmentFunc: LPS_OnAddonCompartmentClick
 ## AddonCompartmentFuncOnEnter: LPS_OnAddonCompartmentEnter
 ## AddonCompartmentFuncOnLeave: LPS_OnAddonCompartmentLeave
 
-libs/load_libs.xml
-defaults.lua
-core.lua
-utils.lua
-locales/load_locales.xml
-compartment.lua
-modules/location.lua
-modules/coords.lua
-modules/time.lua
-modules/tooltips/coords_tt.lua
-modules/tooltips/location_tt.lua
-modules/tooltips/time_tt.lua
-options.lua
+Libs/!load.xml
+!load.xml
+Locales/!load.xml
+Modules/!load.xml
+
+Game\Mainline\!load.xml

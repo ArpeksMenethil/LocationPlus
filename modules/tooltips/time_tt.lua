@@ -8,31 +8,31 @@ local OVERRIDE_ICON = [[Interface\EncounterJournal\UI-EJ-Dungeonbutton-%s]]
 
 -- Таблица для перевода сложности в букву
 local difficultyLetter = {
-    [1] = "О",
-    [2] = "Г",
-    [3] = "О",
-    [4] = "О",
-    [5] = "Г",
-    [6] = "Г",
-    [7] = "П",
-    [8] = "Э+",
-    [9] = "О",
-    [11] = "Г",
-    [12] = "О",
-    [14] = "О",
-    [15] = "Г",
-    [16] = "Э",
-    [17] = "П",
-    [23] = "Э",
-    [24] = "В",
-    [33] = "В",
-    [38] = "О",
-    [39] = "Г",
-    [40] = "Э",
-    [147] = "О",
-    [149] = "Г",
-    [150] = "О",
-    [151] = "П",
+	[1] = "О",
+	[2] = "Г",
+	[3] = "О",
+	[4] = "О",
+	[5] = "Г",
+	[6] = "Г",
+	[7] = "П",
+	[8] = "Э+",
+	[9] = "О",
+	[11] = "Г",
+	[12] = "О",
+	[14] = "О",
+	[15] = "Г",
+	[16] = "Э",
+	[17] = "П",
+	[23] = "Э",
+	[24] = "В",
+	[33] = "В",
+	[38] = "О",
+	[39] = "Г",
+	[40] = "Э",
+	[147] = "О",
+	[149] = "Г",
+	[150] = "О",
+	[151] = "П",
 }
 
 local ICON_EJ = {
@@ -227,36 +227,36 @@ local InstanceNameByID = {
 }
 
 local difficultyColor = {
-    ["О"] = "|cFFFFFFFF",  -- белый (Normal)
-    ["Г"] = "|cFFFF7F00",  -- оранжевый (Heroic)
-    ["Э"] = "|cFFC000FF",  -- фиолетовый (Mythic)
-    ["Э+"] = "|cFF00FF00", -- зелёный (Mythic+)
-    ["П"] = "|cFF007FFF",  -- синий (LookingForRaid)
-    ["В"] = "|cFFFFFF00",  -- жёлтый (Timewalking / placeholder)
+	["О"] = "|cFFFFFFFF",  -- белый (Normal)
+	["Г"] = "|cFFFF7F00",  -- оранжевый (Heroic)
+	["Э"] = "|cFFC000FF",  -- фиолетовый (Mythic)
+	["Э+"] = "|cFF00FF00", -- зелёный (Mythic+)
+	["П"] = "|cFF007FFF",  -- синий (LookingForRaid)
+	["В"] = "|cFFFFFF00",  -- жёлтый (Timewalking / placeholder)
 }
 
 function LPS:FormatTime(seconds)
-    local days = math.floor(seconds / 86400)
-    local hours = math.floor((seconds % 86400) / 3600)
-    local minutes = math.floor((seconds % 3600) / 60)
+	local days = math.floor(seconds / 86400)
+	local hours = math.floor((seconds % 86400) / 3600)
+	local minutes = math.floor((seconds % 3600) / 60)
 
-    local parts = {}
-    if days > 0 then
-        table.insert(parts, string.format("%d "..L["day"], days))
-    end
-    if hours > 0 then
-        table.insert(parts, string.format("%d "..L["hour"], hours))
-    end
-    if minutes > 0 then
-        table.insert(parts, string.format("%d "..L["minute"], minutes))
-    end
+	local parts = {}
+	if days > 0 then
+		table.insert(parts, string.format("%d "..L["day"], days))
+	end
+	if hours > 0 then
+		table.insert(parts, string.format("%d "..L["hour"], hours))
+	end
+	if minutes > 0 then
+		table.insert(parts, string.format("%d "..L["minute"], minutes))
+	end
 
-    -- Если всё равно 0 (секунды < 60), показываем "0 мин"
-    if #parts == 0 then
-        table.insert(parts, "0 "..L["minute"])
-    end
+	-- Если всё равно 0 (секунды < 60), показываем "0 мин"
+	if #parts == 0 then
+		table.insert(parts, "0 "..L["minute"])
+	end
 
-    return table.concat(parts, " ")
+	return table.concat(parts, " ")
 end
 
 local instanceIconByName = {}
@@ -294,71 +294,84 @@ function LPS:CollectImages()
 end
 
 function LPS:BuildTimeTooltip()
-	local raids = {}
-	local dungeons = {}
-	local r, g, b = LPS:GetColor("tooltip")
+	local r, g, b = LPS:GetColor("text")
 	local rB, gB, bB = LPS:GetColor("tooltipSetting")
+	local rY, gY, bY = LPS:GetColor("tooltip")
 
-	if not collectedImages then
-			LPS:CollectImages()
-	end
 
-	for i = 1, GetNumSavedInstances() do
-			local name, _, reset, difficulty, locked, _, _, isRaid, maxPlayers, _, numEncounters, encounterProgress, _ = GetSavedInstanceInfo(i)
+	GameTooltip:ClearLines()
 
-			if locked then
-					local diffChar = difficultyLetter[difficulty] or "?"
-					local color = difficultyColor[diffChar] or "|cFFFFFFFF"
+	if LPS.Retail then
+		local raids = {}
+		local dungeons = {}
 
-					local left = string.format(
-							"|T%s:16:16|t%d %s%s|r |cFFAAAAAA(%s, %d/%d)|r",
-							instanceIconByName[name],
-							maxPlayers,
-							color,
-							diffChar,
-							name,
-							encounterProgress,
-							numEncounters
-					)
+		if not collectedImages then
+				LPS:CollectImages()
+		end
 
-					local right = LPS:FormatTime(reset)
-					local entry = {left = left, right = right}
+		for i = 1, GetNumSavedInstances() do
+				local name, _, reset, difficulty, locked, _, _, isRaid, maxPlayers, _, numEncounters, encounterProgress, _ = GetSavedInstanceInfo(i)
 
-					if isRaid then
-							table.insert(raids, entry)
-					else
-							table.insert(dungeons, entry)
-					end
+				if locked then
+						local diffChar = difficultyLetter[difficulty] or "?"
+						local color = difficultyColor[diffChar] or "|cFFFFFFFF"
+
+						local left = string.format(
+								"|T%s:16:16|t%d %s%s|r |cFFAAAAAA(%s, %d/%d)|r",
+								instanceIconByName[name],
+								maxPlayers,
+								color,
+								diffChar,
+								name,
+								encounterProgress,
+								numEncounters
+						)
+
+						local right = LPS:FormatTime(reset)
+						local entry = {left = left, right = right}
+
+						if isRaid then
+								table.insert(raids, entry)
+						else
+								table.insert(dungeons, entry)
+						end
+				end
+		end
+
+		-- рейды
+		if LPS_DB.tooltips.time.raids then
+			GameTooltip:AddLine(L["Cooldown raids"], rY, gY, bY)
+			for _, v in ipairs(raids) do
+					GameTooltip:AddDoubleLine(v.left, v.right, r, g, b, rB, gB, bB)
 			end
-	end
-	
-	-- рейды
-	GameTooltip:AddLine(L["Cooldown raids"], r, g, b)
-	for _, v in ipairs(raids) do
-			GameTooltip:AddDoubleLine(v.left, v.right)
-	end
+			GameTooltip:AddLine(" ")
+		end
 
-	GameTooltip:AddLine(" ")
-	GameTooltip:AddLine(L["Cooldown dungeons"], r, g, b)
-	for _, v in ipairs(dungeons) do
-			GameTooltip:AddDoubleLine(v.left, v.right)
+		if LPS_DB.tooltips.time.dungeons then
+			GameTooltip:AddLine(L["Cooldown dungeons"], rY, gY, bY)
+			for _, v in ipairs(dungeons) do
+					GameTooltip:AddDoubleLine(v.left, v.right, r, g, b, rB, gB, bB)
+			end
+			GameTooltip:AddLine(" ")
+		end
 	end
-
-	GameTooltip:AddLine(" ")
 
 	-- таймеры внизу
 	local dailySeconds = C_DateAndTime.GetSecondsUntilDailyReset()
-	GameTooltip:AddDoubleLine(L['Daily reset'], LPS:FormatTime(dailySeconds), r, g, b, rB, gB, bB)
+	GameTooltip:AddDoubleLine(L['Daily reset'], LPS:FormatTime(dailySeconds), r, g, b, r, g, b)
 
 	local weeklySeconds = C_DateAndTime.GetSecondsUntilWeeklyReset()
-	GameTooltip:AddDoubleLine(L["Weekly reset"], LPS:FormatTime(weeklySeconds), r, g, b, rB, gB, bB)
+	GameTooltip:AddDoubleLine(L["Weekly reset"], LPS:FormatTime(weeklySeconds), r, g, b, r, g, b)
 
 	local calTime = C_DateAndTime.GetCurrentCalendarTime()
-	GameTooltip:AddDoubleLine(L["Server time"], string.format("%02d:%02d", calTime.hour, calTime.minute), r, g, b, rB, gB, bB)
+	GameTooltip:AddDoubleLine(L["Server time"], string.format("%02d:%02d", calTime.hour, calTime.minute), r, g, b, r, g, b)
 
 	GameTooltip:AddDoubleLine(" ")
 	GameTooltip:AddDoubleLine(L["LMB"], L["Toggle time"], rB, gB, bB, rB, gB, bB)
-	GameTooltip:AddDoubleLine(L["RMB"], L["Toggle calendar"], rB, gB, bB, rB, gB, bB)
+
+	if not LPS.TBC then
+		GameTooltip:AddDoubleLine(L["RMB"], L["Toggle calendar"], rB, gB, bB, rB, gB, bB)
+	end
 
 	if GameTooltipTextLeft1 then
 		local rT, gT, bT = GameTooltipTextLeft1:GetTextColor()

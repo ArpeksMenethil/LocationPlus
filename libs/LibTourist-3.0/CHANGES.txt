@@ -1,10 +1,12 @@
 ------------------------------------------------------------------------
-r333 | Odica_Jaedenar | 2025-10-13 20:46:49 +0000 (Mon, 13 Oct 2025) | 2 lines
+r327 | Odica_Jaedenar | 2025-05-04 18:38:20 +0000 (Sun, 04 May 2025) | 4 lines
 Changed paths:
    M /trunk/LibTourist-3.0.lua
    M /trunk/LibTourist-3.0.toc
 
-- added Archival Assault (delve)
-- updated version in TOC to 110205
+- added three new MapIDs
+- added The Ringing Deeps - Undermine mole machine
+- Renamed Dornogal - Undermine portal into teleport
+- updated version in TOC to 110105
 ------------------------------------------------------------------------
 

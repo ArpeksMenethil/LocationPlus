@@ -1,0 +1,10 @@
+<Ui xmlns='http://www.blizzard.com/wow/ui/'>
+	<Include file='.\Tooltips\location_tt.lua'/>
+	<Include file='.\Tooltips\time_tt.lua'/>
+
+	<Include file='.\Frames\location.lua'/>
+	<Include file='.\Frames\coords.lua'/>
+	<Include file='.\Frames\time.lua'/>
+
+	<Include file='.\options.lua'/>
+</Ui>

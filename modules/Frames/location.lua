@@ -1,6 +1,13 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
+local Tourist
+if LPS.Retail and LibStub:GetLibrary("LibTourist-3.0", true) then
+	Tourist = LibStub("LibTourist-3.0")
+elseif LibStub:GetLibrary("LibTouristClassic-1.0", true) then
+	Tourist = LibStub("LibTouristClassic-1.0")
+end
+
 -- Ждём, чтобы SavedVariables точно загрузились
 C_Timer.After(0, function()
 	if not LPS_DB then return end
@@ -16,8 +23,7 @@ C_Timer.After(0, function()
 	-------------------------------------------------
 	-- СТИЛЬ ПАНЕЛИ
 	-------------------------------------------------
-	local COLORS = LPS_DB.colors
-	local FONT_SIZE = LPS_DB.fontSize or 12
+	local FONT_SIZE = LPS_DB.settings.fontSize or 12
 
 	-- отступы панели
 	local PADDING_X = 10
@@ -28,8 +34,8 @@ C_Timer.After(0, function()
 	f:SetBackdrop({
 		bgFile   = "Interface\\Buttons\\WHITE8x8",
 		edgeFile = "Interface\\Buttons\\WHITE8x8",
-		tile     = false,
-		edgeSize = 1,
+		tile	 = false,
+		edgeSize = LPS_DB.settings.borderSize or 2,
 		insets   = { left = 1, right = 1, top = 1, bottom = 1 },
 	})
 
@@ -48,11 +54,18 @@ C_Timer.After(0, function()
 	-- ОБНОВЛЕНИЕ ТЕКСТА + РАЗМЕРА
 	-------------------------------------------------
 	local function Update()
-		local zone = GetZoneText()
+		local mapID = C_Map.GetBestMapForUnit("player")
+		local zone = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;
+
 		local sub  = GetSubZoneText()
 		local text = (sub ~= "" and sub or zone) or ""
+		local zoneLevel = LPS:GetLevelRange(zone)
 
-		f.text:SetText(text)
+		if zoneLevel then
+			f.text:SetText(format("%s (%s)", text, zoneLevel))
+		else
+			f.text:SetText(text)
+		end
 		f.text:SetTextColor(LPS:GetZoneStatus(true))
 
 		-- авторазмер
@@ -104,13 +117,29 @@ C_Timer.After(0, function()
 		self.updateTooltip = nil
 	end)
 
+	f:SetScript("OnClick", function(self, button)
+		if button == "LeftButton" then
+			if IsShiftKeyDown() then
+				-- Shift + ЛКМ
+				local zone = GetZoneText()			-- основная зона
+				local subZone = GetSubZoneText()	  -- подзона
+				local x, y = LPS:GetPlayerCoords()  -- координаты
+				local msg = string.format("%s: %s (%.2f %.2f)", zone, subZone, x*100, y*100)
+
+				ChatEdit_ActivateChat(ChatEdit_GetLastActiveWindow())
+				ChatEdit_InsertLink(msg)
+			else
+				ToggleWorldMap()
+				WorldMapFrame:ClearAllPoints()
+				WorldMapFrame:SetPoint("CENTER", UIParent, "CENTER")
+			end
+		end
+	end)
+
 	Update()
 
 	-------------------------------------------------
 	-- EXPORT
 	-------------------------------------------------
 	LPS.locationFrame = f
-
-
-
 end)
