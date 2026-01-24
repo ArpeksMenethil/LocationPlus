@@ -1,7 +1,7 @@
 ## Interface: 20505
 ## Title: |cff1784d1Location Plus|r |cfd9b9b9bClassic|r
 ## Author: Dmitry
-## Version: 0.6
+## Version: 0.7
 ## Notes: Location, Coords and Reset Timers
 ## SavedVariables: LPS_DB
 ## Category-enUS: UI Overhaul

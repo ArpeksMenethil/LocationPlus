@@ -1,5 +1,7 @@
 local ADDON_NAME, LPS = ...
 
+LPS.addonTextColor = "ff1784d1"
+
 LPS.defaults = {
 	position = {
 		point = "TOP",

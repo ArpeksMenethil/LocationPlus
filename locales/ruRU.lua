@@ -27,6 +27,7 @@ L["Toggle Configuration"] = "Конфигурация"
 L["Toggle move mode"] = "Редактирование"
 L["Reset position"] = "Сбросить позицию"
 L["Send the coordinates to the chat"] = "Отправить координаты в чат"
+L["loaded. Current version"] = "загружен. Текущая версия"
 
 L["LMB"] = "ЛКМ"
 L["RMB"] = "ПКМ"

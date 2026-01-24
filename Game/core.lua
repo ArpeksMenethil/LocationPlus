@@ -6,7 +6,7 @@ _G.ArpeksLPS.LPS = LPS or {}
 _G.ArpeksLPS.L = setmetatable({}, {
 	__index = function(t, key)
 		if DEBUG then
-			print("|cff1784d1LocationPlus|r: Missing locale:", key)
+			print("|c"..LPS.addonTextColor.."LocationPlus|r: Missing locale: ", key)
 		end
 		return key
 	end
@@ -16,13 +16,11 @@ do
 	LPS.TBC = WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC
 	LPS.Retail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 end
+LPS_DB = LPS_DB or {} -- SavedVariables
 
 
--- SavedVariables
-LPS_DB = LPS_DB or {}
-
--- Версия аддона
-local addonVersion = C_AddOns.GetAddOnMetadata(addonName, "Version") or "?.?.?"
+local addonVersion = C_AddOns.GetAddOnMetadata(addonName, "Version") or "?.?.?" -- Версия аддона
+local L = _G.ArpeksLPS.L
 
 ----------------------------------------------------------------
 -- Holder (главный фрейм)
@@ -45,7 +43,7 @@ LPS.holder:SetScript("OnEvent", function(self, event, name)
 	-- LPS_DB = LPS.defaults
 	LPS:ApplyHolderPosition() -- Применяем позицию holder
 
-	print("|cff1784d1" .. addonName .. "|r loaded. Current version: |cff1784d1" .. addonVersion .. "|r")
+	print("|c"..LPS.addonTextColor..addonName.."|r "..L["loaded. Current version"]..": |c"..LPS.addonTextColor.."v"..addonVersion.."|r")
 end)
 
 ----------------------------------------------------------------

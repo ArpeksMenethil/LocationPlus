@@ -4,7 +4,7 @@ local L = _G.ArpeksLPS.L
 LPS_DB = LPS_DB or {}
 
 function LPS:print(msg)
-	print("|cff1784d1LocationPlus|r: " .. L[msg])
+	print("|c"..LPS.addonTextColor.."LocationPlus|r: " .. L[msg])
 end
 
 function LPS:ResetPosition()
@@ -106,7 +106,7 @@ function LPS:ApplyDefaults(db, defaults)
 	for k, v in pairs(defaults) do
 		if type(v) == "table" then
 			db[k] = LPS:ApplyDefaults(db[k], v)
-		elseif db[k] == nil then
+		elseif db[k] == nil and k ~= "addonTextColor" then
 			db[k] = v
 		end
 	end
