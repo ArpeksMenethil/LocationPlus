@@ -1,13 +1,14 @@
 ## Interface: 20505
 ## Title: |cff1784d1Location Plus|r |cfd9b9b9bClassic|r
-## Author: Dmitry
+## Author: Arpeks
 ## Version: 0.1.0
-## Notes: Location, Coords and Reset Timers
+## Notes: Provides enhanced player location and zone information without requiring ElvUI.
+## Notes-ruRU: Предоставляет расширенную информацию о местоположении игрока и зоне его действия без использования ElvUI.
 ## SavedVariables: LPS_DB
 ## Category-enUS: UI Overhaul
 ## Category-ruRU: Переработка интерфейса
 ## OptionalDeps: LibTouristClassicBCA
-## IconTexture: Interface\AddOns\LocationPlus\media\logo
+## IconTexture: Interface\AddOns\LocationPlus\Media\logo
 
 Libs/!load_anniversary.xml
 !load.xml
