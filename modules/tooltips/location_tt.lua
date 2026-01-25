@@ -6,8 +6,8 @@ LPS_DB = LPS_DB or {}
 local Tourist
 if LPS.Retail and LibStub:GetLibrary("LibTourist-3.0", true) then
 	Tourist = LibStub("LibTourist-3.0")
-elseif LibStub:GetLibrary("LibTouristClassic-1.0", true) then
-	Tourist = LibStub("LibTouristClassic-1.0")
+elseif LibStub:GetLibrary("LibTouristClassicBCA", true) then
+	Tourist = LibStub("LibTouristClassicBCA")
 end
 
 
@@ -106,7 +106,7 @@ local function PvPorRaidFilter(zone)
 		isPvP = true;
 	end
 
-	if(not isPvP and Tourist:GetInstanceGroupSize(zone) >= 10) then
+	if(not isPvP and Tourist:GetInstanceGroupMinSize(zone) >= 10) then
 		isRaid = true;
 	end
 
@@ -134,16 +134,14 @@ end
 local function GetZoneDungeons(dungeon)
 	local low, high = Tourist:GetLevel(dungeon)
 	local r, g, b = Tourist:GetLevelColor(dungeon)
-	local groupSize = Tourist:GetInstanceGroupSize(dungeon)
-	local altGroupSize = Tourist:GetInstanceAltGroupSize(dungeon)
+	local groupSize = Tourist:GetInstanceGroupMinSize(dungeon)
 	local groupSizeStyle = (groupSize > 0 and format("|cFFFFFF00|r (%d", groupSize) or "")
-	local altGroupSizeStyle = (altGroupSize > 0 and format("|cFFFFFF00|r/%d", altGroupSize) or "")
 	local name = dungeon
 
 	if PvPorRaidFilter(dungeon) == nil then return end
 
 	GameTooltip:AddDoubleLine(
-		name..groupSizeStyle..altGroupSizeStyle..") "..GetDungeonCoords(dungeon)..PvPorRaidFilter(dungeon),
+		name..groupSizeStyle..") "..GetDungeonCoords(dungeon)..PvPorRaidFilter(dungeon),
 		("|cff%02x%02x%02x%s|r"):format(r *255, g *255, b *255,(low == high and low or ("%d-%d"):format(low, high))),
 		1, 1, 1
 	)
@@ -174,7 +172,6 @@ end
 function LPS:BuildLocationTooltip()
 	local mapID = C_Map.GetBestMapForUnit("player")
 	local zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;
-	local curPos = (zoneText.." ") or "";
 
 	local r, g, b = LPS:GetColor("text")
 	local rB, gB, bB = LPS:GetColor("tooltipSetting")
@@ -182,7 +179,7 @@ function LPS:BuildLocationTooltip()
 
 	GameTooltip:ClearLines()
 
-  -- Zone
+	-- Zone
 	GameTooltip:AddDoubleLine(L["Zone"]..": ", zoneText, r, g, b)
 
 	-- Continent
@@ -233,9 +230,9 @@ function LPS:BuildLocationTooltip()
 	end
 
 	-- Instances in the zone
-	if LPS_DB.tooltips.location.zoneDungeon and Tourist:DoesZoneHaveInstances(zoneText) and LPS.TBC then
+	if LPS_DB.tooltips.location.zoneDungeon and Tourist:DoesZoneHaveInstances(zoneText) then
 		GameTooltip:AddLine(" ")
-		GameTooltip:AddLine(curPos..DUNGEONS..": ", rY, gY, bY)
+		GameTooltip:AddLine(DUNGEONS.." "..L["in"].." "..zoneText..": ", rY, gY, bY)
 
 		for dungeon in Tourist:IterateZoneInstances(zoneText) do
 			GetZoneDungeons(dungeon);
@@ -258,52 +255,73 @@ function LPS:BuildLocationTooltip()
 		local prof1, prof2, archy, fishing, cooking = GetProfessions()
 		if LPS_DB.tooltips.location.proffession and (prof1 or prof2 or archy or fishing or cooking) then
 			GameTooltip:AddLine(" ")
-			GameTooltip:AddLine(TRADE_SKILLS..": ", rY, gY, bY)
+			GameTooltip:AddLine(TRADE_SKILLS..":", rY, gY, bY)
 
 			local proftable = { GetProfessions() }
-			for _, id in pairs(proftable) do
-				local name, icon, rank, maxRank, _, _, _, rankModifier = GetProfessionInfo(id)
+			for _, id in ipairs(proftable) do
+				if id then
+					local name, icon, rank, maxRank, _, _, _, rankModifier = GetProfessionInfo(id)
 
-				if rank < maxRank or (not LPS_DB.tooltips.location.proffessionHideMaxLevel) then
-					icon = ("|T%s:12:12:1:0|t"):format(icon)
-					if (rankModifier and rankModifier > 0) then
-						GameTooltip:AddDoubleLine(format("%s %s: ", icon, name), (format("%s |cFF6b8df4+ %s|r / %s", rank, rankModifier, maxRank)), 1, 1, 1, rY, gY, bY)
-					else
-						GameTooltip:AddDoubleLine(format("%s %s: ", icon, name), (format("%s / %s", rank, maxRank)), 1, 1, 1, rY, gY, bY)
+					if rank < maxRank or not LPS_DB.tooltips.location.proffessionHideMaxLevel then
+						icon = ("|T%s:12:12:1:0|t"):format(icon)
+
+						if rankModifier and rankModifier > 0 then
+							GameTooltip:AddDoubleLine(
+								format("%s %s:", icon, name),
+								format("%d |cFF6b8df4+ %d|r / %d", rank, rankModifier, maxRank),
+								1, 1, 1,
+								rY, gY, bY
+							)
+						else
+							GameTooltip:AddDoubleLine(
+								format("%s %s:", icon, name),
+								format("%d / %d", rank, maxRank),
+								1, 1, 1,
+								rY, gY, bY
+							)
+						end
 					end
 				end
 			end
 		end
 	else
 		if LPS_DB.tooltips.location.proffession then
-			GameTooltip:AddLine(" ")
-			GameTooltip:AddLine(TRADE_SKILLS..": ", rY, gY, bY)
+				GameTooltip:AddLine(" ")
+				GameTooltip:AddLine(TRADE_SKILLS..":", rY, gY, bY)
 
-			local SecondarySkill = SECONDARY_SKILLS:gsub(": ", '')
-			local hasSecondary = false
-			for skillIndex = 1, GetNumSkillLines() do
-				local skillName, isHeader, _, skillRank, _, skillModifier, skillMaxRank, isAbandonable = GetSkillLineInfo(skillIndex)
+				-- Список профессий, которые нужно показывать
+				local professions = {
+						L["Alchemy"], L["Blacksmithing"], L["Enchanting"], L["Engineering"],
+						L["Herbalism"], L["Leatherworking"], L["Mining"], L["Skinning"], L["Tailoring"],
+						L["Cooking"], L["First Aid"], L["Fishing"], L["Jewelcrafting"]
+				}
 
-				if hasSecondary and isHeader then
-					hasSecondary = false
+				local professionsSet = {}
+				for _, name in ipairs(professions) do
+						professionsSet[name] = true
 				end
 
-				if (skillName and isAbandonable) or hasSecondary then
-					if skillName and (skillRank < skillMaxRank or (not LPS_DB.tooltips.location.proffessionHideMaxLevel)) then
-						if (skillModifier and skillModifier > 0) then
-							GameTooltip:AddDoubleLine(format("%s: ", skillName), (format("%s |cFF6b8df4+ %s|r / %s", skillRank, skillModifier, skillMaxRank)), 1, 1, 1, rY, gY, bY)
-						else
-							GameTooltip:AddDoubleLine(format("%s: ", skillName), (format("%s / %s", skillRank, skillMaxRank)), 1, 1, 1, rY, gY, bY)
+				for skillIndex = 1, GetNumSkillLines() do
+						local skillName, isHeader, _, skillRank, _, skillModifier, skillMaxRank, isAbandonable = GetSkillLineInfo(skillIndex)
+
+						if skillName and not isHeader and professionsSet[skillName] then
+								if skillRank < skillMaxRank or (not LPS_DB.tooltips.location.proffessionHideMaxLevel) then
+										if skillModifier and skillModifier > 0 then
+												GameTooltip:AddDoubleLine(
+														format("%s: ", skillName),
+														format("%s |cFF6b8df4+ %s|r / %s", skillRank, skillModifier, skillMaxRank),
+														1, 1, 1, rY, gY, bY
+												)
+										else
+												GameTooltip:AddDoubleLine(
+														format("%s: ", skillName),
+														format("%s / %s", skillRank, skillMaxRank),
+														1, 1, 1, rY, gY, bY
+												)
+										end
+								end
 						end
-					end
 				end
-
-				if isHeader then
-					if skillName == SecondarySkill then
-						hasSecondary = true
-					end
-				end
-			end
 		end
 	end
 

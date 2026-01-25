@@ -339,7 +339,7 @@ function LPS:BuildTimeTooltip()
 		end
 
 		-- рейды
-		if LPS_DB.tooltips.time.raids then
+		if LPS_DB.tooltips.time.raids and #raids > 0 then
 			GameTooltip:AddLine(L["Cooldown raids"], rY, gY, bY)
 			for _, v in ipairs(raids) do
 					GameTooltip:AddDoubleLine(v.left, v.right, r, g, b, rB, gB, bB)
@@ -347,7 +347,7 @@ function LPS:BuildTimeTooltip()
 			GameTooltip:AddLine(" ")
 		end
 
-		if LPS_DB.tooltips.time.dungeons then
+		if LPS_DB.tooltips.time.dungeons and #dungeons > 0 then
 			GameTooltip:AddLine(L["Cooldown dungeons"], rY, gY, bY)
 			for _, v in ipairs(dungeons) do
 					GameTooltip:AddDoubleLine(v.left, v.right, r, g, b, rB, gB, bB)
@@ -384,4 +384,3 @@ function LPS:BuildTimeTooltip()
 		GameTooltipTextRight1:SetTextColor(rT, gT, bT)
 	end
 end
-

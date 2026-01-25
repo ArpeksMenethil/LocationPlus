@@ -22,6 +22,7 @@ LPS_DB = LPS_DB or {} -- SavedVariables
 local addonVersion = C_AddOns.GetAddOnMetadata(addonName, "Version") or "?.?.?" -- Версия аддона
 local L = _G.ArpeksLPS.L
 
+
 ----------------------------------------------------------------
 -- Holder (главный фрейм)
 ----------------------------------------------------------------
@@ -39,12 +40,19 @@ LPS.holder:RegisterEvent("ADDON_LOADED")
 LPS.holder:SetScript("OnEvent", function(self, event, name)
 	if name ~= addonName then return end
 
-	LPS_DB = LPS:ApplyDefaults(LPS_DB or {}, LPS.defaults)
-	-- LPS_DB = LPS.defaults
-	LPS:ApplyHolderPosition() -- Применяем позицию holder
+	if LPS.Retail then
+		SetCVar("timeMgrUseMilitaryTime", 1)
+	end
 
-	print("|c"..LPS.addonTextColor..addonName.."|r "..L["loaded. Current version"]..": |c"..LPS.addonTextColor.."v"..addonVersion.."|r")
+	LPS_DB = LPS:ApplyDefaults(LPS_DB or {}, LPS.defaults)
+	LPS:ApplyHolderPosition()
+
+	print("|c"..LPS.addonTextColor..addonName.."|r "
+		..L["loaded. Current version"]..": |c"
+		..LPS.addonTextColor.."v"..addonVersion.."|r"
+	)
 end)
+
 
 ----------------------------------------------------------------
 -- Move Mode (перетаскивание)

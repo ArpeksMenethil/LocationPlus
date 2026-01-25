@@ -13,7 +13,7 @@ LPS.defaults = {
 	general = {
 		loginMessage = true,
 		coordsTimeUpdate = 0.5,
-		hideBlizzardZoneText = true
+		hideBlizzardZoneText = true,
 	},
 
 	show = {

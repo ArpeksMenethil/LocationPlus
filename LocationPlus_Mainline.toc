@@ -1,7 +1,7 @@
 ## Interface: 120000, 120001
 ## Title: |cff1784d1Location Plus|r
 ## Author: Dmitry
-## Version: 0.7
+## Version: 0.8
 ## Notes: Location, Coords and Reset Timers
 ## SavedVariables: LPS_DB
 ## Category-enUS: UI Overhaul

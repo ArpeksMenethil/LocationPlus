@@ -1,6 +1,6 @@
 --[[
-Name: LibTouristClassic-1.0
-Revision: $Rev: 248 $
+Name: LibTouristClassicBCA
+Revision: $Rev: 1 $
 Author(s): Odica, Mishikal1; based on LibTourist-3.0
 Documentation: https://www.wowace.com/projects/libtourist-1-0/pages/api-reference
 Git: https://repos.wowace.com/wow/libtourist-classic libtourist-classic
@@ -8,8 +8,8 @@ Description: A library to provide information about zones and instances for WoW 
 License: MIT
 ]]
 
-local MAJOR_VERSION = "LibTouristClassic-1.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 248 $"):match("(%d+)"))
+local MAJOR_VERSION = "LibTouristClassicBCA"
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 1 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
