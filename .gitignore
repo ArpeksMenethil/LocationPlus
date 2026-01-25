@@ -1,2 +1,4 @@
 .vscode
 .ignored
+*.zip
+*.rar

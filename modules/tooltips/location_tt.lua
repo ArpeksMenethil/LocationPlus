@@ -135,16 +135,21 @@ local function GetZoneDungeons(dungeon)
 	local low, high = Tourist:GetLevel(dungeon)
 	local r, g, b = Tourist:GetLevelColor(dungeon)
 	local groupSize = Tourist:GetInstanceGroupMinSize(dungeon)
-	local groupSizeStyle = (groupSize > 0 and format("|cFFFFFF00|r (%d", groupSize) or "")
+	local groupSizeStyle = (groupSize > 0 and format("|cFFFFFF00|r (%d)", groupSize) or "")
 	local name = dungeon
 
 	if PvPorRaidFilter(dungeon) == nil then return end
 
+	local levelText = (low == 0 and high == 0) and "" or ("|cff%02x%02x%02x%s|r"):format(
+		r * 255, g * 255, b * 255, (low == high and low or ("%d-%d"):format(low, high))
+	)
+
 	GameTooltip:AddDoubleLine(
-		name..groupSizeStyle..") "..GetDungeonCoords(dungeon)..PvPorRaidFilter(dungeon),
-		("|cff%02x%02x%02x%s|r"):format(r *255, g *255, b *255,(low == high and low or ("%d-%d"):format(low, high))),
+		name..groupSizeStyle.." "..GetDungeonCoords(dungeon)..PvPorRaidFilter(dungeon),
+		levelText,
 		1, 1, 1
 	)
+
 end
 
 -- Recommended Dungeons
