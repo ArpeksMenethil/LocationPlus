@@ -1,13 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
-local Tourist
-if LPS.Retail and LibStub:GetLibrary("LibTourist-3.0", true) then
-	Tourist = LibStub("LibTourist-3.0")
-elseif LibStub:GetLibrary("LibTouristClassicBCA", true) then
-	Tourist = LibStub("LibTouristClassicBCA")
-end
-
 -- Ждём, чтобы SavedVariables точно загрузились
 C_Timer.After(0, function()
 	if not LPS_DB then return end
@@ -15,9 +8,9 @@ C_Timer.After(0, function()
 	-------------------------------------------------
 	-- ФРЕЙМ ЛОКАЦИИ
 	-------------------------------------------------
-	local f = CreateFrame("Button", "LPS_Location", LPS.holder, "BackdropTemplate")
+	local f = CreateFrame("Button", "LPS_Location", LPS.frame.holder, "BackdropTemplate")
 	f:ClearAllPoints()
-	f:SetPoint("CENTER", LPS.holder, "CENTER")
+	f:SetPoint("CENTER", LPS.frame.holder, "CENTER")
 	f:EnableMouse(true)
 
 	-------------------------------------------------
@@ -55,7 +48,7 @@ C_Timer.After(0, function()
 	-------------------------------------------------
 	local function Update()
 		local mapID = C_Map.GetBestMapForUnit("player")
-		local zone = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;
+		local zone = LPS:GetMapNameByIDAlt(mapID) or UNKNOWN;
 
 		local sub  = GetSubZoneText()
 		local text = (sub ~= "" and sub or zone) or ""
@@ -107,6 +100,8 @@ C_Timer.After(0, function()
 
 	f:SetScript("OnEvent", function(self)
 		Update()
+		LPS:UpdateMainFrameSize()
+
 		if self.updateTooltip then
 			self.updateTooltip()
 		end
@@ -121,7 +116,7 @@ C_Timer.After(0, function()
 		if button == "LeftButton" then
 			if IsShiftKeyDown() then
 				-- Shift + ЛКМ
-				local zone = GetZoneText()			-- основная зона
+				local zone = GetZoneText()		    	-- основная зона
 				local subZone = GetSubZoneText()	  -- подзона
 				local x, y = LPS:GetPlayerCoords()  -- координаты
 				local msg = string.format("%s: %s (%.2f %.2f)", zone, subZone, x*100, y*100)
@@ -141,5 +136,5 @@ C_Timer.After(0, function()
 	-------------------------------------------------
 	-- EXPORT
 	-------------------------------------------------
-	LPS.locationFrame = f
+	LPS.frame.location = f
 end)

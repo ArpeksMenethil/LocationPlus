@@ -6,12 +6,11 @@ if not LPS then return end
 C_Timer.After(0.1, function()
 	if not LPS_DB then return end
 
-
 	-- Фрейм для времени
-	local f = CreateFrame("Button", "LPS_Time", LPS.holder, "BackdropTemplate")
+	local f = CreateFrame("Button", "LPS_Time", LPS.frame.holder, "BackdropTemplate")
 	f:SetSize(100, 22)
 	f:ClearAllPoints()
-	f:SetPoint("LEFT", LPS.locationFrame, "RIGHT", 5, 0)
+	f:SetPoint("LEFT", LPS.frame.location, "RIGHT", 5, 0)
 
 	local FONT_SIZE = LPS_DB.settings.fontSize or 12
 
@@ -85,8 +84,5 @@ C_Timer.After(0.1, function()
 		end
 	end)
 
-	LPS.timeFrame = f
-
-
-
+	LPS.frame.time = f
 end)

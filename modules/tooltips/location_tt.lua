@@ -1,6 +1,5 @@
 local MyAddon = _G.ArpeksLPS
 local LPS = MyAddon.LPS
-local L = MyAddon.L
 LPS_DB = LPS_DB or {}
 
 local Tourist
@@ -185,16 +184,16 @@ function LPS:BuildLocationTooltip()
 	GameTooltip:ClearLines()
 
 	-- Zone
-	GameTooltip:AddDoubleLine(L["Zone"]..": ", zoneText, r, g, b)
+	GameTooltip:AddDoubleLine(LPS:L("Zone")..": ", zoneText, r, g, b)
 
 	-- Continent
-	GameTooltip:AddDoubleLine(L["Continent"]..": ", Tourist:GetContinent(zoneText), r, g, b)
+	GameTooltip:AddDoubleLine(LPS:L("Continent")..": ", Tourist:GetContinent(zoneText), r, g, b)
 
 	-- Home
-	GameTooltip:AddDoubleLine(L["Home"]..": ", GetBindLocation(), r, g, b, 0.41, 0.8, 0.94)
+	GameTooltip:AddDoubleLine(LPS:L("Home")..": ", GetBindLocation(), r, g, b, 0.41, 0.8, 0.94)
 
 	-- Status
-	GameTooltip:AddDoubleLine(L["Status"]..": ", LPS:GetZoneStatus(), r, g, b)
+	GameTooltip:AddDoubleLine(LPS:L("Status")..": ", LPS:GetZoneStatus(), r, g, b)
 
 	if LPS_DB.tooltips.location.level or LPS_DB.tooltips.location.battlePets or LPS_DB.tooltips.location.fish then
 		GameTooltip:AddLine(" ")
@@ -220,14 +219,14 @@ function LPS:BuildLocationTooltip()
 	if LPS.Retail and LPS_DB.tooltips.location.battlePets then
 		local checkbpet = LPS:GetBattlePetLvl(zoneText)
 		if checkbpet then
-				GameTooltip:AddDoubleLine(L["Battle Pet level"].. ": ", checkbpet.." "..PET_ICON, r, g, b)
+				GameTooltip:AddDoubleLine(LPS:L("Battle Pet level").. ": ", checkbpet.." "..PET_ICON, r, g, b)
 		end
 	end
 
 	-- Recommended zones
 	if LPS_DB.tooltips.location.recomZone then
 		GameTooltip:AddLine(" ")
-		GameTooltip:AddLine(L["Recommended Zones"]..": ", rY, gY, bY)
+		GameTooltip:AddLine(LPS:L("Recommended Zones")..": ", rY, gY, bY)
 
 		for zone in Tourist:IterateRecommendedZones() do
 			GetRecomZones(zone);
@@ -237,7 +236,7 @@ function LPS:BuildLocationTooltip()
 	-- Instances in the zone
 	if LPS_DB.tooltips.location.zoneDungeon and Tourist:DoesZoneHaveInstances(zoneText) then
 		GameTooltip:AddLine(" ")
-		GameTooltip:AddLine(DUNGEONS.." "..L["in"].." "..zoneText..": ", rY, gY, bY)
+		GameTooltip:AddLine(DUNGEONS.." "..LPS:L("in").." "..zoneText..": ", rY, gY, bY)
 
 		for dungeon in Tourist:IterateZoneInstances(zoneText) do
 			GetZoneDungeons(dungeon);
@@ -248,7 +247,7 @@ function LPS:BuildLocationTooltip()
 	local level = UnitLevel('player')
 	if LPS_DB.tooltips.location.recomDungeon and Tourist:HasRecommendedInstances() and level >= 15 then
 		GameTooltip:AddLine(" ")
-		GameTooltip:AddLine(L["Recommended Dungeons"]..": ", rY, gY, bY)
+		GameTooltip:AddLine(LPS:L("Recommended Dungeons")..": ", rY, gY, bY)
 
 		for dungeon in Tourist:IterateRecommendedInstances() do
 			GetRecomDungeons(dungeon);
@@ -291,49 +290,64 @@ function LPS:BuildLocationTooltip()
 		end
 	else
 		if LPS_DB.tooltips.location.proffession then
-				GameTooltip:AddLine(" ")
-				GameTooltip:AddLine(TRADE_SKILLS..":", rY, gY, bY)
+			local lines = {}
 
-				-- Список профессий, которые нужно показывать
-				local professions = {
-						L["Alchemy"], L["Blacksmithing"], L["Enchanting"], L["Engineering"],
-						L["Herbalism"], L["Leatherworking"], L["Mining"], L["Skinning"], L["Tailoring"],
-						L["Cooking"], L["First Aid"], L["Fishing"], L["Jewelcrafting"]
-				}
+			-- Список профессий, которые нужно показывать
+			local professions = {
+				-- Primary Professions
+				LPS:L("Alchemy"), LPS:L("Blacksmithing"), LPS:L("Enchanting"), LPS:L("Engineering"), LPS:L("Jewelcrafting"),
+				LPS:L("Herbalism"), LPS:L("Leatherworking"), LPS:L("Mining"), LPS:L("Skinning"), LPS:L("Tailoring"),
+				-- Secondary Professions
+				LPS:L("Cooking"), LPS:L("First Aid"), LPS:L("Fishing")
+			}
 
-				local professionsSet = {}
-				for _, name in ipairs(professions) do
-						professionsSet[name] = true
-				end
+			local professionsSet = {}
+			for _, name in ipairs(professions) do
+				professionsSet[name] = true
+			end
 
-				for skillIndex = 1, GetNumSkillLines() do
-						local skillName, isHeader, _, skillRank, _, skillModifier, skillMaxRank, isAbandonable = GetSkillLineInfo(skillIndex)
+			for skillIndex = 1, GetNumSkillLines() do
+				local skillName, isHeader, _, skillRank, _, skillModifier, skillMaxRank =
+					GetSkillLineInfo(skillIndex)
 
-						if skillName and not isHeader and professionsSet[skillName] then
-								if skillRank < skillMaxRank or (not LPS_DB.tooltips.location.proffessionHideMaxLevel) then
-										if skillModifier and skillModifier > 0 then
-												GameTooltip:AddDoubleLine(
-														format("%s: ", skillName),
-														format("%s |cFF6b8df4+ %s|r / %s", skillRank, skillModifier, skillMaxRank),
-														1, 1, 1, rY, gY, bY
-												)
-										else
-												GameTooltip:AddDoubleLine(
-														format("%s: ", skillName),
-														format("%s / %s", skillRank, skillMaxRank),
-														1, 1, 1, rY, gY, bY
-												)
-										end
-								end
+				if skillName and not isHeader and professionsSet[skillName] then
+					if skillRank < skillMaxRank or not LPS_DB.tooltips.location.proffessionHideMaxLevel then
+						local rightText
+
+						if skillModifier and skillModifier > 0 then
+							rightText = format(
+								"%s |cFF6b8df4+ %s|r / %s",
+								skillRank, skillModifier, skillMaxRank
+							)
+						else
+							rightText = format("%s / %s", skillRank, skillMaxRank)
 						end
+
+						table.insert(lines, { skillName .. ":", rightText })
+					end
 				end
+			end
+
+			-- 🔑 выводим только если есть профессии
+			if #lines > 0 then
+				GameTooltip:AddLine(" ")
+				GameTooltip:AddLine(TRADE_SKILLS .. ":", rY, gY, bY)
+
+				for _, line in ipairs(lines) do
+					GameTooltip:AddDoubleLine(
+						line[1], line[2],
+						1, 1, 1, rY, gY, bY
+					)
+				end
+			end
 		end
+
 	end
 
 	GameTooltip:AddLine(" ")
-	GameTooltip:AddDoubleLine(L["LMB"], L["Toggle WorldMap"], rB, gB, bB, rB, gB, bB)
-	-- GameTooltip:AddDoubleLine(L["RMB"], L["Toggle Configuration"], rB, gB, bB, rB, gB, bB)
-	GameTooltip:AddDoubleLine(L["Shift+LMB"], L["Send the coordinates to the chat"], rB, gB, bB, rB, gB, bB)
+	GameTooltip:AddDoubleLine(LPS:L("LMB"), LPS:L("Toggle WorldMap"), rB, gB, bB, rB, gB, bB)
+	-- GameTooltip:AddDoubleLine(LPS:L("RMB"), LPS:L("Toggle Configuration"), rB, gB, bB, rB, gB, bB)
+	GameTooltip:AddDoubleLine(LPS:L("Shift+LMB"), LPS:L("Send the coordinates to the chat"), rB, gB, bB, rB, gB, bB)
 
 
 	if GameTooltipTextLeft1 then

@@ -8,9 +8,9 @@ local L = _G.ArpeksLPS.L
 ----------------------------------------------------------------
 function LPS_OnAddonCompartmentClick(addonName, buttonName, menuButtonFrame)
 	if buttonName == "LeftButton" then
-		LPS:ToggleMove()
+		LPS:ToggleMoveMode()
 	elseif buttonName == "RightButton" then
-		LPS:ResetPosition()
+		LPS:ResetFramePosition()
 	end
 end
 

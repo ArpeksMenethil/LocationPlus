@@ -9,10 +9,10 @@ C_Timer.After(0.1, function()
 	local FONT_SIZE = LPS_DB.settings.fontSize or 12
 
 	-- Создаём фрейм координат
-	local f = CreateFrame("Button", "LPS_Coords", LPS.holder, "BackdropTemplate")
+	local f = CreateFrame("Button", "LPS_Coords", LPS.frame.holder, "BackdropTemplate")
 	f:SetSize(100, 22)
 	f:ClearAllPoints()
-	f:SetPoint("RIGHT", LPS.locationFrame, "LEFT", -5, 0)
+	f:SetPoint("RIGHT", LPS.frame.location, "LEFT", -5, 0)
 
 	-- backdrop
 	f:SetBackdrop({
@@ -49,8 +49,5 @@ C_Timer.After(0.1, function()
 		end
 	end)
 
-	LPS.coordsFrame = f
-
-
-
+	LPS.frame.coords = f
 end)
