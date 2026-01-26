@@ -1,88 +1,48 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
+function LPS:CreateTimeFrame()
+	if not LPS_DB or not LPS.frame.holder then return end
 
--- Ждём, чтобы SavedVariables точно загрузились
-C_Timer.After(0.1, function()
-	if not LPS_DB then return end
 
-	-- Фрейм для времени
-	local f = CreateFrame("Button", "LPS_Time", LPS.frame.holder, "BackdropTemplate")
-	f:SetSize(100, 22)
-	f:ClearAllPoints()
-	f:SetPoint("LEFT", LPS.frame.location, "RIGHT", 5, 0)
-
-	local FONT_SIZE = LPS_DB.settings.fontSize or 12
-
-	-- стиль панели
-	f:SetBackdrop({
-		bgFile   = "Interface\\Buttons\\WHITE8x8",
-		edgeFile = "Interface\\Buttons\\WHITE8x8",
-		tile	 = false,
-		edgeSize = LPS_DB.settings.borderSize or 2,
-		insets   = { left = 1, right = 1, top = 1, bottom = 1 },
-	})
-	f:SetBackdropColor(LPS:GetColor("bg"))
-	f:SetBackdropBorderColor(LPS:GetColor("border"))
-	f:EnableMouse(true)
-	f:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-
-	f.text = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	f.text:SetAllPoints()
-	f.text:SetJustifyH("CENTER")
-	f.text:SetFontHeight(FONT_SIZE)
-
-	-- Флаг для тултипа времени
-	f.isTimeTooltip = true
-
-	-- обновление времени каждую секунду
-	local lastDisplay = ""
-	C_Timer.NewTicker(1, function()
-		local newText = LPS:GetFormattedGameTime()
-
-		if newText ~= lastDisplay then
-			lastDisplay = newText
-			f.text:SetText(newText)
-
-			-- если тултип открыт — обновляем его
-			if GameTooltip:IsVisible() and GameTooltip.isTimeTooltip then
-				LPS:BuildTimeTooltip()
+	---@type LPSFrameParams
+	local params = {
+		name = "LPS_Time",
+		frameType = "Button",
+		parent = LPS.frame.location,
+		anchor = {"LEFT", LPS.frame.location, "RIGHT", 5, 0},
+		size = {100,22},
+		fontSize = LPS_DB.settings.fontSize or 12,
+		bgColor = {LPS:GetColor("bg")},
+		borderColor = {LPS:GetColor("border")},
+		textAllPoints = true,
+		updateFunc = function(f)
+			if f.text then
+				local newText = LPS:GetFormattedGameTime()
+				f.text:SetText(newText)
 			end
-		end
-	end)
-
-
-
-	-- === TOOLTIP ===
-	f:SetScript("OnEnter", function(self)
-		if not LPS_DB.tooltips.time.enable then return end
-
-		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
-		GameTooltip:ClearLines()
-		LPS:BuildTimeTooltip()
-		GameTooltip.isTimeTooltip = true  -- отмечаем, что это тултип времени
-		GameTooltip:Show()
-	end)
-
-	f:SetScript("OnLeave", function(self)
-		GameTooltip_Hide()
-		GameTooltip.isTimeTooltip = false -- сбрасываем флаг
-	end)
-
-	f:SetScript("OnClick", function(self, button)
-		if LPS.Retail then
-			if button == "LeftButton" then
-				ToggleTimeManager() -- открыть часы
-			elseif button == "RightButton" then
-				ToggleCalendar() -- открыть календарь
+		end,
+		updateTicker = {interval = 1},
+		registerClicks = {"LeftButtonUp", "RightButtonUp"},
+		onClick = function(self, button)
+			if LPS.Retail then
+				if button == "LeftButton" then ToggleTimeManager()
+				elseif button == "RightButton" then ToggleCalendar() end
+			elseif LPS.TBC then
+				if button == "LeftButton" then
+					TimeManagerClockButton_OnClick(TimeManagerClockButton)
+				end
 			end
-		end
-		if LPS.TBC then
-			if button == "LeftButton" then
-				TimeManagerClockButton_OnClick(TimeManagerClockButton)
-			end
-		end
-	end)
+		end,
+		tooltipFunc = function(self)
+			if not LPS_DB.tooltips.time.enable then return end
+			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+			GameTooltip:ClearLines()
+			LPS:BuildTimeTooltip()
+			GameTooltip.isTimeTooltip = true
+			GameTooltip:Show()
+		end,
+	}
 
-	LPS.frame.time = f
-end)
+	return LPS:CreateFrame(params)
+end

@@ -1,53 +1,40 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
--- Ждём, чтобы SavedVariables точно загрузились
-C_Timer.After(0.1, function()
-	if not LPS_DB then return end
+function LPS:CreateCoordsFrame()
+	if not LPS_DB or not LPS.frame.holder then return end
 
-	-- Дефолтные значения, если их нет
-	local FONT_SIZE = LPS_DB.settings.fontSize or 12
+	---@type LPSFrameParams
+	local params = {
+		name = "LPS_Coords",
+		frameType = "Button",
+		parent = LPS.frame.location,
+		anchor = {"RIGHT", LPS.frame.location, "LEFT", -5, 0},
+		size = {100,22},
+		padding = {10,6},
+		fontSize = LPS_DB.settings.fontSize or 12,
+		bgColor = {LPS:GetColor("bg")},
+		borderColor = {LPS:GetColor("border")},
+		textAllPoints = true,
+		updateFunc = function(f)
+			local x, y = LPS:GetPlayerCoords()
+			if f.text then
+				if x and y then
+					f.text:SetText(string.format("|cFFFFFFFF%.2f|r | |cFFFFFFFF%.2f|r", x*100, y*100))
+				else
+					f.text:SetText("|cFFFFFFFFНЕТ|r")
+				end
+			end
+		end,
+		updateTicker = {interval = 0.2},
+		onClick = function(self, button)
+			if button == "LeftButton" then
+				ToggleWorldMap()
+				WorldMapFrame:ClearAllPoints()
+				WorldMapFrame:SetPoint("CENTER", UIParent, "CENTER")
+			end
+		end,
+	}
 
-	-- Создаём фрейм координат
-	local f = CreateFrame("Button", "LPS_Coords", LPS.frame.holder, "BackdropTemplate")
-	f:SetSize(100, 22)
-	f:ClearAllPoints()
-	f:SetPoint("RIGHT", LPS.frame.location, "LEFT", -5, 0)
-
-	-- backdrop
-	f:SetBackdrop({
-		bgFile = "Interface\\Buttons\\WHITE8x8",
-		edgeFile = "Interface\\Buttons\\WHITE8x8",
-		tile = false,
-		edgeSize = LPS_DB.settings.borderSize or 2,
-		insets = { left = 1, right = 1, top = 1, bottom = 1 },
-	})
-	f:SetBackdropColor(LPS:GetColor("bg"))
-	f:SetBackdropBorderColor(LPS:GetColor("border"))
-
-	-- текст
-	f.text = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	f.text:SetAllPoints()
-	f.text:SetJustifyH("CENTER")
-	f.text:SetFont(GameFontNormalSmall:GetFont(), FONT_SIZE)
-
-	-- обновление координат
-	C_Timer.NewTicker(0.2, function()
-		local x, y = LPS:GetPlayerCoords()
-		if x and y then
-			f.text:SetText(string.format("|cFFFFFFFF%.2f|r | |cFFFFFFFF%.2f|r", x*100, y*100))
-		else
-			f.text:SetText("|cFFFFFFFFНЕТ|r")
-		end
-	end)
-
-	f:SetScript("OnClick", function(self, button)
-		if button == "LeftButton" then
-			ToggleWorldMap()
-			WorldMapFrame:ClearAllPoints()
-			WorldMapFrame:SetPoint("CENTER", UIParent, "CENTER")
-		end
-	end)
-
-	LPS.frame.coords = f
-end)
+	return LPS:CreateFrame(params)
+end

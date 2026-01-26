@@ -5,7 +5,7 @@ _G.ArpeksLPS.LPS = LPS or {}
 _G.ArpeksLPS.L = setmetatable({}, {
 	__index = function(t, key)
 		if LPS.DEBUG then
-			print("|c"..LPS.addonTextColor.."LocationPlus|r: Missing locale:", key)
+			print("|c"..LPS.addonTextColor.."LocationPlus|r: Missing locale: |cFFE24444"..key.."|r")
 		end
 		return key
 	end

@@ -20,50 +20,66 @@ function LPS:CreateGuideLines()
 	return vLine, hLine
 end
 
---- Создаёт кнопку/фрейм с общими настройками
----@param params table Параметры фрейма
----@field name string Имя фрейма
----@field parent frame Родительский фрейм
----@field anchor table {point, relativeTo, relativePoint, x, y} Точка привязки
----@field size table {width, height} Размер фрейма
----@field padding table {x, y}? Отступы для авторазмера текста (необязательно)
----@field fontSize number? Размер шрифта (необязательно)
+-- types.lua
+---@class LPSFrameParams
+---@field name string Имя создаваемого фрейма (обязательное)
+---@field parent table Родительский фрейм (обязательное)
+---@field template? `Tp` | Template Шаблон фрейма. По умолчанию "BackdropTemplate"
+---@field anchor table {point, relativeTo, relativePoint, x, y} Точка привязки фрейма
+---@field size table? {width, height} Размер фрейма. Если не указан — включается авторазмер по тексту
+---@field padding table? {x, y} Отступы для авторазмера текста. Используется только если size не указан
+---@field fontSize number? Размер шрифта текста
 ---@field backdrop table? Настройки Backdrop (bgFile, edgeFile, edgeSize, insets)
----@field bgColor table? Цвет фона {r,g,b,a} (необязательно)
----@field borderColor table? Цвет границы {r,g,b,a} (необязательно)
----@field updateFunc fun(f:frame)? Функция обновления текста
----@field updateTicker table? {interval = number} Тикер для updateFunc
----@field updateEvent table? {events = {"EVENT1", "EVENT2"}} События для updateFunc
----@field onClick fun(self:frame, button:string)? Функция клика
----@field registerClicks table? {"LeftButtonUp", "RightButtonUp"} Кнопки мыши для клика
----@field tooltipFunc fun(self:frame)? Функция тултипа (OnEnter)
----@return frame Созданный фрейм
-function LPS:CreateFrameButton(params)
-	local f = CreateFrame("Button", params.name, params.parent or UIParent, "BackdropTemplate")
+---@field bgColor table? {r,g,b,a} Цвет фона фрейма
+---@field borderColor table? {r,g,b,a} Цвет границы фрейма
+---@field frameType? string Тип фрейма (например "Frame", "Button"). По умолчанию "Frame"
+---@field updateFunc fun(f:table)? Функция обновления текста/состояния фрейма. Вызывается тикером или событием
+---@field updateTicker table? {interval = number} Тикер для updateFunc (в секундах)
+---@field updateEvent table? {events = {"EVENT1","EVENT2"}} События для updateFunc
+---@field onClick fun(self:table, button:string)? Функция при клике мышью
+---@field registerClicks table? {"LeftButtonUp","RightButtonUp"} Кнопки мыши для обработки клика
+---@field tooltipFunc fun(self:table)? Функция тултипа (OnEnter)
+---@field textAllPoints boolean? Если true, текст занимает весь фрейм (SetAllPoints). По умолчанию false
+---@return table Созданный фрейм с возможным полем `.text` для текста
+
+--- Универсальная функция для создания фрейма
+---@param params LPSFrameParams
+---@return table f Созданный фрейм
+function LPS:CreateFrame(params)
+	if not params.parent then return end
+
+	local f = CreateFrame(params.frameType or "Frame", params.name, params.parent, params.template or "BackdropTemplate")
 	f:ClearAllPoints()
 	f:SetPoint(unpack(params.anchor or {"CENTER", f:GetParent(), "CENTER", 0, 0}))
 
-	-- Размер
+	-- Размер (фиксированный)
 	if params.size then
 		f:SetSize(params.size[1], params.size[2])
 	end
 
 	-- Backdrop
-	local backdrop = params.backdrop or {
-		bgFile   = "Interface\\Buttons\\WHITE8x8",
-		edgeFile = "Interface\\Buttons\\WHITE8x8",
+	f:SetBackdrop({
+		bgFile   = (params.backdrop and params.backdrop.bgFile) or "Interface\\Buttons\\WHITE8x8",
+		edgeFile = (params.backdrop and params.backdrop.edgeFile) or "Interface\\Buttons\\WHITE8x8",
 		tile     = false,
-		edgeSize = params.borderSize or 2,
-		insets   = { left=1, right=1, top=1, bottom=1 },
-	}
-	f:SetBackdrop(backdrop)
-	f:SetBackdropColor(unpack(params.bgColor or {LPS:GetColor("bg")} or {1,1,1,0}))
-	f:SetBackdropBorderColor(unpack(params.borderColor or {LPS:GetColor("border")} or {0,0,0,0}))
+		edgeSize = (params.backdrop and params.backdrop.edgeSize) or 2,
+		insets   = (params.backdrop and params.backdrop.insets) or {left=1,right=1,top=1,bottom=1},
+	})
+	if params.bgColor then
+		f:SetBackdropColor(unpack(params.bgColor or {LPS:GetColor("bg")} or {1,1,1,1}))
+	end
+	if params.borderColor then
+		f:SetBackdropBorderColor(unpack(params.borderColor or {LPS:GetColor("border")} or {0,0,0,1}))
+	end
 
-	-- Текст (если есть шрифт)
+	-- Текст
 	if params.fontSize then
 		f.text = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-		f.text:SetAllPoints()
+		if params.textAllPoints then
+			f.text:SetAllPoints()
+		else
+			f.text:SetPoint("CENTER")
+		end
 		f.text:SetJustifyH("CENTER")
 		f.text:SetFont(GameFontNormalSmall:GetFont(), params.fontSize)
 	end
@@ -77,11 +93,26 @@ function LPS:CreateFrameButton(params)
 				local w = f.text:GetStringWidth()
 				local h = f.text:GetStringHeight()
 				f:SetSize(math.max(60, w + params.padding[1]*2), math.max(26, h + params.padding[2]*2))
+				LPS:UpdateFrameSize()
 			end
 		end
 	end
 
-	-- Скрипты клика
+	-- События
+	if params.updateFunc then
+		if params.updateTicker then
+			C_Timer.NewTicker(params.updateTicker.interval, function() params.updateFunc(f) end)
+		elseif params.updateEvent then
+			for _, evt in ipairs(params.updateEvent.events) do
+				f:RegisterEvent(evt)
+			end
+			f:SetScript("OnEvent", function() params.updateFunc(f) end)
+		else
+			params.updateFunc(f)
+		end
+	end
+
+	-- OnClick
 	if params.onClick then
 		f:EnableMouse(true)
 		if params.registerClicks then
@@ -92,33 +123,11 @@ function LPS:CreateFrameButton(params)
 		f:SetScript("OnClick", params.onClick)
 	end
 
-	-- Тултип
+	-- Tooltip
 	if params.tooltipFunc then
 		f:EnableMouse(true)
 		f:SetScript("OnEnter", params.tooltipFunc)
 		f:SetScript("OnLeave", function() GameTooltip_Hide() end)
-	end
-
-	-- Обновление
-	if params.updateFunc then
-		if params.updateTicker then
-			C_Timer.NewTicker(params.updateTicker.interval, function() params.updateFunc(f) end)
-		elseif params.updateEvent then -- Обновление через события
-			for _, evt in ipairs(params.updateEvent.events) do
-				f:RegisterEvent(evt)
-			end
-			f:SetScript("OnEvent", function(self, event, ...)
-				if params.updateFunc then
-					params.updateFunc(f, event, ...)
-				end
-			end)
-			-- сразу вызвать один раз после создания, чтобы текст был виден
-			if params.updateFunc then
-				C_Timer.After(0, function() params.updateFunc(f, "INITIAL") end)
-			end
-		else
-			params.updateFunc(f)
-		end
 	end
 
 	return f

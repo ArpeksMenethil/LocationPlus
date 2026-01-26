@@ -36,8 +36,9 @@ L["MMB"] = true
 L["Shift+LMB"] = true
 
 L["The frame position is reset"] = true
+L["In the future"] = true
 
--- Профессии
+-- Professions
 L["Alchemy"]        = true
 L["Blacksmithing"]  = true
 L["Enchanting"]     = true

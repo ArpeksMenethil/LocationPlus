@@ -1,140 +1,63 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
--- Ждём, чтобы SavedVariables точно загрузились
-C_Timer.After(0, function()
-	if not LPS_DB then return end
+function LPS:CreateLocationFrame()
+	if not LPS_DB or not LPS.frame.holder then return end
 
-	-------------------------------------------------
-	-- ФРЕЙМ ЛОКАЦИИ
-	-------------------------------------------------
-	local f = CreateFrame("Button", "LPS_Location", LPS.frame.holder, "BackdropTemplate")
-	f:ClearAllPoints()
-	f:SetPoint("CENTER", LPS.frame.holder, "CENTER")
-	f:EnableMouse(true)
+	---@type LPSFrameParams
+	local params = {
+		name = "LPS_Location",
+		frameType = "Button",
+		parent = LPS.frame.holder,
+		anchor = {"CENTER", LPS.frame.holder, "CENTER", 0, 0},
+		padding = {10,6},
+		fontSize = LPS_DB.settings.fontSize or 12,
+		bgColor = {LPS:GetColor("bg")},
+		borderColor = {LPS:GetColor("border")},
+		updateFunc = function(f)
+			local mapID = C_Map.GetBestMapForUnit("player")
+			local zone = LPS:GetMapNameByIDAlt(mapID) or UNKNOWN
+			local sub = GetSubZoneText()
+			local text = (sub ~= "" and sub or zone) or ""
+			local zoneLevel = LPS:GetLevelRange(zone)
 
-	-------------------------------------------------
-	-- СТИЛЬ ПАНЕЛИ
-	-------------------------------------------------
-	local FONT_SIZE = LPS_DB.settings.fontSize or 12
-
-	-- отступы панели
-	local PADDING_X = 10
-	local PADDING_Y = 6
-	local MIN_WIDTH = 60
-	local MIN_HEIGHT = 26
-
-	f:SetBackdrop({
-		bgFile   = "Interface\\Buttons\\WHITE8x8",
-		edgeFile = "Interface\\Buttons\\WHITE8x8",
-		tile	 = false,
-		edgeSize = LPS_DB.settings.borderSize or 2,
-		insets   = { left = 1, right = 1, top = 1, bottom = 1 },
-	})
-
-	f:SetBackdropColor(LPS:GetColor("bg"))
-	f:SetBackdropBorderColor(LPS:GetColor("border"))
-
-	-------------------------------------------------
-	-- ТЕКСТ
-	-------------------------------------------------
-	f.text = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	f.text:SetPoint("CENTER")
-	f.text:SetJustifyH("CENTER")
-	f.text:SetFontHeight(FONT_SIZE)
-
-	-------------------------------------------------
-	-- ОБНОВЛЕНИЕ ТЕКСТА + РАЗМЕРА
-	-------------------------------------------------
-	local function Update()
-		local mapID = C_Map.GetBestMapForUnit("player")
-		local zone = LPS:GetMapNameByIDAlt(mapID) or UNKNOWN;
-
-		local sub  = GetSubZoneText()
-		local text = (sub ~= "" and sub or zone) or ""
-		local zoneLevel = LPS:GetLevelRange(zone)
-
-		if zoneLevel then
-			f.text:SetText(format("%s (%s)", text, zoneLevel))
-		else
-			f.text:SetText(text)
-		end
-		f.text:SetTextColor(LPS:GetZoneStatus(true))
-
-		-- авторазмер
-		local w = f.text:GetStringWidth()
-		local h = f.text:GetStringHeight()
-
-		f:SetSize(
-			math.max(MIN_WIDTH,  w + PADDING_X * 2),
-			math.max(MIN_HEIGHT, h + PADDING_Y * 2)
-		)
-	end
-
-	-------------------------------------------------
-	-- TOOLTIP (СТАНДАРТНЫЙ BLIZZARD)
-	-------------------------------------------------
-	f:SetScript("OnEnter", function(self)
-		if not LPS_DB.tooltips.location.enable then return end
-
-		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
-		GameTooltip:ClearLines()
-		LPS:BuildLocationTooltip(GameTooltip)
-		GameTooltip:Show()
-
-		self.updateTooltip = function()
-			if GameTooltip:IsOwned(self) then
-				GameTooltip:ClearLines()
-				LPS:BuildLocationTooltip(GameTooltip)
-				GameTooltip:Show()
+			if f.text then
+				if zoneLevel then
+					f.text:SetText(format("%s (%s)", text, zoneLevel))
+				else
+					f.text:SetText(text)
+				end
+				f.text:SetTextColor(LPS:GetZoneStatus(true))
 			end
-		end
-	end)
-
-	-------------------------------------------------
-	-- СОБЫТИЯ СМЕНЫ ЗОНЫ
-	-------------------------------------------------
-	f:RegisterEvent("ZONE_CHANGED")
-	f:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-	f:RegisterEvent("ZONE_CHANGED_INDOORS")
-
-	f:SetScript("OnEvent", function(self)
-		Update()
-		LPS:UpdateMainFrameSize()
-
-		if self.updateTooltip then
-			self.updateTooltip()
-		end
-	end)
-
-	f:SetScript("OnLeave", function(self)
-		GameTooltip_Hide()
-		self.updateTooltip = nil
-	end)
-
-	f:SetScript("OnClick", function(self, button)
-		if button == "LeftButton" then
-			if IsShiftKeyDown() then
-				-- Shift + ЛКМ
-				local zone = GetZoneText()		    	-- основная зона
-				local subZone = GetSubZoneText()	  -- подзона
-				local x, y = LPS:GetPlayerCoords()  -- координаты
-				local msg = string.format("%s: %s (%.2f %.2f)", zone, subZone, x*100, y*100)
-
-				ChatEdit_ActivateChat(ChatEdit_GetLastActiveWindow())
-				ChatEdit_InsertLink(msg)
-			else
-				ToggleWorldMap()
-				WorldMapFrame:ClearAllPoints()
-				WorldMapFrame:SetPoint("CENTER", UIParent, "CENTER")
+		end,
+		updateEvent = {events = {"ZONE_CHANGED","ZONE_CHANGED_NEW_AREA","ZONE_CHANGED_INDOORS","PLAYER_ENTERING_WORLD"}},
+		registerClicks = {"LeftButtonUp", "RightButtonUp"},
+		onClick = function(self, button)
+			if button == "LeftButton" then
+				if IsShiftKeyDown() then
+					local zone = GetZoneText()
+					local subZone = GetSubZoneText()
+					local x,y = LPS:GetPlayerCoords()
+					local msg = string.format("%s: %s (%.2f %.2f)", zone, subZone, x*100, y*100)
+					ChatEdit_ActivateChat(ChatEdit_GetLastActiveWindow())
+					ChatEdit_InsertLink(msg)
+				else
+					ToggleWorldMap()
+					WorldMapFrame:ClearAllPoints()
+					WorldMapFrame:SetPoint("CENTER", UIParent, "CENTER")
+				end
+			elseif button == "RightButton" then
+				LPS:Print("In the future")
 			end
-		end
-	end)
+		end,
+		tooltipFunc = function(self)
+			if not LPS_DB.tooltips.location.enable then return end
+			GameTooltip:SetOwner(self,"ANCHOR_BOTTOM")
+			GameTooltip:ClearLines()
+			LPS:BuildLocationTooltip(GameTooltip)
+			GameTooltip:Show()
+		end,
+	}
 
-	Update()
-
-	-------------------------------------------------
-	-- EXPORT
-	-------------------------------------------------
-	LPS.frame.location = f
-end)
+	return LPS:CreateFrame(params)
+end

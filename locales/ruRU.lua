@@ -36,6 +36,7 @@ L["MMB"] = "СКМ"
 L["Shift+LMB"] = "Shift+ЛКМ"
 
 L["The frame position is reset"] = "положение сброшено"
+L["In the future"] = "В будущем"
 
 -- Профессии
 L["Alchemy"]        = "Алхимия"
