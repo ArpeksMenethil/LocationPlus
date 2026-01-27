@@ -20,9 +20,17 @@ function LPS:L(key)
 	return val == true and key or val
 end
 
+function LPS:GetDB()
+	if LPS.db and LPS.db.profile then
+		return LPS.db.profile
+	end
+	return LPS_DB
+end
+
 -- Сбрасывает позицию основного фрейма к значениям по умолчанию
 function LPS:ResetFramePosition()
-	LPS_DB.position = { point = "TOP", relativePoint = "TOP", x = 0, y = -10 }
+	local db = LPS:GetDB()
+	db.position = { point = "TOP", relativePoint = "TOP", x = 0, y = -10 }
 	LPS:ApplyHolderPosition()
 	LPS:Print("The frame position is reset")
 end
@@ -88,10 +96,11 @@ end
 
 -- Возвращает отформатированное игровое время с учетом CVar (12/24ч, локальное/серверное)
 function LPS:GetFormattedGameTime()
+	local db = LPS:GetDB()
 	local is24h = GetCVarBool("timeMgrUseMilitaryTime")
 	local useLocal = GetCVarBool("timeMgrUseLocalTime")
 
-	local h, m
+	local h, m, s
 	if useLocal then
 		h = tonumber(date("%H"))
 		m = tonumber(date("%M"))
@@ -104,14 +113,14 @@ function LPS:GetFormattedGameTime()
 		local suffix = (h >= 12) and "PM" or "AM"
 		h = h % 12
 		if h == 0 then h = 12 end
-		if LPS_DB.general.seconds and useLocal then
+		if db.general.seconds and useLocal then
 			return string.format("|cFFFFFFFF%d|r:|cFFFFFFFF%02d|r:|cFFFFFFFF%02d|r %s", h, m, s, suffix)
 		else
 			return string.format("|cFFFFFFFF%d|r:|cFFFFFFFF%02d|r %s", h, m, suffix)
 		end
 	end
 
-	if LPS_DB.general.seconds and useLocal then
+	if db.general.seconds and useLocal then
 			return string.format("|cFFFFFFFF%d|r:|cFFFFFFFF%02d|r:|cFFFFFFFF%02d|r", h, m, s)
 		else
 			return string.format("|cFFFFFFFF%d|r:|cFFFFFFFF%02d|r", h, m)
@@ -135,8 +144,76 @@ end
 
 -- Возвращает цвет из настроек аддона по ключу
 function LPS:GetColor(key)
-	local c = LPS_DB.settings.colors and LPS_DB.settings.colors[key]
+	local db = LPS:GetDB()
+	local colors = db.settings and db.settings.colors
+	local c = colors and colors[key]
+	if key == "bg" and colors and colors.bgEnable == false then
+		local r, g, b = unpack(c or {0, 0, 0, 0})
+		return r, g, b, 0
+	end
 	return unpack(c or {1, 1, 1, 1})
+end
+
+function LPS:ApplyCoordsUpdateInterval()
+	local db = LPS:GetDB()
+	local f = LPS.frame and LPS.frame.coords
+	if not f or not f._lpsUpdateFunc then return end
+	local interval = tonumber(db.general.coordsTimeUpdate) or 0.2
+	if interval < 0.05 then interval = 0.05 end
+	if f._lpsTicker then
+		f._lpsTicker:Cancel()
+		f._lpsTicker = nil
+	end
+	f._lpsTicker = C_Timer.NewTicker(interval, function()
+		if f._lpsUpdateFunc then
+			f._lpsUpdateFunc(f)
+		end
+	end)
+end
+
+function LPS:ApplyStyle()
+	local db = LPS:GetDB()
+	local frames = LPS.frame
+	if not frames then return end
+	for _, f in pairs({frames.location, frames.coords, frames.time}) do
+		if f then
+			if f.text then
+				f.text:SetFont(GameFontNormalSmall:GetFont(), db.settings.fontSize or 12)
+			end
+			f:SetBackdrop({
+				bgFile   = "Interface\\Buttons\\WHITE8x8",
+				edgeFile = "Interface\\Buttons\\WHITE8x8",
+				tile     = false,
+				edgeSize = db.settings.borderSize or 2,
+				insets   = {left=1,right=1,top=1,bottom=1},
+			})
+			f:SetBackdropColor(LPS:GetColor("bg"))
+			f:SetBackdropBorderColor(LPS:GetColor("border"))
+			if f._lpsUpdateFunc then
+				f._lpsUpdateFunc(f)
+			end
+		end
+	end
+	if LPS.UpdateFrameSize then
+		LPS:UpdateFrameSize()
+	end
+end
+
+function LPS:ApplyTimeFormat()
+	local db = LPS:GetDB()
+	if LPS.Retail then
+		SetCVar("timeMgrUseMilitaryTime", db.general.is24H and 1 or 0)
+	end
+	local f = LPS.frame and LPS.frame.time
+	if f and f._lpsUpdateFunc then
+		f._lpsUpdateFunc(f)
+	end
+end
+
+function LPS:ApplyAllSettings()
+	LPS:ApplyTimeFormat()
+	LPS:ApplyCoordsUpdateInterval()
+	LPS:ApplyStyle()
 end
 
 -- Возвращает координаты игрока на текущей карте
@@ -158,6 +235,11 @@ end
 
 -- Открыть вкладку с натсройками аддона
 function LPS:OpenOptions()
+	local aceDialog = LibStub and LibStub:GetLibrary("AceConfigDialog-3.0", true) and LibStub("AceConfigDialog-3.0")
+	if aceDialog and LPS.Options and LPS.Options.aceAppName then
+		aceDialog:Open(LPS.Options.aceAppName)
+		return
+	end
 	if LPS.Options and LPS.Options.category then
 		Settings.OpenToCategory(LPS.Options.category:GetID())
 	end

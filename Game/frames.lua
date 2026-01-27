@@ -51,6 +51,8 @@ function LPS:CreateFrame(params)
 	local f = CreateFrame(params.frameType or "Frame", params.name, params.parent, params.template or "BackdropTemplate")
 	f:ClearAllPoints()
 	f:SetPoint(unpack(params.anchor or {"CENTER", f:GetParent(), "CENTER", 0, 0}))
+	f._lpsUpdateFunc = nil
+	f._lpsTicker = nil
 
 	-- Размер (фиксированный)
 	if params.size then
@@ -100,8 +102,17 @@ function LPS:CreateFrame(params)
 
 	-- События
 	if params.updateFunc then
+		f._lpsUpdateFunc = params.updateFunc
 		if params.updateTicker then
-			C_Timer.NewTicker(params.updateTicker.interval, function() params.updateFunc(f) end)
+			if f._lpsTicker then
+				f._lpsTicker:Cancel()
+				f._lpsTicker = nil
+			end
+			f._lpsTicker = C_Timer.NewTicker(params.updateTicker.interval, function()
+				if f._lpsUpdateFunc then
+					f._lpsUpdateFunc(f)
+				end
+			end)
 		elseif params.updateEvent then
 			for _, evt in ipairs(params.updateEvent.events) do
 				f:RegisterEvent(evt)

@@ -7,7 +7,7 @@
 ## SavedVariables: LPS_DB
 ## Category-enUS: UI Overhaul
 ## Category-ruRU: Переработка интерфейса
-## OptionalDeps: LibTouristClassicBCA
+## OptionalDeps: LibTouristClassicBCA, Ace3
 ## IconTexture: Interface\AddOns\LocationPlus\Media\logo
 
 Libs/!load_anniversary.xml

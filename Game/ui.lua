@@ -47,7 +47,7 @@ function LPS:SetMoveMode(enabled)
 			if math.abs(centerY - screenCenterY) <= snapRange then offsetY = screenCenterY - centerY end
 
 			local point, relativeTo, relativePoint, x, y = self:GetPoint()
-			local p = LPS_DB.position
+			local p = LPS:GetDB().position
 			p.point = point
 			p.relativePoint = relativePoint
 			p.x = x + offsetX

@@ -4,8 +4,9 @@ LPS_DB = LPS_DB or {}
 
 -- Применяет сохранённую позицию к holder-фрейму
 function LPS:ApplyHolderPosition()
-	LPS_DB.position = LPS_DB.position or { point = "TOP", relativePoint = "TOP", x = 0, y = -10 }
-	local p = LPS_DB.position
+	local db = LPS:GetDB()
+	db.position = db.position or { point = "TOP", relativePoint = "TOP", x = 0, y = -10 }
+	local p = db.position
 	self.frame.holder:ClearAllPoints()
 	self.frame.holder:SetPoint(p.point, UIParent, p.relativePoint, p.x, p.y)
 end

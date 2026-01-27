@@ -6,6 +6,239 @@ if not LPS then return end
 -------------------------------------------------
 LPS.Options = {}
 
+if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary("AceConfigDialog-3.0", true) then
+	local AceConfig = LibStub("AceConfig-3.0")
+	local AceDialog = LibStub("AceConfigDialog-3.0")
+
+	LPS.Options.aceAppName = "LocationPlus"
+
+	local function getDb()
+		return LPS:GetDB()
+	end
+
+	local options = {
+		type = "group",
+		name = "Location Plus",
+		args = {
+			general = {
+				type = "group",
+				name = "General",
+				order = 1,
+				args = {
+					loginMessage = {
+						type = "toggle",
+						name = "Login message",
+						order = 1,
+						get = function() return getDb().general.loginMessage end,
+						set = function(_, v) getDb().general.loginMessage = v end,
+					},
+					is24H = {
+						type = "toggle",
+						name = "24H time format",
+						order = 2,
+						get = function() return getDb().general.is24H end,
+						set = function(_, v)
+							getDb().general.is24H = v
+							if LPS.ApplyTimeFormat then
+								LPS:ApplyTimeFormat()
+							end
+						end,
+					},
+					seconds = {
+						type = "toggle",
+						name = "Show seconds (local time)",
+						order = 3,
+						get = function() return getDb().general.seconds end,
+						set = function(_, v)
+							getDb().general.seconds = v
+							if LPS.ApplyTimeFormat then
+								LPS:ApplyTimeFormat()
+							end
+						end,
+					},
+					coordsTimeUpdate = {
+						type = "range",
+						name = "Coords update (sec)",
+						order = 4,
+						min = 0.05,
+						max = 2,
+						step = 0.05,
+						get = function() return getDb().general.coordsTimeUpdate end,
+						set = function(_, v)
+							getDb().general.coordsTimeUpdate = v
+							if LPS.ApplyCoordsUpdateInterval then
+								LPS:ApplyCoordsUpdateInterval()
+							end
+						end,
+					},
+					moveFrame = {
+						type = "execute",
+						name = "Move frame",
+						order = 5,
+						func = function() LPS:ToggleMoveMode() end,
+					},
+					resetPosition = {
+						type = "execute",
+						name = "Reset holder position",
+						order = 6,
+						func = function() LPS:ResetFramePosition() end,
+					},
+				},
+			},
+			show = {
+				type = "group",
+				name = "Show",
+				order = 2,
+				args = {
+					zone = {
+						type = "toggle",
+						name = "Show zone",
+						order = 1,
+						get = function() return getDb().show.zone end,
+						set = function(_, v) getDb().show.zone = v end,
+					},
+					exactCoords = {
+						type = "toggle",
+						name = "Exact coordinates",
+						order = 2,
+						get = function() return getDb().show.exactCoords end,
+						set = function(_, v) getDb().show.exactCoords = v end,
+					},
+				},
+			},
+			tooltips = {
+				type = "group",
+				name = "Tooltips",
+				order = 3,
+				args = {
+					locationEnable = {
+						type = "toggle",
+						name = "Location tooltip",
+						order = 1,
+						get = function() return getDb().tooltips.location.enable end,
+						set = function(_, v) getDb().tooltips.location.enable = v end,
+					},
+					timeEnable = {
+						type = "toggle",
+						name = "Time tooltip",
+						order = 2,
+						get = function() return getDb().tooltips.time.enable end,
+						set = function(_, v) getDb().tooltips.time.enable = v end,
+					},
+				},
+			},
+			style = {
+				type = "group",
+				name = "Style",
+				order = 4,
+				args = {
+					bgEnable = {
+						type = "toggle",
+						name = "Enable background",
+						order = 1,
+						get = function() return getDb().settings.colors.bgEnable end,
+						set = function(_, v)
+							getDb().settings.colors.bgEnable = v
+							if LPS.ApplyStyle then
+								LPS:ApplyStyle()
+							end
+						end,
+					},
+					fontSize = {
+						type = "range",
+						name = "Font size",
+						order = 2,
+						min = 8,
+						max = 20,
+						step = 1,
+						get = function() return getDb().settings.fontSize end,
+						set = function(_, v)
+							getDb().settings.fontSize = v
+							if LPS.ApplyStyle then
+								LPS:ApplyStyle()
+							end
+						end,
+					},
+					borderSize = {
+						type = "range",
+						name = "Border size",
+						order = 3,
+						min = 1,
+						max = 6,
+						step = 1,
+						get = function() return getDb().settings.borderSize end,
+						set = function(_, v)
+							getDb().settings.borderSize = v
+							if LPS.ApplyStyle then
+								LPS:ApplyStyle()
+							end
+						end,
+					},
+					textColor = {
+						type = "color",
+						name = "Text color",
+						order = 4,
+						hasAlpha = true,
+						get = function()
+							local c = getDb().settings.colors.text
+							return c[1], c[2], c[3], c[4]
+						end,
+						set = function(_, r, g, b, a)
+							local c = getDb().settings.colors.text
+							c[1], c[2], c[3], c[4] = r, g, b, a
+						end,
+					},
+					bgColor = {
+						type = "color",
+						name = "Background color",
+						order = 5,
+						hasAlpha = true,
+						get = function()
+							local c = getDb().settings.colors.bg
+							return c[1], c[2], c[3], c[4]
+						end,
+						set = function(_, r, g, b, a)
+							local c = getDb().settings.colors.bg
+							c[1], c[2], c[3], c[4] = r, g, b, a
+							if LPS.ApplyStyle then
+								LPS:ApplyStyle()
+							end
+						end,
+					},
+					borderColor = {
+						type = "color",
+						name = "Border color",
+						order = 6,
+						hasAlpha = true,
+						get = function()
+							local c = getDb().settings.colors.border
+							return c[1], c[2], c[3], c[4]
+						end,
+						set = function(_, r, g, b, a)
+							local c = getDb().settings.colors.border
+							c[1], c[2], c[3], c[4] = r, g, b, a
+							if LPS.ApplyStyle then
+								LPS:ApplyStyle()
+							end
+						end,
+					},
+				},
+			},
+		},
+	}
+
+	AceConfig:RegisterOptionsTable(LPS.Options.aceAppName, options)
+	AceDialog:AddToBlizOptions(LPS.Options.aceAppName, "Location Plus")
+
+	if LibStub:GetLibrary("AceDBOptions-3.0", true) and LPS.db then
+		local AceDBOptions = LibStub("AceDBOptions-3.0")
+		AceConfig:RegisterOptionsTable(LPS.Options.aceAppName .. "_Profiles", AceDBOptions:GetOptionsTable(LPS.db))
+		AceDialog:AddToBlizOptions(LPS.Options.aceAppName .. "_Profiles", "Profiles", "Location Plus")
+	end
+
+	return
+end
+
 -------------------------------------------------
 -- UI HELPERS
 -------------------------------------------------

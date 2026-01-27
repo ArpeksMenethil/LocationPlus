@@ -83,7 +83,7 @@ local function GetDungeonCoords(zone)
 
 	if z == nil then
 		dcoords = ""
-	elseif LPS_DB.show.exactCoords then
+	elseif LPS:GetDB().show.exactCoords then
 		x = tonumber(LPS:Round(x*100, 2))
 		y = tonumber(LPS:Round(y*100, 2))
 		dcoords = format(" |cffffffff(%d, %d)|r", x, y)
@@ -174,6 +174,7 @@ local function GetRecomDungeons(dungeon)
 end
 
 function LPS:BuildLocationTooltip()
+	local db = LPS:GetDB()
 	local mapID = C_Map.GetBestMapForUnit("player")
 	local zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;
 
@@ -195,12 +196,12 @@ function LPS:BuildLocationTooltip()
 	-- Status
 	GameTooltip:AddDoubleLine(LPS:L("Status")..": ", LPS:GetZoneStatus(), r, g, b)
 
-	if LPS_DB.tooltips.location.level or LPS_DB.tooltips.location.battlePets or LPS_DB.tooltips.location.fish then
+	if db.tooltips.location.level or db.tooltips.location.battlePets or db.tooltips.location.fish then
 		GameTooltip:AddLine(" ")
 	end
 
 	-- Zone level range
-	if LPS_DB.tooltips.location.level then
+	if db.tooltips.location.level then
 		local zoneLevel = LPS:GetLevelRange(zoneText)
 		if zoneLevel then
 				GameTooltip:AddDoubleLine(LEVEL_RANGE..": ", zoneLevel.." "..LEVEL_ICON, r, g, b)
@@ -208,7 +209,7 @@ function LPS:BuildLocationTooltip()
 	end
 
 	-- Fishing
-	if not LPS.Retail and LPS_DB.tooltips.location.fish then
+	if not LPS.Retail and db.tooltips.location.fish then
 			local minFish, maxFish = LPS:GetFishingLvl()
 			if minFish and maxFish then
 				GameTooltip:AddDoubleLine(PROFESSIONS_FISHING..": ", format("%s-%s %s", minFish, maxFish, FISH_ICON), r, g, b)
@@ -216,7 +217,7 @@ function LPS:BuildLocationTooltip()
 	end
 
 	-- Pet Levels
-	if LPS.Retail and LPS_DB.tooltips.location.battlePets then
+	if LPS.Retail and db.tooltips.location.battlePets then
 		local checkbpet = LPS:GetBattlePetLvl(zoneText)
 		if checkbpet then
 				GameTooltip:AddDoubleLine(LPS:L("Battle Pet level").. ": ", checkbpet.." "..PET_ICON, r, g, b)
@@ -224,7 +225,7 @@ function LPS:BuildLocationTooltip()
 	end
 
 	-- Recommended zones
-	if LPS_DB.tooltips.location.recomZone then
+	if db.tooltips.location.recomZone then
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(LPS:L("Recommended Zones")..": ", rY, gY, bY)
 
@@ -234,7 +235,7 @@ function LPS:BuildLocationTooltip()
 	end
 
 	-- Instances in the zone
-	if LPS_DB.tooltips.location.zoneDungeon and Tourist:DoesZoneHaveInstances(zoneText) then
+	if db.tooltips.location.zoneDungeon and Tourist:DoesZoneHaveInstances(zoneText) then
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(DUNGEONS.." "..LPS:L("in").." "..zoneText..": ", rY, gY, bY)
 
@@ -245,7 +246,7 @@ function LPS:BuildLocationTooltip()
 
 	-- Recommended Instances
 	local level = UnitLevel('player')
-	if LPS_DB.tooltips.location.recomDungeon and Tourist:HasRecommendedInstances() and level >= 15 then
+	if db.tooltips.location.recomDungeon and Tourist:HasRecommendedInstances() and level >= 15 then
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(LPS:L("Recommended Dungeons")..": ", rY, gY, bY)
 
@@ -257,7 +258,7 @@ function LPS:BuildLocationTooltip()
 	if LPS.Retail then
 		-- Professions
 		local prof1, prof2, archy, fishing, cooking = GetProfessions()
-		if LPS_DB.tooltips.location.proffession and (prof1 or prof2 or archy or fishing or cooking) then
+		if db.tooltips.location.proffession and (prof1 or prof2 or archy or fishing or cooking) then
 			GameTooltip:AddLine(" ")
 			GameTooltip:AddLine(TRADE_SKILLS..":", rY, gY, bY)
 
@@ -266,7 +267,7 @@ function LPS:BuildLocationTooltip()
 				if id then
 					local name, icon, rank, maxRank, _, _, _, rankModifier = GetProfessionInfo(id)
 
-					if rank < maxRank or not LPS_DB.tooltips.location.proffessionHideMaxLevel then
+					if rank < maxRank or not db.tooltips.location.proffessionHideMaxLevel then
 						icon = ("|T%s:12:12:1:0|t"):format(icon)
 
 						if rankModifier and rankModifier > 0 then
@@ -289,7 +290,7 @@ function LPS:BuildLocationTooltip()
 			end
 		end
 	else
-		if LPS_DB.tooltips.location.proffession then
+		if db.tooltips.location.proffession then
 			local lines = {}
 
 			-- Список профессий, которые нужно показывать
@@ -311,7 +312,7 @@ function LPS:BuildLocationTooltip()
 					GetSkillLineInfo(skillIndex)
 
 				if skillName and not isHeader and professionsSet[skillName] then
-					if skillRank < skillMaxRank or not LPS_DB.tooltips.location.proffessionHideMaxLevel then
+					if skillRank < skillMaxRank or not db.tooltips.location.proffessionHideMaxLevel then
 						local rightText
 
 						if skillModifier and skillModifier > 0 then

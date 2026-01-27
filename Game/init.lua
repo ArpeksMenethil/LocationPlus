@@ -88,6 +88,7 @@ LPS.defaults = {
 	settings = {
 		colors = {
 			text            = {1, 1, 1, 1},
+			bgEnable        = true,
 			bg			        = {0, 0, 0, 0.6},
 			border		      = {0.3, 0.3, 0.3, 1},
 			tooltip		      = {1, 0.824, 0, 1},

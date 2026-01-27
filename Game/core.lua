@@ -42,14 +42,21 @@ end)
 
 
 function LPS:onLoaded(name)
-	if LPS.Retail and LPS_DB.general.is24H then
-		SetCVar("timeMgrUseMilitaryTime", 1)
+	if LibStub and LibStub:GetLibrary("AceDB-3.0", true) and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary("AceConfigDialog-3.0", true) then
+		local AceDB = LibStub("AceDB-3.0")
+		if type(LPS_DB) == "table" and not LPS_DB.profiles and not LPS_DB.profileKeys then
+			LPS_DB = { profiles = { Default = LPS_DB } }
+		end
+		LPS.db = AceDB:New("LPS_DB", { profile = LPS.defaults }, "Default")
 	end
 
-	LPS_DB = LPS:ApplyDefaults(LPS_DB or {}, LPS.defaults)
+	local db = LPS:GetDB()
+	LPS:ApplyDefaults(db or {}, LPS.defaults)
+	LPS:ApplyTimeFormat()
 	LPS:ApplyHolderPosition()
 
 	LPS:CreateAllFrames()
+	LPS:ApplyAllSettings()
 
 	C_Timer.After(1, function()
 		LPS:UpdateFrameSize()

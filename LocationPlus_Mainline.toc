@@ -7,7 +7,7 @@
 ## SavedVariables: LPS_DB
 ## Category-enUS: UI Overhaul
 ## Category-ruRU: Переработка интерфейса
-## OptionalDeps: LibTourist-3.0
+## OptionalDeps: LibTourist-3.0, Ace3
 ## IconTexture: Interface\AddOns\LocationPlus\Media\logo
 ## AddonCompartmentFunc: LPS_OnAddonCompartmentClick
 ## AddonCompartmentFuncOnEnter: LPS_OnAddonCompartmentEnter

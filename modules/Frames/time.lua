@@ -2,7 +2,8 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
 function LPS:CreateTimeFrame()
-	if not LPS_DB or not LPS.frame.holder then return end
+	local db = LPS:GetDB()
+	if not db or not LPS.frame.holder then return end
 
 
 	---@type LPSFrameParams
@@ -12,7 +13,7 @@ function LPS:CreateTimeFrame()
 		parent = LPS.frame.location,
 		anchor = {"LEFT", LPS.frame.location, "RIGHT", 5, 0},
 		size = {100,22},
-		fontSize = LPS_DB.settings.fontSize or 12,
+		fontSize = db.settings.fontSize or 12,
 		bgColor = {LPS:GetColor("bg")},
 		borderColor = {LPS:GetColor("border")},
 		textAllPoints = true,
@@ -35,7 +36,7 @@ function LPS:CreateTimeFrame()
 			end
 		end,
 		tooltipFunc = function(self)
-			if not LPS_DB.tooltips.time.enable then return end
+			if not LPS:GetDB().tooltips.time.enable then return end
 			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
 			GameTooltip:ClearLines()
 			LPS:BuildTimeTooltip()

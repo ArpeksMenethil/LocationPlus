@@ -2,7 +2,8 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
 function LPS:CreateLocationFrame()
-	if not LPS_DB or not LPS.frame.holder then return end
+	local db = LPS:GetDB()
+	if not db or not LPS.frame.holder then return end
 
 	---@type LPSFrameParams
 	local params = {
@@ -11,7 +12,7 @@ function LPS:CreateLocationFrame()
 		parent = LPS.frame.holder,
 		anchor = {"CENTER", LPS.frame.holder, "CENTER", 0, 0},
 		padding = {10,6},
-		fontSize = LPS_DB.settings.fontSize or 12,
+		fontSize = db.settings.fontSize or 12,
 		bgColor = {LPS:GetColor("bg")},
 		borderColor = {LPS:GetColor("border")},
 		updateFunc = function(f)
@@ -51,7 +52,7 @@ function LPS:CreateLocationFrame()
 			end
 		end,
 		tooltipFunc = function(self)
-			if not LPS_DB.tooltips.location.enable then return end
+			if not LPS:GetDB().tooltips.location.enable then return end
 			GameTooltip:SetOwner(self,"ANCHOR_BOTTOM")
 			GameTooltip:ClearLines()
 			LPS:BuildLocationTooltip(GameTooltip)
