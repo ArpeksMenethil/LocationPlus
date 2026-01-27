@@ -1,0 +1,9 @@
+<Ui xmlns='http://www.blizzard.com/wow/ui/'>
+	<Include file='.\init.lua'/>
+	<Include file='.\frames.lua'/>
+	<Include file='.\layout.lua'/>
+	<Include file='.\core.lua'/>
+	<Include file='.\utils.lua'/>
+	<Include file='.\api.lua'/>
+	<Include file='.\ui.lua'/>
+</Ui>

@@ -15,6 +15,7 @@ LPS_DB = LPS_DB or {} -- SavedVariables
 
 LPS.wowpatch, LPS.wowbuild, LPS.wowdate, LPS.wowtoc = GetBuildInfo()
 do
+	LPS.Classic = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 	LPS.TBC = WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC
 	LPS.Retail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 end

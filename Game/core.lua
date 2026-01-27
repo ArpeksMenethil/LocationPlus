@@ -7,29 +7,23 @@ local addonVersion = C_AddOns.GetAddOnMetadata(LPS.addonName, "Version") or "?.?
 ----------------------------------------------------------------
 -- Holder (главный фрейм)
 ----------------------------------------------------------------
-LPS.frame = LPS.frame or {}
-LPS.frame.holder = CreateFrame("Frame", "LPS_Holder", UIParent, "BackdropTemplate")
-LPS.frame.holder:SetFrameStrata("HIGH")
-LPS.frame.holder:SetSize(400, 25)
-LPS.frame.holder:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8x8" })
-LPS.frame.holder:SetBackdropColor(1, 1, 1, 0) -- прозрачный
-
 ---@type LPSFrameParams
--- local params = {
--- 	name = "LPS_Holder",
--- 	parent = UIParent,
--- 	frameType = "Frame",
--- 	size = {400, 25},
--- 	backdrop = { bgFile = "Interface\\Buttons\\WHITE8x8" },
--- 	bgColor = {1, 1, 1, 0},
--- 	updateEvent = {events = {"ADDON_LOADED"}},
--- 	updateFunc = function(self, event, name)
--- 		if name ~= addonName then return end
--- 		if event == "ADDON_LOADED" then LPS:onLoaded(name) end
--- 	end
--- }
--- LPS.frame.holder = LPS:CreateFrame(params)
--- LPS.frame.holder:SetFrameStrata("HIGH")
+local params = {
+	name = "LPS_Holder",
+	parent = UIParent,
+	frameType = "Frame",
+	size = {400, 25},
+	backdrop = { bgFile = "Interface\\Buttons\\WHITE8x8" },
+	bgColor = {1, 1, 1, 0},
+	borderColor = {1, 1, 1, 0},
+	updateEvent = {events = {"ADDON_LOADED"}},
+	updateFunc = function(self, event, name)
+		if name ~= addonName then return end
+		if event == "ADDON_LOADED" then LPS:onLoaded(name) end
+	end
+}
+LPS.frame.holder = LPS:CreateFrame(params)
+LPS.frame.holder:SetFrameStrata("HIGH")
 
 ----------------------------------------------------------------
 -- ADDON_LOADED
@@ -48,6 +42,14 @@ function LPS:onLoaded(name)
 			LPS_DB = { profiles = { Default = LPS_DB } }
 		end
 		LPS.db = AceDB:New("LPS_DB", { profile = LPS.defaults }, "Default")
+	end
+
+	if LPS.DEBUG then
+		LPS:Print("WOW PATCH: "..LPS.wowpatch)
+		LPS:Print("WOW BUILD: "..LPS.wowbuild)
+		LPS:Print("WOW DATE: "..LPS.wowdate)
+		LPS:Print("WOW TOC: "..LPS.wowtoc)
+		LPS:Print("WOW PROJECT: "..WOW_PROJECT_ID)
 	end
 
 	local db = LPS:GetDB()

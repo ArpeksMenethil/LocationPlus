@@ -5,8 +5,10 @@ LPS_DB = LPS_DB or {}
 local Tourist
 if LPS.Retail and LibStub:GetLibrary("LibTourist-3.0", true) then
 	Tourist = LibStub("LibTourist-3.0")
-elseif LibStub:GetLibrary("LibTouristClassicBCA", true) then
+elseif LPS.TBC and  LibStub:GetLibrary("LibTouristClassicBCA", true) then
 	Tourist = LibStub("LibTouristClassicBCA")
+elseif LPS.Classic and  LibStub:GetLibrary("LibTouristClassicEra", true) then
+	Tourist = LibStub("LibTouristClassicEra")
 end
 
 
