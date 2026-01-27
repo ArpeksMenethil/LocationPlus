@@ -1,7 +1,14 @@
-if GetLocale() ~= "enUS" then return end
-
-local L = _G.ArpeksLPS and _G.ArpeksLPS.L
+local AceLocale = LibStub and LibStub:GetLibrary("AceLocale-3.0", true)
+local L
+if AceLocale then
+	L = AceLocale:NewLocale("LocationPlus", "enUS", true)
+else
+	L = _G.ArpeksLPS and _G.ArpeksLPS.L
+end
 if not L then return end
+
+L["Currency"] = true
+L["Enable/Disable the currencies, on Tooltip."] = true
 
 L["Shows your location and coordinates on screen"] = true
 
@@ -52,3 +59,166 @@ L["Jewelcrafting"]  = true
 L["Cooking"]        = true
 L["First Aid"]      = true
 L["Fishing"]        = true
+
+L["Location Plus"] = true
+L["Reset to defaults"] = true
+L["General"] = true
+L["Actions"] = true
+L["Reset values"] = true
+L["Reset all addon settings to default values."] = true
+L["None"] = true
+L["Hide Blizzard Zone Text"] = true
+L["Show/Hide all panels when in combat"] = true
+L["Show/Hide tooltip"] = true
+L["Hide tooltip while in combat."] = true
+L["Enable/Disable status on Tooltip."] = true
+L["Enable/Disable level range on Tooltip."] = true
+L["Show Hints"] = true
+L["Enable/Disable hints on Tooltip."] = true
+L["Hide Time"] = true
+L["Area Fishing level"] = true
+L["Enable/Disable fishing level on the area."] = true
+L["Battle pet level"] = true
+L["Enable/Disable battle pet level on the area."] = true
+L["Recommended Zones"] = true
+L["Enable/Disable recommended zones on Tooltip."] = true
+L["Zone Dungeons"] = true
+L["Enable/Disable dungeons in the zone, on Tooltip."] = true
+L["Enable/Disable recommended dungeons on Tooltip."] = true
+L["with Entrance Coords"] = true
+L["Enable/Disable the coords for area dungeons and recommended dungeon entrances, on Tooltip."] = true
+L["Enable/Disable the professions, on Tooltip."] = true
+L["Hide capped"] = true
+L["Hides a profession when the player reaches its highest level."] = true
+L["Filters"] = true
+L["Hide Raid"] = true
+L["Show/Hide raids on recommended dungeons."] = true
+L["Show/Hide PvP zones, Arenas and BGs on recommended dungeons and zones."] = true
+L["Location Panel"] = true
+L["Layout"] = true
+L["Fonts"] = true
+L["Font"] = true
+L["Font Outline"] = true
+L["Choose font for the Location and Coords panels."] = true
+L["Use DataTexts font"] = true
+L["Set the font size."] = true
+L["Auto"] = true
+L["Manual"] = true
+L["Spacing"] = true
+L["Auto width"] = true
+L["Auto resized Location Panel."] = true
+L["Width"] = true
+L["Adjust the Location Panel Width."] = true
+L["Truncate text"] = true
+L["Truncates the text rather than auto enlarge"] = true
+L["DataTexts Width"] = true
+L["Adjust the DataTexts Width."] = true
+L["All Panels Height"] = true
+L["Adjust All Panels Height."] = true
+L["Show icon"] = true
+L["Other"] = true
+L["Show additional info in the Location Panel"] = true
+L["Detailed Coords"] = true
+L["Adds 2 digits in the coords"] = true
+L["Hide Coords"] = true
+L["Hide Coords in Instance"] = true
+L["Show/Hide the time panel."] = true
+L["Combat Hide"] = true
+L["Login message"] = true
+L["Show a message in chat on login."] = true
+L["24H time format"] = true
+L["Use 24-hour time format."] = true
+L["Show seconds (local time)"] = true
+L["Show seconds when using local time."] = true
+L["Coords update (sec)"] = true
+L["How often to update coordinates."] = true
+L["Update Timer"] = true
+L["Adjust coords updates (in seconds) to avoid cpu load."] = true
+L["Move frame"] = true
+L["Toggle move mode for the frame."] = true
+L["Reset holder position"] = true
+L["Reset the holder frame position."] = true
+
+L["Show"] = true
+L["Show panels"] = true
+L["Show/Hide the extra panels (Coords and Time)."] = true
+L["Show/Hide the coords panel."] = true
+L["Show/Hide the coords panel in instances."] = true
+L["Show zone"] = true
+L["Show zone name on the panel."] = true
+L["Exact coordinates"] = true
+L["Show exact dungeon entrance coordinates in tooltip."] = true
+L["Minimap icon"] = true
+L["Show / hide minimap icon."] = true
+L["Addon Compartment"] = true
+L["Enable / disable Addon Compartment click actions and tooltip."] = true
+
+L["Tooltips"] = true
+L["Tooltip"] = true
+L["Visibility"] = true
+L["Enable tooltips"] = true
+L["Master switch for all tooltips."] = true
+L["Hide in combat"] = true
+L["Hide tooltips while in combat."] = true
+
+L["Location tooltip"] = true
+L["Enable tooltip on the location panel."] = true
+L["Location tooltip settings"] = true
+L["Show zone status line."] = true
+L["Level range"] = true
+L["Show zone level range."] = true
+L["Battle pets"] = true
+L["Show battle pet level range (Retail)."] = true
+L["Show fishing skill range (Classic)."] = true
+L["Show recommended zones list."] = true
+L["Dungeons in zone"] = true
+L["Show dungeons for current zone."] = true
+L["Show recommended dungeons list."] = true
+L["Dungeon coordinates"] = true
+L["Show entrance coordinates for dungeons."] = true
+L["Professions"] = true
+L["Show professions in tooltip."] = true
+L["Hide max level professions"] = true
+L["Hide professions that are at max level."] = true
+L["Hide instances"] = true
+L["Hide PvP"] = true
+L["Hide PvP instances from lists."] = true
+L["Hide raids"] = true
+L["Hide raids from lists."] = true
+
+L["Time tooltip"] = true
+L["Enable tooltip on the time panel."] = true
+L["Time tooltip settings"] = true
+L["Show saved raids list."] = true
+L["Show saved dungeons list."] = true
+
+L["Style"] = true
+L["Enable background"] = true
+L["Toggle background on the panel."] = true
+L["Font size"] = true
+L["Set font size."] = true
+L["Border size"] = true
+L["Set border thickness."] = true
+L["Text color"] = true
+L["Set tooltip text color."] = true
+L["Background color"] = true
+L["Set background color."] = true
+L["Border color"] = true
+L["Set border color."] = true
+L["Profiles"] = true
+
+L["Show DataTexts"] = true
+L["Show/Hide the datatext panels."] = true
+L["DataTexts"] = true
+
+L["Colors"] = true
+L["Custom"] = true
+L["Class Colors"] = true
+L["Default"] = true
+
+L["Coords color"] = true
+L["Coords custom color"] = true
+L["Pick a custom color for coordinates text."] = true
+
+L["Text custom color"] = true
+L["Pick a custom color for panel text."] = true

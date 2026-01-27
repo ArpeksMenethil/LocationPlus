@@ -17,15 +17,39 @@ local FISH_ICON = "|TInterface\\AddOns\\LocationPlus\\media\\fish.tga:14:14|t"
 
 
 -- Zone level range
-function LPS:GetLevelRange(zoneText)
-	local low, high = Tourist:GetLevel(zoneText)
+function LPS:GetLevelRange(uiMapID, zoneText)
+	local minLvl, maxLvl
+	if type(uiMapID) ~= "number" then
+		zoneText = uiMapID
+		uiMapID = nil
+	end
+
+	if uiMapID and C_Map and C_Map.GetMapLevels then
+		local ok, a, b = pcall(C_Map.GetMapLevels, uiMapID)
+		if ok then
+			minLvl, maxLvl = a, b
+		end
+	end
+
 	local dlevel
-	if low > 0 and high > 0 then
-		local r, g, b = Tourist:GetLevelColor(zoneText)
-		if low ~= high then
-			dlevel = format("|cff%02x%02x%02x%d-%d|r", r*255, g*255, b*255, low, high)
+	if minLvl and maxLvl and minLvl > 0 and maxLvl > 0 then
+		if minLvl ~= maxLvl then
+			dlevel = format("|cff%02x%02x%02x%d-%d|r", 255, 255, 255, minLvl, maxLvl)
 		else
-			dlevel = format("|cff%02x%02x%02x%d|r", r*255, g*255, b*255, high)
+			dlevel = format("|cff%02x%02x%02x%d|r", 255, 255, 255, maxLvl)
+		end
+		return dlevel
+	end
+
+	if Tourist and zoneText then
+		local low, high = Tourist:GetLevel(zoneText)
+		if low and high and low > 0 and high > 0 then
+			local r, g, b = Tourist:GetLevelColor(zoneText)
+			if low ~= high then
+				dlevel = format("|cff%02x%02x%02x%d-%d|r", r*255, g*255, b*255, low, high)
+			else
+				dlevel = format("|cff%02x%02x%02x%d|r", r*255, g*255, b*255, high)
+			end
 		end
 	end
 
@@ -74,6 +98,7 @@ end
 
 -- Dungeon coords
 local function GetDungeonCoords(zone)
+	local db = LPS:GetDB()
 	local z, x, y = "", 0, 0;
 	local dcoords
 
@@ -83,7 +108,7 @@ local function GetDungeonCoords(zone)
 
 	if z == nil then
 		dcoords = ""
-	elseif LPS:GetDB().show.exactCoords then
+	elseif db.tooltips.location.recomDungeonCoords then
 		x = tonumber(LPS:Round(x*100, 2))
 		y = tonumber(LPS:Round(y*100, 2))
 		dcoords = format(" |cffffffff(%d, %d)|r", x, y)
@@ -96,6 +121,7 @@ end
 
 -- PvP/Raid filter
 local function PvPorRaidFilter(zone)
+	local db = LPS:GetDB()
 	local isPvP, isRaid;
 
 	isPvP = nil;
@@ -107,6 +133,13 @@ local function PvPorRaidFilter(zone)
 
 	if(not isPvP and Tourist:GetInstanceGroupMinSize(zone) >= 10) then
 		isRaid = true;
+	end
+
+	if db.tooltips.location.hides.pvp and isPvP then
+		return nil
+	end
+	if db.tooltips.location.hides.raids and isRaid then
+		return nil
 	end
 
 	return (isPvP and "|cffff0000 "..PVP.."|r" or "")..(isRaid and "|cffff4400 "..RAID.."|r" or "")
@@ -194,15 +227,36 @@ function LPS:BuildLocationTooltip()
 	GameTooltip:AddDoubleLine(LPS:L("Home")..": ", GetBindLocation(), r, g, b, 0.41, 0.8, 0.94)
 
 	-- Status
-	GameTooltip:AddDoubleLine(LPS:L("Status")..": ", LPS:GetZoneStatus(), r, g, b)
+	if db.tooltips.location.status then
+		GameTooltip:AddDoubleLine(LPS:L("Status")..": ", LPS:GetZoneStatus(), r, g, b)
+	end
 
-	if db.tooltips.location.level or db.tooltips.location.battlePets or db.tooltips.location.fish then
+	local willShowExtra = false
+	if db.tooltips.location.level then
+		local zoneLevel = LPS:GetLevelRange(zoneText)
+		if zoneLevel then
+			willShowExtra = true
+		end
+	end
+	if not LPS.Retail and db.tooltips.location.fish then
+		local minFish, maxFish = LPS:GetFishingLvl()
+		if minFish and maxFish then
+			willShowExtra = true
+		end
+	end
+	if LPS.Retail and db.tooltips.location.battlePets then
+		local checkbpet = LPS:GetBattlePetLvl(zoneText)
+		if checkbpet then
+			willShowExtra = true
+		end
+	end
+	if willShowExtra then
 		GameTooltip:AddLine(" ")
 	end
 
 	-- Zone level range
 	if db.tooltips.location.level then
-		local zoneLevel = LPS:GetLevelRange(zoneText)
+		local zoneLevel = LPS:GetLevelRange(mapID, zoneText)
 		if zoneLevel then
 				GameTooltip:AddDoubleLine(LEVEL_RANGE..": ", zoneLevel.." "..LEVEL_ICON, r, g, b)
 		end
@@ -221,6 +275,28 @@ function LPS:BuildLocationTooltip()
 		local checkbpet = LPS:GetBattlePetLvl(zoneText)
 		if checkbpet then
 				GameTooltip:AddDoubleLine(LPS:L("Battle Pet level").. ": ", checkbpet.." "..PET_ICON, r, g, b)
+		end
+	end
+
+	-- Currency
+	if LPS.Retail and db.tooltips.location.currency then
+		local added = false
+		if C_CurrencyInfo and C_CurrencyInfo.GetBackpackCurrencyInfo then
+			for i = 1, 3 do
+				local info = C_CurrencyInfo.GetBackpackCurrencyInfo(i)
+				if info and info.name and info.quantity ~= nil then
+					added = true
+					local icon = info.iconFileID and ("|T"..info.iconFileID..":12:12:1:0|t ") or ""
+					GameTooltip:AddDoubleLine(icon..info.name..": ", info.quantity, r, g, b)
+				end
+			end
+		end
+		if not added then
+			GameTooltip:AddDoubleLine(LPS:L("Currency")..": ", LPS:L("None"), r, g, b)
+			added = true
+		end
+		if added then
+			GameTooltip:AddLine(" ")
 		end
 	end
 

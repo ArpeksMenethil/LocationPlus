@@ -36,7 +36,10 @@ function LPS:CreateTimeFrame()
 			end
 		end,
 		tooltipFunc = function(self)
-			if not LPS:GetDB().tooltips.time.enable then return end
+			local db = LPS:GetDB()
+			if not db.tooltips.visibility.enable then return end
+			if db.tooltips.visibility.combat and InCombatLockdown() then return end
+			if not db.tooltips.time.enable then return end
 			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
 			GameTooltip:ClearLines()
 			LPS:BuildTimeTooltip()

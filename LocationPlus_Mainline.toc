@@ -8,7 +8,7 @@
 ## Category-enUS: UI Overhaul
 ## Category-ruRU: Переработка интерфейса
 ## OptionalDeps: LibTourist-3.0, Ace3
-## IconTexture: Interface\AddOns\LocationPlus\Media\logo
+## IconTexture: Interface\AddOns\LocationPlus\Media\logo.tga
 ## AddonCompartmentFunc: LPS_OnAddonCompartmentClick
 ## AddonCompartmentFuncOnEnter: LPS_OnAddonCompartmentEnter
 ## AddonCompartmentFuncOnLeave: LPS_OnAddonCompartmentLeave

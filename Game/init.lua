@@ -36,20 +36,29 @@ LPS.defaults = {
 		loginMessage = true,
 		coordsTimeUpdate = 0.5,
 		hideBlizzardZoneText = true,
-		seconds = true,
+		seconds = false,
 		is24H = true,
 	},
 
 	show = {
-		zone = true,
-		exactCoords = true,
+		zone = false,
+		both = true,
 		icon = true,
 		selectIcon = nil,
+		addonCompartment = true,
+		showicon = true,
+		hideCoords = false,
+		hideTime = false,
+		hideCoordsInInstance = true,
+		dig = true,
+		displayOther = "RLEVEL",
+		minimap = {
+			hide = false,
+			angle = 220,
+		},
 
 		visibility = {
-			combat = true,
-			mouse = false,
-			mouseOpacity = 0.5,
+			combat = false,
 		},
 	},
 
@@ -57,7 +66,8 @@ LPS.defaults = {
 		visibility = {
 			enable = true,
 			combat = true,
-			settings = true
+			settings = true,
+			hints = true,
 		},
 
 		location = {
@@ -66,10 +76,11 @@ LPS.defaults = {
 			level = true,
 			battlePets = true,
 			fish = true,
-			recomZone = true,
-			zoneDungeon = true,
-			recomDungeon = true,
-			recomDungeonCoords = true,
+			recomZone = false,
+			zoneDungeon = false,
+			recomDungeon = false,
+			recomDungeonCoords = false,
+			currency = true,
 			proffession = true,
 			proffessionHideMaxLevel = false,
 
@@ -83,6 +94,22 @@ LPS.defaults = {
 			raids = true,
 			dungeons = true,
 		},
+	},
+
+	layout = {
+		ht = true,
+		frameStrata = "LOW",
+		frameLevel = 2,
+		lpwidth = 200,
+		dtshow = true,
+		dtwidth = 100,
+		dtheight = 21,
+		lpauto = true,
+		trunc = false,
+		spacingAuto = true,
+		spacingManual = 20,
+		customColor = 3,
+		userColor = { r = 1, g = 1, b = 1 },
 	},
 
 	settings = {

@@ -57,31 +57,23 @@ function LPS:onLoaded(name)
 
 	LPS:CreateAllFrames()
 	LPS:ApplyAllSettings()
+	if LPS.CreateMinimapButton then
+		LPS:CreateMinimapButton()
+	end
 
 	C_Timer.After(1, function()
 		LPS:UpdateFrameSize()
 	end)
 
-	LPS:Print(format(LPS:L("loaded. Current version: |c%sv%s|r"), LPS.addonTextColor, addonVersion))
+	if db and db.general and db.general.loginMessage then
+		LPS:Print(format(LPS:L("loaded. Current version: |c%sv%s|r"), LPS.addonTextColor, addonVersion))
+	end
 end
 
 function LPS:CreateAllFrames()
 	LPS.frame.location = LPS:CreateLocationFrame()
 	LPS.frame.coords   = LPS:CreateCoordsFrame()
 	LPS.frame.time     = LPS:CreateTimeFrame()
-end
-
-
--- Toggle Move Mode
-SLASH_LPSMOVE1 = "/lpsmove"
-SlashCmdList.LPSMOVE = function()
-	LPS:ToggleMoveMode()
-end
-
--- Reset Holder Position
-SLASH_LPSRESET1 = "/lpsreset"
-SlashCmdList.LPSRESET = function()
-	LPS:ResetFramePosition()
 end
 
 SLASH_LPS1 = "/lps"

@@ -16,19 +16,63 @@ function LPS:CreateLocationFrame()
 		bgColor = {LPS:GetColor("bg")},
 		borderColor = {LPS:GetColor("border")},
 		updateFunc = function(f)
+			local db2 = LPS:GetDB()
 			local mapID = C_Map.GetBestMapForUnit("player")
 			local zone = LPS:GetMapNameByIDAlt(mapID) or UNKNOWN
 			local sub = GetSubZoneText()
-			local text = (sub ~= "" and sub or zone) or ""
-			local zoneLevel = LPS:GetLevelRange(zone)
+			local hasSub = sub and sub ~= "" and sub ~= zone
+			local showZone = db2 and db2.show and db2.show.zone
+
+			local baseText
+			if showZone and hasSub then
+				baseText = string.format("%s: %s", zone, sub)
+			else
+				baseText = hasSub and sub or zone
+			end
+			baseText = baseText or ""
+
+			local extra = ""
+			local icon = ""
+			local other = db2 and db2.show and db2.show.displayOther
+			local showIcon = db2 and db2.show and db2.show.showicon
+
+			if other == "RLEVEL" then
+				extra = LPS:GetLevelRange(mapID, zone) or ""
+				if showIcon and extra ~= "" then
+					icon = " |TInterface\\AddOns\\LocationPlus\\Media\\levelup.tga:14:14|t"
+				end
+			elseif other == "PFISH" and not LPS.Retail and LPS.GetFishingLvl then
+				local minFish, maxFish = LPS:GetFishingLvl()
+				if minFish and maxFish then
+					extra = string.format("%s-%s", minFish, maxFish)
+					if showIcon then
+						icon = " |TInterface\\AddOns\\LocationPlus\\Media\\fish.tga:14:14|t"
+					end
+				end
+			elseif other == "PET" and LPS.Retail and LPS.GetBattlePetLvl then
+				extra = LPS:GetBattlePetLvl(zone) or ""
+				if showIcon and extra ~= "" then
+					icon = " |TInterface\\AddOns\\LocationPlus\\Media\\pet.tga:14:14|t"
+				end
+			end
+
+			local text = baseText
+			if extra ~= "" then
+				text = string.format("%s (%s)%s", baseText, extra, icon)
+			end
 
 			if f.text then
-				if zoneLevel then
-					f.text:SetText(format("%s (%s)", text, zoneLevel))
-				else
-					f.text:SetText(text)
+				f.text:SetText(text)
+				local layout = db2 and db2.layout
+				if not layout or layout.customColor == 3 then
+					f.text:SetTextColor(LPS:GetZoneStatus(true))
 				end
-				f.text:SetTextColor(LPS:GetZoneStatus(true))
+			end
+			local layout = db2 and db2.layout
+			local dtHeight = (layout and tonumber(layout.dtheight)) or 22
+			local locHeight = dtHeight + ((layout and layout.ht) and 6 or 0)
+			if f.SetHeight then
+				f:SetHeight(locHeight)
 			end
 		end,
 		updateEvent = {events = {"ZONE_CHANGED","ZONE_CHANGED_NEW_AREA","ZONE_CHANGED_INDOORS","PLAYER_ENTERING_WORLD"}},
@@ -52,7 +96,10 @@ function LPS:CreateLocationFrame()
 			end
 		end,
 		tooltipFunc = function(self)
-			if not LPS:GetDB().tooltips.location.enable then return end
+			local db = LPS:GetDB()
+			if not db.tooltips.visibility.enable then return end
+			if db.tooltips.visibility.combat and InCombatLockdown() then return end
+			if not db.tooltips.location.enable then return end
 			GameTooltip:SetOwner(self,"ANCHOR_BOTTOM")
 			GameTooltip:ClearLines()
 			LPS:BuildLocationTooltip(GameTooltip)

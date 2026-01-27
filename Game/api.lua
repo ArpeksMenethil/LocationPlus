@@ -1,5 +1,246 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
+
+function LPS:ApplyLayout()
+	local db = LPS:GetDB()
+	local frames = LPS.frame
+	if not db or not frames then return end
+
+	local layout = db.layout or {}
+	local dtWidth = tonumber(layout.dtwidth) or 100
+	local dtHeight = tonumber(layout.dtheight) or 22
+	local locHeight = dtHeight + ((layout.ht and 6) or 0)
+	local spacing = (layout.spacingAuto == false) and (tonumber(layout.spacingManual) or 5) or 5
+
+	local function getClassColor()
+		local _, class = UnitClass("player")
+		local c = class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[class]
+		if c then
+			return c.r, c.g, c.b
+		end
+		return 1, 1, 1
+	end
+
+	local function getLayoutTextColor(mode, user)
+		if mode == 1 then
+			return (user and user.r) or 1, (user and user.g) or 1, (user and user.b) or 1
+		end
+		if mode == 2 then
+			return getClassColor()
+		end
+		if mode == 3 then
+			return LPS:GetZoneStatus(true)
+		end
+		return nil
+	end
+
+	local function resolveFont()
+		local file, _, flags = GameFontNormalSmall:GetFont()
+		return file, flags
+	end
+
+	if frames.coords then
+		frames.coords:SetSize(dtWidth, dtHeight)
+	end
+	if frames.time then
+		frames.time:SetSize(dtWidth, dtHeight)
+	end
+	if frames.location and frames.location.SetHeight then
+		frames.location:SetHeight(locHeight)
+	end
+
+	if frames.location and frames.coords then
+		frames.coords:ClearAllPoints()
+		frames.coords:SetPoint("RIGHT", frames.location, "LEFT", -spacing, 0)
+	end
+	if frames.location and frames.time then
+		frames.time:ClearAllPoints()
+		frames.time:SetPoint("LEFT", frames.location, "RIGHT", spacing, 0)
+	end
+
+	if frames.holder and not frames.holder.isMoving then
+		if layout.frameStrata then
+			frames.holder:SetFrameStrata(layout.frameStrata)
+		end
+		if layout.frameLevel then
+			frames.holder:SetFrameLevel(tonumber(layout.frameLevel) or 1)
+		end
+	end
+
+	if frames.location and frames.location.text then
+		if layout.lpauto == false then
+			frames.location:SetWidth(tonumber(layout.lpwidth) or 200)
+			frames.location.text:SetWidth((tonumber(layout.lpwidth) or 200) - 20)
+			frames.location.text:SetWordWrap(false)
+			frames.location.text:SetMaxLines(1)
+		else
+			frames.location.text:SetWidth(0)
+		end
+	end
+
+	if frames.location and frames.location._lpsUpdateFunc then
+		frames.location._lpsUpdateFunc(frames.location)
+		if frames.location.SetHeight then
+			frames.location:SetHeight(locHeight)
+		end
+	end
+	if frames.coords and frames.coords._lpsUpdateFunc then
+		frames.coords._lpsUpdateFunc(frames.coords)
+	end
+	if frames.time and frames.time._lpsUpdateFunc then
+		frames.time._lpsUpdateFunc(frames.time)
+	end
+
+	local fontFile, defaultFlags = resolveFont()
+	local size = (db.settings and db.settings.fontSize) or 12
+	local flags = defaultFlags or "NONE"
+	for _, f in pairs({frames.location, frames.time}) do
+		if f and f.text then
+			f.text:SetFont(fontFile, size, flags)
+			local r, g, b = getLayoutTextColor(layout.customColor, layout.userColor)
+			if r then
+				f.text:SetTextColor(r, g, b)
+			end
+		end
+	end
+	if frames.coords and frames.coords.text then
+		frames.coords.text:SetFont(fontFile, size, flags)
+		local r, g, b = getLayoutTextColor(layout.customColor, layout.userColor)
+		if r then
+			frames.coords.text:SetTextColor(r, g, b)
+		end
+	end
+
+	if LPS.UpdateFrameSize then
+		LPS:UpdateFrameSize()
+	end
+end
+
+function LPS:ApplyHideBlizzardZoneText()
+	local db = LPS:GetDB()
+	local hide = db and db.general and db.general.hideBlizzardZoneText
+	if ZoneTextFrame then
+		ZoneTextFrame:SetShown(not hide)
+	end
+	if SubZoneTextFrame then
+		SubZoneTextFrame:SetShown(not hide)
+	end
+end
+
+function LPS:ApplyDTVisibility()
+	local db = LPS:GetDB()
+	local show = db and db.layout and db.layout.dtshow
+	local frames = LPS.frame
+	local timeF = frames and frames.time
+	local coordsF = frames and frames.coords
+	if show == false then
+		if timeF then
+			timeF:Hide()
+		end
+		if coordsF then
+			coordsF:Hide()
+		end
+	end
+	if LPS.UpdateFrameSize then
+		LPS:UpdateFrameSize()
+	end
+end
+
+function LPS:ApplyTimeVisibility()
+	local db = LPS:GetDB()
+	local f = LPS.frame and LPS.frame.time
+	if not db or not f then return end
+	if db.layout and db.layout.dtshow == false then
+		f:Hide()
+		if LPS.UpdateFrameSize then
+			LPS:UpdateFrameSize()
+		end
+		return
+	end
+	local hide = db.show and db.show.hideTime
+	f:SetShown(not hide)
+	if LPS.UpdateFrameSize then
+		LPS:UpdateFrameSize()
+	end
+end
+
+function LPS:ApplyCoordsVisibility()
+	local db = LPS:GetDB()
+	local f = LPS.frame and LPS.frame.coords
+	if not db or not f then return end
+	local hide = false
+	if db.show and db.show.hideCoords then
+		hide = true
+	elseif db.show and db.show.hideCoordsInInstance and IsInInstance() then
+		hide = true
+	end
+
+	f:SetShown(not hide)
+	if LPS.UpdateFrameSize then
+		LPS:UpdateFrameSize()
+	end
+end
+
+function LPS:ApplyVisibility()
+	local db = LPS:GetDB()
+	local holder = LPS.frame and LPS.frame.holder
+	if not db or not holder or not db.show or not db.show.visibility then return end
+
+	local vis = db.show.visibility
+
+	if vis.combat then
+		if not holder._lpsCombatVisEvents then
+			holder._lpsCombatVisEvents = true
+			holder:RegisterEvent("PLAYER_REGEN_DISABLED")
+			holder:RegisterEvent("PLAYER_REGEN_ENABLED")
+			holder:HookScript("OnEvent", function()
+				local d = LPS:GetDB()
+				local h = LPS.frame and LPS.frame.holder
+				if not d or not h or not d.show or not d.show.visibility then return end
+				if d.show.visibility.combat and InCombatLockdown() then
+					h:Hide()
+				else
+					h:Show()
+				end
+			end)
+		end
+		if InCombatLockdown() then
+			holder:Hide()
+		else
+			holder:Show()
+		end
+	else
+		if holder._lpsCombatVisEvents then
+			holder._lpsCombatVisEvents = nil
+			holder:UnregisterEvent("PLAYER_REGEN_DISABLED")
+			holder:UnregisterEvent("PLAYER_REGEN_ENABLED")
+		end
+		holder:Show()
+	end
+
+	if not holder.isMoving then
+		holder:EnableMouse(false)
+	end
+	holder:SetAlpha(1)
+end
+
+function LPS:ResetAllSettingsToDefaults()
+	if LPS.db and LPS.db.ResetProfile then
+		LPS.db:ResetProfile()
+	else
+		LPS_DB = CopyTable(LPS.defaults)
+	end
+	LPS:ApplyHolderPosition()
+	if LPS.ApplyAllSettings then
+		LPS:ApplyAllSettings()
+	end
+	if LPS.UpdateMinimapButton then
+		LPS:UpdateMinimapButton()
+	end
+	if LPS.CreateMinimapButton then
+		LPS:CreateMinimapButton()
+	end
+end
 LPS_DB = LPS_DB or {}
 
 local Tourist
@@ -9,6 +250,12 @@ elseif LibStub:GetLibrary("LibTouristClassicBCA", true) then
 	Tourist = LibStub("LibTouristClassicBCA")
 end
 
+local AceLocale = LibStub and LibStub:GetLibrary("AceLocale-3.0", true)
+local Locale
+if AceLocale then
+	Locale = AceLocale:GetLocale("LocationPlus", true)
+end
+
 -- Выводит сообщение в чат с префиксом аддона и поддержкой локализации
 function LPS:Print(msg)
 	print("|c"..LPS.addonTextColor..LPS.addonName.."|r: " .. LPS:L(msg))
@@ -16,8 +263,28 @@ end
 
 -- Возвращает локализованную строку по ключу или сам ключ, если значение = true
 function LPS:L(key)
-	local val = _G.ArpeksLPS.L[key]
-	return val == true and key or val
+	if not Locale and AceLocale then
+		Locale = AceLocale:GetLocale("LocationPlus", true)
+	end
+	if Locale then
+		local val = rawget(Locale, key)
+		if val ~= nil then
+			return val
+		end
+	end
+
+	local legacy = _G.ArpeksLPS and _G.ArpeksLPS.L
+	if legacy then
+		local val = legacy[key]
+		if val == true then
+			return key
+		end
+		if val ~= nil then
+			return val
+		end
+	end
+
+	return key
 end
 
 function LPS:GetDB()
@@ -114,16 +381,16 @@ function LPS:GetFormattedGameTime()
 		h = h % 12
 		if h == 0 then h = 12 end
 		if db.general.seconds and useLocal then
-			return string.format("|cFFFFFFFF%d|r:|cFFFFFFFF%02d|r:|cFFFFFFFF%02d|r %s", h, m, s, suffix)
+			return string.format("%d:%02d:%02d %s", h, m, s, suffix)
 		else
-			return string.format("|cFFFFFFFF%d|r:|cFFFFFFFF%02d|r %s", h, m, suffix)
+			return string.format("%d:%02d %s", h, m, suffix)
 		end
 	end
 
 	if db.general.seconds and useLocal then
-			return string.format("|cFFFFFFFF%d|r:|cFFFFFFFF%02d|r:|cFFFFFFFF%02d|r", h, m, s)
+			return string.format("%d:%02d:%02d", h, m, s)
 		else
-			return string.format("|cFFFFFFFF%d|r:|cFFFFFFFF%02d|r", h, m)
+			return string.format("%d:%02d", h, m)
 		end
 end
 
@@ -177,9 +444,6 @@ function LPS:ApplyStyle()
 	if not frames then return end
 	for _, f in pairs({frames.location, frames.coords, frames.time}) do
 		if f then
-			if f.text then
-				f.text:SetFont(GameFontNormalSmall:GetFont(), db.settings.fontSize or 12)
-			end
 			f:SetBackdrop({
 				bgFile   = "Interface\\Buttons\\WHITE8x8",
 				edgeFile = "Interface\\Buttons\\WHITE8x8",
@@ -193,6 +457,9 @@ function LPS:ApplyStyle()
 				f._lpsUpdateFunc(f)
 			end
 		end
+	end
+	if LPS.ApplyLayout then
+		LPS:ApplyLayout()
 	end
 	if LPS.UpdateFrameSize then
 		LPS:UpdateFrameSize()
@@ -213,7 +480,13 @@ end
 function LPS:ApplyAllSettings()
 	LPS:ApplyTimeFormat()
 	LPS:ApplyCoordsUpdateInterval()
+	LPS:ApplyLayout()
 	LPS:ApplyStyle()
+	LPS:ApplyHideBlizzardZoneText()
+	LPS:ApplyDTVisibility()
+	LPS:ApplyCoordsVisibility()
+	LPS:ApplyTimeVisibility()
+	LPS:ApplyVisibility()
 end
 
 -- Возвращает координаты игрока на текущей карте

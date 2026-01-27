@@ -14,15 +14,14 @@ end
 -- Пересчитывает размер главного фрейма по вложенным элементам
 function LPS:UpdateFrameSize()
 	local padding = 4
-	local width =
-		LPS.frame.location:GetWidth() +
-		LPS.frame.time:GetWidth() +
-		LPS.frame.coords:GetWidth() +
-		padding * 2 + 10
-	local height = math.max(
-		LPS.frame.location:GetHeight(),
-		LPS.frame.time:GetHeight(),
-		LPS.frame.coords:GetHeight()
-	) + 6
+	local function w(f)
+		return (f and f:IsShown()) and f:GetWidth() or 0
+	end
+	local function h(f)
+		return (f and f:IsShown()) and f:GetHeight() or 0
+	end
+
+	local width = w(LPS.frame.location) + w(LPS.frame.time) + w(LPS.frame.coords) + padding * 2 + 10
+	local height = math.max(h(LPS.frame.location), h(LPS.frame.time), h(LPS.frame.coords)) + 6
 	LPS.frame.holder:SetSize(width, height)
 end

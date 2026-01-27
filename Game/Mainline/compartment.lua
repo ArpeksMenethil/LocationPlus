@@ -12,7 +12,7 @@ function LPS_OnAddonCompartmentClick(addonName, buttonName, menuButtonFrame)
 	end
 end
 
-function LPS_OnAddonCompartmentEnter(addonName, buttonName, menuButtonFrame)
+function LPS_OnAddonCompartmentEnter(addonName, menuButtonFrame)
 	local r, g, b = LPS:GetColor("text")
 
 	GameTooltip:SetOwner(UIParent, "ANCHOR_CURSOR")
@@ -23,6 +23,6 @@ function LPS_OnAddonCompartmentEnter(addonName, buttonName, menuButtonFrame)
 	GameTooltip:Show()
 end
 
-function LPS_OnAddonCompartmentLeave(addonName, buttonName, menuButtonFrame)
+function LPS_OnAddonCompartmentLeave(addonName, menuButtonFrame)
 	GameTooltip:Hide()
 end
