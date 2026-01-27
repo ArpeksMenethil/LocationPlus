@@ -27,7 +27,7 @@ L["Toggle Configuration"] = true
 L["Toggle move mode"] = true
 L["Reset position"] = true
 L["Send the coordinates to the chat"] = true
-L["loaded. Current version"] = true
+L["loaded. Current version: |c%sv%s|r"] = true
 L["in"] = true
 
 L["LMB"] = true

@@ -11,7 +11,7 @@ end
 
 -- Выводит сообщение в чат с префиксом аддона и поддержкой локализации
 function LPS:Print(msg)
-	print("|c"..LPS.addonTextColor.."LocationPlus|r: " .. LPS:L(msg))
+	print("|c"..LPS.addonTextColor..LPS.addonName.."|r: " .. LPS:L(msg))
 end
 
 -- Возвращает локализованную строку по ключу или сам ключ, если значение = true
@@ -154,4 +154,11 @@ end
 -- Обертка для Tourist:GetMapNameByIDAlt(mapID)
 function LPS:GetMapNameByIDAlt(mapID)
 	return Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN
+end
+
+-- Открыть вкладку с натсройками аддона
+function LPS:OpenOptions()
+	if LPS.Options and LPS.Options.category then
+		Settings.OpenToCategory(LPS.Options.category:GetID())
+	end
 end

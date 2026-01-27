@@ -1,7 +1,7 @@
 ## Interface: 20505
 ## Title: |cff1784d1Location Plus|r |cfd9b9b9bClassic|r
 ## Author: Arpeks
-## Version: 0.1.1
+## Version: 1.0.0
 ## Notes: Provides enhanced player location and zone information without requiring ElvUI.
 ## Notes-ruRU: Предоставляет расширенную информацию о местоположении игрока и зоне его действия без использования ElvUI.
 ## SavedVariables: LPS_DB

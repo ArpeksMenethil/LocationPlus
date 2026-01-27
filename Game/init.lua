@@ -5,7 +5,7 @@ _G.ArpeksLPS.LPS = LPS or {}
 _G.ArpeksLPS.L = setmetatable({}, {
 	__index = function(t, key)
 		if LPS.DEBUG then
-			print("|c"..LPS.addonTextColor.."LocationPlus|r: Missing locale: |cFFE24444"..key.."|r")
+			print("|c"..LPS.addonTextColor..LPS.addonName.."|r: Missing locale: |cFFE24444"..key.."|r")
 		end
 		return key
 	end
@@ -19,9 +19,11 @@ do
 	LPS.Retail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 end
 LPS.frame = LPS.frame or {}
-LPS.DEBUG = true
+LPS.DEBUG = false
 
 LPS.addonTextColor = "ff1784d1"
+LPS.addonName = addonName
+
 LPS.defaults = {
 	position = {
 		point = "TOP",

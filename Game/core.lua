@@ -1,9 +1,8 @@
-local addonName = ...
-local addonVersion = C_AddOns.GetAddOnMetadata(addonName, "Version") or "?.?.?" -- Версия аддона
-
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 LPS_DB = LPS_DB or {}
+
+local addonVersion = C_AddOns.GetAddOnMetadata(LPS.addonName, "Version") or "?.?.?" -- Версия аддона
 
 ----------------------------------------------------------------
 -- Holder (главный фрейм)
@@ -37,7 +36,7 @@ LPS.frame.holder:SetBackdropColor(1, 1, 1, 0) -- прозрачный
 ----------------------------------------------------------------
 LPS.frame.holder:RegisterEvent("ADDON_LOADED")
 LPS.frame.holder:SetScript("OnEvent", function(self, event, name)
-	if name ~= addonName then return end
+	if name ~= LPS.addonName then return end
 	if event == "ADDON_LOADED" then LPS:onLoaded(name) end
 end)
 
@@ -56,10 +55,7 @@ function LPS:onLoaded(name)
 		LPS:UpdateFrameSize()
 	end)
 
-	print("|c"..LPS.addonTextColor..addonName.."|r "
-		..LPS:L("loaded. Current version")..": |c"
-		..LPS.addonTextColor.."v"..addonVersion.."|r"
-	)
+	LPS:Print(format(LPS:L("loaded. Current version: |c%sv%s|r"), LPS.addonTextColor, addonVersion))
 end
 
 function LPS:CreateAllFrames()
@@ -79,4 +75,9 @@ end
 SLASH_LPSRESET1 = "/lpsreset"
 SlashCmdList.LPSRESET = function()
 	LPS:ResetFramePosition()
+end
+
+SLASH_LPS1 = "/lps"
+SlashCmdList["LPS"] = function()
+	 LPS:OpenOptions()
 end

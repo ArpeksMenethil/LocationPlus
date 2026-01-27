@@ -346,7 +346,7 @@ function LPS:BuildLocationTooltip()
 
 	GameTooltip:AddLine(" ")
 	GameTooltip:AddDoubleLine(LPS:L("LMB"), LPS:L("Toggle WorldMap"), rB, gB, bB, rB, gB, bB)
-	-- GameTooltip:AddDoubleLine(LPS:L("RMB"), LPS:L("Toggle Configuration"), rB, gB, bB, rB, gB, bB)
+	GameTooltip:AddDoubleLine(LPS:L("RMB"), LPS:L("Toggle Configuration"), rB, gB, bB, rB, gB, bB)
 	GameTooltip:AddDoubleLine(LPS:L("Shift+LMB"), LPS:L("Send the coordinates to the chat"), rB, gB, bB, rB, gB, bB)
 
 
