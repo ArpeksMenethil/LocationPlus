@@ -45,7 +45,7 @@ function LPS:EnsureLDBMinimapIcon()
 				if button == "LeftButton" then
 					LPS:ToggleMoveMode()
 				elseif button == "RightButton" then
-					LPS:OpenOptions()
+					LPS:ToggleOptions()
 				end
 			end,
 			OnTooltipShow = function(tt)
@@ -149,7 +149,7 @@ function LPS:CreateMinimapButton()
 		if button == "LeftButton" then
 			LPS:ToggleMoveMode()
 		elseif button == "RightButton" then
-			LPS:OpenOptions()
+			LPS:ToggleOptions()
 		end
 	end)
 

@@ -78,5 +78,5 @@ end
 
 SLASH_LPS1 = "/lps"
 SlashCmdList["LPS"] = function()
-	 LPS:OpenOptions()
+	 LPS:ToggleOptions()
 end

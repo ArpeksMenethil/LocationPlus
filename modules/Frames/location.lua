@@ -92,7 +92,7 @@ function LPS:CreateLocationFrame()
 					WorldMapFrame:SetPoint("CENTER", UIParent, "CENTER")
 				end
 			elseif button == "RightButton" then
-				LPS:OpenOptions()
+				LPS:ToggleOptions()
 			end
 		end,
 		tooltipFunc = function(self)

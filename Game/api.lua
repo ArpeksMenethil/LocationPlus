@@ -506,14 +506,28 @@ function LPS:GetMapNameByIDAlt(mapID)
 	return Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN
 end
 
--- Открыть вкладку с натсройками аддона
-function LPS:OpenOptions()
+function LPS:ToggleOptions()
 	local aceDialog = LibStub and LibStub:GetLibrary("AceConfigDialog-3.0", true) and LibStub("AceConfigDialog-3.0")
 	if aceDialog and LPS.Options and LPS.Options.aceAppName then
-		aceDialog:Open(LPS.Options.aceAppName)
+		local appName = LPS.Options.aceAppName
+		if aceDialog.OpenFrames and aceDialog.OpenFrames[appName] then
+			aceDialog:Close(appName)
+		else
+			aceDialog:Open(appName)
+		end
 		return
 	end
-	if LPS.Options and LPS.Options.category then
+
+	if _G.SettingsPanel and _G.SettingsPanel.IsShown and _G.SettingsPanel:IsShown() then
+		_G.SettingsPanel:Hide()
+		return
+	end
+	if _G.InterfaceOptionsFrame and _G.InterfaceOptionsFrame.IsShown and _G.InterfaceOptionsFrame:IsShown() then
+		_G.InterfaceOptionsFrame:Hide()
+		return
+	end
+
+	if LPS.Options and LPS.Options.category and Settings and Settings.OpenToCategory then
 		Settings.OpenToCategory(LPS.Options.category:GetID())
 	end
 end

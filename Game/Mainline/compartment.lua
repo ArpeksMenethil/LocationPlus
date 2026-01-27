@@ -8,7 +8,7 @@ function LPS_OnAddonCompartmentClick(addonName, buttonName, menuButtonFrame)
 	if buttonName == "LeftButton" then
 		LPS:ToggleMoveMode()
 	elseif buttonName == "RightButton" then
-		LPS:OpenOptions()
+		LPS:ToggleOptions()
 	end
 end
 
