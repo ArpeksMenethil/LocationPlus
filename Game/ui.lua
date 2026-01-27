@@ -210,8 +210,8 @@ function LPS:SetMoveMode(enabled)
 	f:SetFrameLevel(enabled and 999 or 1)
 
 	-- создаем линии один раз
-	if not f.vLine then
-		f.vLine, f.hLine = LPS:CreateGuideLines()
+	if not f.grid then
+		f.grid = LPS:CreateGuideLines()
 	end
 
 	-- отключаем мышь у всех детей holder
@@ -221,8 +221,12 @@ function LPS:SetMoveMode(enabled)
 	end
 
 	if enabled then
-		f.vLine:Show()
-		f.hLine:Show()
+		for _, line in ipairs(f.grid.vLines or {}) do
+			line:Show()
+		end
+		for _, line in ipairs(f.grid.hLines or {}) do
+			line:Show()
+		end
 		f:RegisterForDrag("LeftButton")
 
 		local snapRange = 10
@@ -240,12 +244,28 @@ function LPS:SetMoveMode(enabled)
 			local height = self:GetHeight()
 			local centerX = left + width/2
 			local centerY = bottom + height/2
-			local screenCenterX = UIParent:GetWidth()/2
-			local screenCenterY = UIParent:GetHeight()/2
+			local screenW = UIParent:GetWidth()
+			local screenH = UIParent:GetHeight()
+			local stepX = screenW / 10
+			local stepY = screenH / 10
 
 			local offsetX, offsetY = 0, 0
-			if math.abs(centerX - screenCenterX) <= snapRange then offsetX = screenCenterX - centerX end
-			if math.abs(centerY - screenCenterY) <= snapRange then offsetY = screenCenterY - centerY end
+			if stepX > 0 then
+				local i = math.floor((centerX / stepX) + 0.5)
+				if i < 0 then i = 0 elseif i > 10 then i = 10 end
+				local targetX = stepX * i
+				if math.abs(centerX - targetX) <= snapRange then
+					offsetX = targetX - centerX
+				end
+			end
+			if stepY > 0 then
+				local j = math.floor((centerY / stepY) + 0.5)
+				if j < 0 then j = 0 elseif j > 10 then j = 10 end
+				local targetY = stepY * j
+				if math.abs(centerY - targetY) <= snapRange then
+					offsetY = targetY - centerY
+				end
+			end
 
 			local point, relativeTo, relativePoint, x, y = self:GetPoint()
 			local p = LPS:GetDB().position
@@ -265,27 +285,46 @@ function LPS:SetMoveMode(enabled)
 			local height = self:GetHeight()
 			local centerX = left + width/2
 			local centerY = bottom + height/2
-			local screenCenterX = UIParent:GetWidth()/2
-			local screenCenterY = UIParent:GetHeight()/2
+			local screenW = UIParent:GetWidth()
+			local screenH = UIParent:GetHeight()
+			local stepX = screenW / 10
+			local stepY = screenH / 10
 
-			if math.abs(centerX - screenCenterX) <= snapRange then
-				f.vLine:SetBackdropColor(1,0,0,1)
-			else
-				f.vLine:SetBackdropColor(1,1,1,1)
+			local nearV, nearH
+			if stepX > 0 then
+				nearV = math.floor((centerX / stepX) + 0.5)
+				if nearV < 1 then nearV = 1 elseif nearV > 9 then nearV = 9 end
+			end
+			if stepY > 0 then
+				nearH = math.floor((centerY / stepY) + 0.5)
+				if nearH < 1 then nearH = 1 elseif nearH > 9 then nearH = 9 end
 			end
 
-			if math.abs(centerY - screenCenterY) <= snapRange then
-				f.hLine:SetBackdropColor(1,0,0,1)
-			else
-				f.hLine:SetBackdropColor(1,1,1,1)
+			for i, line in ipairs(f.grid.vLines or {}) do
+				if stepX > 0 and nearV == i and math.abs(centerX - (stepX * i)) <= snapRange then
+					line:SetBackdropColor(1, 0, 0, 0.8)
+				else
+					line:SetBackdropColor(1, 1, 1, 0.35)
+				end
+			end
+			for i, line in ipairs(f.grid.hLines or {}) do
+				if stepY > 0 and nearH == i and math.abs(centerY - (stepY * i)) <= snapRange then
+					line:SetBackdropColor(1, 0, 0, 0.8)
+				else
+					line:SetBackdropColor(1, 1, 1, 0.35)
+				end
 			end
 		end)
 	else
 		-- возвращаем holder в обычное состояние
 		f:RegisterForDrag()
 		f:SetScript("OnUpdate", nil)
-		f.vLine:Hide()
-		f.hLine:Hide()
+		for _, line in ipairs(f.grid and f.grid.vLines or {}) do
+			line:Hide()
+		end
+		for _, line in ipairs(f.grid and f.grid.hLines or {}) do
+			line:Hide()
+		end
 		f:SetFrameStrata("HIGH")
 		f:SetFrameLevel(1)
 		f:SetScript("OnMouseDown", nil)

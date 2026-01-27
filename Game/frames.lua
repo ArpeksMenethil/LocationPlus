@@ -3,21 +3,33 @@ if not LPS then return end
 
 -- Move Mode (перетаскивание)
 function LPS:CreateGuideLines()
-	local vLine = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
-	vLine:SetSize(4, UIParent:GetHeight())
-	vLine:SetPoint("CENTER", UIParent, "CENTER")
-	vLine:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8x8" })
-	vLine:SetBackdropColor(1,1,1,1) -- по умолчанию белая
-	vLine:SetFrameStrata("HIGH")
+	local grid = { vLines = {}, hLines = {} }
+	local w = UIParent:GetWidth()
+	local h = UIParent:GetHeight()
+	local stepX = w / 10
+	local stepY = h / 10
 
-	local hLine = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
-	hLine:SetSize(UIParent:GetWidth(), 4)
-	hLine:SetPoint("CENTER", UIParent, "CENTER")
-	hLine:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8x8" })
-	hLine:SetBackdropColor(1,1,1,1) -- по умолчанию белая
-	hLine:SetFrameStrata("HIGH")
+	for i = 1, 9 do
+		local vLine = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
+		vLine:SetSize(2, h)
+		vLine:SetPoint("CENTER", UIParent, "BOTTOMLEFT", stepX * i, h / 2)
+		vLine:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8x8" })
+		vLine:SetBackdropColor(1, 1, 1, 0.35)
+		vLine:SetFrameStrata("HIGH")
+		vLine:Hide()
+		grid.vLines[i] = vLine
 
-	return vLine, hLine
+		local hLine = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
+		hLine:SetSize(w, 2)
+		hLine:SetPoint("CENTER", UIParent, "BOTTOMLEFT", w / 2, stepY * i)
+		hLine:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8x8" })
+		hLine:SetBackdropColor(1, 1, 1, 0.35)
+		hLine:SetFrameStrata("HIGH")
+		hLine:Hide()
+		grid.hLines[i] = hLine
+	end
+
+	return grid
 end
 
 -- types.lua
