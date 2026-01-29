@@ -241,10 +241,14 @@ function LPS:CreateGoldFrame()
 		borderColor = {LPS:GetColor("border")},
 		textAllPoints = true,
 		updateFunc = function(f)
+			local oldData = f.text:GetText()
 			LPS:OnPlayerMoney()
 			local data = LPS:GetGoldSessionData()
 			if f.text then
 				f.text:SetText(data.currentText)
+			end
+			if oldData and oldData ~= data.currentText then
+				LPS:ApplyLayout()
 			end
 		end,
 		updateEvent = {events = {"PLAYER_ENTERING_WORLD", "PLAYER_MONEY"}},
