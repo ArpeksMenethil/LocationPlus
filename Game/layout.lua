@@ -24,4 +24,8 @@ function LPS:UpdateFrameSize()
 	local width = w(LPS.frame.location) + w(LPS.frame.time) + w(LPS.frame.coords) + w(LPS.frame.gold) + w(LPS.frame.system) + padding * 2 + 10
 	local height = math.max(h(LPS.frame.location), h(LPS.frame.time), h(LPS.frame.coords), h(LPS.frame.gold), h(LPS.frame.system)) + 6
 	LPS.frame.holder:SetSize(width, height)
+
+	if LPS.ApplyLayout then
+		LPS:ApplyLayout()
+	end
 end
