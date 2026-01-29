@@ -162,6 +162,8 @@ local function GetRecomZones(zone)
 		..(" |cff%02x%02x%02x%s|r"):format(r *255, g *255, b *255,(low == high and low or ("%d-%d"):format(low, high))),
 		1, 1, 1
 	);
+
+	return true
 end
 
 -- Dungeons in the zone
@@ -183,6 +185,8 @@ local function GetZoneDungeons(dungeon)
 		levelText,
 		1, 1, 1
 	)
+
+	return true
 
 end
 
@@ -206,6 +210,8 @@ local function GetRecomDungeons(dungeon)
 		("|cff%02x%02x%02x%s|r"):format(r *255, g *255, b *255,(low == high and low or ("%d-%d"):format(low, high))),
 		1, 1, 1
 	)
+
+	return true
 end
 
 function LPS:BuildLocationTooltip()
@@ -306,9 +312,14 @@ function LPS:BuildLocationTooltip()
 	if db.tooltips.location.recomZone then
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(LPS:L("Recommended Zones")..": ", rY, gY, bY)
-
+		local max = tonumber(db.tooltips.location.recomZoneMax) or 5
+		if max < 3 then max = 3 elseif max > 10 then max = 10 end
+		local shown = 0
 		for zone in Tourist:IterateRecommendedZones() do
-			GetRecomZones(zone);
+			if shown >= max then break end
+			if GetRecomZones(zone) then
+				shown = shown + 1
+			end
 		end
 	end
 
@@ -316,9 +327,14 @@ function LPS:BuildLocationTooltip()
 	if db.tooltips.location.zoneDungeon and Tourist:DoesZoneHaveInstances(zoneText) then
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(DUNGEONS.." "..LPS:L("in").." "..zoneText..": ", rY, gY, bY)
-
+		local max = tonumber(db.tooltips.location.zoneDungeonMax) or 5
+		if max < 3 then max = 3 elseif max > 10 then max = 10 end
+		local shown = 0
 		for dungeon in Tourist:IterateZoneInstances(zoneText) do
-			GetZoneDungeons(dungeon);
+			if shown >= max then break end
+			if GetZoneDungeons(dungeon) then
+				shown = shown + 1
+			end
 		end
 	end
 
@@ -327,9 +343,14 @@ function LPS:BuildLocationTooltip()
 	if db.tooltips.location.recomDungeon and Tourist:HasRecommendedInstances() and level >= 15 then
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(LPS:L("Recommended Dungeons")..": ", rY, gY, bY)
-
+		local max = tonumber(db.tooltips.location.recomDungeonMax) or 5
+		if max < 3 then max = 3 elseif max > 10 then max = 10 end
+		local shown = 0
 		for dungeon in Tourist:IterateRecommendedInstances() do
-			GetRecomDungeons(dungeon);
+			if shown >= max then break end
+			if GetRecomDungeons(dungeon) then
+				shown = shown + 1
+			end
 		end
 	end
 

@@ -9,6 +9,7 @@ function LPS:ApplyLayout()
 	local layout = db.layout or {}
 	local dtWidth = tonumber(layout.dtwidth) or 100
 	local dtHeight = tonumber(layout.dtheight) or 22
+	local dtAuto = layout.dtauto == true
 	local locHeight = dtHeight + ((layout.ht and 6) or 0)
 	local spacing = (layout.spacingAuto == false) and (tonumber(layout.spacingManual) or 5) or 5
 
@@ -39,24 +40,116 @@ function LPS:ApplyLayout()
 		return file, flags
 	end
 
-	if frames.coords then
-		frames.coords:SetSize(dtWidth, dtHeight)
+	local function applyDTSize(f)
+		if not f then return end
+		if f.SetHeight then
+			f:SetHeight(dtHeight)
+		end
+		if not dtAuto and f.SetWidth then
+			f:SetWidth(dtWidth)
+		end
 	end
-	if frames.time then
-		frames.time:SetSize(dtWidth, dtHeight)
-	end
+
+	applyDTSize(frames.coords)
+	applyDTSize(frames.time)
+	applyDTSize(frames.gold)
+	applyDTSize(frames.system)
 	if frames.location and frames.location.SetHeight then
 		frames.location:SetHeight(locHeight)
 	end
 
-	if frames.location and frames.coords then
-		frames.coords:ClearAllPoints()
-		frames.coords:SetPoint("RIGHT", frames.location, "LEFT", -spacing, 0)
+	local showDT = layout.dtshow ~= false
+	if frames.coords then
+		frames.coords:SetShown(showDT)
 	end
-	if frames.location and frames.time then
-		frames.time:ClearAllPoints()
-		frames.time:SetPoint("LEFT", frames.location, "RIGHT", spacing, 0)
+	if frames.time then
+		frames.time:SetShown(showDT)
 	end
+	if frames.gold then
+		frames.gold:SetShown(showDT)
+	end
+	if frames.system then
+		frames.system:SetShown(showDT)
+	end
+
+	local sideSlots = layout.sideSlots or {}
+	local leftSlot = sideSlots.left or {}
+	local rightSlot = sideSlots.right or {}
+
+	local function normalizeSlotFrameKey(key)
+		if not key or key == "" then return "NONE" end
+		if key == "none" then return "NONE" end
+		if key == "None" then return "NONE" end
+		return key
+	end
+
+	local function isSelectedInSlots(frameKey)
+		local l = normalizeSlotFrameKey(leftSlot.frame)
+		local r = normalizeSlotFrameKey(rightSlot.frame)
+		if l == frameKey then return true end
+		if r == frameKey then return true end
+		return false
+	end
+
+	local function applySideSlotVisibility()
+		-- Hide non-selected frames, even if global "show" flags are enabled.
+		if frames.coords then
+			frames.coords:SetShown(frames.coords:IsShown() and isSelectedInSlots("coords"))
+		end
+		if frames.time then
+			frames.time:SetShown(frames.time:IsShown() and isSelectedInSlots("time"))
+		end
+		if frames.gold then
+			frames.gold:SetShown(frames.gold:IsShown() and isSelectedInSlots("gold"))
+		end
+		if frames.system then
+			frames.system:SetShown(frames.system:IsShown() and isSelectedInSlots("system"))
+		end
+	end
+
+	local function getFrameByKey(key)
+		if key == "coords" then return frames.coords end
+		if key == "time" then return frames.time end
+		if key == "gold" then return frames.gold end
+		if key == "system" then return frames.system end
+		return nil
+	end
+
+	local function positionSlot(slotCfg, side)
+		if not (frames.location and slotCfg) then return end
+		local key = normalizeSlotFrameKey(slotCfg.frame)
+		if key == "NONE" then return end
+
+		-- Prevent anchoring the same frame twice.
+		local otherKey
+		if side == "LEFT" then
+			otherKey = normalizeSlotFrameKey(rightSlot.frame)
+		else
+			otherKey = normalizeSlotFrameKey(leftSlot.frame)
+		end
+		if otherKey == key then
+			if side == "RIGHT" then
+				return
+			end
+		end
+
+		local frame = getFrameByKey(key)
+		if not (frame and frame.IsShown and frame:IsShown()) then return end
+
+		local ox = tonumber(slotCfg.offsetX) or 0
+		local oy = tonumber(slotCfg.offsetY) or 0
+		frame:ClearAllPoints()
+		if side == "LEFT" then
+			frame:SetPoint("RIGHT", frames.location, "LEFT", -spacing + ox, oy)
+		else
+			frame:SetPoint("LEFT", frames.location, "RIGHT", spacing + ox, oy)
+		end
+	end
+
+	-- Apply the base visibility rules first, then constrain to selected slots.
+	applySideSlotVisibility()
+	positionSlot(leftSlot, "LEFT")
+	positionSlot(rightSlot, "RIGHT")
 
 	if frames.holder and not frames.holder.isMoving then
 		if layout.frameStrata then
@@ -90,40 +183,62 @@ function LPS:ApplyLayout()
 	if frames.time and frames.time._lpsUpdateFunc then
 		frames.time._lpsUpdateFunc(frames.time)
 	end
+	if frames.gold and frames.gold._lpsUpdateFunc then
+		frames.gold._lpsUpdateFunc(frames.gold)
+	end
+	if frames.system and frames.system._lpsUpdateFunc then
+		frames.system._lpsUpdateFunc(frames.system)
+	end
+
+	local function applyDTTextWidth(f)
+		if not (f and f.text) then return end
+		f.text:SetWordWrap(false)
+		f.text:SetMaxLines(1)
+		if dtAuto then
+			f.text:SetWidth(0)
+			local w = f.text:GetStringWidth() or 0
+			if f.SetWidth then
+				f:SetWidth(math.max(60, w + 16))
+			end
+		else
+			f.text:SetWidth(math.max(20, dtWidth - 10))
+		end
+	end
+
+	applyDTTextWidth(frames.coords)
+	applyDTTextWidth(frames.time)
+	applyDTTextWidth(frames.gold)
+	applyDTTextWidth(frames.system)
 
 	local fontFile, defaultFlags = resolveFont()
 	local size = (db.settings and db.settings.fontSize) or 12
 	local flags = defaultFlags or "NONE"
-	for _, f in pairs({frames.location, frames.time}) do
+	for _, f in pairs({frames.location, frames.time, frames.coords, frames.gold, frames.system}) do
 		if f and f.text then
 			f.text:SetFont(fontFile, size, flags)
-			local r, g, b = getLayoutTextColor(layout.customColor, layout.userColor)
+			local mode = layout.customColor
+			if mode == nil then
+				mode = 3
+			end
+			local r, g, b
+			if f == frames.gold or f == frames.time then
+				r, g, b = 1, 1, 1
+			elseif mode == 3 then
+				if f ~= frames.location then
+					r, g, b = LPS:GetColor("text")
+				end
+			else
+				r, g, b = getLayoutTextColor(mode, layout.userColor)
+			end
 			if r then
 				f.text:SetTextColor(r, g, b)
 			end
 		end
 	end
-	if frames.coords and frames.coords.text then
-		frames.coords.text:SetFont(fontFile, size, flags)
-		local r, g, b = getLayoutTextColor(layout.customColor, layout.userColor)
-		if r then
-			frames.coords.text:SetTextColor(r, g, b)
-		end
-	end
+
 
 	if LPS.UpdateFrameSize then
 		LPS:UpdateFrameSize()
-	end
-end
-
-function LPS:ApplyHideBlizzardZoneText()
-	local db = LPS:GetDB()
-	local hide = db and db.general and db.general.hideBlizzardZoneText
-	if ZoneTextFrame then
-		ZoneTextFrame:SetShown(not hide)
-	end
-	if SubZoneTextFrame then
-		SubZoneTextFrame:SetShown(not hide)
 	end
 end
 
@@ -133,12 +248,20 @@ function LPS:ApplyDTVisibility()
 	local frames = LPS.frame
 	local timeF = frames and frames.time
 	local coordsF = frames and frames.coords
+	local goldF = frames and frames.gold
+	local systemF = frames and frames.system
 	if show == false then
 		if timeF then
 			timeF:Hide()
 		end
 		if coordsF then
 			coordsF:Hide()
+		end
+		if goldF then
+			goldF:Hide()
+		end
+		if systemF then
+			systemF:Hide()
 		end
 	end
 	if LPS.UpdateFrameSize then
@@ -150,6 +273,11 @@ function LPS:ApplyTimeVisibility()
 	local db = LPS:GetDB()
 	local f = LPS.frame and LPS.frame.time
 	if not db or not f then return end
+	local layout = db.layout or {}
+	local slots = layout.sideSlots or {}
+	local left = slots.left and slots.left.frame
+	local right = slots.right and slots.right.frame
+	local selected = (left == "time") or (right == "time")
 	if db.layout and db.layout.dtshow == false then
 		f:Hide()
 		if LPS.UpdateFrameSize then
@@ -157,8 +285,14 @@ function LPS:ApplyTimeVisibility()
 		end
 		return
 	end
-	local hide = db.show and db.show.hideTime
-	f:SetShown(not hide)
+	if not selected then
+		f:Hide()
+		if LPS.UpdateFrameSize then
+			LPS:UpdateFrameSize()
+		end
+		return
+	end
+	f:Show()
 	if LPS.UpdateFrameSize then
 		LPS:UpdateFrameSize()
 	end
@@ -168,14 +302,26 @@ function LPS:ApplyCoordsVisibility()
 	local db = LPS:GetDB()
 	local f = LPS.frame and LPS.frame.coords
 	if not db or not f then return end
-	local hide = false
-	if db.show and db.show.hideCoords then
-		hide = true
-	elseif db.show and db.show.hideCoordsInInstance and IsInInstance() then
-		hide = true
+	local layout = db.layout or {}
+	local slots = layout.sideSlots or {}
+	local left = slots.left and slots.left.frame
+	local right = slots.right and slots.right.frame
+	local selected = (left == "coords") or (right == "coords")
+	if db.layout and db.layout.dtshow == false then
+		f:Hide()
+		if LPS.UpdateFrameSize then
+			LPS:UpdateFrameSize()
+		end
+		return
 	end
-
-	f:SetShown(not hide)
+	if not selected then
+		f:Hide()
+		if LPS.UpdateFrameSize then
+			LPS:UpdateFrameSize()
+		end
+		return
+	end
+	f:Show()
 	if LPS.UpdateFrameSize then
 		LPS:UpdateFrameSize()
 	end
@@ -259,8 +405,11 @@ if AceLocale then
 end
 
 -- Выводит сообщение в чат с префиксом аддона и поддержкой локализации
-function LPS:Print(msg)
-	print("|c"..LPS.addonTextColor..LPS.addonName.."|r: " .. LPS:L(msg))
+function LPS:Print(msg, translate)
+	if translate ~= false then
+		msg = LPS:L(msg)
+	end
+	print("|c"..LPS.addonTextColor..LPS.addonName.."|r: " .. tostring(msg))
 end
 
 -- Возвращает локализованную строку по ключу или сам ключ, если значение = true
@@ -300,7 +449,25 @@ end
 function LPS:ResetFramePosition()
 	local db = LPS:GetDB()
 	db.position = { point = "TOP", relativePoint = "TOP", x = 0, y = -10 }
+	db.layout = db.layout or {}
+	db.layout.sideSlots = db.layout.sideSlots or {}
+	db.layout.sideSlots.left = db.layout.sideSlots.left or {}
+	db.layout.sideSlots.right = db.layout.sideSlots.right or {}
+	db.layout.sideSlots.left.offsetX = 0
+	db.layout.sideSlots.left.offsetY = 0
+	db.layout.sideSlots.right.offsetX = 0
+	db.layout.sideSlots.right.offsetY = 0
+	local holder = LPS.frame and LPS.frame.holder
+	if holder and holder.isMoving then
+		if LPS.SetMoveMode then
+			LPS:SetMoveMode(false)
+		end
+		holder.isMoving = false
+	end
 	LPS:ApplyHolderPosition()
+	if LPS.ApplyLayout then
+		LPS:ApplyLayout()
+	end
 	LPS:Print("The frame position is reset")
 end
 
@@ -366,8 +533,47 @@ end
 -- Возвращает отформатированное игровое время с учетом CVar (12/24ч, локальное/серверное)
 function LPS:GetFormattedGameTime()
 	local db = LPS:GetDB()
+	local layout = db and db.layout or {}
 	local is24h = GetCVarBool("timeMgrUseMilitaryTime")
 	local useLocal = GetCVarBool("timeMgrUseLocalTime")
+
+	local function getClassColor()
+		local _, class = UnitClass("player")
+		local c = class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[class]
+		if c then
+			return c.r, c.g, c.b
+		end
+		return 1, 1, 1
+	end
+
+	local function rgbToHex(r, g, b)
+		r = tonumber(r) or 1
+		g = tonumber(g) or 1
+		b = tonumber(b) or 1
+		local rr = math.floor(r * 255 + 0.5)
+		local gg = math.floor(g * 255 + 0.5)
+		local bb = math.floor(b * 255 + 0.5)
+		return string.format("%02x%02x%02x", rr, gg, bb)
+	end
+
+	local function getColonToken()
+		local mode = layout.customColor
+		if mode == nil then
+			mode = 3
+		end
+		local r, g, b
+		if mode == 1 then
+			local user = layout.userColor
+			r, g, b = (user and user.r) or 1, (user and user.g) or 1, (user and user.b) or 1
+		elseif mode == 2 then
+			r, g, b = getClassColor()
+		else
+			r, g, b = 1, 1, 1
+		end
+		return "|cff" .. rgbToHex(r, g, b) .. ":|r"
+	end
+
+	local colon = getColonToken()
 
 	local h, m, s
 	if useLocal then
@@ -383,16 +589,16 @@ function LPS:GetFormattedGameTime()
 		h = h % 12
 		if h == 0 then h = 12 end
 		if db.general.seconds and useLocal then
-			return string.format("%d:%02d:%02d %s", h, m, s, suffix)
+			return string.format("%d%s%02d%s%02d %s", h, colon, m, colon, s, suffix)
 		else
-			return string.format("%d:%02d %s", h, m, suffix)
+			return string.format("%d%s%02d %s", h, colon, m, suffix)
 		end
 	end
 
 	if db.general.seconds and useLocal then
-			return string.format("%d:%02d:%02d", h, m, s)
+			return string.format("%d%s%02d%s%02d", h, colon, m, colon, s)
 		else
-			return string.format("%d:%02d", h, m)
+			return string.format("%d%s%02d", h, colon, m)
 		end
 end
 
@@ -444,7 +650,7 @@ function LPS:ApplyStyle()
 	local db = LPS:GetDB()
 	local frames = LPS.frame
 	if not frames then return end
-	for _, f in pairs({frames.location, frames.coords, frames.time}) do
+	for _, f in pairs({frames.location, frames.coords, frames.time, frames.gold, frames.system}) do
 		if f then
 			f:SetBackdrop({
 				bgFile   = "Interface\\Buttons\\WHITE8x8",
@@ -477,6 +683,9 @@ function LPS:ApplyTimeFormat()
 	if f and f._lpsUpdateFunc then
 		f._lpsUpdateFunc(f)
 	end
+	if LPS.ApplyLayout then
+		LPS:ApplyLayout()
+	end
 end
 
 function LPS:ApplyAllSettings()
@@ -484,7 +693,6 @@ function LPS:ApplyAllSettings()
 	LPS:ApplyCoordsUpdateInterval()
 	LPS:ApplyLayout()
 	LPS:ApplyStyle()
-	LPS:ApplyHideBlizzardZoneText()
 	LPS:ApplyDTVisibility()
 	LPS:ApplyCoordsVisibility()
 	LPS:ApplyTimeVisibility()
@@ -516,6 +724,16 @@ function LPS:ToggleOptions()
 			aceDialog:Close(appName)
 		else
 			aceDialog:Open(appName)
+			local f = aceDialog.OpenFrames and aceDialog.OpenFrames[appName]
+			if f then
+				if f.EnableResize then
+					f:EnableResize(false)
+				end
+				local frame = f.frame
+				if frame and frame.SetResizable then
+					frame:SetResizable(false)
+				end
+			end
 		end
 		return
 	end

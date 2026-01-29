@@ -21,7 +21,7 @@ function LPS:UpdateFrameSize()
 		return (f and f:IsShown()) and f:GetHeight() or 0
 	end
 
-	local width = w(LPS.frame.location) + w(LPS.frame.time) + w(LPS.frame.coords) + padding * 2 + 10
-	local height = math.max(h(LPS.frame.location), h(LPS.frame.time), h(LPS.frame.coords)) + 6
+	local width = w(LPS.frame.location) + w(LPS.frame.time) + w(LPS.frame.coords) + w(LPS.frame.gold) + w(LPS.frame.system) + padding * 2 + 10
+	local height = math.max(h(LPS.frame.location), h(LPS.frame.time), h(LPS.frame.coords), h(LPS.frame.gold), h(LPS.frame.system)) + 6
 	LPS.frame.holder:SetSize(width, height)
 end

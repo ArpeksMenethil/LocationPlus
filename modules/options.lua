@@ -65,86 +65,121 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 						type = "description",
 						name = LPS:L("Shows your location and coordinates on screen"),
 					},
-					spacer1 = {
-						order = 3,
-						type = "description",
-						name = " ",
-					},
 					generalGroup = {
 						order = 4,
 						type = "group",
 						name = LPS:L("General"),
 						inline = true,
 						args = {
-							loginMessage = {
+							left = {
 								order = 1,
-								name = LPS:L("Login message"),
-								desc = LPS:L("Show a message in chat on login."),
-								type = "toggle",
-								width = "full",
-								get = function() return getDb().general.loginMessage end,
-								set = function(_, v) getDb().general.loginMessage = v end,
+								type = "group",
+								name = " ",
+								inline = true,
+								
+								args = {
+									loginMessage = {
+										order = 1,
+										name = LPS:L("Login message"),
+										desc = LPS:L("Show a message in chat on login."),
+										type = "toggle",
+										
+										get = function() return getDb().general.loginMessage end,
+										set = function(_, v) getDb().general.loginMessage = v end,
+									},
+									spacer1_is24H = {
+										order = 2.1,
+										type = "description",
+										name = "",
+									},
+									is24H = {
+										type = "toggle",
+										name = LPS:L("24H time format"),
+										desc = LPS:L("Use 24-hour time format."),
+										order = 3,
+										
+										get = function() return getDb().general.is24H end,
+										set = function(_, v)
+											getDb().general.is24H = v
+											if LPS.ApplyTimeFormat then
+												LPS:ApplyTimeFormat()
+											end
+										end,
+									},
+									seconds = {
+										type = "toggle",
+										name = LPS:L("Show seconds (local time)"),
+										desc = LPS:L("Show seconds when using local time."),
+										order = 4,
+										
+										get = function() return getDb().general.seconds end,
+										set = function(_, v)
+											getDb().general.seconds = v
+											if LPS.ApplyTimeFormat then
+												LPS:ApplyTimeFormat()
+											end
+										end,
+									},
+								},
 							},
-							is24H = {
-								type = "toggle",
-								name = LPS:L("24H time format"),
-								desc = LPS:L("Use 24-hour time format."),
+							right = {
 								order = 2,
-								hidden = function() return not LPS.Retail end,
-								get = function() return getDb().general.is24H end,
-								set = function(_, v)
-									getDb().general.is24H = v
-									if LPS.ApplyTimeFormat then
-										LPS:ApplyTimeFormat()
-									end
-								end,
-							},
-							seconds = {
-								type = "toggle",
-								name = LPS:L("Show seconds (local time)"),
-								desc = LPS:L("Show seconds when using local time."),
-								order = 3,
-								hidden = function() return not LPS.Retail end,
-								get = function() return getDb().general.seconds end,
-								set = function(_, v)
-									getDb().general.seconds = v
-									if LPS.ApplyTimeFormat then
-										LPS:ApplyTimeFormat()
-									end
-								end,
-							},
-							coordsTimeUpdate = {
-								order = 4,
-								name = LPS:L("Update Timer"),
-								desc = LPS:L("Adjust coords updates (in seconds) to avoid cpu load."),
-								type = "range",
-								min = 0.05,
-								max = 1,
-								step = 0.05,
-								get = function() return getDb().general.coordsTimeUpdate end,
-								set = function(_, v)
-									getDb().general.coordsTimeUpdate = v
-									if LPS.ApplyCoordsUpdateInterval then
-										LPS:ApplyCoordsUpdateInterval()
-									end
-								end,
-							},
-							hideBlizzardZoneText = {
-								order = 5,
-								name = LPS:L("Hide Blizzard Zone Text"),
-								type = "toggle",
-								get = function() return getDb().general.hideBlizzardZoneText end,
-								set = function(_, v)
-									getDb().general.hideBlizzardZoneText = v
-									if LPS.ApplyHideBlizzardZoneText then
-										LPS:ApplyHideBlizzardZoneText()
-									end
-								end,
+								type = "group",
+								name = " ",
+								inline = true,
+								
+								args = {
+									minimapIcon = {
+										type = "toggle",
+										name = LPS:L("Minimap icon"),
+										desc = LPS:L("Show / hide minimap icon."),
+										order = 1,
+										
+										get = function()
+											local mm = getDb().show and getDb().show.minimap
+											return not (mm and mm.hide)
+										end,
+										set = function(_, v)
+											getDb().show.minimap = getDb().show.minimap or { hide = false, angle = 220 }
+											getDb().show.minimap.hide = not v
+											if v and LPS.CreateMinimapButton then
+												LPS:CreateMinimapButton()
+											end
+											if LPS.UpdateMinimapButton then
+												LPS:UpdateMinimapButton()
+											end
+										end,
+									},
+									spacer1_combatHide = {
+										order = 1.1,
+										type = "description",
+										name = "",
+									},
+									spacer2_combatHide = {
+										order = 1.2,
+										type = "description",
+										name = "",
+									},
+									combatHide = {
+										order = 4,
+										name = LPS:L("Combat Hide"),
+										desc = LPS:L("Show/Hide all panels when in combat"),
+										type = "toggle",
+										
+										get = function() return getDb().show.visibility.combat end,
+										set = function(_, v)
+											getDb().show.visibility.combat = v
+											if LPS.ApplyVisibility then
+												LPS:ApplyVisibility()
+											end
+										end,
+									},
+								},
 							},
 						},
 					},
 					actionsGroup = {
-						order = 5,
+						order = 99,
 						type = "group",
 						name = LPS:L("Actions"),
 						inline = true,
@@ -183,112 +218,110 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 				name = LPS:L("Show"),
 				order = 2,
 				args = {
-					zone = {
-						type = "toggle",
-						name = LPS:L("Show zone"),
-						desc = LPS:L("Show zone name on the panel."),
+					locationGroup = {
 						order = 1,
-						get = function() return getDb().show.zone end,
-						set = function(_, v)
-							getDb().show.zone = v
-							local f = LPS.frame and LPS.frame.location
-							if f and f._lpsUpdateFunc then
-								f._lpsUpdateFunc(f)
-							end
-						end,
-					},
-					dig = {
-						order = 2,
-						name = LPS:L("Detailed Coords"),
-						desc = LPS:L("Adds 2 digits in the coords"),
-						type = "toggle",
-						get = function() return getDb().show.dig end,
-						set = function(_, v)
-							getDb().show.dig = v
-							local f = LPS.frame and LPS.frame.coords
-							if f and f._lpsUpdateFunc then
-								f._lpsUpdateFunc(f)
-							end
-						end,
-					},
-					displayOther = {
-						order = 3,
-						name = LPS:L("Other"),
-						desc = LPS:L("Show additional info in the Location Panel"),
-						type = "select",
-						values = getDisplayOtherValues,
-						get = function() return getDb().show.displayOther end,
-						set = function(_, v)
-							local values = getDisplayOtherValues()
-							if values[v] == nil then
-								v = "RLEVEL"
-							end
-							getDb().show.displayOther = v
-							local f = LPS.frame and LPS.frame.location
-							if f and f._lpsUpdateFunc then
-								f._lpsUpdateFunc(f)
-							end
-						end,
-					},
-					showicon = {
-						order = 4,
-						name = LPS:L("Show icon"),
-						type = "toggle",
-						disabled = function() return getDb().show.displayOther == "NONE" end,
-						get = function() return getDb().show.showicon end,
-						set = function(_, v)
-							getDb().show.showicon = v
-							local f = LPS.frame and LPS.frame.location
-							if f and f._lpsUpdateFunc then
-								f._lpsUpdateFunc(f)
-							end
-						end,
-					},
-					spacer = {
-						order = 5,
-						type = "header",
-						name = "",
-					},
-					visibilityGroup = {
-						order = 20,
-						name = LPS:L("Visibility"),
 						type = "group",
+						name = LPS:L("Location"),
 						inline = true,
+						
 						args = {
-							combat = {
+							zone = {
 								order = 1,
-								name = LPS:L("Combat Hide"),
-								desc = LPS:L("Show/Hide all panels when in combat"),
 								type = "toggle",
-								get = function() return getDb().show.visibility.combat end,
+								name = LPS:L("Show zone"),
+								desc = LPS:L("Show zone name on the panel."),
+								
+								get = function() return getDb().show.zone end,
 								set = function(_, v)
-									getDb().show.visibility.combat = v
-									if LPS.ApplyVisibility then
-										LPS:ApplyVisibility()
+									getDb().show.zone = v
+									local f = LPS.frame and LPS.frame.location
+									if f and f._lpsUpdateFunc then
+										f._lpsUpdateFunc(f)
+									end
+								end,
+							},
+							spacer1_showicon = {
+								order = 1.1,
+								type = "description",
+								name = "",
+							},
+							showicon = {
+								order = 2,
+								name = LPS:L("Crest"),
+								type = "toggle",
+								
+								disabled = function() return getDb().show.displayOther == "NONE" end,
+								get = function() return getDb().show.showicon end,
+								set = function(_, v)
+									getDb().show.showicon = v
+									local f = LPS.frame and LPS.frame.location
+									if f and f._lpsUpdateFunc then
+										f._lpsUpdateFunc(f)
+									end
+								end,
+							},
+							displayOther = {
+								order = 3,
+								name = LPS:L("Other"),
+								desc = LPS:L("Show additional info in the Location Panel"),
+								type = "select",
+								
+								values = getDisplayOtherValues,
+								get = function() return getDb().show.displayOther end,
+								set = function(_, v)
+									local values = getDisplayOtherValues()
+									if values[v] == nil then
+										v = "RLEVEL"
+									end
+									getDb().show.displayOther = v
+									local f = LPS.frame and LPS.frame.location
+									if f and f._lpsUpdateFunc then
+										f._lpsUpdateFunc(f)
 									end
 								end,
 							},
 						},
 					},
-					minimapIcon = {
-						type = "toggle",
-						name = LPS:L("Minimap icon"),
-						desc = LPS:L("Show / hide minimap icon."),
-						order = 40,
-						get = function()
-							local mm = getDb().show and getDb().show.minimap
-							return not (mm and mm.hide)
-						end,
-						set = function(_, v)
-							getDb().show.minimap = getDb().show.minimap or { hide = false, angle = 220 }
-							getDb().show.minimap.hide = not v
-							if v and LPS.CreateMinimapButton then
-								LPS:CreateMinimapButton()
-							end
-							if LPS.UpdateMinimapButton then
-								LPS:UpdateMinimapButton()
-							end
-						end,
+					coordsGroup = {
+						order = 2,
+						type = "group",
+						name = LPS:L("Coords"),
+						inline = true,
+						
+						args = {
+							dig = {
+								order = 1,
+								name = LPS:L("Detailed Coords"),
+								desc = LPS:L("Adds 2 digits in the coords"),
+								type = "toggle",
+								
+								get = function() return getDb().show.dig end,
+								set = function(_, v)
+									getDb().show.dig = v
+									local f = LPS.frame and LPS.frame.coords
+									if f and f._lpsUpdateFunc then
+										f._lpsUpdateFunc(f)
+									end
+								end,
+							},
+							coordsTimeUpdate = {
+								order = 2,
+								name = LPS:L("Update Timer"),
+								desc = LPS:L("Adjust coords updates (in seconds) to avoid cpu load."),
+								type = "range",
+								
+								min = 0.05,
+								max = 1,
+								step = 0.05,
+								get = function() return getDb().general.coordsTimeUpdate end,
+								set = function(_, v)
+									getDb().general.coordsTimeUpdate = v
+									if LPS.ApplyCoordsUpdateInterval then
+										LPS:ApplyCoordsUpdateInterval()
+									end
+								end,
+							},
+						},
 					},
 				},
 			},
@@ -310,30 +343,12 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().tooltips.visibility.enable end,
 								set = function(_, v) getDb().tooltips.visibility.enable = v end,
 							},
-							ttcombathide = {
-								order = 2,
-								name = LPS:L("Combat Hide"),
-								desc = LPS:L("Hide tooltip while in combat."),
-								type = "toggle",
-								disabled = function() return not getDb().tooltips.visibility.enable end,
-								get = function() return getDb().tooltips.visibility.combat end,
-								set = function(_, v) getDb().tooltips.visibility.combat = v end,
-							},
-							tthint = {
-								order = 3,
-								name = LPS:L("Show Hints"),
-								desc = LPS:L("Enable/Disable hints on Tooltip."),
-								type = "toggle",
-								disabled = function() return not getDb().tooltips.visibility.enable end,
-								get = function() return getDb().tooltips.visibility.hints end,
-								set = function(_, v) getDb().tooltips.visibility.hints = v end,
-							},
 						},
 					},
 					tt_options = {
 						order = 2,
 						type = "group",
-						name = LPS:L("Show"),
+						name = LPS:L("Location tooltip"),
 						inline = true,
 						args = {
 							ttst = {
@@ -341,70 +356,145 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Status"),
 								desc = LPS:L("Enable/Disable status on Tooltip."),
 								type = "toggle",
-								width = "full",
+								
 								disabled = function() return not getDb().tooltips.visibility.enable end,
 								get = function() return getDb().tooltips.location.status end,
 								set = function(_, v) getDb().tooltips.location.status = v end,
+							},
+							curr = {
+								order = 1.1,
+								name = LPS:L("Currency"),
+								desc = LPS:L("Enable/Disable the currencies, on Tooltip."),
+								type = "toggle",
+								
+								disabled = function() return not getDb().tooltips.visibility.enable or not LPS.Retail end,
+								get = function() return getDb().tooltips.location.currency end,
+								set = function(_, v) getDb().tooltips.location.currency = v end,
+							},
+							petlevel = {
+								order = 1.2,
+								name = LPS:L("Battle Pet level"),
+								desc = LPS:L("Enable/Disable battle pet level on the area."),
+								type = "toggle",
+								
+								disabled = function() return not getDb().tooltips.visibility.enable or not LPS.Retail end,
+								get = function() return getDb().tooltips.location.battlePets end,
+								set = function(_, v) getDb().tooltips.location.battlePets = v end,
 							},
 							ttlvl = {
 								order = 2,
 								name = LPS:L("Level range"),
 								desc = LPS:L("Enable/Disable level range on Tooltip."),
 								type = "toggle",
+								
 								disabled = function() return not getDb().tooltips.visibility.enable end,
 								get = function() return getDb().tooltips.location.level end,
 								set = function(_, v) getDb().tooltips.location.level = v end,
 							},
 							fish = {
-								order = 3,
+								order = 2.1,
 								name = LPS:L("Area Fishing level"),
 								desc = LPS:L("Enable/Disable fishing level on the area."),
 								type = "toggle",
-								disabled = function() return not getDb().tooltips.visibility.enable end,
-								hidden = function() return LPS.Retail end,
+								
+								disabled = function() return not getDb().tooltips.visibility.enable or LPS.Retail end,
 								get = function() return getDb().tooltips.location.fish end,
 								set = function(_, v) getDb().tooltips.location.fish = v end,
 							},
-							petlevel = {
-								order = 4,
-								name = LPS:L("Battle Pet level"),
-								desc = LPS:L("Enable/Disable battle pet level on the area."),
-								type = "toggle",
-								disabled = function() return not getDb().tooltips.visibility.enable end,
-								hidden = function() return not LPS.Retail end,
-								get = function() return getDb().tooltips.location.battlePets end,
-								set = function(_, v) getDb().tooltips.location.battlePets = v end,
-							},
-							spacer2 = {
-								order = 5,
+							spacer2_prof = {
+								order = 2.2,
 								type = "description",
-								width = "full",
-								name = " ",
+								name = "",
+							},
+							prof = {
+								order = 3,
+								name = LPS:L("Professions"),
+								desc = LPS:L("Enable/Disable the professions, on Tooltip."),
+								type = "toggle",
+								
+								disabled = function() return not getDb().tooltips.visibility.enable end,
+								get = function() return getDb().tooltips.location.proffession end,
+								set = function(_, v) getDb().tooltips.location.proffession = v end,
+							},
+							profcap = {
+								order = 3.1,
+								name = LPS:L("Hide capped"),
+								desc = LPS:L("Hides a profession when the player reaches its highest level."),
+								type = "toggle",
+								
+								disabled = function()
+									return not getDb().tooltips.visibility.enable or not getDb().tooltips.location.proffession
+								end,
+								get = function() return getDb().tooltips.location.proffessionHideMaxLevel end,
+								set = function(_, v) getDb().tooltips.location.proffessionHideMaxLevel = v end,
+							},
+							spacer1_ttreczones = {
+								order = 4,
+								type = "description",
+								name = "",
 							},
 							ttreczones = {
 								order = 6,
 								name = LPS:L("Recommended Zones"),
 								desc = LPS:L("Enable/Disable recommended zones on Tooltip."),
 								type = "toggle",
-								width = "full",
+								
 								disabled = function() return not getDb().tooltips.visibility.enable end,
 								get = function() return getDb().tooltips.location.recomZone end,
 								set = function(_, v) getDb().tooltips.location.recomZone = v end,
+							},
+							ttreczonesmax = {
+								order = 6.1,
+								name = LPS:L("Max entries"),
+								desc = LPS:L("Limit how many entries are shown in this list."),
+								type = "range",
+								
+								min = 3,
+								max = 20,
+								step = 1,
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.location.recomZone end,
+								get = function() return tonumber(getDb().tooltips.location.recomZoneMax) or 5 end,
+								set = function(_, v) getDb().tooltips.location.recomZoneMax = v end,
+							},
+							spacer1_ttinst = {
+								order = 6.2,
+								type = "description",
+								name = "",
 							},
 							ttinst = {
 								order = 7,
 								name = LPS:L("Zone Dungeons"),
 								desc = LPS:L("Enable/Disable dungeons in the zone, on Tooltip."),
 								type = "toggle",
+								
 								disabled = function() return not getDb().tooltips.visibility.enable end,
 								get = function() return getDb().tooltips.location.zoneDungeon end,
 								set = function(_, v) getDb().tooltips.location.zoneDungeon = v end,
+							},
+							ttinstmax = {
+								order = 7.1,
+								name = LPS:L("Max entries"),
+								desc = LPS:L("Limit how many entries are shown in this list."),
+								type = "range",
+								
+								min = 3,
+								max = 20,
+								step = 1,
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.location.zoneDungeon end,
+								get = function() return tonumber(getDb().tooltips.location.zoneDungeonMax) or 5 end,
+								set = function(_, v) getDb().tooltips.location.zoneDungeonMax = v end,
+							},
+							spacer1_ttrecinst = {
+								order = 7.2,
+								type = "description",
+								name = "",
 							},
 							ttrecinst = {
 								order = 8,
 								name = LPS:L("Recommended Dungeons"),
 								desc = LPS:L("Enable/Disable recommended dungeons on Tooltip."),
 								type = "toggle",
+								
 								disabled = function() return not getDb().tooltips.visibility.enable end,
 								get = function() return getDb().tooltips.location.recomDungeon end,
 								set = function(_, v) getDb().tooltips.location.recomDungeon = v end,
@@ -414,46 +504,23 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("with Entrance Coords"),
 								desc = LPS:L("Enable/Disable the coords for area dungeons and recommended dungeon entrances, on Tooltip."),
 								type = "toggle",
-								disabled = function() return not getDb().tooltips.visibility.enable end,
+								
+								disabled = function() return not getDb().tooltips.visibility.enable or not (getDb().tooltips.location.recomDungeon or getDb().tooltips.location.zoneDungeon) end,
 								get = function() return getDb().tooltips.location.recomDungeonCoords end,
 								set = function(_, v) getDb().tooltips.location.recomDungeonCoords = v end,
 							},
-							spacer3 = {
-								order = 10,
-								type = "description",
-								width = "full",
-								name = " ",
-							},
-							curr = {
-								order = 11,
-								name = LPS:L("Currency"),
-								desc = LPS:L("Enable/Disable the currencies, on Tooltip."),
-								type = "toggle",
-								width = "full",
-								disabled = function() return not getDb().tooltips.visibility.enable end,
-								hidden = function() return not LPS.Retail end,
-								get = function() return getDb().tooltips.location.currency end,
-								set = function(_, v) getDb().tooltips.location.currency = v end,
-							},
-							prof = {
-								order = 12,
-								name = LPS:L("Professions"),
-								desc = LPS:L("Enable/Disable the professions, on Tooltip."),
-								type = "toggle",
-								disabled = function() return not getDb().tooltips.visibility.enable end,
-								get = function() return getDb().tooltips.location.proffession end,
-								set = function(_, v) getDb().tooltips.location.proffession = v end,
-							},
-							profcap = {
-								order = 13,
-								name = LPS:L("Hide capped"),
-								desc = LPS:L("Hides a profession when the player reaches its highest level."),
-								type = "toggle",
-								disabled = function()
-									return not getDb().tooltips.visibility.enable or not getDb().tooltips.location.proffession
-								end,
-								get = function() return getDb().tooltips.location.proffessionHideMaxLevel end,
-								set = function(_, v) getDb().tooltips.location.proffessionHideMaxLevel = v end,
+							ttrecinstmax = {
+								order = 8.1,
+								name = LPS:L("Max entries"),
+								desc = LPS:L("Limit how many entries are shown in this list."),
+								type = "range",
+								
+								min = 3,
+								max = 20,
+								step = 1,
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.location.recomDungeon end,
+								get = function() return tonumber(getDb().tooltips.location.recomDungeonMax) or 5 end,
+								set = function(_, v) getDb().tooltips.location.recomDungeonMax = v end,
 							},
 						},
 					},
@@ -491,9 +558,10 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 						args = {
 							enable = {
 								order = 1,
-								name = LPS:L("Time tooltip"),
+								name = LPS:L("Tooltip"),
 								desc = LPS:L("Enable tooltip on the time panel."),
 								type = "toggle",
+								disabled = function() return not getDb().tooltips.visibility.enable end,
 								get = function() return getDb().tooltips.time.enable end,
 								set = function(_, v) getDb().tooltips.time.enable = v end,
 							},
@@ -502,7 +570,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Cooldown raids"),
 								desc = LPS:L("Show saved raids list."),
 								type = "toggle",
-								disabled = function() return not getDb().tooltips.time.enable end,
+								disabled = function() return not getDb().tooltips.time.enable or not getDb().tooltips.visibility.enable end,
 								get = function() return getDb().tooltips.time.raids end,
 								set = function(_, v) getDb().tooltips.time.raids = v end,
 							},
@@ -511,7 +579,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Cooldown dungeons"),
 								desc = LPS:L("Show saved dungeons list."),
 								type = "toggle",
-								disabled = function() return not getDb().tooltips.time.enable end,
+								disabled = function() return not getDb().tooltips.time.enable or not getDb().tooltips.visibility.enable end,
 								get = function() return getDb().tooltips.time.dungeons end,
 								set = function(_, v) getDb().tooltips.time.dungeons = v end,
 							},
@@ -538,9 +606,6 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().layout.lpauto end,
 								set = function(_, v)
 									getDb().layout.lpauto = v
-									if v then
-										getDb().layout.trunc = false
-									end
 									if LPS.ApplyLayout then
 										LPS:ApplyLayout()
 									end
@@ -563,26 +628,12 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									end
 								end,
 							},
-							trunc = {
-								order = 7,
-								type = "toggle",
-								name = LPS:L("Truncate text"),
-								desc = LPS:L("Truncates the text rather than auto enlarge"),
-								disabled = function() return getDb().layout.lpauto end,
-								get = function() return getDb().layout.trunc end,
-								set = function(_, v)
-									getDb().layout.trunc = v
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
-									end
-								end,
-							},
 						},
 					},
 					panels = {
 						order = 2,
 						type = "group",
-						name = LPS:L("DataTexts"),
+						name = LPS:L("Panels"),
 						inline = true,
 						args = {
 							dtshow = {
@@ -590,7 +641,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Show panels"),
 								desc = LPS:L("Show/Hide the extra panels (Coords and Time)."),
 								type = "toggle",
-								width = "full",
+								
 								get = function() return getDb().layout.dtshow end,
 								set = function(_, v)
 									getDb().layout.dtshow = v
@@ -602,78 +653,39 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									end
 								end,
 							},
-							hideCoords = {
-								order = 0.2,
-								name = LPS:L("Hide Coords"),
-								desc = LPS:L("Show/Hide the coords panel."),
-								type = "toggle",
-								width = "full",
-								disabled = function() return getDb().layout.dtshow == false end,
-								get = function() return getDb().show.hideCoords end,
-								set = function(_, v)
-									getDb().show.hideCoords = v
-									if v then
-										getDb().show.hideCoordsInInstance = false
-									end
-									if LPS.ApplyCoordsVisibility then
-										LPS:ApplyCoordsVisibility()
-									end
-									if LPS.UpdateFrameSize then
-										LPS:UpdateFrameSize()
-									end
-								end,
-							},
-							hideTime = {
-								order = 0.25,
-								name = LPS:L("Hide Time"),
-								desc = LPS:L("Show/Hide the time panel."),
-								type = "toggle",
-								width = "full",
-								disabled = function() return getDb().layout.dtshow == false end,
-								get = function() return getDb().show.hideTime end,
-								set = function(_, v)
-									getDb().show.hideTime = v
-									if LPS.ApplyTimeVisibility then
-										LPS:ApplyTimeVisibility()
-									end
-									if LPS.UpdateFrameSize then
-										LPS:UpdateFrameSize()
-									end
-								end,
-							},
-							hideCoordsInInstance = {
-								order = 0.3,
-								name = LPS:L("Hide Coords in Instance"),
-								desc = LPS:L("Show/Hide the coords panel in instances."),
-								type = "toggle",
-								width = "full",
-								disabled = function() return getDb().layout.dtshow == false or getDb().show.hideCoords end,
-								get = function() return getDb().show.hideCoordsInInstance end,
-								set = function(_, v)
-									getDb().show.hideCoordsInInstance = v
-									if LPS.ApplyCoordsVisibility then
-										LPS:ApplyCoordsVisibility()
-									end
-									if LPS.UpdateFrameSize then
-										LPS:UpdateFrameSize()
-									end
-								end,
-							},
-							spacer_dt = {
+							spacer1_dtauto = {
 								order = 0.5,
 								type = "description",
-								width = "full",
-								name = " ",
+								name = "",
+							},
+							spacer2_dtauto = {
+								order = 0.6,
+								type = "description",
+								name = "",
+							},
+							dtauto = {
+								order = 1,
+								type = "toggle",
+								name = LPS:L("Auto width"),
+								desc = LPS:L("Auto resized panels."),
+								disabled = function() return getDb().layout.dtshow == false end,
+								get = function() return getDb().layout.dtauto end,
+								set = function(_, v)
+									getDb().layout.dtauto = v
+									if LPS.ApplyLayout then
+										LPS:ApplyLayout()
+									end
+								end,
 							},
 							dtwidth = {
-								order = 1,
+								order = 2,
 								type = "range",
-								name = LPS:L("DataTexts Width"),
+								name = LPS:L("Width"),
 								desc = LPS:L("Adjust the DataTexts Width."),
 								min = 70,
 								max = 200,
 								step = 1,
-								disabled = function() return getDb().layout.dtshow == false end,
+								disabled = function() return getDb().layout.dtshow == false or getDb().layout.dtauto == true end,
 								get = function() return getDb().layout.dtwidth end,
 								set = function(_, v)
 									getDb().layout.dtwidth = v
@@ -683,7 +695,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								end,
 							},
 							dtheight = {
-								order = 2,
+								order = 3,
 								type = "range",
 								name = LPS:L("All Panels Height"),
 								desc = LPS:L("Adjust All Panels Height."),
@@ -694,6 +706,164 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().layout.dtheight end,
 								set = function(_, v)
 									getDb().layout.dtheight = v
+									if LPS.ApplyLayout then
+										LPS:ApplyLayout()
+									end
+								end,
+							},
+						},
+					},
+					sideSlots = {
+						order = 3,
+						type = "group",
+						name = LPS:L("Side frames"),
+						inline = true,
+						args = {
+							leftSlot = {
+								order = 1,
+								name = LPS:L("Left Slot"),
+								type = "select",
+								
+								values = {
+									none = LPS:L("None"),
+									coords = LPS:L("Coords"),
+									time = LPS:L("Time"),
+									gold = LPS:L("Gold"),
+									system = LPS:L("System"),
+								},
+								get = function()
+									local s = getDb().layout.sideSlots and getDb().layout.sideSlots.left
+									local v = (s and s.frame) or "coords"
+									if v == "NONE" or v == "None" or v == "" or v == nil then
+										return "none"
+									end
+									return v
+								end,
+								set = function(_, v)
+									getDb().layout.sideSlots = getDb().layout.sideSlots or {}
+									getDb().layout.sideSlots.left = getDb().layout.sideSlots.left or {}
+									getDb().layout.sideSlots.right = getDb().layout.sideSlots.right or {}
+									if v ~= "none" and getDb().layout.sideSlots.right.frame == v then
+										getDb().layout.sideSlots.right.frame = "none"
+									end
+									getDb().layout.sideSlots.left.frame = v
+									if LPS.ApplyLayout then
+										LPS:ApplyLayout()
+									end
+								end,
+							},
+							leftOffsetX = {
+								order = 1.1,
+								name = LPS:L("Offset X"),
+								type = "range",
+								
+								min = -200,
+								max = 200,
+								step = 1,
+								get = function()
+									local s = getDb().layout.sideSlots and getDb().layout.sideSlots.left
+									return tonumber(s and s.offsetX) or 0
+								end,
+								set = function(_, v)
+									getDb().layout.sideSlots = getDb().layout.sideSlots or {}
+									getDb().layout.sideSlots.left = getDb().layout.sideSlots.left or {}
+									getDb().layout.sideSlots.left.offsetX = v
+									if LPS.ApplyLayout then
+										LPS:ApplyLayout()
+									end
+								end,
+							},
+							leftOffsetY = {
+								order = 1.2,
+								name = LPS:L("Offset Y"),
+								type = "range",
+								
+								min = -200,
+								max = 200,
+								step = 1,
+								get = function()
+									local s = getDb().layout.sideSlots and getDb().layout.sideSlots.left
+									return tonumber(s and s.offsetY) or 0
+								end,
+								set = function(_, v)
+									getDb().layout.sideSlots = getDb().layout.sideSlots or {}
+									getDb().layout.sideSlots.left = getDb().layout.sideSlots.left or {}
+									getDb().layout.sideSlots.left.offsetY = v
+									if LPS.ApplyLayout then
+										LPS:ApplyLayout()
+									end
+								end,
+							},
+							rightSlot = {
+								order = 2,
+								name = LPS:L("Right Slot"),
+								type = "select",
+								
+								values = {
+									none = LPS:L("None"),
+									coords = LPS:L("Coords"),
+									time = LPS:L("Time"),
+									gold = LPS:L("Gold"),
+									system = LPS:L("System"),
+								},
+								get = function()
+									local s = getDb().layout.sideSlots and getDb().layout.sideSlots.right
+									local v = (s and s.frame) or "time"
+									if v == "NONE" or v == "None" or v == "" or v == nil then
+										return "none"
+									end
+									return v
+								end,
+								set = function(_, v)
+									getDb().layout.sideSlots = getDb().layout.sideSlots or {}
+									getDb().layout.sideSlots.left = getDb().layout.sideSlots.left or {}
+									getDb().layout.sideSlots.right = getDb().layout.sideSlots.right or {}
+									if v ~= "none" and getDb().layout.sideSlots.left.frame == v then
+										getDb().layout.sideSlots.left.frame = "none"
+									end
+									getDb().layout.sideSlots.right.frame = v
+									if LPS.ApplyLayout then
+										LPS:ApplyLayout()
+									end
+								end,
+							},
+							rightOffsetX = {
+								order = 2.1,
+								name = LPS:L("Offset X"),
+								type = "range",
+								
+								min = -200,
+								max = 200,
+								step = 1,
+								get = function()
+									local s = getDb().layout.sideSlots and getDb().layout.sideSlots.right
+									return tonumber(s and s.offsetX) or 0
+								end,
+								set = function(_, v)
+									getDb().layout.sideSlots = getDb().layout.sideSlots or {}
+									getDb().layout.sideSlots.right = getDb().layout.sideSlots.right or {}
+									getDb().layout.sideSlots.right.offsetX = v
+									if LPS.ApplyLayout then
+										LPS:ApplyLayout()
+									end
+								end,
+							},
+							rightOffsetY = {
+								order = 2.2,
+								name = LPS:L("Offset Y"),
+								type = "range",
+								
+								min = -200,
+								max = 200,
+								step = 1,
+								get = function()
+									local s = getDb().layout.sideSlots and getDb().layout.sideSlots.right
+									return tonumber(s and s.offsetY) or 0
+								end,
+								set = function(_, v)
+									getDb().layout.sideSlots = getDb().layout.sideSlots or {}
+									getDb().layout.sideSlots.right = getDb().layout.sideSlots.right or {}
+									getDb().layout.sideSlots.right.offsetY = v
 									if LPS.ApplyLayout then
 										LPS:ApplyLayout()
 									end

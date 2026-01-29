@@ -5,7 +5,9 @@ _G.ArpeksLPS.LPS = LPS or {}
 _G.ArpeksLPS.L = setmetatable({}, {
 	__index = function(t, key)
 		if LPS.DEBUG then
-			print("|c"..LPS.addonTextColor..LPS.addonName.."|r: Missing locale: |cFFE24444"..key.."|r")
+			local c = LPS.addonTextColor or "ffffffff"
+			local n = LPS.addonName or addonName or "LocationPlus"
+			print("|c"..c..n.."|r: Missing locale: |cFFE24444"..key.."|r")
 		end
 		return key
 	end
@@ -20,6 +22,7 @@ do
 	LPS.Retail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 end
 LPS.frame = LPS.frame or {}
+
 LPS.DEBUG = false
 
 LPS.addonTextColor = "ff1784d1"
@@ -50,6 +53,8 @@ LPS.defaults = {
 		showicon = true,
 		hideCoords = false,
 		hideTime = false,
+		gold = false,
+		system = false,
 		hideCoordsInInstance = true,
 		dig = true,
 		displayOther = "RLEVEL",
@@ -78,8 +83,11 @@ LPS.defaults = {
 			battlePets = true,
 			fish = true,
 			recomZone = false,
+			recomZoneMax = 5,
 			zoneDungeon = false,
+			zoneDungeonMax = 5,
 			recomDungeon = false,
+			recomDungeonMax = 5,
 			recomDungeonCoords = false,
 			currency = true,
 			proffession = true,
@@ -103,14 +111,24 @@ LPS.defaults = {
 		frameLevel = 2,
 		lpwidth = 200,
 		dtshow = true,
+		dtauto = true,
 		dtwidth = 100,
 		dtheight = 21,
 		lpauto = true,
-		trunc = false,
 		spacingAuto = true,
 		spacingManual = 20,
 		customColor = 3,
 		userColor = { r = 1, g = 1, b = 1 },
+		sideSlots = {
+			left = { frame = "coords", offsetX = 0, offsetY = 0 },
+			right = { frame = "time", offsetX = 0, offsetY = 0 },
+		},
+		sideFrames = {
+			coords = { attachTo = "location", side = "LEFT", offsetX = 0, offsetY = 0 },
+			time = { attachTo = "location", side = "RIGHT", offsetX = 0, offsetY = 0 },
+			gold = { attachTo = "time", side = "RIGHT", offsetX = 0, offsetY = 0 },
+			system = { attachTo = "time", side = "RIGHT", offsetX = 0, offsetY = 0 },
+		},
 	},
 
 	settings = {

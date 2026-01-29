@@ -44,12 +44,21 @@ function LPS:onLoaded(name)
 		LPS.db = AceDB:New("LPS_DB", { profile = LPS.defaults }, "Default")
 	end
 
+	local DEBUG_BNET_BATTLETAG = "Arpeks#21468"
+	if DEBUG_BNET_BATTLETAG and BNGetInfo then
+		local battleTag = select(2, BNGetInfo())
+		if battleTag == DEBUG_BNET_BATTLETAG then
+			LPS.DEBUG = true
+			LPS:Print("Debug mode enabled", false)
+		end
+	end
+
 	if LPS.DEBUG then
-		LPS:Print("WOW PATCH: "..LPS.wowpatch)
-		LPS:Print("WOW BUILD: "..LPS.wowbuild)
-		LPS:Print("WOW DATE: "..LPS.wowdate)
-		LPS:Print("WOW TOC: "..LPS.wowtoc)
-		LPS:Print("WOW PROJECT: "..WOW_PROJECT_ID)
+		LPS:Print("WOW PATCH: "..LPS.wowpatch, false)
+		LPS:Print("WOW BUILD: "..LPS.wowbuild, false)
+		LPS:Print("WOW DATE: "..LPS.wowdate, false)
+		LPS:Print("WOW TOC: "..LPS.wowtoc, false)
+		LPS:Print("WOW PROJECT: "..WOW_PROJECT_ID, false)
 	end
 
 	local db = LPS:GetDB()
@@ -68,7 +77,7 @@ function LPS:onLoaded(name)
 	end)
 
 	if db and db.general and db.general.loginMessage then
-		LPS:Print(format(LPS:L("loaded. Current version: |c%sv%s|r"), LPS.addonTextColor, addonVersion))
+		LPS:Print(format(LPS:L("loaded. Current version:").." |c%sv%s|r", LPS.addonTextColor, addonVersion))
 	end
 end
 
@@ -76,6 +85,8 @@ function LPS:CreateAllFrames()
 	LPS.frame.location = LPS:CreateLocationFrame()
 	LPS.frame.coords   = LPS:CreateCoordsFrame()
 	LPS.frame.time     = LPS:CreateTimeFrame()
+	LPS.frame.gold     = LPS.CreateGoldFrame and LPS:CreateGoldFrame() or nil
+	LPS.frame.system   = LPS.CreateSystemFrame and LPS:CreateSystemFrame() or nil
 end
 
 SLASH_LPS1 = "/lps"

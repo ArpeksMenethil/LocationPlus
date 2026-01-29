@@ -28,29 +28,7 @@ function LPS:CreateCoordsFrame()
 				end
 				return
 			end
-			local hide = false
-			if db2 and db2.show and db2.show.hideCoords then
-				hide = true
-			elseif db2 and db2.show and db2.show.hideCoordsInInstance and IsInInstance() then
-				hide = true
-			end
-
-			if hide then
-				if f:IsShown() then
-					f:Hide()
-					if LPS.UpdateFrameSize then
-						LPS:UpdateFrameSize()
-					end
-				end
-				return
-			end
-
-			if not f:IsShown() then
-				f:Show()
-				if LPS.UpdateFrameSize then
-					LPS:UpdateFrameSize()
-				end
-			end
+			-- Slot-based visibility is handled by ApplyLayout(); here we only update the displayed text.
 
 			local x, y = LPS:GetPlayerCoords()
 			if f.text then
