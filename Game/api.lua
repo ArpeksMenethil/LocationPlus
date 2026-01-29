@@ -676,9 +676,8 @@ end
 
 function LPS:ApplyTimeFormat()
 	local db = LPS:GetDB()
-	if LPS.Retail then
-		SetCVar("timeMgrUseMilitaryTime", db.general.is24H and 1 or 0)
-	end
+	SetCVar("timeMgrUseMilitaryTime", db.general.is24H and 1 or 0)
+	
 	local f = LPS.frame and LPS.frame.time
 	if f and f._lpsUpdateFunc then
 		f._lpsUpdateFunc(f)
