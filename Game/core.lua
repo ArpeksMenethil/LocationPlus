@@ -74,6 +74,7 @@ function LPS:onLoaded(name)
 
 	C_Timer.After(1, function()
 		LPS:UpdateFrameSize()
+		LPS:ApplyLayout()
 	end)
 
 	if db and db.general and db.general.loginMessage then
