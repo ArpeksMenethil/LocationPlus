@@ -325,8 +325,10 @@ function LPS:SetMoveMode(enabled)
 		for _, line in ipairs(f.grid and f.grid.hLines or {}) do
 			line:Hide()
 		end
-		f:SetFrameStrata("HIGH")
-		f:SetFrameLevel(1)
+		local db = LPS:GetDB()
+		local layout = db and db.layout
+		f:SetFrameStrata((layout and layout.frameStrata) or "HIGH")
+		f:SetFrameLevel(tonumber(layout and layout.frameLevel) or 1)
 		f:SetScript("OnMouseDown", nil)
 		f:SetScript("OnMouseUp", nil)
 

@@ -227,6 +227,12 @@ L["Background color"] = true
 L["Set background color."] = true
 L["Border color"] = true
 L["Set border color."] = true
+L["Frame strata"] = true
+L["Controls how high the LocationPlus panels are drawn."] = true
+L["Frame level"] = true
+L["Fine-tune draw order within the selected strata."] = true
+L["Automatically manage spacing between panels."] = true
+L["Set spacing between panels."] = true
 L["Profiles"] = true
 
 L["Show DataTexts"] = true

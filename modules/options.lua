@@ -928,6 +928,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								order = 1,
 								type = "toggle",
 								name = LPS:L("Auto"),
+								desc = LPS:L("Automatically manage spacing between panels."),
 								get = function() return getDb().layout.spacingAuto end,
 								set = function(_, v)
 									getDb().layout.spacingAuto = v
@@ -940,6 +941,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								order = 2,
 								type = "range",
 								name = LPS:L("Manual"),
+								desc = LPS:L("Set spacing between panels."),
 								min = 0,
 								max = 200,
 								step = 1,
@@ -960,24 +962,46 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 						order = 20,
 						inline = true,
 						args = {
-							bgEnable = {
-								type = "toggle",
-								name = LPS:L("Enable background"),
-								desc = LPS:L("Toggle background on the panel."),
-								order = 1,
-								get = function() return getDb().settings.colors.bgEnable end,
+							frameStrata = {
+								type = "select",
+								name = LPS:L("Frame strata"),
+								desc = LPS:L("Controls how high the LocationPlus panels are drawn."),
+								order = 0,
+								values = strataValues,
+								get = function() return getDb().layout.frameStrata end,
 								set = function(_, v)
-									getDb().settings.colors.bgEnable = v
-									if LPS.ApplyStyle then
-										LPS:ApplyStyle()
+									getDb().layout.frameStrata = v
+									if LPS.ApplyLayout then
+										LPS:ApplyLayout()
 									end
 								end,
+							},
+							frameLevel = {
+								type = "range",
+								name = LPS:L("Frame level"),
+								desc = LPS:L("Fine-tune draw order within the selected strata."),
+								order = 0.1,
+								min = 0,
+								max = 1000,
+								step = 1,
+								get = function() return tonumber(getDb().layout.frameLevel) or 1 end,
+								set = function(_, v)
+									getDb().layout.frameLevel = v
+									if LPS.ApplyLayout then
+										LPS:ApplyLayout()
+									end
+								end,
+							},
+							spacer1_fontSize = {
+								type = "description",
+								name = " ",
+								order = 0.5,
 							},
 							fontSize = {
 								type = "range",
 								name = LPS:L("Font size"),
 								desc = LPS:L("Set font size."),
-								order = 2,
+								order = 1.1,
 								min = 8,
 								max = 20,
 								step = 1,
@@ -993,7 +1017,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "range",
 								name = LPS:L("Border size"),
 								desc = LPS:L("Set border thickness."),
-								order = 3,
+								order = 1.2,
 								min = 1,
 								max = 6,
 								step = 1,
@@ -1005,11 +1029,29 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									end
 								end,
 							},
+							spacer1_bgEnable = {
+								type = "description",
+								name = " ",
+								order = 1.5,
+							},
+							bgEnable = {
+								type = "toggle",
+								name = LPS:L("Enable background"),
+								desc = LPS:L("Toggle background on the panel."),
+								order = 2.1,
+								get = function() return getDb().settings.colors.bgEnable end,
+								set = function(_, v)
+									getDb().settings.colors.bgEnable = v
+									if LPS.ApplyStyle then
+										LPS:ApplyStyle()
+									end
+								end,
+							},
 							bgColor = {
 								type = "color",
 								name = LPS:L("Background color"),
 								desc = LPS:L("Set background color."),
-								order = 4,
+								order = 2.2,
 								hasAlpha = true,
 								get = function()
 									local c = getDb().settings.colors.bg
@@ -1027,7 +1069,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "color",
 								name = LPS:L("Border color"),
 								desc = LPS:L("Set border color."),
-								order = 5,
+								order = 3.3,
 								hasAlpha = true,
 								get = function()
 									local c = getDb().settings.colors.border
