@@ -78,7 +78,7 @@ function LPS:onLoaded(name)
 	end)
 
 	if db and db.general and db.general.loginMessage then
-		LPS:Print(format(LPS:L("loaded. Current version:").." |c%sv%s|r", LPS.addonTextColor, addonVersion))
+		LPS:Print(format(LPS:L("loaded. Current version:").." |c%sv%s|r", LPS.addonTextColor, addonVersion), false)
 	end
 end
 
