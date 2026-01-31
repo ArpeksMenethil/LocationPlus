@@ -715,11 +715,47 @@ function LPS:GetMapNameByIDAlt(mapID)
 	return Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN
 end
 
+function LPS:DisableMoveModeIfActive()
+	local holder = LPS.frame and LPS.frame.holder
+	if holder and holder.isMoving then
+		if LPS.SetMoveMode then
+			LPS:SetMoveMode(false)
+		end
+		holder.isMoving = false
+	end
+end
+
+function LPS:EnsureOptionsCloseHooks()
+	if not LPS._optionsCloseHooks then
+		LPS._optionsCloseHooks = {}
+	end
+
+	local function hookOnHide(frame, key)
+		if not (frame and frame.HookScript) then return end
+		if LPS._optionsCloseHooks[key] then return end
+		LPS._optionsCloseHooks[key] = true
+		frame:HookScript("OnHide", function()
+			if LPS.DisableMoveModeIfActive then
+				LPS:DisableMoveModeIfActive()
+			end
+		end)
+	end
+
+	hookOnHide(_G.SettingsPanel, "SettingsPanel")
+	hookOnHide(_G.InterfaceOptionsFrame, "InterfaceOptionsFrame")
+end
+
 function LPS:ToggleOptions()
 	local aceDialog = LibStub and LibStub:GetLibrary("AceConfigDialog-3.0", true) and LibStub("AceConfigDialog-3.0")
+	if LPS.EnsureOptionsCloseHooks then
+		LPS:EnsureOptionsCloseHooks()
+	end
 	if aceDialog and LPS.Options and LPS.Options.aceAppName then
 		local appName = LPS.Options.aceAppName
 		if aceDialog.OpenFrames and aceDialog.OpenFrames[appName] then
+			if LPS.DisableMoveModeIfActive then
+				LPS:DisableMoveModeIfActive()
+			end
 			aceDialog:Close(appName)
 		else
 			aceDialog:Open(appName)
@@ -732,16 +768,33 @@ function LPS:ToggleOptions()
 				if frame and frame.SetResizable then
 					frame:SetResizable(false)
 				end
+				if frame and frame.HookScript then
+					LPS._optionsCloseHooks = LPS._optionsCloseHooks or {}
+					if not LPS._optionsCloseHooks.AceConfigDialogFrame then
+						LPS._optionsCloseHooks.AceConfigDialogFrame = true
+						frame:HookScript("OnHide", function()
+							if LPS.DisableMoveModeIfActive then
+								LPS:DisableMoveModeIfActive()
+							end
+						end)
+					end
+				end
 			end
 		end
 		return
 	end
 
 	if _G.SettingsPanel and _G.SettingsPanel.IsShown and _G.SettingsPanel:IsShown() then
+		if LPS.DisableMoveModeIfActive then
+			LPS:DisableMoveModeIfActive()
+		end
 		_G.SettingsPanel:Hide()
 		return
 	end
 	if _G.InterfaceOptionsFrame and _G.InterfaceOptionsFrame.IsShown and _G.InterfaceOptionsFrame:IsShown() then
+		if LPS.DisableMoveModeIfActive then
+			LPS:DisableMoveModeIfActive()
+		end
 		_G.InterfaceOptionsFrame:Hide()
 		return
 	end
