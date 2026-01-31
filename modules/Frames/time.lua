@@ -26,12 +26,15 @@ function LPS:CreateTimeFrame()
 		updateTicker = {interval = 1},
 		registerClicks = {"LeftButtonUp", "RightButtonUp"},
 		onClick = function(self, button)
-			if LPS.Retail then
-				if button == "LeftButton" then ToggleTimeManager()
-				elseif button == "RightButton" then ToggleCalendar() end
-			elseif LPS.TBC then
-				if button == "LeftButton" then
+			if button == "LeftButton" then
+				if ToggleTimeManager then
+					ToggleTimeManager()
+				elseif TimeManagerClockButton_OnClick and TimeManagerClockButton then
 					TimeManagerClockButton_OnClick(TimeManagerClockButton)
+				end
+			elseif button == "RightButton" then
+				if ToggleCalendar then
+					ToggleCalendar()
 				end
 			end
 		end,

@@ -394,6 +394,8 @@ if LPS.Retail and LibStub:GetLibrary("LibTourist-3.0", true) then
 	Tourist = LibStub("LibTourist-3.0")
 elseif LPS.TBC and  LibStub:GetLibrary("LibTouristClassicBCA", true) then
 	Tourist = LibStub("LibTouristClassicBCA")
+elseif LPS.MISTS and LibStub:GetLibrary("LibTouristClassic-1.0", true) then
+	Tourist = LibStub("LibTouristClassic-1.0")
 elseif LPS.Classic and  LibStub:GetLibrary("LibTouristClassicEra", true) then
 	Tourist = LibStub("LibTouristClassicEra")
 end

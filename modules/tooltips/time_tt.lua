@@ -369,7 +369,7 @@ function LPS:BuildTimeTooltip()
 	GameTooltip:AddDoubleLine(" ")
 	GameTooltip:AddDoubleLine(LPS:L("LMB"), LPS:L("Toggle time"), rB, gB, bB, rB, gB, bB)
 
-	if not LPS.TBC then
+	if ToggleCalendar then
 		GameTooltip:AddDoubleLine(LPS:L("RMB"), LPS:L("Toggle calendar"), rB, gB, bB, rB, gB, bB)
 	end
 

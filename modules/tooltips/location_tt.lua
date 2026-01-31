@@ -7,6 +7,8 @@ if LPS.Retail and LibStub:GetLibrary("LibTourist-3.0", true) then
 	Tourist = LibStub("LibTourist-3.0")
 elseif LPS.TBC and  LibStub:GetLibrary("LibTouristClassicBCA", true) then
 	Tourist = LibStub("LibTouristClassicBCA")
+elseif LPS.MISTS and LibStub:GetLibrary("LibTouristClassic-1.0", true) then
+	Tourist = LibStub("LibTouristClassic-1.0")
 elseif LPS.Classic and  LibStub:GetLibrary("LibTouristClassicEra", true) then
 	Tourist = LibStub("LibTouristClassicEra")
 end
@@ -75,7 +77,8 @@ end
 
 -- PetBattle Range
 function LPS:GetBattlePetLvl(zoneText)
-	if not LPS.Retail then return end
+	if not (LPS.Retail or LPS.MISTS) then return end
+	if not Tourist or not Tourist.GetBattlePetLevel then return end
 
 	local uniqueZone = Tourist:GetUniqueZoneNameForLookup(zoneText, LPS:GetContinentID())
 	local low,high = Tourist:GetBattlePetLevel(uniqueZone)
@@ -129,11 +132,17 @@ local function PvPorRaidFilter(zone)
 	isPvP = nil;
 	isRaid = nil;
 
-	if(not LPS.TBC and Tourist:IsArena(zone) or Tourist:IsBattleground(zone)) then
+	local isArena = false
+	if not LPS.TBC then
+		isArena = Tourist.IsArena and Tourist:IsArena(zone) or false
+	end
+	local isBattleground = Tourist.IsBattleground and Tourist:IsBattleground(zone) or false
+	if isArena or isBattleground then
 		isPvP = true;
 	end
 
-	if(not isPvP and Tourist:GetInstanceGroupMinSize(zone) >= 10) then
+	local groupMinSize = Tourist.GetInstanceGroupMinSize and Tourist:GetInstanceGroupMinSize(zone) or 0
+	if(not isPvP and groupMinSize >= 10) then
 		isRaid = true;
 	end
 
@@ -170,7 +179,7 @@ end
 local function GetZoneDungeons(dungeon)
 	local low, high = Tourist:GetLevel(dungeon)
 	local r, g, b = Tourist:GetLevelColor(dungeon)
-	local groupSize = Tourist:GetInstanceGroupMinSize(dungeon)
+	local groupSize = Tourist.GetInstanceGroupMinSize and Tourist:GetInstanceGroupMinSize(dungeon) or 0
 	local groupSizeStyle = (groupSize > 0 and format("|cFFFFFF00|r (%d)", groupSize) or "")
 	local name = dungeon
 
@@ -252,7 +261,7 @@ function LPS:BuildLocationTooltip()
 			willShowExtra = true
 		end
 	end
-	if LPS.Retail and db.tooltips.location.battlePets then
+	if (LPS.Retail or LPS.MISTS) and db.tooltips.location.battlePets then
 		local checkbpet = LPS:GetBattlePetLvl(zoneText)
 		if checkbpet then
 			willShowExtra = true
@@ -279,7 +288,7 @@ function LPS:BuildLocationTooltip()
 	end
 
 	-- Pet Levels
-	if LPS.Retail and db.tooltips.location.battlePets then
+	if (LPS.Retail or LPS.MISTS) and db.tooltips.location.battlePets then
 		local checkbpet = LPS:GetBattlePetLvl(zoneText)
 		if checkbpet then
 				GameTooltip:AddDoubleLine(LPS:L("Battle Pet level").. ": ", checkbpet.." "..PET_ICON, r, g, b)

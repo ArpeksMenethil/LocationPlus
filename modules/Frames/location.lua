@@ -49,7 +49,7 @@ function LPS:CreateLocationFrame()
 						icon = " |TInterface\\AddOns\\LocationPlus\\Media\\fish.tga:14:14|t"
 					end
 				end
-			elseif other == "PET" and LPS.Retail and LPS.GetBattlePetLvl then
+			elseif other == "PET" and (LPS.Retail or LPS.MISTS) and LPS.GetBattlePetLvl then
 				extra = LPS:GetBattlePetLvl(zone) or ""
 				if showIcon and extra ~= "" then
 					icon = " |TInterface\\AddOns\\LocationPlus\\Media\\pet.tga:14:14|t"
