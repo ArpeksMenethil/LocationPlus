@@ -67,7 +67,7 @@ function LPS:BuildGoldTooltip(tt)
 
 	local realm = getRealmKey()
 	local allChars = {}
-	local allyTotal, hordeTotal, total = 0, 0, 0
+	local allyTotal, hordeTotal, realmTotal, accountTotal = 0, 0, 0, 0
 	local currentName = UnitName("player")
 
 	if LPS_DB and LPS_DB.gold and LPS_DB.gold.realms and realm ~= "" then
@@ -83,11 +83,21 @@ function LPS:BuildGoldTooltip(tt)
 					faction = faction,
 					class = classFile,
 				}
-				total = total + money
+				realmTotal = realmTotal + money
 				if faction == "Alliance" then
 					allyTotal = allyTotal + money
 				elseif faction == "Horde" then
 					hordeTotal = hordeTotal + money
+				end
+			end
+		end
+	end
+
+	if LPS_DB and LPS_DB.gold and LPS_DB.gold.realms then
+		for _, realmInfo in pairs(LPS_DB.gold.realms) do
+			if realmInfo and realmInfo.chars then
+				for _, info in pairs(realmInfo.chars) do
+					accountTotal = accountTotal + (tonumber(info and info.money) or 0)
 				end
 			end
 		end
@@ -119,8 +129,8 @@ function LPS:BuildGoldTooltip(tt)
 	tt:AddLine(LPS:L("On server")..":", headerR, headerG, headerB)
 	tt:AddDoubleLine(LPS:L("Alliance")..":", moneyText(allyTotal), 0.41, 0.8, 0.94, whiteR, whiteG, whiteB)
 	tt:AddDoubleLine(LPS:L("Horde")..":", moneyText(hordeTotal), 1, 0.1, 0.1, whiteR, whiteG, whiteB)
+	tt:AddDoubleLine(LPS:L("Total")..":", moneyText(accountTotal), whiteR, whiteG, whiteB, whiteR, whiteG, whiteB)
 	tt:AddLine(" ")
-	tt:AddDoubleLine(LPS:L("Total")..":", moneyText(total), whiteR, whiteG, whiteB, whiteR, whiteG, whiteB)
 
 	local warbandMoney
 	if LPS_DB and LPS_DB.gold then
@@ -140,6 +150,9 @@ function LPS:BuildGoldTooltip(tt)
 	end
 	if warbandApiOk or warbandMoney ~= nil then
 		tt:AddDoubleLine(LPS:L("Warband")..":", moneyText(warbandMoney or 0), whiteR, whiteG, whiteB, whiteR, whiteG, whiteB)
+		if warbandApiOk then
+			tt:AddDoubleLine(LPS:L("Total")..":", moneyText(accountTotal + (tonumber(warbandMoney) or 0)), whiteR, whiteG, whiteB, whiteR, whiteG, whiteB)
+		end
 	end
 
 	local tokenPrice

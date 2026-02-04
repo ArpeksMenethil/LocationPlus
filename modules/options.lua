@@ -339,10 +339,19 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 						args = {
 							tt = {
 								order = 1,
-								name = LPS:L("Show/Hide tooltip"),
+								name = LPS:L("Show tooltip"),
 								type = "toggle",
 								get = function() return getDb().tooltips.visibility.enable end,
 								set = function(_, v) getDb().tooltips.visibility.enable = v end,
+							},
+							hide_in_combat = {
+								order = 2,
+								name = LPS:L("Hide in combat"),
+								desc = LPS:L("Hide tooltips while in combat."),
+								type = "toggle",
+								disabled = function() return not getDb().tooltips.visibility.enable end,
+								get = function() return getDb().tooltips.visibility.combat end,
+								set = function(_, v) getDb().tooltips.visibility.combat = v end,
 							},
 						},
 					},

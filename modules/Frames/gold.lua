@@ -175,12 +175,33 @@ end
 local function ensureSession()
 	LPS._goldSession = LPS._goldSession or {}
 	local s = LPS._goldSession
-	if not s.last then
-		local m = GetMoney() or 0
-		s.start = m
-		s.last = m
-		s.earned = 0
-		s.spent = 0
+	if not s.initialized then
+		if not s._initTimerStarted and C_Timer and C_Timer.After then
+			s._initTimerStarted = true
+			s._initCandidate = GetMoney() or 0
+			s._initTries = 0
+			local function tryInit()
+				if not (LPS and LPS._goldSession) then return end
+				local ss = LPS._goldSession
+				if not ss or ss.initialized then return end
+				ss._initTries = (ss._initTries or 0) + 1
+				local m = GetMoney() or 0
+				if m == (ss._initCandidate or m) or (ss._initTries or 0) >= 10 then
+					ss.start = m
+					ss.last = m
+					ss.earned = 0
+					ss.spent = 0
+					ss.initialized = true
+					if LPS.UpdateGoldCharacterData then
+						LPS:UpdateGoldCharacterData()
+					end
+					return
+				end
+				ss._initCandidate = m
+				C_Timer.After(0.5, tryInit)
+			end
+			C_Timer.After(0.5, tryInit)
+		end
 	end
 	return s
 end
@@ -192,6 +213,8 @@ function LPS:ResetGoldSession()
 	s.last = m
 	s.earned = 0
 	s.spent = 0
+	s.initialized = true
+	s._initTimerStarted = true
 end
 
 function LPS:GetGoldSessionData()
@@ -212,7 +235,9 @@ end
 
 function LPS:OnPlayerMoney()
 	local s = ensureSession()
+	if not s.initialized then return end
 	local current = GetMoney() or 0
+	if not s.last then return end
 	local diff = current - (s.last or current)
 	if diff > 0 then
 		s.earned = (s.earned or 0) + diff

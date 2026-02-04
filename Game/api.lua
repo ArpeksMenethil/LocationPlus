@@ -46,7 +46,12 @@ function LPS:ApplyLayout()
 			f:SetHeight(dtHeight)
 		end
 		if not dtAuto and f.SetWidth then
-			f:SetWidth(dtWidth)
+			local w = dtWidth
+			if f == frames.time and f.text and f.text.GetStringWidth then
+				local tw = f.text:GetStringWidth() or 0
+				w = math.max(w, tw + 20)
+			end
+			f:SetWidth(w)
 		end
 	end
 
@@ -536,7 +541,7 @@ end
 function LPS:GetFormattedGameTime()
 	local db = LPS:GetDB()
 	local layout = db and db.layout or {}
-	local is24h = GetCVarBool("timeMgrUseMilitaryTime")
+	local is24h = db and db.general and db.general.is24H
 	local useLocal = GetCVarBool("timeMgrUseLocalTime")
 
 	local function getClassColor()
@@ -591,16 +596,16 @@ function LPS:GetFormattedGameTime()
 		h = h % 12
 		if h == 0 then h = 12 end
 		if db.general.seconds and useLocal then
-			return string.format("%d%s%02d%s%02d %s", h, colon, m, colon, s, suffix)
+			return string.format("%02d%s%02d%s%02d %s", h, colon, m, colon, s, suffix)
 		else
-			return string.format("%d%s%02d %s", h, colon, m, suffix)
+			return string.format("%02d%s%02d %s", h, colon, m, suffix)
 		end
 	end
 
 	if db.general.seconds and useLocal then
-			return string.format("%d%s%02d%s%02d", h, colon, m, colon, s)
+			return string.format("%02d%s%02d%s%02d", h, colon, m, colon, s)
 		else
-			return string.format("%d%s%02d", h, colon, m)
+			return string.format("%02d%s%02d", h, colon, m)
 		end
 end
 
@@ -678,14 +683,16 @@ end
 
 function LPS:ApplyTimeFormat()
 	local db = LPS:GetDB()
-	SetCVar("timeMgrUseMilitaryTime", db.general.is24H and 1 or 0)
-	
+
 	local f = LPS.frame and LPS.frame.time
 	if f and f._lpsUpdateFunc then
 		f._lpsUpdateFunc(f)
 	end
 	if LPS.ApplyLayout then
 		LPS:ApplyLayout()
+	end
+	if LPS.UpdateFrameSize then
+		LPS:UpdateFrameSize()
 	end
 end
 
