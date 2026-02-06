@@ -13,8 +13,63 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 	local AceSerializer = LibStub:GetLibrary("AceSerializer-3.0", true)
 	local LibDeflate = LibStub:GetLibrary("LibDeflate", true)
 	local PROFILE_EXPORT_PREFIX = "!LPS1!"
+	local AceGUI = LibStub:GetLibrary("AceGUI-3.0", true)
 
 	LPS.Options.aceAppName = "LocationPlus"
+
+	if AceGUI and (AceGUI:GetWidgetVersion("LPSEditBoxNoButton") or 0) < 2 then
+		local baseCtor = AceGUI.WidgetRegistry and AceGUI.WidgetRegistry["EditBox"]
+		if baseCtor then
+			AceGUI:RegisterWidgetType("LPSEditBoxNoButton", function()
+				local widget = baseCtor()
+				widget.type = "LPSEditBoxNoButton"
+				local baseOnAcquire = widget.OnAcquire
+				widget.OnAcquire = function(self)
+					if baseOnAcquire then baseOnAcquire(self) end
+					if self.DisableButton then
+						self:DisableButton(true)
+					end
+				end
+				if widget.editbox and widget.GetUserData then
+					widget.editbox:HookScript("OnTextChanged", function(frame, userInput)
+						if not userInput then return end
+						local option = widget:GetUserData("option")
+						if option and type(option.set) == "function" then
+							option.set(nil, frame:GetText())
+						end
+					end)
+				end
+				return widget
+			end, 2)
+		end
+	end
+
+	if AceGUI and (AceGUI:GetWidgetVersion("LPSMultiLineEditBoxNoButton") or 0) < 2 then
+		local baseCtor = AceGUI.WidgetRegistry and AceGUI.WidgetRegistry["MultiLineEditBox"]
+		if baseCtor then
+			AceGUI:RegisterWidgetType("LPSMultiLineEditBoxNoButton", function()
+				local widget = baseCtor()
+				widget.type = "LPSMultiLineEditBoxNoButton"
+				local baseOnAcquire = widget.OnAcquire
+				widget.OnAcquire = function(self)
+					if baseOnAcquire then baseOnAcquire(self) end
+					if self.DisableButton then
+						self:DisableButton(true)
+					end
+				end
+				if widget.editBox and widget.GetUserData then
+					widget.editBox:HookScript("OnTextChanged", function(frame, userInput)
+						if not userInput then return end
+						local option = widget:GetUserData("option")
+						if option and type(option.set) == "function" then
+							option.set(nil, frame:GetText())
+						end
+					end)
+				end
+				return widget
+			end, 2)
+		end
+	end
 
 	local function getDb()
 		return LPS:GetDB()
@@ -1111,24 +1166,25 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 			},
 			importexport = {
 				type = "group",
-				name = "Import/Export",
+				name = LPS:L("Import/Export"),
 				order = 91,
 				childGroups = "tab",
 				args = {
 					export = {
 						type = "group",
-						name = "Export",
+						name = LPS:L("Export"),
 						order = 1,
 						args = {
 							header = {
 								order = 1,
 								type = "header",
-								name = "Export",
+								name = LPS:L("Export"),
 							},
 							generate = {
 								order = 2,
 								type = "execute",
-								name = "Generate export string",
+								name = LPS:L("Generate export string"),
+								desc = LPS:L("Generate an export string for the current profile."),
 								disabled = function()
 									return not (AceSerializer and LPS.db and LPS.db.profile)
 								end,
@@ -1148,10 +1204,11 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 							text = {
 								order = 3,
 								type = "input",
-								name = " ",
+								name = LPS:L("Export string"),
+								desc = LPS:L("Copy this string to export your current profile."),
 								width = "full",
 								multiline = 12,
-								dialogControl = "MultiLineEditBox",
+								dialogControl = "LPSMultiLineEditBoxNoButton",
 								disabled = function()
 									return not (AceSerializer and LPS.db and LPS.db.profile)
 								end,
@@ -1162,18 +1219,20 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 					},
 					import = {
 						type = "group",
-						name = "Import",
+						name = LPS:L("Import"),
 						order = 2,
 						args = {
 							header = {
 								order = 1,
 								type = "header",
-								name = "Import",
+								name = LPS:L("Import"),
 							},
 							asName = {
 								order = 2,
 								type = "input",
-								name = "Import as profile name (optional)",
+								name = LPS:L("Profile name"),
+								desc = LPS:L("Name of the profile to import into."),
+								dialogControl = "LPSEditBoxNoButton",
 								disabled = function()
 									return not (AceSerializer and LPS.db and LPS.db.SetProfile and LPS.db.profile)
 								end,
@@ -1183,10 +1242,11 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 							text = {
 								order = 3,
 								type = "input",
-								name = " ",
+								name = LPS:L("Import string"),
+								desc = LPS:L("Paste an export string here to import a profile."),
 								width = "full",
 								multiline = 12,
-								dialogControl = "MultiLineEditBox",
+								dialogControl = "LPSMultiLineEditBoxNoButton",
 								disabled = function()
 									return not (AceSerializer and LPS.db and LPS.db.profile)
 								end,
@@ -1196,13 +1256,16 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 							doImport = {
 								order = 4,
 								type = "execute",
-								name = "Import",
+								name = LPS:L("Import"),
+								desc = LPS:L("Import the string into the selected profile name."),
 								disabled = function()
 									return not (AceSerializer and LPS.db and LPS.db.profile and LPS.db.SetProfile)
 								end,
 								func = function()
 									local s = tostring(LPS.Options._profileImportText or "")
 									if s == "" then return end
+									local importName = tostring(LPS.Options._profileImportAsName or "")
+									if importName == "" then return end
 									local decodeString = s
 									if LibDeflate and LibDeflate.DecodeForPrint and LibDeflate.DecompressDeflate and s:sub(1, #PROFILE_EXPORT_PREFIX) == PROFILE_EXPORT_PREFIX then
 										local encoded = s:sub(#PROFILE_EXPORT_PREFIX + 1)
@@ -1217,10 +1280,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									if not ok or type(t) ~= "table" then
 										return
 									end
-									local importName = tostring(LPS.Options._profileImportAsName or "")
-									if importName ~= "" then
-										LPS.db:SetProfile(importName)
-									end
+									LPS.db:SetProfile(importName)
 									local p2 = LPS.db.profile
 									for k in pairs(p2) do
 										p2[k] = nil
