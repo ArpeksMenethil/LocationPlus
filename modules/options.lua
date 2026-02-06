@@ -11,6 +11,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 	local AceDialog = LibStub("AceConfigDialog-3.0")
 	local AceConfigRegistry = LibStub:GetLibrary("AceConfigRegistry-3.0", true)
 	local AceSerializer = LibStub:GetLibrary("AceSerializer-3.0", true)
+	local LibDeflate = LibStub:GetLibrary("LibDeflate", true)
+	local PROFILE_EXPORT_PREFIX = "!LPS1!"
 
 	LPS.Options.aceAppName = "LocationPlus"
 
@@ -31,6 +33,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 		end
 		return t
 	end
+
+	local deepCopy
 
 	local strataValues = {
 		["BACKGROUND"] = "BACKGROUND",
@@ -1129,7 +1133,16 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									return not (AceSerializer and LPS.db and LPS.db.profile)
 								end,
 								func = function()
-									LPS.Options._profileExportText = AceSerializer:Serialize(LPS.db.profile or {})
+									local serialString = AceSerializer:Serialize(LPS.db.profile or {})
+									if LibDeflate and LibDeflate.CompressDeflate and LibDeflate.EncodeForPrint then
+										local compressedData = LibDeflate:CompressDeflate(serialString, { level = 5 })
+										local printableString = compressedData and LibDeflate:EncodeForPrint(compressedData)
+										if printableString then
+											LPS.Options._profileExportText = PROFILE_EXPORT_PREFIX .. printableString
+											return
+										end
+									end
+									LPS.Options._profileExportText = serialString
 								end,
 							},
 							text = {
@@ -1190,7 +1203,17 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								func = function()
 									local s = tostring(LPS.Options._profileImportText or "")
 									if s == "" then return end
-									local ok, t = AceSerializer:Deserialize(s)
+									local decodeString = s
+									if LibDeflate and LibDeflate.DecodeForPrint and LibDeflate.DecompressDeflate and s:sub(1, #PROFILE_EXPORT_PREFIX) == PROFILE_EXPORT_PREFIX then
+										local encoded = s:sub(#PROFILE_EXPORT_PREFIX + 1)
+										encoded = encoded:gsub("%s+", "")
+										local compressed = LibDeflate:DecodeForPrint(encoded)
+										if not compressed then return end
+										local decompressed = LibDeflate:DecompressDeflate(compressed)
+										if not decompressed then return end
+										decodeString = decompressed
+									end
+									local ok, t = AceSerializer:Deserialize(decodeString)
 									if not ok or type(t) ~= "table" then
 										return
 									end
@@ -1220,7 +1243,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 	AceConfig:RegisterOptionsTable(LPS.Options.aceAppName, options)
 	AceDialog:AddToBlizOptions(LPS.Options.aceAppName, LPS:L("Location Plus"))
 
-	local function deepCopy(v)
+	deepCopy = function(v)
 		if type(v) ~= "table" then
 			return v
 		end
