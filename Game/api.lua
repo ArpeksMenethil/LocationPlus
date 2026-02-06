@@ -379,7 +379,22 @@ function LPS:ResetAllSettingsToDefaults()
 	if LPS.db and LPS.db.ResetProfile then
 		LPS.db:ResetProfile()
 	else
+		local old = LPS_DB
+		local oldGlobal = type(old) == "table" and old.global or nil
+		local oldGold = type(old) == "table" and old.gold or nil
 		LPS_DB = CopyTable(LPS.defaults)
+		LPS_DB.global = LPS_DB.global or {}
+		if oldGlobal then
+			for k, v in pairs(oldGlobal) do
+				if LPS_DB.global[k] == nil then
+					LPS_DB.global[k] = v
+				end
+			end
+		end
+		if oldGold and not LPS_DB.global.gold then
+			LPS_DB.global.gold = oldGold
+		end
+		LPS_DB.gold = nil
 	end
 	LPS:ApplyHolderPosition()
 	if LPS.ApplyAllSettings then
@@ -393,6 +408,41 @@ function LPS:ResetAllSettingsToDefaults()
 	end
 end
 LPS_DB = LPS_DB or {}
+
+function LPS:RefreshAfterProfileChange()
+	self.profileDB = nil
+	local db = self:GetProfileDB()
+	if self.ApplyDefaults then
+		self:ApplyDefaults(db or {}, self.defaults)
+	end
+	if self.ApplyHolderPosition then
+		self:ApplyHolderPosition()
+	end
+	if self.ApplyAllSettings then
+		self:ApplyAllSettings()
+	end
+	if self.UpdateMinimapButton then
+		self:UpdateMinimapButton()
+	end
+	if self.CreateMinimapButton then
+		self:CreateMinimapButton()
+	end
+	if self.ApplyLayout then
+		self:ApplyLayout()
+	end
+end
+
+function LPS:OnAceProfileChanged()
+	self:RefreshAfterProfileChange()
+end
+
+function LPS:OnAceProfileCopied()
+	self:RefreshAfterProfileChange()
+end
+
+function LPS:OnAceProfileReset()
+	self:RefreshAfterProfileChange()
+end
 
 local Tourist
 if LPS.Retail and LibStub:GetLibrary("LibTourist-3.0", true) then
@@ -445,11 +495,38 @@ function LPS:L(key)
 	return key
 end
 
-function LPS:GetDB()
-	if LPS.db and LPS.db.profile then
-		return LPS.db.profile
+function LPS:GetProfileDB()
+	if self.profileDB then
+		return self.profileDB
 	end
-	return LPS_DB
+	if self.db and self.db.profile then
+		self.profileDB = self.db.profile
+		return self.profileDB
+	end
+	if type(LPS_DB) == "table" and LPS_DB.profiles and LPS_DB.profiles.Default then
+		self.profileDB = LPS_DB.profiles.Default
+		return self.profileDB
+	end
+	self.profileDB = LPS_DB
+	return self.profileDB
+end
+
+function LPS:GetAccountDB()
+	if self.accountDB then
+		return self.accountDB
+	end
+	if self.db and self.db.global then
+		self.accountDB = self.db.global
+		return self.accountDB
+	end
+	LPS_DB = LPS_DB or {}
+	LPS_DB.global = LPS_DB.global or {}
+	self.accountDB = LPS_DB.global
+	return self.accountDB
+end
+
+function LPS:GetDB()
+	return self:GetProfileDB()
 end
 
 -- Сбрасывает позицию основного фрейма к значениям по умолчанию

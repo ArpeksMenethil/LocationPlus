@@ -9,6 +9,8 @@ LPS.Options = {}
 if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary("AceConfigDialog-3.0", true) then
 	local AceConfig = LibStub("AceConfig-3.0")
 	local AceDialog = LibStub("AceConfigDialog-3.0")
+	local AceConfigRegistry = LibStub:GetLibrary("AceConfigRegistry-3.0", true)
+	local AceSerializer = LibStub:GetLibrary("AceSerializer-3.0", true)
 
 	LPS.Options.aceAppName = "LocationPlus"
 
@@ -1097,17 +1099,166 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 					},
 				},
 			},
+			profiles = {
+				type = "group",
+				name = LPS:L("Profiles"),
+				order = 90,
+				args = {},
+			},
+			importexport = {
+				type = "group",
+				name = "Import/Export",
+				order = 91,
+				childGroups = "tab",
+				args = {
+					export = {
+						type = "group",
+						name = "Export",
+						order = 1,
+						args = {
+							header = {
+								order = 1,
+								type = "header",
+								name = "Export",
+							},
+							generate = {
+								order = 2,
+								type = "execute",
+								name = "Generate export string",
+								disabled = function()
+									return not (AceSerializer and LPS.db and LPS.db.profile)
+								end,
+								func = function()
+									LPS.Options._profileExportText = AceSerializer:Serialize(LPS.db.profile or {})
+								end,
+							},
+							text = {
+								order = 3,
+								type = "input",
+								name = " ",
+								width = "full",
+								multiline = 12,
+								dialogControl = "MultiLineEditBox",
+								disabled = function()
+									return not (AceSerializer and LPS.db and LPS.db.profile)
+								end,
+								get = function() return tostring(LPS.Options._profileExportText or "") end,
+								set = function(_, v) LPS.Options._profileExportText = v end,
+							},
+						},
+					},
+					import = {
+						type = "group",
+						name = "Import",
+						order = 2,
+						args = {
+							header = {
+								order = 1,
+								type = "header",
+								name = "Import",
+							},
+							asName = {
+								order = 2,
+								type = "input",
+								name = "Import as profile name (optional)",
+								disabled = function()
+									return not (AceSerializer and LPS.db and LPS.db.SetProfile and LPS.db.profile)
+								end,
+								get = function() return tostring(LPS.Options._profileImportAsName or "") end,
+								set = function(_, v) LPS.Options._profileImportAsName = v end,
+							},
+							text = {
+								order = 3,
+								type = "input",
+								name = " ",
+								width = "full",
+								multiline = 12,
+								dialogControl = "MultiLineEditBox",
+								disabled = function()
+									return not (AceSerializer and LPS.db and LPS.db.profile)
+								end,
+								get = function() return tostring(LPS.Options._profileImportText or "") end,
+								set = function(_, v) LPS.Options._profileImportText = v end,
+							},
+							doImport = {
+								order = 4,
+								type = "execute",
+								name = "Import",
+								disabled = function()
+									return not (AceSerializer and LPS.db and LPS.db.profile and LPS.db.SetProfile)
+								end,
+								func = function()
+									local s = tostring(LPS.Options._profileImportText or "")
+									if s == "" then return end
+									local ok, t = AceSerializer:Deserialize(s)
+									if not ok or type(t) ~= "table" then
+										return
+									end
+									local importName = tostring(LPS.Options._profileImportAsName or "")
+									if importName ~= "" then
+										LPS.db:SetProfile(importName)
+									end
+									local p2 = LPS.db.profile
+									for k in pairs(p2) do
+										p2[k] = nil
+									end
+									for k, v in pairs(t) do
+										p2[k] = deepCopy(v)
+									end
+									if LPS.RefreshAfterProfileChange then
+										LPS:RefreshAfterProfileChange()
+									end
+								end,
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 
 	AceConfig:RegisterOptionsTable(LPS.Options.aceAppName, options)
 	AceDialog:AddToBlizOptions(LPS.Options.aceAppName, LPS:L("Location Plus"))
 
-	if LibStub:GetLibrary("AceDBOptions-3.0", true) and LPS.db then
+	local function deepCopy(v)
+		if type(v) ~= "table" then
+			return v
+		end
+		local out = {}
+		for k2, v2 in pairs(v) do
+			out[deepCopy(k2)] = deepCopy(v2)
+		end
+		return out
+	end
+
+	function LPS.Options:EnsureAceProfilesTab()
+		if self._profilesTabEnsured then return end
+		if not (LibStub and LibStub.GetLibrary) then return end
+		if not (LibStub:GetLibrary("AceDBOptions-3.0", true) and LPS.db) then return end
+		local AceDBOptions = LibStub("AceDBOptions-3.0")
+		local p = AceDBOptions:GetOptionsTable(LPS.db)
+		if type(p) ~= "table" then return end
+		p.order = 90
+		p.name = LPS:L("Profiles")
+		options.args.profiles = p
+		self._profilesTabEnsured = true
+		if AceConfigRegistry and AceConfigRegistry.NotifyChange then
+			AceConfigRegistry:NotifyChange(self.aceAppName)
+		end
+	end
+
+	function LPS.Options:RegisterAceProfiles()
+		if self._profilesRegistered then return end
+		if not (LibStub and LibStub.GetLibrary) then return end
+		if not (LibStub:GetLibrary("AceDBOptions-3.0", true) and LPS.db) then return end
 		local AceDBOptions = LibStub("AceDBOptions-3.0")
 		AceConfig:RegisterOptionsTable(LPS.Options.aceAppName .. "_Profiles", AceDBOptions:GetOptionsTable(LPS.db))
 		AceDialog:AddToBlizOptions(LPS.Options.aceAppName .. "_Profiles", LPS:L("Profiles"), LPS:L("Location Plus"))
+		self._profilesRegistered = true
 	end
+
+	LPS.Options:EnsureAceProfilesTab()
+	LPS.Options:RegisterAceProfiles()
 
 	return
 end
@@ -1278,12 +1429,15 @@ end
 -------------------------------------------------
 function LPS:CreateGeneralOptions(parent)
 	local y = -10
+	local function getDb()
+		return LPS:GetDB()
+	end
 
 	self:CreateCheck(parent,
 		"Login message",
 		nil,
-		function() return LPS_DB.general.loginMessage end,
-		function(v) LPS_DB.general.loginMessage = v end,
+		function() return getDb().general.loginMessage end,
+		function(v) getDb().general.loginMessage = v end,
 		16, y
 	)
 
@@ -1292,9 +1446,9 @@ function LPS:CreateGeneralOptions(parent)
 	self:CreateCheck(parent,
 		"24H time format",
 		nil,
-		function() return LPS_DB.general.is24H end,
+		function() return getDb().general.is24H end,
 		function(v)
-			LPS_DB.general.is24H = v
+			getDb().general.is24H = v
 			if LPS.ApplyTimeFormat then
 				LPS:ApplyTimeFormat()
 			end
@@ -1307,9 +1461,9 @@ function LPS:CreateGeneralOptions(parent)
 	self:CreateCheck(parent,
 		"Show seconds (local time)",
 		nil,
-		function() return LPS_DB.general.seconds end,
+		function() return getDb().general.seconds end,
 		function(v)
-			LPS_DB.general.seconds = v
+			getDb().general.seconds = v
 			if LPS.ApplyTimeFormat then
 				LPS:ApplyTimeFormat()
 			end
@@ -1322,8 +1476,8 @@ function LPS:CreateGeneralOptions(parent)
 	self:CreateSlider(parent,
 		"Coords update (sec)",
 		0.1, 2, 0.1,
-		function() return LPS_DB.general.coordsTimeUpdate end,
-		function(v) LPS_DB.general.coordsTimeUpdate = v end,
+		function() return getDb().general.coordsTimeUpdate end,
+		function(v) getDb().general.coordsTimeUpdate = v end,
 		16, y
 	)
 end
@@ -1333,12 +1487,15 @@ end
 -------------------------------------------------
 function LPS:CreateShowOptions(parent)
 	local y = -10
+	local function getDb()
+		return LPS:GetDB()
+	end
 
 	self:CreateCheck(parent,
 		"Show zone",
 		nil,
-		function() return LPS_DB.show.zone end,
-		function(v) LPS_DB.show.zone = v end,
+		function() return getDb().show.zone end,
+		function(v) getDb().show.zone = v end,
 		16, y
 	)
 
@@ -1349,12 +1506,15 @@ end
 -------------------------------------------------
 function LPS:CreateTooltipOptions(parent)
 	local y = -10
+	local function getDb()
+		return LPS:GetDB()
+	end
 
 	self:CreateCheck(parent,
 		"Enable tooltips",
 		nil,
-		function() return LPS_DB.tooltips.visibility.enable end,
-		function(v) LPS_DB.tooltips.visibility.enable = v end,
+		function() return getDb().tooltips.visibility.enable end,
+		function(v) getDb().tooltips.visibility.enable = v end,
 		16, y
 	)
 
@@ -1363,8 +1523,8 @@ function LPS:CreateTooltipOptions(parent)
 	self:CreateCheck(parent,
 		"Hide in combat",
 		nil,
-		function() return LPS_DB.tooltips.visibility.combat end,
-		function(v) LPS_DB.tooltips.visibility.combat = v end,
+		function() return getDb().tooltips.visibility.combat end,
+		function(v) getDb().tooltips.visibility.combat = v end,
 		16, y
 	)
 end
@@ -1374,13 +1534,16 @@ end
 -------------------------------------------------
 function LPS:CreateStyleOptions(parent)
 	local y = -10
+	local function getDb()
+		return LPS:GetDB()
+	end
 
 	self:CreateCheck(parent,
 		"Enable background",
 		nil,
-		function() return LPS_DB.settings.colors.bgEnable end,
+		function() return getDb().settings.colors.bgEnable end,
 		function(v)
-			LPS_DB.settings.colors.bgEnable = v
+			getDb().settings.colors.bgEnable = v
 			if LPS.ApplyBackground then
 				LPS:ApplyBackground()
 			end
@@ -1393,8 +1556,8 @@ function LPS:CreateStyleOptions(parent)
 	self:CreateSlider(parent,
 		"Font size",
 		8, 20, 1,
-		function() return LPS_DB.settings.fontSize end,
-		function(v) LPS_DB.settings.fontSize = v end,
+		function() return getDb().settings.fontSize end,
+		function(v) getDb().settings.fontSize = v end,
 		16, y
 	)
 
@@ -1403,8 +1566,8 @@ function LPS:CreateStyleOptions(parent)
 	self:CreateSlider(parent,
 		"Border size",
 		1, 6, 1,
-		function() return LPS_DB.settings.borderSize end,
-		function(v) LPS_DB.settings.borderSize = v end,
+		function() return getDb().settings.borderSize end,
+		function(v) getDb().settings.borderSize = v end,
 		16, y
 	)
 end

@@ -31,6 +31,20 @@ function LPS:BuildGoldTooltip(tt)
 		return GetRealmName() or ""
 	end
 
+	local function getGoldRoot()
+		if LPS.GetAccountDB then
+			local a = LPS:GetAccountDB()
+			if a then
+				a.gold = a.gold or {}
+				return a.gold
+			end
+		end
+		LPS_DB = LPS_DB or {}
+		LPS_DB.global = LPS_DB.global or {}
+		LPS_DB.global.gold = LPS_DB.global.gold or {}
+		return LPS_DB.global.gold
+	end
+
 	local function factionIcon(faction)
 		if faction == "Alliance" or faction == "Horde" then
 			return string.format([[|TInterface\FriendsFrame\PlusManz-%s:14|t]], faction)
@@ -70,8 +84,9 @@ function LPS:BuildGoldTooltip(tt)
 	local allyTotal, hordeTotal, realmTotal, accountTotal = 0, 0, 0, 0
 	local currentName = UnitName("player")
 
-	if LPS_DB and LPS_DB.gold and LPS_DB.gold.realms and realm ~= "" then
-		local r = LPS_DB.gold.realms[realm]
+	local gold = getGoldRoot()
+	if gold and gold.realms and realm ~= "" then
+		local r = gold.realms[realm]
 		if r and r.chars then
 			for name, info in pairs(r.chars) do
 				local money = tonumber(info and info.money) or 0
@@ -93,8 +108,8 @@ function LPS:BuildGoldTooltip(tt)
 		end
 	end
 
-	if LPS_DB and LPS_DB.gold and LPS_DB.gold.realms then
-		for _, realmInfo in pairs(LPS_DB.gold.realms) do
+	if gold and gold.realms then
+		for _, realmInfo in pairs(gold.realms) do
 			if realmInfo and realmInfo.chars then
 				for _, info in pairs(realmInfo.chars) do
 					accountTotal = accountTotal + (tonumber(info and info.money) or 0)
@@ -133,8 +148,8 @@ function LPS:BuildGoldTooltip(tt)
 	tt:AddLine(" ")
 
 	local warbandMoney
-	if LPS_DB and LPS_DB.gold then
-		warbandMoney = tonumber(LPS_DB.gold.warbandMoney)
+	if gold then
+		warbandMoney = tonumber(gold.warbandMoney)
 	end
 	local warbandApiOk = false
 	if C_Bank and C_Bank.FetchDepositedMoney and Enum and Enum.BankType and Enum.BankType.Account then
@@ -143,9 +158,9 @@ function LPS:BuildGoldTooltip(tt)
 		local ok, v = pcall(C_Bank.FetchDepositedMoney, bankType)
 		if ok and v ~= nil then
 			warbandMoney = tonumber(v) or warbandMoney
-			LPS_DB = LPS_DB or {}
-			LPS_DB.gold = LPS_DB.gold or {}
-			LPS_DB.gold.warbandMoney = warbandMoney
+			if gold then
+				gold.warbandMoney = warbandMoney
+			end
 		end
 	end
 	if warbandApiOk or warbandMoney ~= nil then

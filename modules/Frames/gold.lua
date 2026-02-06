@@ -52,6 +52,20 @@ local function getRealmKey()
 	return GetRealmName() or ""
 end
 
+local function getGoldRoot()
+	if LPS.GetAccountDB then
+		local a = LPS:GetAccountDB()
+		if a then
+			a.gold = a.gold or {}
+			return a.gold
+		end
+	end
+	LPS_DB = LPS_DB or {}
+	LPS_DB.global = LPS_DB.global or {}
+	LPS_DB.global.gold = LPS_DB.global.gold or {}
+	return LPS_DB.global.gold
+end
+
 local goldMenuFrame
 
 local function ensureGoldMenuFrame()
@@ -63,24 +77,22 @@ local function ensureGoldMenuFrame()
 end
 
 local function getGoldRealmTable()
-	LPS_DB = LPS_DB or {}
-	LPS_DB.gold = LPS_DB.gold or {}
-	LPS_DB.gold.realms = LPS_DB.gold.realms or {}
+	local gold = getGoldRoot()
+	gold.realms = gold.realms or {}
 
 	local realm = getRealmKey()
 	if realm == "" then return end
-	LPS_DB.gold.realms[realm] = LPS_DB.gold.realms[realm] or { chars = {} }
-	return realm, LPS_DB.gold.realms[realm]
+	gold.realms[realm] = gold.realms[realm] or { chars = {} }
+	return realm, gold.realms[realm]
 end
 
 function LPS:UpdateGoldCharacterData()
-	LPS_DB = LPS_DB or {}
-	LPS_DB.gold = LPS_DB.gold or {}
-	LPS_DB.gold.realms = LPS_DB.gold.realms or {}
+	local gold = getGoldRoot()
+	gold.realms = gold.realms or {}
 
 	local realm = getRealmKey()
 	if realm == "" then return end
-	LPS_DB.gold.realms[realm] = LPS_DB.gold.realms[realm] or { chars = {} }
+	gold.realms[realm] = gold.realms[realm] or { chars = {} }
 
 	local name = UnitName("player")
 	if not name then return end
@@ -89,7 +101,7 @@ function LPS:UpdateGoldCharacterData()
 	local _, classFile = UnitClass("player")
 	local money = GetMoney() or 0
 
-	LPS_DB.gold.realms[realm].chars[name] = {
+	gold.realms[realm].chars[name] = {
 		money = money,
 		faction = faction,
 		class = classFile,
