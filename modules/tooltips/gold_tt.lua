@@ -4,6 +4,7 @@ if not LPS then return end
 function LPS:BuildGoldTooltip(tt)
 	local data = LPS.GetGoldSessionData and LPS:GetGoldSessionData() or nil
 	if not data then return end
+	local rB, gB, bB = LPS:GetColor("tooltipSetting")
 
 	local function formatSignedMoney(amount, formatted)
 		amount = tonumber(amount) or 0
@@ -142,7 +143,7 @@ function LPS:BuildGoldTooltip(tt)
 
 	tt:AddLine(" ")
 	tt:AddLine(LPS:L("On server")..":", headerR, headerG, headerB)
-	tt:AddDoubleLine(LPS:L("Alliance")..":", moneyText(allyTotal), 0.41, 0.8, 0.94, whiteR, whiteG, whiteB)
+	tt:AddDoubleLine(LPS:L("Alliance")..":", moneyText(allyTotal), rB, gB, bB, whiteR, whiteG, whiteB)
 	tt:AddDoubleLine(LPS:L("Horde")..":", moneyText(hordeTotal), 1, 0.1, 0.1, whiteR, whiteG, whiteB)
 	tt:AddDoubleLine(LPS:L("Total")..":", moneyText(accountTotal), whiteR, whiteG, whiteB, whiteR, whiteG, whiteB)
 	tt:AddLine(" ")
@@ -178,9 +179,12 @@ function LPS:BuildGoldTooltip(tt)
 	elseif GetWowTokenMarketPrice then
 		tokenPrice = GetWowTokenMarketPrice()
 	end
+	
 	if tokenPrice and tonumber(tokenPrice) and tonumber(tokenPrice) > 0 then
 		tt:AddLine(" ")
-		tt:AddDoubleLine(LPS:L("WoW Token")..":", moneyText(tokenPrice), 0.41, 0.8, 0.94, whiteR, whiteG, whiteB)
+		tt:AddDoubleLine(LPS:L("WoW Token")..":", moneyText(tokenPrice), rB, gB, bB, whiteR, whiteG, whiteB)
+	else
+		C_WowTokenPublic.UpdateMarketPrice()
 	end
 
 	local watched = 0
@@ -212,6 +216,6 @@ function LPS:BuildGoldTooltip(tt)
 	end
 
 	tt:AddLine(" ")
-	tt:AddLine(LPS:L("Reset session data")..": "..LPS:L("Ctrl+RMB"), 0.41, 0.8, 0.94)
-	tt:AddLine(LPS:L("Reset character data")..": "..LPS:L("Shift+RMB"), 0.41, 0.8, 0.94)
+	tt:AddDoubleLine(LPS:L("Ctrl+RMB"), LPS:L("Reset session data"), rB, gB, bB, rB, gB, bB)
+	tt:AddDoubleLine(LPS:L("Shift+RMB"), LPS:L("Reset character data"), rB, gB, bB, rB, gB, bB)
 end
