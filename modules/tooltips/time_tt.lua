@@ -264,7 +264,14 @@ function LPS:GetInstanceImages(index, raid)
 	while instanceID do
 		local overrideImage = ICON_EJ[buttonImage]
 		local overrideName = InstanceNameByID[instanceID] or name
-		instanceIconByName[overrideName] = overrideImage and format(OVERRIDE_ICON, overrideImage) or buttonImage
+		local icon = overrideImage and format(OVERRIDE_ICON, overrideImage) or buttonImage
+		instanceIconByName[overrideName] = icon
+		if type(overrideName) == "string" then
+			local baseName = overrideName:match("^(.-):")
+			if baseName and baseName ~= "" then
+				instanceIconByName[baseName] = icon
+			end
+		end
 
 		index = index + 1
 		instanceID, name, _, _, buttonImage = EJ_GetInstanceByIndex(index, raid)
@@ -315,16 +322,28 @@ function LPS:BuildTimeTooltip()
 				if locked then
 						local diffChar = difficultyLetter[difficulty] or "?"
 						local color = difficultyColor[diffChar] or "|cFFFFFFFF"
+						local icon = instanceIconByName[name]
+						if not icon and type(name) == "string" then
+							local baseName = name:match("^(.-):")
+							if baseName and baseName ~= "" then
+								icon = instanceIconByName[baseName]
+							end
+						end
+						icon = icon or "Interface\\Icons\\INV_Misc_Map02"
+						local safeName = tostring(name or "")
+						local safeMaxPlayers = tonumber(maxPlayers) or 0
+						local safeEncounterProgress = tonumber(encounterProgress) or 0
+						local safeNumEncounters = tonumber(numEncounters) or 0
 
 						local left = string.format(
-								"|T%s:16:16|t%d %s%s|r |cFFAAAAAA(%s, %d/%d)|r",
-								instanceIconByName[name],
-								maxPlayers,
+								"|T%s:16:16|t %d %s%s|r |cFFAAAAAA(%s, %d/%d)|r",
+								icon,
+								safeMaxPlayers,
 								color,
 								diffChar,
-								name,
-								encounterProgress,
-								numEncounters
+								safeName,
+								safeEncounterProgress,
+								safeNumEncounters
 						)
 
 						local right = LPS:FormatTime(reset)

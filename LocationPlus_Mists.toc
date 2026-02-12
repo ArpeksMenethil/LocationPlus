@@ -1,7 +1,7 @@
 ## Interface: 50503
 ## Title: |cff1784d1Location Plus|r |cfd9b9b9bMists|r
 ## Author: Arpeks
-## Version: 1.3.4
+## Version: 1.3.5
 ## Notes: Adds location, coords, extra panels and an info-rich tooltip (no ElvUI required)
 ## Notes-ruRU: Добавляет локацию, координаты, доп. панели и информативную подсказку (без ElvUI)
 ## SavedVariables: LPS_DB
