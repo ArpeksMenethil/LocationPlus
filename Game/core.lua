@@ -2,7 +2,11 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 LPS_DB = LPS_DB or {}
 
-local addonVersion = C_AddOns.GetAddOnMetadata(LPS.addonName, "Version") or "?.?.?" -- Версия аддона
+local addonVersion = (
+	(C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(LPS.addonName, "Version"))
+		or (GetAddOnMetadata and GetAddOnMetadata(LPS.addonName, "Version"))
+		or "?.?.?"
+) -- Версия аддона
 
 ----------------------------------------------------------------
 -- Holder (главный фрейм)
@@ -18,7 +22,7 @@ local params = {
 	borderColor = {1, 1, 1, 0},
 	updateEvent = {events = {"ADDON_LOADED"}},
 	updateFunc = function(self, event, name)
-		if name ~= addonName then return end
+		if name ~= LPS.addonName then return end
 		if event == "ADDON_LOADED" then LPS:onLoaded(name) end
 	end
 }

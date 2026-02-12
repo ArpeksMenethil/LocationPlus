@@ -50,8 +50,9 @@ function LPS:EnsureLDBMinimapIcon()
 			end,
 			OnTooltipShow = function(tt)
 				local d = LPS:GetDB()
-				if not d.tooltips.visibility.enable then return end
-				if d.tooltips.visibility.combat and InCombatLockdown() then return end
+				local vis = d and d.tooltips and d.tooltips.visibility
+				if not vis or not vis.enable then return end
+				if vis.combat and InCombatLockdown() then return end
 				local r, g, b = LPS:GetColor("text")
 				tt:AddLine(LPS:L("Location Plus"), 1, 0.82, 0)
 				tt:AddLine(LPS:L("Shows your location and coordinates on screen"), r, g, b)
@@ -155,8 +156,9 @@ function LPS:CreateMinimapButton()
 
 	btn:SetScript("OnEnter", function(self)
 		local db = LPS:GetDB()
-		if not db.tooltips.visibility.enable then return end
-		if db.tooltips.visibility.combat and InCombatLockdown() then return end
+		local vis = db and db.tooltips and db.tooltips.visibility
+		if not vis or not vis.enable then return end
+		if vis.combat and InCombatLockdown() then return end
 		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
 		local r, g, b = LPS:GetColor("text")
 		GameTooltip:AddLine(LPS:L("Location Plus"), 1, 0.82, 0)
