@@ -12,11 +12,10 @@ function LPS:CreateTimeFrame()
 		frameType = "Button",
 		parent = LPS.frame.location,
 		anchor = {"LEFT", LPS.frame.location, "RIGHT", 5, 0},
-		size = {100,22},
+		padding = {((db.layout and db.layout.dtPaddingX) or 10), ((db.layout and db.layout.dtPaddingY) or 6)},
 		fontSize = db.settings.fontSize or 12,
 		bgColor = {LPS:GetColor("bg")},
 		borderColor = {LPS:GetColor("border")},
-		textAllPoints = true,
 		updateFunc = function(f)
 			if f.text then
 				local newText = LPS:GetFormattedGameTime()

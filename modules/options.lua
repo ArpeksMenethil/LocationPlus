@@ -117,16 +117,6 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 				name = LPS:L("General"),
 				order = 1,
 				args = {
-					name = {
-						order = 1,
-						type = "header",
-						name = LPS:L("Location Plus"),
-					},
-					desc = {
-						order = 2,
-						type = "description",
-						name = LPS:L("Shows your location and coordinates on screen"),
-					},
 					generalGroup = {
 						order = 4,
 						type = "group",
@@ -669,31 +659,49 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 						name = LPS:L("Location Panel"),
 						inline = true,
 						args = {
-							lpauto = {
-								order = 5,
-								type = "toggle",
-								name = LPS:L("Auto width"),
-								desc = LPS:L("Auto resized Location Panel."),
-								get = function() return getDb().layout.lpauto end,
+							locMinWidth = {
+								order = 0,
+								type = "range",
+								name = LPS:L("Minimum width"),
+								desc = LPS:L("Sets the minimum width of the location panel."),
+								min = 200,
+								max = 300,
+								step = 1,
+								get = function() return getDb().layout.locMinWidth end,
 								set = function(_, v)
-									getDb().layout.lpauto = v
+									getDb().layout.locMinWidth = v
 									if LPS.ApplyLayout then
 										LPS:ApplyLayout()
 									end
 								end,
 							},
-							lpwidth = {
-								order = 6,
+							locPaddingX = {
+								order = 1,
 								type = "range",
-								name = LPS:L("Width"),
-								desc = LPS:L("Adjust the Location Panel Width."),
-								min = 100,
-								max = 300,
+								name = LPS:L("Text padding X"),
+								desc = LPS:L("Adjust horizontal text padding inside location panel."),
+								min = 20,
+								max = 30,
 								step = 1,
-								disabled = function() return getDb().layout.lpauto end,
-								get = function() return getDb().layout.lpwidth end,
+								get = function() return getDb().layout.locPaddingX end,
 								set = function(_, v)
-									getDb().layout.lpwidth = v
+									getDb().layout.locPaddingX = v
+									if LPS.ApplyLayout then
+										LPS:ApplyLayout()
+									end
+								end,
+							},
+							locPaddingY = {
+								order = 2,
+								type = "range",
+								name = LPS:L("Text padding Y"),
+								desc = LPS:L("Adjust vertical text padding inside location panel."),
+								min = 7,
+								max = 20,
+								step = 1,
+								get = function() return getDb().layout.locPaddingY end,
+								set = function(_, v)
+									getDb().layout.locPaddingY = v
 									if LPS.ApplyLayout then
 										LPS:ApplyLayout()
 									end
@@ -724,59 +732,57 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									end
 								end,
 							},
-							spacer1_dtauto = {
+							dtMinWidth = {
 								order = 0.5,
-								type = "description",
-								name = "",
+								type = "range",
+								name = LPS:L("Minimum width"),
+								desc = LPS:L("Sets the minimum width of the extra panels."),
+								min = 100,
+								max = 200,
+								step = 1,
+								disabled = function() return getDb().layout.dtshow == false end,
+								get = function() return getDb().layout.dtMinWidth end,
+								set = function(_, v)
+									getDb().layout.dtMinWidth = v
+									if LPS.ApplyLayout then
+										LPS:ApplyLayout()
+									end
+								end,
 							},
-							spacer2_dtauto = {
+							spacer1_dt = {
 								order = 0.6,
 								type = "description",
 								name = "",
 							},
-							dtauto = {
+							dtPaddingX = {
 								order = 1,
-								type = "toggle",
-								name = LPS:L("Auto width"),
-								desc = LPS:L("Auto resized panels."),
+								type = "range",
+								name = LPS:L("Text padding X"),
+								desc = LPS:L("Adjust horizontal text padding inside panels."),
+								min = 20,
+								max = 30,
+								step = 1,
 								disabled = function() return getDb().layout.dtshow == false end,
-								get = function() return getDb().layout.dtauto end,
+								get = function() return getDb().layout.dtPaddingX end,
 								set = function(_, v)
-									getDb().layout.dtauto = v
+									getDb().layout.dtPaddingX = v
 									if LPS.ApplyLayout then
 										LPS:ApplyLayout()
 									end
 								end,
 							},
-							dtwidth = {
+							dtPaddingY = {
 								order = 2,
 								type = "range",
-								name = LPS:L("Width"),
-								desc = LPS:L("Adjust the DataTexts Width."),
-								min = 70,
-								max = 200,
-								step = 1,
-								disabled = function() return getDb().layout.dtshow == false or getDb().layout.dtauto == true end,
-								get = function() return getDb().layout.dtwidth end,
-								set = function(_, v)
-									getDb().layout.dtwidth = v
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
-									end
-								end,
-							},
-							dtheight = {
-								order = 3,
-								type = "range",
-								name = LPS:L("All Panels Height"),
-								desc = LPS:L("Adjust All Panels Height."),
-								min = 10,
-								max = 32,
+								name = LPS:L("Text padding Y"),
+								desc = LPS:L("Adjust vertical text padding inside panels."),
+								min = 7,
+								max = 20,
 								step = 1,
 								disabled = function() return getDb().layout.dtshow == false end,
-								get = function() return getDb().layout.dtheight end,
+								get = function() return getDb().layout.dtPaddingY end,
 								set = function(_, v)
-									getDb().layout.dtheight = v
+									getDb().layout.dtPaddingY = v
 									if LPS.ApplyLayout then
 										LPS:ApplyLayout()
 									end
@@ -1014,7 +1020,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Manual"),
 								desc = LPS:L("Set spacing between panels."),
 								min = 0,
-								max = 200,
+								max = 50,
 								step = 1,
 								disabled = function() return getDb().layout.spacingAuto end,
 								get = function() return getDb().layout.spacingManual end,
@@ -1664,7 +1670,8 @@ panel:SetScript("OnShow", function(self)
 
 	local title = self:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
 	title:SetPoint("TOPLEFT", 16, -16)
-	title:SetText("|c"..LPS.addonTextColor..LPS.addonName.."|r")
+	local tocTitle = (GetAddOnMetadata and LPS and LPS.addonName) and GetAddOnMetadata(LPS.addonName, "Title") or nil
+	title:SetText(tocTitle or ("|c"..LPS.addonTextColor..LPS.addonName.."|r"))
 
 	LPS.Options:CreateTabs(self)
 

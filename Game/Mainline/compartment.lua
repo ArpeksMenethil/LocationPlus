@@ -14,11 +14,13 @@ end
 
 function LPS_OnAddonCompartmentEnter(addonName, menuButtonFrame)
 	local r, g, b = LPS:GetColor("text")
+	local rb, gb, bb = LPS:GetColor("tooltipSetting")
 
 	GameTooltip:SetOwner(UIParent, "ANCHOR_CURSOR")
-	GameTooltip:AddLine(LPS:L("Shows your location and coordinates on screen"), r, g, b)
-	GameTooltip:AddDoubleLine(LPS:L("LMB"), LPS:L("Toggle move mode"), r, g, b, 0.41, 0.8, 0.94)
-	GameTooltip:AddDoubleLine(LPS:L("RMB"), LPS:L("Toggle Configuration"), r, g, b, 0.41, 0.8, 0.94)
+	GameTooltip:AddLine(LPS:L("Adds location, coords,\nextra panels and an info-rich tooltip\n(no ElvUI required)"), r, g, b)
+	GameTooltip:AddLine(" ")
+	GameTooltip:AddDoubleLine(LPS:L("LMB"), LPS:L("Move frame"), rb, gb, bb, rb, gb, bb)
+	GameTooltip:AddDoubleLine(LPS:L("RMB"), LPS:L("Toggle Configuration"), rb, gb, bb, rb, gb, bb)
 
 	GameTooltip:Show()
 end

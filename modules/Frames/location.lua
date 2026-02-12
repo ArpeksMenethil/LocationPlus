@@ -11,7 +11,7 @@ function LPS:CreateLocationFrame()
 		frameType = "Button",
 		parent = LPS.frame.holder,
 		anchor = {"CENTER", LPS.frame.holder, "CENTER", 0, 0},
-		padding = {10,6},
+		padding = {((db.layout and db.layout.locPaddingX) or 10), ((db.layout and db.layout.locPaddingY) or 6)},
 		fontSize = db.settings.fontSize or 12,
 		bgColor = {LPS:GetColor("bg")},
 		borderColor = {LPS:GetColor("border")},
@@ -67,12 +67,6 @@ function LPS:CreateLocationFrame()
 				if not layout or layout.customColor == 3 then
 					f.text:SetTextColor(LPS:GetZoneStatus(true))
 				end
-			end
-			local layout = db2 and db2.layout
-			local dtHeight = (layout and tonumber(layout.dtheight)) or 22
-			local locHeight = dtHeight + ((layout and layout.ht) and 6 or 0)
-			if f.SetHeight then
-				f:SetHeight(locHeight)
 			end
 		end,
 		updateEvent = {events = {"ZONE_CHANGED","ZONE_CHANGED_NEW_AREA","ZONE_CHANGED_INDOORS","PLAYER_ENTERING_WORLD"}},

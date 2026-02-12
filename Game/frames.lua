@@ -89,24 +89,33 @@ function LPS:CreateFrame(params)
 	-- Текст
 	if params.fontSize then
 		f.text = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-		if params.textAllPoints then
-			f.text:SetAllPoints()
-		else
-			f.text:SetPoint("CENTER")
-		end
+		f.text:SetPoint("CENTER")
 		f.text:SetJustifyH("CENTER")
 		f.text:SetFont(GameFontNormalSmall:GetFont(), params.fontSize)
 	end
 
 	-- Авторазмер по тексту
 	if params.padding and params.updateFunc and not params.size then
+		f._lpsPaddingX = tonumber(params.padding[1]) or 0
+		f._lpsPaddingY = tonumber(params.padding[2]) or 0
 		local oldUpdate = params.updateFunc
 		params.updateFunc = function()
 			oldUpdate(f)
 			if f.text then
-				local w = f.text:GetStringWidth()
-				local h = f.text:GetStringHeight()
-				f:SetSize(math.max(60, w + params.padding[1]*2), math.max(26, h + params.padding[2]*2))
+				local px = tonumber(f._lpsPaddingX) or 0
+				local py = tonumber(f._lpsPaddingY) or 0
+				local minW = tonumber(f._lpsMinWidth) or 60
+				f.text:ClearAllPoints()
+				f.text:SetPoint("CENTER")
+				if f.text.SetWidth then
+					f.text:SetWidth(0)
+				end
+				local w = f.text:GetStringWidth() or 0
+				local h = f.text:GetStringHeight() or 0
+				f:SetSize(math.max(minW, w + px * 2), math.max(26, h + py * 2))
+				f.text:ClearAllPoints()
+				f.text:SetPoint("TOPLEFT", f, "TOPLEFT", px, -py)
+				f.text:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -px, py)
 				LPS:UpdateFrameSize()
 			end
 		end

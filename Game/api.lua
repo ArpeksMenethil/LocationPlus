@@ -7,10 +7,18 @@ function LPS:ApplyLayout()
 	if not db or not frames then return end
 
 	local layout = db.layout or {}
-	local dtWidth = tonumber(layout.dtwidth) or 100
-	local dtHeight = tonumber(layout.dtheight) or 22
-	local dtAuto = layout.dtauto == true
-	local locHeight = dtHeight + ((layout.ht and 6) or 0)
+	local dtPaddingX = tonumber(layout.dtPaddingX)
+	if dtPaddingX == nil then dtPaddingX = 10 end
+	local dtPaddingY = tonumber(layout.dtPaddingY)
+	if dtPaddingY == nil then dtPaddingY = 6 end
+	local dtMinWidth = tonumber(layout.dtMinWidth)
+	if dtMinWidth == nil then dtMinWidth = 60 end
+	local locPaddingX = tonumber(layout.locPaddingX)
+	if locPaddingX == nil then locPaddingX = 10 end
+	local locPaddingY = tonumber(layout.locPaddingY)
+	if locPaddingY == nil then locPaddingY = 6 end
+	local locMinWidth = tonumber(layout.locMinWidth)
+	if locMinWidth == nil then locMinWidth = 80 end
 	local spacing = (layout.spacingAuto == false) and (tonumber(layout.spacingManual) or 5) or 5
 
 	local function getClassColor()
@@ -40,27 +48,17 @@ function LPS:ApplyLayout()
 		return file, flags
 	end
 
-	local function applyDTSize(f)
-		if not f then return end
-		if f.SetHeight then
-			f:SetHeight(dtHeight)
-		end
-		if not dtAuto and f.SetWidth then
-			local w = dtWidth
-			if f == frames.time and f.text and f.text.GetStringWidth then
-				local tw = f.text:GetStringWidth() or 0
-				w = math.max(w, tw + 20)
-			end
-			f:SetWidth(w)
-		end
+	if frames.location then
+		frames.location._lpsPaddingX = locPaddingX
+		frames.location._lpsPaddingY = locPaddingY
+		frames.location._lpsMinWidth = locMinWidth
 	end
-
-	applyDTSize(frames.coords)
-	applyDTSize(frames.time)
-	applyDTSize(frames.gold)
-	applyDTSize(frames.system)
-	if frames.location and frames.location.SetHeight then
-		frames.location:SetHeight(locHeight)
+	for _, f in pairs({frames.coords, frames.time, frames.gold, frames.system}) do
+		if f then
+			f._lpsPaddingX = dtPaddingX
+			f._lpsPaddingY = dtPaddingY
+			f._lpsMinWidth = dtMinWidth
+		end
 	end
 
 	local showDT = layout.dtshow ~= false
@@ -165,56 +163,6 @@ function LPS:ApplyLayout()
 		end
 	end
 
-	if frames.location and frames.location.text then
-		if layout.lpauto == false then
-			frames.location:SetWidth(tonumber(layout.lpwidth) or 200)
-			frames.location.text:SetWidth((tonumber(layout.lpwidth) or 200) - 20)
-			frames.location.text:SetWordWrap(false)
-			frames.location.text:SetMaxLines(1)
-		else
-			frames.location.text:SetWidth(0)
-		end
-	end
-
-	if frames.location and frames.location._lpsUpdateFunc then
-		frames.location._lpsUpdateFunc(frames.location)
-		if frames.location.SetHeight then
-			frames.location:SetHeight(locHeight)
-		end
-	end
-	if frames.coords and frames.coords._lpsUpdateFunc then
-		frames.coords._lpsUpdateFunc(frames.coords)
-	end
-	if frames.time and frames.time._lpsUpdateFunc then
-		frames.time._lpsUpdateFunc(frames.time)
-	end
-	if frames.gold and frames.gold._lpsUpdateFunc then
-		frames.gold._lpsUpdateFunc(frames.gold)
-	end
-	if frames.system and frames.system._lpsUpdateFunc then
-		frames.system._lpsUpdateFunc(frames.system)
-	end
-
-	local function applyDTTextWidth(f)
-		if not (f and f.text) then return end
-		f.text:SetWordWrap(false)
-		f.text:SetMaxLines(1)
-		if dtAuto then
-			f.text:SetWidth(0)
-			local w = f.text:GetStringWidth() or 0
-			if f.SetWidth then
-				f:SetWidth(math.max(60, w + 16))
-			end
-		else
-			f.text:SetWidth(math.max(20, dtWidth - 10))
-		end
-	end
-
-	applyDTTextWidth(frames.coords)
-	applyDTTextWidth(frames.time)
-	applyDTTextWidth(frames.gold)
-	applyDTTextWidth(frames.system)
-
 	local fontFile, defaultFlags = resolveFont()
 	local size = (db.settings and db.settings.fontSize) or 12
 	local flags = defaultFlags or "NONE"
@@ -239,6 +187,23 @@ function LPS:ApplyLayout()
 				f.text:SetTextColor(r, g, b)
 			end
 		end
+	end
+
+	-- Re-run updates after font is applied so auto-sizing uses correct font metrics.
+	if frames.location and frames.location._lpsUpdateFunc then
+		frames.location._lpsUpdateFunc(frames.location)
+	end
+	if frames.coords and frames.coords._lpsUpdateFunc then
+		frames.coords._lpsUpdateFunc(frames.coords)
+	end
+	if frames.time and frames.time._lpsUpdateFunc then
+		frames.time._lpsUpdateFunc(frames.time)
+	end
+	if frames.gold and frames.gold._lpsUpdateFunc then
+		frames.gold._lpsUpdateFunc(frames.gold)
+	end
+	if frames.system and frames.system._lpsUpdateFunc then
+		frames.system._lpsUpdateFunc(frames.system)
 	end
 
 
