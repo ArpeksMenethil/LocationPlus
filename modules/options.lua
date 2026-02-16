@@ -109,7 +109,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 
 	local options = {
 		type = "group",
-		name = LPS:L("Location Plus"),
+		name = LPS.addonTitle.." v"..LPS.addonVersion,
 		childGroups = "tab",
 		args = {
 			general = {
@@ -184,7 +184,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									minimapIcon = {
 										type = "toggle",
 										name = LPS:L("Minimap icon"),
-										desc = LPS:L("Show / hide minimap icon."),
+										desc = LPS:L("Show/Hide minimap icon."),
 										order = 1,
 										
 										get = function()
@@ -202,13 +202,22 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 											end
 										end,
 									},
-									spacer1_combatHide = {
-										order = 1.1,
-										type = "description",
-										name = "",
+									addonCompartment = {
+										type = "toggle",
+										name = LPS:L("Addon Compartment"),
+										desc = LPS:L("Show/Hide addon in the Addon Compartment."),
+										order = 2,
+										disabled = function() return not LPS.Retail end,
+										get = function() return getDb().show.addonCompartment end,
+										set = function(_, v)
+											getDb().show.addonCompartment = v
+											if LPS.ApplyAddonCompartmentRegistration then
+												LPS:ApplyAddonCompartmentRegistration()
+											end
+										end,
 									},
-									spacer2_combatHide = {
-										order = 1.2,
+									spacer1_combatHide = {
+										order = 2.1,
 										type = "description",
 										name = "",
 									},

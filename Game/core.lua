@@ -2,9 +2,14 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 LPS_DB = LPS_DB or {}
 
-local addonVersion = (
+LPS.addonVersion = (
 	(C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(LPS.addonName, "Version"))
 		or (GetAddOnMetadata and GetAddOnMetadata(LPS.addonName, "Version"))
+		or "?.?.?"
+) -- Версия аддона
+LPS.addonTitle = (
+	(C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(LPS.addonName, "Title"))
+		or (GetAddOnMetadata and GetAddOnMetadata(LPS.addonName, "Title"))
 		or "?.?.?"
 ) -- Версия аддона
 
@@ -108,6 +113,9 @@ function LPS:onLoaded(name)
 
 	LPS:CreateAllFrames()
 	LPS:ApplyAllSettings()
+	if LPS.ApplyAddonCompartmentRegistration then
+		LPS:ApplyAddonCompartmentRegistration()
+	end
 	if LPS.CreateMinimapButton then
 		LPS:CreateMinimapButton()
 	end
@@ -122,7 +130,7 @@ function LPS:onLoaded(name)
 	end)
 
 	if db and db.general and db.general.loginMessage then
-		LPS:Print(format(LPS:L("loaded. Current version:").." |c%sv%s|r", LPS.addonTextColor, addonVersion), false)
+		LPS:Print(format(LPS:L("loaded. Current version:").." |c%sv%s|r", LPS.addonTextColor, LPS.addonVersion), false)
 	end
 end
 

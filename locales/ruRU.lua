@@ -184,7 +184,7 @@ L["Show zone name on the panel."] = "Показывать название зо�
 L["Exact coordinates"] = "Точные координаты"
 L["Show exact dungeon entrance coordinates in tooltip."] = "Показывать точные координаты входа в подземелья в подсказках."
 L["Minimap icon"] = "Иконка на миникарте"
-L["Show / hide minimap icon."] = "Показать/скрыть иконку на миникарте."
+L["Show/Hide minimap icon."] = "Показать/скрыть иконку на миникарте."
 L["Addon Compartment"] = "Addon Compartment"
 
 L["Tooltips"] = "Подсказки"

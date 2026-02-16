@@ -184,7 +184,7 @@ L["Show zone name on the panel."] = true
 L["Exact coordinates"] = true
 L["Show exact dungeon entrance coordinates in tooltip."] = true
 L["Minimap icon"] = true
-L["Show / hide minimap icon."] = true
+L["Show/Hide minimap icon."] = true
 L["Addon Compartment"] = true
 
 L["Tooltips"] = true

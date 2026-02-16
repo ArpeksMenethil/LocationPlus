@@ -28,6 +28,8 @@ LPS.DEBUG = false
 
 LPS.addonTextColor = "ff1784d1"
 LPS.addonName = addonName
+LPS.addonVersion = "?.?.?"
+LPS.addonTitle = ""
 
 LPS.defaults = {
 	position = {
