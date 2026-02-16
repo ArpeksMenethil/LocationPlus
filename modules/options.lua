@@ -1522,70 +1522,45 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 	if GetAddOnMetadata and LPS.addon and LPS.addon.name then
 		aboutAuthor = GetAddOnMetadata(LPS.addon.name, "Author")
 	end
-	if not aboutNotes or aboutNotes == "" then
-		aboutNotes = LPS:L("Adds location, coords,\nextra panels and an info-rich tooltip\n(no ElvUI required)")
-	end
 	if not aboutAuthor or aboutAuthor == "" then
 		aboutAuthor = "Arpeks"
 	end
 
 	AceConfig:RegisterOptionsTable(LPS.Options.aceAppName .. "_About", {
-		type = "group",
-		name = LPS.addon.title,
-		args = {
-			logo = {
-				order = 1,
-				type = "description",
-				name = " ",
-				image = "Interface\\AddOns\\LocationPlus\\Media\\logo.tga",
-				imageWidth = 128,
-				imageHeight = 128,
-				width = "half",
-			},
-			creditsHeader = {
-				order = 2,
-				type = "header",
-				name = "Credits",
-				width = "half",
-			},
-			creditsList = {
-				order = 3,
-				type = "description",
-				fontSize = "medium",
-				width = "half",
-				name = table.concat({
-					"|cffffd200Author:|r " .. tostring(aboutAuthor),
-					"|cffffd200Contributors:|r",
-					"- " .. tostring(aboutAuthor),
-					"",
-					"|cffffd200Special Thanks:|r",
-					" The WoW addon community",
-				}, "\n"),
-			},
-			version = {
-				order = 4,
-				type = "description",
-				fontSize = "medium",
-				width = "half",
-				name = function()
-					return "|cffffd200Version:|r v" .. tostring(LPS.addon.version or "")
-				end,
-			},
-			spacerRight = {
-				order = 5,
-				type = "description",
-				name = " ",
-				width = "half",
-			},
-			desc = {
-				order = 6,
-				type = "description",
-				fontSize = "medium",
-				width = "half",
-				name = tostring(aboutNotes),
-			},
+	type = "group",
+	name = LPS.addon.title.." v"..LPS.addon.version,
+	args = {
+		logo = {
+			order = 1,
+			type = "description",
+			name = " ",
+			image = "Interface\\AddOns\\"..LPS.addon.name.."\\Media\\logo.tga",
+			imageWidth = 128,
+			imageHeight = 128,
 		},
-	})
+		spacer = {
+			order = 2,
+			type = "description",
+			name = " ",
+		},
+		creditsHeader = {
+			order = 3,
+			type = "header",
+			name = "Credits",
+		},
+		creditsList = {
+			order = 4,
+			type = "description",
+			fontSize = "medium",
+			name = table.concat({
+				"|cffffd200Author:|r "..aboutAuthor,
+				"",
+				"|cffffd200Special Thanks:|r",
+				" |cff00ff00The WoW addon community|r",
+			}, "\n"),
+		},
+	},
+})
 	AceDialog:AddToBlizOptions(LPS.Options.aceAppName .. "_About", LPS.addon.title)
 
 	registerSubCategory("_General", options.args.general)

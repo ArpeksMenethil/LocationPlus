@@ -1,5 +1,9 @@
 local addonName, LPS = ...
 
+if C_AddOns and C_AddOns.GetAddOnMetadata then
+	GetAddOnMetadata = C_AddOns.GetAddOnMetadata
+end
+
 _G.ArpeksLPS = _G.ArpeksLPS or {}
 _G.ArpeksLPS.LPS = LPS or {}
 _G.ArpeksLPS.L = setmetatable({}, {
