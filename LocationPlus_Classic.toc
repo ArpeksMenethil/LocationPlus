@@ -7,6 +7,7 @@
 ## SavedVariables: LPS_DB
 ## OptionalDeps: LibTouristClassicEra, Ace3
 ## IconTexture: Interface\AddOns\LocationPlus\Media\logo
+## X-Curse-Project-ID: 1444011
 
 Libs/!load_classic.xml
 Game/!load.xml
