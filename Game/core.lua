@@ -112,6 +112,10 @@ function LPS:onLoaded(name)
 		LPS:CreateMinimapButton()
 	end
 
+	if LPS.Retail and db.general.is24H then
+		SetCVar("timeMgrUseMilitaryTime", 1)
+	end
+
 	C_Timer.After(1, function()
 		LPS:UpdateFrameSize()
 		LPS:ApplyLayout()

@@ -28,3 +28,21 @@ end
 function LPS_OnAddonCompartmentLeave(addonName, menuButtonFrame)
 	GameTooltip:Hide()
 end
+
+AddonCompartmentFrame:RegisterAddon({
+	text = LPS.addonName,
+	icon = "Interface\\AddOns\\LocationPlus\\Media\\logo.tga",
+	notCheckable = true,
+	func = function(button, menuInputData, menu)
+		local buttonName = menuInputData.buttonName;
+		print("Hello from the addon compartment! You clicked " .. buttonName .. "!")
+	end,
+	funcOnEnter = function(button)
+		MenuUtil.ShowTooltip(button, function(tooltip)
+			tooltip:SetText("My cool item!")
+		end)
+	end,
+	funcOnLeave = function(button)
+		MenuUtil.HideTooltip(button)
+	end,
+})
