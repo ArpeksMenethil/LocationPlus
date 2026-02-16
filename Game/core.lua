@@ -2,14 +2,14 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 LPS_DB = LPS_DB or {}
 
-LPS.addonVersion = (
-	(C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(LPS.addonName, "Version"))
-		or (GetAddOnMetadata and GetAddOnMetadata(LPS.addonName, "Version"))
+LPS.addon.version = (
+	(C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(LPS.addon.name, "Version"))
+		or (GetAddOnMetadata and GetAddOnMetadata(LPS.addon.name, "Version"))
 		or "?.?.?"
 ) -- Версия аддона
-LPS.addonTitle = (
-	(C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(LPS.addonName, "Title"))
-		or (GetAddOnMetadata and GetAddOnMetadata(LPS.addonName, "Title"))
+LPS.addon.title = (
+	(C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(LPS.addon.name, "Title"))
+		or (GetAddOnMetadata and GetAddOnMetadata(LPS.addon.name, "Title"))
 		or "?.?.?"
 ) -- Версия аддона
 
@@ -27,7 +27,7 @@ local params = {
 	borderColor = {1, 1, 1, 0},
 	updateEvent = {events = {"ADDON_LOADED"}},
 	updateFunc = function(self, event, name)
-		if name ~= LPS.addonName then return end
+		if name ~= LPS.addon.name then return end
 		if event == "ADDON_LOADED" then LPS:onLoaded(name) end
 	end
 }
@@ -39,7 +39,7 @@ LPS.frame.holder:SetFrameStrata("HIGH")
 ----------------------------------------------------------------
 LPS.frame.holder:RegisterEvent("ADDON_LOADED")
 LPS.frame.holder:SetScript("OnEvent", function(self, event, name)
-	if name ~= LPS.addonName then return end
+	if name ~= LPS.addon.name then return end
 	if event == "ADDON_LOADED" then LPS:onLoaded(name) end
 end)
 
@@ -130,7 +130,7 @@ function LPS:onLoaded(name)
 	end)
 
 	if db and db.general and db.general.loginMessage then
-		LPS:Print(format(LPS:L("loaded. Current version:").." |c%sv%s|r", LPS.addonTextColor, LPS.addonVersion), false)
+		LPS:Print(format(LPS:L("loaded. Current version:").." |c%sv%s|r", LPS.addon.textColor, LPS.addon.version), false)
 	end
 end
 

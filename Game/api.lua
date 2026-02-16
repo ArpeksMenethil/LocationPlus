@@ -431,7 +431,7 @@ function LPS:Print(msg, translate)
 	if translate ~= false then
 		msg = LPS:L(msg)
 	end
-	print("|c"..LPS.addonTextColor..LPS.addonName.."|r: " .. tostring(msg))
+	print("|c"..LPS.addon.textColor..LPS.addon.name.."|r: " .. tostring(msg))
 end
 
 -- Возвращает локализованную строку по ключу или сам ключ, если значение = true
@@ -812,6 +812,14 @@ function LPS:ToggleOptions()
 			aceDialog:Open(appName)
 			local f = aceDialog.OpenFrames and aceDialog.OpenFrames[appName]
 			if f then
+				if not LPS._aceOptionsTitleOffsetApplied then
+					LPS._aceOptionsTitleOffsetApplied = true
+					local titleText = f.titletext or (f.frame and f.frame.titletext)
+					if titleText and titleText.ClearAllPoints and titleText.SetPoint then
+						titleText:ClearAllPoints()
+						titleText:SetPoint("TOP", f.frame, "TOP", 0, -14)
+					end
+				end
 				if f.EnableResize then
 					f:EnableResize(false)
 				end

@@ -65,17 +65,23 @@ local function colorByThreshold(v, good, warn, invert)
 end
 
 function LPS:BuildSystemTooltip(tt)
+	local db = LPS.GetDB and LPS:GetDB() or nil
+	local cfg = db and db.tooltips and db.tooltips.system or nil
+	if cfg and cfg.enable == false then return end
+
 	local fps = math.floor(GetFramerate() or 0)
 	local bandwidth, _, lagHome, lagWorld = GetNetStats()
 	lagHome = math.floor(lagHome or 0)
 	lagWorld = math.floor(lagWorld or 0)
 	local lag = lagWorld > 0 and lagWorld or lagHome
 
-	tt:AddDoubleLine(LPS:L("FPS")..":", colorByThreshold(fps, 60, 30, false), 1, 1, 1, 1, 1, 1)
-	tt:AddDoubleLine(LPS:L("MS")..":", colorByThreshold(lag, 60, 120, true), 1, 1, 1, 1, 1, 1)
-	tt:AddDoubleLine(LPS:L("Local latency")..":", string.format("%d ms", lagHome), 1, 1, 1, 0.41, 0.8, 0.94)
-	tt:AddDoubleLine(LPS:L("Global latency")..":", string.format("%d ms", lagWorld), 1, 1, 1, 0.41, 0.8, 0.94)
-	tt:AddDoubleLine(LPS:L("Bandwidth")..":", string.format("%.2f", bandwidth or 0), 1, 1, 1, 0.41, 0.8, 0.94)
+	if not cfg or cfg.network ~= false then
+		tt:AddDoubleLine(LPS:L("FPS")..":", colorByThreshold(fps, 60, 30, false), 1, 1, 1, 1, 1, 1)
+		tt:AddDoubleLine(LPS:L("MS")..":", colorByThreshold(lag, 60, 120, true), 1, 1, 1, 1, 1, 1)
+		tt:AddDoubleLine(LPS:L("Local latency")..":", string.format("%d ms", lagHome), 1, 1, 1, 0.41, 0.8, 0.94)
+		tt:AddDoubleLine(LPS:L("Global latency")..":", string.format("%d ms", lagWorld), 1, 1, 1, 0.41, 0.8, 0.94)
+		tt:AddDoubleLine(LPS:L("Bandwidth")..":", string.format("%.2f", bandwidth or 0), 1, 1, 1, 0.41, 0.8, 0.94)
+	end
 
 	if UpdateAddOnMemoryUsage then
 		UpdateAddOnMemoryUsage()
@@ -95,13 +101,18 @@ function LPS:BuildSystemTooltip(tt)
 	end
 	table.sort(addons, function(a, b) return a.mem > b.mem end)
 
-	tt:AddLine(" ")
-	tt:AddLine(LPS:L("AddOns"), 1, 0.82, 0)
-	local max = 15
-	for i = 1, math.min(#addons, max) do
-		local a = addons[i]
-		tt:AddDoubleLine(a.name, formatMem(a.mem), 1, 1, 1, 0.41, 0.8, 0.94)
+	if not cfg or cfg.addons ~= false then
+		if cfg.network ~= false then tt:AddLine(" ") end
+		tt:AddLine(LPS:L("AddOns"), 1, 0.82, 0)
+		local max = (cfg and tonumber(cfg.addonsMax)) or 15
+		if max < 3 then max = 3 elseif max > 40 then max = 40 end
+		for i = 1, math.min(#addons, max) do
+			local a = addons[i]
+			tt:AddDoubleLine(a.name, formatMem(a.mem), 1, 1, 1, 0.41, 0.8, 0.94)
+		end
 	end
-	tt:AddLine(" ")
-	tt:AddDoubleLine(LPS:L("Total"), formatMem(total), 1, 1, 1, 0.41, 0.8, 0.94)
+	if not cfg or cfg.total ~= false then
+		tt:AddLine(" ")
+		tt:AddDoubleLine(LPS:L("Total"), formatMem(total), 1, 1, 1, 0.41, 0.8, 0.94)
+	end
 end

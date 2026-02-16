@@ -308,6 +308,7 @@ function LPS:CreateGoldFrame()
 			local d = LPS:GetDB()
 			if not d.tooltips.visibility.enable then return end
 			if d.tooltips.visibility.combat and InCombatLockdown() then return end
+			if d.tooltips.gold and d.tooltips.gold.enable == false then return end
 			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
 			GameTooltip:ClearLines()
 			if LPS.BuildGoldTooltip then

@@ -5,8 +5,8 @@ _G.ArpeksLPS.LPS = LPS or {}
 _G.ArpeksLPS.L = setmetatable({}, {
 	__index = function(t, key)
 		if LPS.DEBUG then
-			local c = LPS.addonTextColor or "ffffffff"
-			local n = LPS.addonName or addonName or "LocationPlus"
+			local c = (LPS.addon and LPS.addon.textColor) or "ffffffff"
+			local n = (LPS.addon and LPS.addon.name) or addonName or "LocationPlus"
 			print("|c"..c..n.."|r: Missing locale: |cFFE24444"..key.."|r")
 		end
 		return key
@@ -26,10 +26,11 @@ LPS.frame = LPS.frame or {}
 
 LPS.DEBUG = false
 
-LPS.addonTextColor = "ff1784d1"
-LPS.addonName = addonName
-LPS.addonVersion = "?.?.?"
-LPS.addonTitle = ""
+LPS.addon = LPS.addon or {}
+LPS.addon.textColor = LPS.addon.textColor or "ff1784d1"
+LPS.addon.name = LPS.addon.name or addonName
+LPS.addon.version = LPS.addon.version or "?.?.?"
+LPS.addon.title = LPS.addon.title or ""
 
 LPS.defaults = {
 	position = {
@@ -105,6 +106,24 @@ LPS.defaults = {
 			enable = true,
 			raids = true,
 			dungeons = true,
+		},
+		gold = {
+			enable = true,
+			session = true,
+			characters = true,
+			charactersMax = 20,
+			serverTotals = true,
+			warband = true,
+			token = true,
+			currency = true,
+			resetHints = true,
+		},
+		system = {
+			enable = true,
+			network = true,
+			addons = true,
+			addonsMax = 15,
+			total = true,
 		},
 	},
 

@@ -295,28 +295,6 @@ function LPS:BuildLocationTooltip()
 		end
 	end
 
-	-- Currency
-	if LPS.Retail and db.tooltips.location.currency then
-		local added = false
-		if C_CurrencyInfo and C_CurrencyInfo.GetBackpackCurrencyInfo then
-			for i = 1, 3 do
-				local info = C_CurrencyInfo.GetBackpackCurrencyInfo(i)
-				if info and info.name and info.quantity ~= nil then
-					added = true
-					local icon = info.iconFileID and ("|T"..info.iconFileID..":12:12:1:0|t ") or ""
-					GameTooltip:AddDoubleLine(icon..info.name..": ", info.quantity, r, g, b)
-				end
-			end
-		end
-		if not added then
-			GameTooltip:AddDoubleLine(LPS:L("Currency")..": ", LPS:L("None"), r, g, b)
-			added = true
-		end
-		if added then
-			GameTooltip:AddLine(" ")
-		end
-	end
-
 	-- Recommended zones
 	if db.tooltips.location.recomZone then
 		GameTooltip:AddLine(" ")

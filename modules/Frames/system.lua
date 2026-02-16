@@ -55,6 +55,7 @@ function LPS:CreateSystemFrame()
 			local d = LPS:GetDB()
 			if not d.tooltips.visibility.enable then return end
 			if d.tooltips.visibility.combat and InCombatLockdown() then return end
+			if d.tooltips.system and d.tooltips.system.enable == false then return end
 			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
 			GameTooltip:ClearLines()
 			if LPS.BuildSystemTooltip then

@@ -109,7 +109,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 
 	local options = {
 		type = "group",
-		name = LPS.addonTitle.." v"..LPS.addonVersion,
+		name = LPS.addon.title.." v"..LPS.addon.version,
 		childGroups = "tab",
 		args = {
 			general = {
@@ -394,7 +394,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 					tt_grp = {
 						order = 1,
 						type = "group",
-						name = LPS:L("Tooltip"),
+						name = LPS:L("Visibility"),
 						inline = true,
 						args = {
 							tt = {
@@ -418,7 +418,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 					tt_options = {
 						order = 2,
 						type = "group",
-						name = LPS:L("Location tooltip"),
+						name = LPS:L("Location"),
 						inline = true,
 						args = {
 							ttst = {
@@ -431,18 +431,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().tooltips.location.status end,
 								set = function(_, v) getDb().tooltips.location.status = v end,
 							},
-							curr = {
-								order = 1.1,
-								name = LPS:L("Currency"),
-								desc = LPS:L("Enable/Disable the currencies, on Tooltip."),
-								type = "toggle",
-								
-								disabled = function() return not getDb().tooltips.visibility.enable or not LPS.Retail end,
-								get = function() return getDb().tooltips.location.currency end,
-								set = function(_, v) getDb().tooltips.location.currency = v end,
-							},
 							petlevel = {
-								order = 1.2,
+								order = 1.1,
 								name = LPS:L("Battle Pet level"),
 								desc = LPS:L("Enable/Disable battle pet level on the area."),
 								type = "toggle",
@@ -497,6 +487,32 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								end,
 								get = function() return getDb().tooltips.location.proffessionHideMaxLevel end,
 								set = function(_, v) getDb().tooltips.location.proffessionHideMaxLevel = v end,
+							},
+							filters = {
+								order = 50,
+								type = "group",
+								name = LPS:L("Filters"),
+								inline = true,
+								args = {
+									tthideraid = {
+										order = 1,
+										name = LPS:L("Hide Raid"),
+										desc = LPS:L("Show/Hide raids on recommended dungeons."),
+										type = "toggle",
+										disabled = function() return not getDb().tooltips.visibility.enable end,
+										get = function() return getDb().tooltips.location.hides.raids end,
+										set = function(_, v) getDb().tooltips.location.hides.raids = v end,
+									},
+									tthidepvp = {
+										order = 2,
+										name = LPS:L("Hide PvP"),
+										desc = LPS:L("Show/Hide PvP zones, Arenas and BGs on recommended dungeons and zones."),
+										type = "toggle",
+										disabled = function() return not getDb().tooltips.visibility.enable end,
+										get = function() return getDb().tooltips.location.hides.pvp end,
+										set = function(_, v) getDb().tooltips.location.hides.pvp = v end,
+									},
+								},
 							},
 							spacer1_ttreczones = {
 								order = 4,
@@ -594,41 +610,183 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 							},
 						},
 					},
-					tt_filters = {
-						order = 3,
+					gold = {
+						order = 30,
 						type = "group",
-						name = LPS:L("Filters"),
+						name = LPS:L("Gold"),
 						inline = true,
 						args = {
-							tthideraid = {
+							enable = {
 								order = 1,
-								name = LPS:L("Hide Raid"),
-								desc = LPS:L("Show/Hide raids on recommended dungeons."),
+								name = LPS:L("Enable"),
+								desc = LPS:L("Enable tooltip on the gold panel."),
 								type = "toggle",
 								disabled = function() return not getDb().tooltips.visibility.enable end,
-								get = function() return getDb().tooltips.location.hides.raids end,
-								set = function(_, v) getDb().tooltips.location.hides.raids = v end,
+								get = function() return getDb().tooltips.gold.enable end,
+								set = function(_, v) getDb().tooltips.gold.enable = v end,
 							},
-							tthidepvp = {
+							session = {
 								order = 2,
-								name = LPS:L("Hide PvP"),
-								desc = LPS:L("Show/Hide PvP zones, Arenas and BGs on recommended dungeons and zones."),
+								name = LPS:L("Session"),
+								desc = LPS:L("Show session information in the tooltip."),
+								type = "toggle",
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable end,
+								get = function() return getDb().tooltips.gold.session end,
+								set = function(_, v) getDb().tooltips.gold.session = v end,
+							},
+							spacer1_characters = {
+								order = 2.1,
+								type = "description",
+								name = "",
+							},
+							characters = {
+								order = 3,
+								name = LPS:L("Characters"),
+								desc = LPS:L("Show character gold list in the tooltip."),
+								type = "toggle",
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable end,
+								get = function() return getDb().tooltips.gold.characters end,
+								set = function(_, v) getDb().tooltips.gold.characters = v end,
+							},
+							charactersMax = {
+								order = 3.1,
+								name = LPS:L("Max entries"),
+								desc = LPS:L("Limit how many entries are shown in this list."),
+								type = "range",
+								min = 3,
+								max = 40,
+								step = 1,
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable or not getDb().tooltips.gold.characters end,
+								get = function() return tonumber(getDb().tooltips.gold.charactersMax) or 20 end,
+								set = function(_, v) getDb().tooltips.gold.charactersMax = v end,
+							},
+							spacer1_serverTotals = {
+								order = 3.2,
+								type = "description",
+								name = "",
+							},
+							serverTotals = {
+								order = 4,
+								name = LPS:L("On server"),
+								desc = LPS:L("Show faction/server totals in the tooltip."),
+								type = "toggle",
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable end,
+								get = function() return getDb().tooltips.gold.serverTotals end,
+								set = function(_, v) getDb().tooltips.gold.serverTotals = v end,
+							},
+							warband = {
+								order = 5,
+								name = LPS:L("Warband"),
+								desc = LPS:L("Show Warband money in the tooltip (Retail)."),
+								type = "toggle",
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable end,
+								get = function() return getDb().tooltips.gold.warband end,
+								set = function(_, v) getDb().tooltips.gold.warband = v end,
+							},
+							token = {
+								order = 6,
+								name = LPS:L("WoW Token"),
+								desc = LPS:L("Show WoW Token price in the tooltip (Retail)."),
+								type = "toggle",
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable end,
+								get = function() return getDb().tooltips.gold.token end,
+								set = function(_, v) getDb().tooltips.gold.token = v end,
+							},
+							currency = {
+								order = 7,
+								name = LPS:L("Currency"),
+								desc = LPS:L("Enable/Disable the currencies, on Tooltip."),
+								type = "toggle",
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable or not LPS.Retail end,
+								get = function() return getDb().tooltips.gold.currency end,
+								set = function(_, v) getDb().tooltips.gold.currency = v end,
+							},
+							resetHints = {
+								order = 8,
+								name = LPS:L("Show Hints"),
+								desc = LPS:L("Show reset keybind hints at the bottom of the tooltip."),
+								type = "toggle",
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable end,
+								get = function() return getDb().tooltips.gold.resetHints end,
+								set = function(_, v) getDb().tooltips.gold.resetHints = v end,
+							},
+						},
+					},
+					system = {
+						order = 40,
+						type = "group",
+						name = LPS:L("System"),
+						inline = true,
+						args = {
+							enable = {
+								order = 1,
+								name = LPS:L("Enable"),
+								desc = LPS:L("Enable tooltip on the system panel."),
 								type = "toggle",
 								disabled = function() return not getDb().tooltips.visibility.enable end,
-								get = function() return getDb().tooltips.location.hides.pvp end,
-								set = function(_, v) getDb().tooltips.location.hides.pvp = v end,
+								get = function() return getDb().tooltips.system.enable end,
+								set = function(_, v) getDb().tooltips.system.enable = v end,
+							},
+							network = {
+								order = 2,
+								name = LPS:L("Bandwidth"),
+								desc = LPS:L("Show FPS and network information in the tooltip."),
+								type = "toggle",
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.system.enable end,
+								get = function() return getDb().tooltips.system.network end,
+								set = function(_, v) getDb().tooltips.system.network = v end,
+							},
+							spacer1_addons = {
+								order = 2.2,
+								type = "description",
+								name = "",
+							},
+							addons = {
+								order = 3,
+								name = LPS:L("AddOns"),
+								desc = LPS:L("Show addon memory usage list in the tooltip."),
+								type = "toggle",
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.system.enable end,
+								get = function() return getDb().tooltips.system.addons end,
+								set = function(_, v) getDb().tooltips.system.addons = v end,
+							},
+							addonsMax = {
+								order = 3.1,
+								name = LPS:L("Max entries"),
+								desc = LPS:L("Limit how many entries are shown in this list."),
+								type = "range",
+								min = 3,
+								max = 40,
+								step = 1,
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.system.enable or not getDb().tooltips.system.addons end,
+								get = function() return tonumber(getDb().tooltips.system.addonsMax) or 15 end,
+								set = function(_, v) getDb().tooltips.system.addonsMax = v end,
+							},
+							spacer1_total = {
+								order = 3.2,
+								type = "description",
+								name = "",
+							},
+							total = {
+								order = 4,
+								name = LPS:L("Total"),
+								desc = LPS:L("Show total addon memory usage line in the tooltip."),
+								type = "toggle",
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.system.enable end,
+								get = function() return getDb().tooltips.system.total end,
+								set = function(_, v) getDb().tooltips.system.total = v end,
 							},
 						},
 					},
 					time = {
 						order = 20,
 						type = "group",
-						name = LPS:L("Time tooltip"),
+						name = LPS:L("Time"),
 						inline = true,
 						args = {
 							enable = {
 								order = 1,
-								name = LPS:L("Tooltip"),
+								name = LPS:L("Enable"),
 								desc = LPS:L("Enable tooltip on the time panel."),
 								type = "toggle",
 								disabled = function() return not getDb().tooltips.visibility.enable end,
@@ -1280,6 +1438,10 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									local s = tostring(LPS.Options._profileImportText or "")
 									if s == "" then return end
 									local importName = tostring(LPS.Options._profileImportAsName or "")
+									local currentProfile = LPS.db and LPS.db.GetCurrentProfile and LPS.db:GetCurrentProfile()
+									if importName == "" then
+										importName = tostring(currentProfile or "")
+									end
 									if importName == "" then return end
 									local decodeString = s
 									if LibDeflate and LibDeflate.DecodeForPrint and LibDeflate.DecompressDeflate and s:sub(1, #PROFILE_EXPORT_PREFIX) == PROFILE_EXPORT_PREFIX then
@@ -1295,7 +1457,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									if not ok or type(t) ~= "table" then
 										return
 									end
-									LPS.db:SetProfile(importName)
+									if currentProfile and importName ~= currentProfile then
+										LPS.db:SetProfile(importName)
+									end
 									local p2 = LPS.db.profile
 									for k in pairs(p2) do
 										p2[k] = nil
@@ -1316,7 +1480,121 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 	}
 
 	AceConfig:RegisterOptionsTable(LPS.Options.aceAppName, options)
-	AceDialog:AddToBlizOptions(LPS.Options.aceAppName, LPS:L("Location Plus"))
+
+	local function deepCopyAce(v)
+		if type(v) ~= "table" then
+			return v
+		end
+		local out = {}
+		for k2, v2 in pairs(v) do
+			out[deepCopyAce(k2)] = deepCopyAce(v2)
+		end
+		return out
+	end
+
+	local function resolveAceName(v)
+		if type(v) == "function" then
+			local ok, r = pcall(v)
+			if ok and r ~= nil then
+				return tostring(r)
+			end
+			return ""
+		end
+		return tostring(v or "")
+	end
+
+	local function registerSubCategory(suffix, group)
+		if type(group) ~= "table" then return end
+		local displayName = resolveAceName(group.name)
+		if displayName == "" then
+			displayName = suffix
+		end
+		local appName = LPS.Options.aceAppName .. suffix
+		AceConfig:RegisterOptionsTable(appName, group)
+		AceDialog:AddToBlizOptions(appName, displayName, LPS.addon.title)
+	end
+
+	local aboutNotes = nil
+	if GetAddOnMetadata and LPS.addon and LPS.addon.name then
+		aboutNotes = GetAddOnMetadata(LPS.addon.name, "Notes")
+	end
+	local aboutAuthor = nil
+	if GetAddOnMetadata and LPS.addon and LPS.addon.name then
+		aboutAuthor = GetAddOnMetadata(LPS.addon.name, "Author")
+	end
+	if not aboutNotes or aboutNotes == "" then
+		aboutNotes = LPS:L("Adds location, coords,\nextra panels and an info-rich tooltip\n(no ElvUI required)")
+	end
+	if not aboutAuthor or aboutAuthor == "" then
+		aboutAuthor = "Arpeks"
+	end
+
+	AceConfig:RegisterOptionsTable(LPS.Options.aceAppName .. "_About", {
+		type = "group",
+		name = LPS.addon.title,
+		args = {
+			logo = {
+				order = 1,
+				type = "description",
+				name = " ",
+				image = "Interface\\AddOns\\LocationPlus\\Media\\logo.tga",
+				imageWidth = 128,
+				imageHeight = 128,
+				width = "half",
+			},
+			creditsHeader = {
+				order = 2,
+				type = "header",
+				name = "Credits",
+				width = "half",
+			},
+			creditsList = {
+				order = 3,
+				type = "description",
+				fontSize = "medium",
+				width = "half",
+				name = table.concat({
+					"|cffffd200Author:|r " .. tostring(aboutAuthor),
+					"|cffffd200Contributors:|r",
+					"- " .. tostring(aboutAuthor),
+					"",
+					"|cffffd200Special Thanks:|r",
+					" The WoW addon community",
+				}, "\n"),
+			},
+			version = {
+				order = 4,
+				type = "description",
+				fontSize = "medium",
+				width = "half",
+				name = function()
+					return "|cffffd200Version:|r v" .. tostring(LPS.addon.version or "")
+				end,
+			},
+			spacerRight = {
+				order = 5,
+				type = "description",
+				name = " ",
+				width = "half",
+			},
+			desc = {
+				order = 6,
+				type = "description",
+				fontSize = "medium",
+				width = "half",
+				name = tostring(aboutNotes),
+			},
+		},
+	})
+	AceDialog:AddToBlizOptions(LPS.Options.aceAppName .. "_About", LPS.addon.title)
+
+	registerSubCategory("_General", options.args.general)
+	registerSubCategory("_Show", options.args.show)
+	registerSubCategory("_Tooltip", options.args.tooltip)
+	registerSubCategory("_Layout", options.args.layout)
+	if options.args.importexport then
+		registerSubCategory("_ImportExport", options.args.importexport)
+	end
 
 	deepCopy = function(v)
 		if type(v) ~= "table" then
@@ -1351,14 +1629,15 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 		if not (LibStub:GetLibrary("AceDBOptions-3.0", true) and LPS.db) then return end
 		local AceDBOptions = LibStub("AceDBOptions-3.0")
 		AceConfig:RegisterOptionsTable(LPS.Options.aceAppName .. "_Profiles", AceDBOptions:GetOptionsTable(LPS.db))
-		AceDialog:AddToBlizOptions(LPS.Options.aceAppName .. "_Profiles", LPS:L("Profiles"), LPS:L("Location Plus"))
+		if AceDialog and not self._profilesBlizAdded then
+			AceDialog:AddToBlizOptions(LPS.Options.aceAppName .. "_Profiles", LPS:L("Profiles"), LPS.addon.title)
+			self._profilesBlizAdded = true
+		end
 		self._profilesRegistered = true
 	end
 
 	LPS.Options:EnsureAceProfilesTab()
 	LPS.Options:RegisterAceProfiles()
-
-	return
 end
 
 -------------------------------------------------
@@ -1416,70 +1695,17 @@ end
 
 -------------------------------------------------
 -- MAIN PANEL
--------------------------------------------------
-local panel = CreateFrame("Frame")
-panel.name = LPS:L("Location Plus")
-LPS.Options.panel = panel
+--------------------------------------------------
+if false and Settings and Settings.RegisterCanvasLayoutCategory then
+	local panel = CreateFrame("Frame")
+	panel.name = LPS.addon.title
+	LPS.Options.panel = panel
 
--------------------------------------------------
--- SIMPLE TABS (SAFE FOR SETTINGS)
--------------------------------------------------
-function LPS.Options:CreateTabs(parent)
-	self.tabs = {}
-	self.pages = {}
-
-	local tabData = {
-		{ key = "general",	text = LPS:L("General") },
-		{ key = "show",		text = LPS:L("Show") },
-		{ key = "tooltips",	text = LPS:L("Tooltips") },
-		{ key = "style",	text = LPS:L("Style") },
-	}
-
-	local prev
-
-	for i, info in ipairs(tabData) do
-		local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
-		b:SetSize(100, 22)
-		b:SetText(info.text)
-		b.key = info.key
-
-		if not prev then
-			b:SetPoint("TOPLEFT", parent, "TOPLEFT", 16, -50)
-		else
-			b:SetPoint("LEFT", prev, "RIGHT", 6, 0)
-		end
-
-		b:SetScript("OnClick", function(self)
-			LPS.Options:SelectTab(self.key)
-		end)
-
-		self.tabs[info.key] = b
-		prev = b
-
-		local page = CreateFrame("Frame", nil, parent)
-		page:SetPoint("TOPLEFT", 0, -80)
-		page:SetPoint("BOTTOMRIGHT", 0, 0)
-		page:Hide()
-
-		self.pages[info.key] = page
+	local function ensureInited(self, initFunc)
+		if self.inited then return end
+		self.inited = true
+		initFunc(self)
 	end
-
-	self:SelectTab("general")
-end
-
-function LPS.Options:SelectTab(key)
-	for k, btn in pairs(self.tabs) do
-		if k == key then
-			btn:Disable()
-		else
-			btn:Enable()
-		end
-	end
-
-	for k, page in pairs(self.pages) do
-		page:SetShown(k == key)
-	end
-end
 
 -------------------------------------------------
 -- RESET
@@ -1674,25 +1900,67 @@ end
 -- INIT
 -------------------------------------------------
 panel:SetScript("OnShow", function(self)
-	if self.inited then return end
-	self.inited = true
+	ensureInited(self, function(p)
+		local title = p:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+		title:SetPoint("TOPLEFT", 16, -18)
+		title:SetText(LPS.addon.title)
 
-	local title = self:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-	title:SetPoint("TOPLEFT", 16, -16)
-	local tocTitle = (GetAddOnMetadata and LPS and LPS.addonName) and GetAddOnMetadata(LPS.addonName, "Title") or nil
-	title:SetText(tocTitle or ("|c"..LPS.addonTextColor..LPS.addonName.."|r"))
+		local version = p:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+		version:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
+		version:SetText("v" .. tostring(LPS.addon.version or ""))
 
-	LPS.Options:CreateTabs(self)
+		local logo = p:CreateTexture(nil, "ARTWORK")
+		logo:SetPoint("TOPRIGHT", -18, -18)
+		logo:SetSize(64, 64)
+		logo:SetTexture("Interface\\AddOns\\LocationPlus\\Media\\logo.tga")
 
-	LPS:CreateGeneralOptions(LPS.Options.pages.general)
-	LPS:CreateShowOptions(LPS.Options.pages.show)
-	LPS:CreateTooltipOptions(LPS.Options.pages.tooltips)
-	LPS:CreateStyleOptions(LPS.Options.pages.style)
-
-	LPS.Options:CreateResetButton(self)
-	LPS.Options:CreateResetPositionButton(self)
-	LPS.Options:CreateToggleMoveButton(self)
+		local notes = nil
+		if GetAddOnMetadata and LPS.addon and LPS.addon.name then
+			notes = GetAddOnMetadata(LPS.addon.name, "Notes")
+		end
+		if not notes or notes == "" then
+			notes = LPS:L("Adds location, coords,\nextra panels and an info-rich tooltip\n(no ElvUI required)")
+		end
+		local desc = p:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+		desc:SetPoint("TOPLEFT", version, "BOTTOMLEFT", 0, -10)
+		desc:SetWidth(520)
+		desc:SetJustifyH("LEFT")
+		desc:SetJustifyV("TOP")
+		desc:SetText(tostring(notes))
+	end)
 end)
 
 LPS.Options.category = Settings.RegisterCanvasLayoutCategory(panel, panel.name)
 Settings.RegisterAddOnCategory(LPS.Options.category)
+
+local function makeSubPanel(key, displayName, initFunc)
+	local p = CreateFrame("Frame")
+	p.name = displayName
+	p.parent = panel.name
+	p:SetScript("OnShow", function(self)
+		ensureInited(self, initFunc)
+	end)
+	LPS.Options["settings_" .. key] = p
+	Settings.RegisterCanvasLayoutSubcategory(LPS.Options.category, p, displayName)
+end
+
+makeSubPanel("general", LPS:L("General"), function(p)
+	LPS:CreateGeneralOptions(p)
+	LPS.Options:CreateResetButton(p)
+	LPS.Options:CreateResetPositionButton(p)
+	LPS.Options:CreateToggleMoveButton(p)
+end)
+
+makeSubPanel("show", LPS:L("Show"), function(p)
+	LPS:CreateShowOptions(p)
+end)
+
+makeSubPanel("tooltips", LPS:L("Tooltips"), function(p)
+	LPS:CreateTooltipOptions(p)
+end)
+
+makeSubPanel("style", LPS:L("Style"), function(p)
+	LPS:CreateStyleOptions(p)
+end)
+
+end

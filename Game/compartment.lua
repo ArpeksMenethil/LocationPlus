@@ -16,7 +16,7 @@ local function OnAddonCompartmentEnter(addonName, menuButtonFrame)
 	local rb, gb, bb = LPS:GetColor("tooltipSetting")
 
 	GameTooltip:SetOwner(UIParent, "ANCHOR_CURSOR")
-	GameTooltip:AddDoubleLine(LPS.addonName, LPS.addonVersion, ry, gy, by, r, g, b)
+	GameTooltip:AddDoubleLine(LPS.addon.name, LPS.addon.version, ry, gy, by, r, g, b)
 	GameTooltip:AddLine(" ")
 	GameTooltip:AddLine(LPS:L("Adds location, coords,\nextra panels and an info-rich tooltip\n(no ElvUI required)"), r, g, b)
 	GameTooltip:AddLine(" ")
@@ -44,7 +44,7 @@ local function unregisterAddonCompartment(data)
 	if not (AddonCompartmentFrame and AddonCompartmentFrame.registeredAddons) then return end
 	for i = #AddonCompartmentFrame.registeredAddons, 1, -1 do
 		local entry = AddonCompartmentFrame.registeredAddons[i]
-		if entry == data or (entry and entry.text == LPS.addonName) then
+		if entry == data or (entry and entry.text == LPS.addon.title) then
 			table.remove(AddonCompartmentFrame.registeredAddons, i)
 		end
 	end
@@ -61,18 +61,18 @@ function LPS:ApplyAddonCompartmentRegistration()
 	local enabled = db and db.show and db.show.addonCompartment
 
 	LPS._addonCompartmentData = LPS._addonCompartmentData or {
-		text = LPS.addonTitle,
+		text = LPS.addon.title,
 		icon = "Interface\\AddOns\\LocationPlus\\Media\\logo.tga",
 		notCheckable = true,
 		func = function(button, menuInputData, menu)
 			local buttonName = menuInputData and menuInputData.buttonName
-			OnAddonCompartmentClick(LPS.addonName, buttonName, button)
+			OnAddonCompartmentClick(LPS.addon.name, buttonName, button)
 		end,
 		funcOnEnter = function(button)
-			OnAddonCompartmentEnter(LPS.addonName, button)
+			OnAddonCompartmentEnter(LPS.addon.name, button)
 		end,
 		funcOnLeave = function(button)
-			OnAddonCompartmentLeave(LPS.addonName, button)
+			OnAddonCompartmentLeave(LPS.addon.name, button)
 		end,
 	}
 
