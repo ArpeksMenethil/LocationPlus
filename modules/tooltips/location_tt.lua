@@ -15,9 +15,9 @@ end
 
 
 -- Icons on Location Panel
-local PET_ICON = "|TInterface\\AddOns\\LocationPlus\\media\\pet.tga:14:14|t"
-local LEVEL_ICON = "|TInterface\\AddOns\\LocationPlus\\media\\levelup.tga:14:14|t"
-local FISH_ICON = "|TInterface\\AddOns\\LocationPlus\\media\\fish.tga:14:14|t"
+local PET_ICON = "|TInterface\\AddOns\\LocationPlus\\media\\pet.png:14:14|t"
+local LEVEL_ICON = "|TInterface\\AddOns\\LocationPlus\\media\\levelup.png:14:14|t"
+local FISH_ICON = "|TInterface\\AddOns\\LocationPlus\\media\\fish.png:14:14|t"
 
 
 -- Zone level range

@@ -1514,10 +1514,6 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 		AceDialog:AddToBlizOptions(appName, displayName, LPS.addon.title)
 	end
 
-	local aboutNotes = nil
-	if GetAddOnMetadata and LPS.addon and LPS.addon.name then
-		aboutNotes = GetAddOnMetadata(LPS.addon.name, "Notes")
-	end
 	local aboutAuthor = nil
 	if GetAddOnMetadata and LPS.addon and LPS.addon.name then
 		aboutAuthor = GetAddOnMetadata(LPS.addon.name, "Author")
@@ -1534,7 +1530,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 			order = 1,
 			type = "description",
 			name = " ",
-			image = "Interface\\AddOns\\"..LPS.addon.name.."\\Media\\logo.tga",
+			image = "Interface\\AddOns\\"..LPS.addon.name.."\\Media\\Logo-Modern.png",
 			imageWidth = 128,
 			imageHeight = 128,
 		},
@@ -1887,7 +1883,7 @@ panel:SetScript("OnShow", function(self)
 		local logo = p:CreateTexture(nil, "ARTWORK")
 		logo:SetPoint("TOPRIGHT", -18, -18)
 		logo:SetSize(64, 64)
-		logo:SetTexture("Interface\\AddOns\\LocationPlus\\Media\\logo.tga")
+		logo:SetTexture("Interface\\AddOns\\LocationPlus\\Media\\logo.png")
 
 		local notes = nil
 		if GetAddOnMetadata and LPS.addon and LPS.addon.name then

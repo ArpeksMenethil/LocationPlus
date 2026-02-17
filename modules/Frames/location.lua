@@ -39,20 +39,20 @@ function LPS:CreateLocationFrame()
 			if other == "RLEVEL" then
 				extra = LPS:GetLevelRange(mapID, zone) or ""
 				if showIcon and extra ~= "" then
-					icon = " |TInterface\\AddOns\\LocationPlus\\Media\\levelup.tga:14:14|t"
+					icon = " |TInterface\\AddOns\\LocationPlus\\Media\\levelup.png:14:14|t"
 				end
 			elseif other == "PFISH" and not LPS.Retail and LPS.GetFishingLvl then
 				local minFish, maxFish = LPS:GetFishingLvl()
 				if minFish and maxFish then
 					extra = string.format("%s-%s", minFish, maxFish)
 					if showIcon then
-						icon = " |TInterface\\AddOns\\LocationPlus\\Media\\fish.tga:14:14|t"
+						icon = " |TInterface\\AddOns\\LocationPlus\\Media\\fish.png:14:14|t"
 					end
 				end
 			elseif other == "PET" and (LPS.Retail or LPS.MISTS) and LPS.GetBattlePetLvl then
 				extra = LPS:GetBattlePetLvl(zone) or ""
 				if showIcon and extra ~= "" then
-					icon = " |TInterface\\AddOns\\LocationPlus\\Media\\pet.tga:14:14|t"
+					icon = " |TInterface\\AddOns\\LocationPlus\\Media\\pet.png:14:14|t"
 				end
 			end
 
