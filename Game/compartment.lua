@@ -62,7 +62,7 @@ function LPS:ApplyAddonCompartmentRegistration()
 
 	LPS._addonCompartmentData = LPS._addonCompartmentData or {
 		text = LPS.addon.title,
-		icon = "Interface\\AddOns\\LocationPlus\\Media\\logo.png",
+		icon = LPS.icons.PathLogo,
 		notCheckable = true,
 		func = function(button, menuInputData, menu)
 			local buttonName = menuInputData and menuInputData.buttonName

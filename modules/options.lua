@@ -78,13 +78,13 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 	local function getDisplayOtherValues()
 		local t = {
 			["NONE"] = LPS:L("None"),
-			["RLEVEL"] = LPS:L("Level range"),
+			["RLEVEL"] = LPS.icons.Level.." "..LPS:L("Level range"),
 		}
 		if not LPS.Retail then
-			t["PFISH"] = LPS:L("Fishing")
+			t["PFISH"] = LPS.icons.Fish.." "..LPS:L("Fishing")
 		end
 		if LPS.Retail or LPS.MISTS then
-			t["PET"] = LPS:L("Battle pets")
+			t["PET"] = LPS.icons.Pet.." "..LPS:L("Battle pets")
 		end
 		return t
 	end
@@ -160,7 +160,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									},
 									seconds = {
 										type = "toggle",
-										name = LPS:L("Show seconds (local time)"),
+										name = LPS:L("Show seconds"),
 										desc = LPS:L("Show seconds when using local time."),
 										order = 4,
 										
@@ -433,7 +433,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 							},
 							petlevel = {
 								order = 1.1,
-								name = LPS:L("Battle Pet level"),
+								name = LPS.icons.Pet.." "..LPS:L("Battle Pet level"),
 								desc = LPS:L("Enable/Disable battle pet level on the area."),
 								type = "toggle",
 								
@@ -443,7 +443,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 							},
 							ttlvl = {
 								order = 2,
-								name = LPS:L("Level range"),
+								name = LPS.icons.Level.." "..LPS:L("Level range"),
 								desc = LPS:L("Enable/Disable level range on Tooltip."),
 								type = "toggle",
 								
@@ -453,7 +453,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 							},
 							fish = {
 								order = 2.1,
-								name = LPS:L("Area Fishing level"),
+								name = LPS.icons.Fish.." "..LPS:L("Area Fishing level"),
 								desc = LPS:L("Enable/Disable fishing level on the area."),
 								type = "toggle",
 								
@@ -1530,7 +1530,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 			order = 1,
 			type = "description",
 			name = " ",
-			image = "Interface\\AddOns\\"..LPS.addon.name.."\\Media\\Logo-Modern.png",
+			image = LPS.icons.PathLogoModern,
 			imageWidth = 128,
 			imageHeight = 128,
 		},
@@ -1754,7 +1754,7 @@ function LPS:CreateGeneralOptions(parent)
 	y = y - 30
 
 	self:CreateCheck(parent,
-		"Show seconds (local time)",
+		"Show seconds",
 		nil,
 		function() return getDb().general.seconds end,
 		function(v)
@@ -1883,7 +1883,7 @@ panel:SetScript("OnShow", function(self)
 		local logo = p:CreateTexture(nil, "ARTWORK")
 		logo:SetPoint("TOPRIGHT", -18, -18)
 		logo:SetSize(64, 64)
-		logo:SetTexture("Interface\\AddOns\\LocationPlus\\Media\\logo.png")
+		logo:SetTexture(LPS.icons.PathLogo)
 
 		local notes = nil
 		if GetAddOnMetadata and LPS.addon and LPS.addon.name then

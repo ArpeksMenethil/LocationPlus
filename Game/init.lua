@@ -36,6 +36,14 @@ LPS.addon.name = LPS.addon.name or addonName
 LPS.addon.version = LPS.addon.version or "?.?.?"
 LPS.addon.title = LPS.addon.title or ""
 
+LPS.icons = LPS.icons or {}
+LPS.icons.Pet = LPS.icons.Pet or "|TInterface\\AddOns\\"..LPS.addon.name.."\\Media\\Pet.png:16:16|t"
+LPS.icons.Fish = LPS.icons.Fish or "|TInterface\\AddOns\\"..LPS.addon.name.."\\Media\\Fish.png:16:16|t"
+LPS.icons.Level = LPS.icons.Level or "|TInterface\\AddOns\\"..LPS.addon.name.."\\Media\\Level.png:16:16|t"
+LPS.icons.PathLogo = LPS.icons.PathLogo or "Interface\\AddOns\\"..LPS.addon.name.."\\Media\\Logo.png"
+LPS.icons.PathLogoModern = LPS.icons.PathLogoModern or "Interface\\AddOns\\"..LPS.addon.name.."\\Media\\Logo-Modern.png"
+
+
 LPS.defaults = {
 	position = {
 		point = "TOP",

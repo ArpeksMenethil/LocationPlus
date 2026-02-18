@@ -40,7 +40,7 @@ function LPS:EnsureLDBMinimapIcon()
 	if not ldbObject then
 		ldbObject = LDB:NewDataObject("LocationPlus", {
 			type = "launcher",
-			icon = "Interface\\AddOns\\LocationPlus\\Media\\logo.png",
+			icon = LPS.icons.PathLogo,
 			OnClick = function(_, button)
 				if button == "LeftButton" then
 					LPS:ToggleMoveMode()
@@ -138,7 +138,7 @@ function LPS:CreateMinimapButton()
 	btn.icon = btn:CreateTexture(nil, "ARTWORK")
 	btn.icon:SetPoint("CENTER")
 	btn.icon:SetSize(20, 20)
-	btn.icon:SetTexture("Interface\\AddOns\\LocationPlus\\Media\\logo.png")
+	btn.icon:SetTexture(LPS.icons.PathLogo)
 	btn.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 	if btn.icon.SetMask then
 		btn.icon:SetMask("Interface\\CharacterFrame\\TempPortraitAlphaMask")

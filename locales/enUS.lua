@@ -31,18 +31,15 @@ L["Toggle time"] = true
 L["Toggle calendar"] = true
 L["Toggle WorldMap"] = true
 L["Toggle Configuration"] = true
-L["Reset position"] = true
 L["Send the coordinates to the chat"] = true
 L["loaded. Current version:"] = true
 L["in"] = true
 
 L["LMB"] = true
 L["RMB"] = true
-L["MMB"] = true
 L["Shift+LMB"] = true
 
 L["The frame position is reset"] = true
-L["In the future"] = true
 
 -- Professions
 L["Alchemy"]        = true
@@ -60,7 +57,6 @@ L["First Aid"]      = true
 L["Fishing"]        = true
 
 L["Location Plus"] = true
-L["Reset to defaults"] = true
 L["General"] = true
 L["Actions"] = true
 L["Reset values"] = true
@@ -81,13 +77,11 @@ L["Paste an export string here to import a profile."] = true
 L["Import the string into the selected profile name."] = true
 L["Hide Blizzard Zone Text"] = true
 L["Show/Hide all panels when in combat"] = true
-L["Show/Hide tooltip"] = true
 L["Hide tooltip while in combat."] = true
 L["Enable/Disable status on Tooltip."] = true
 L["Enable/Disable level range on Tooltip."] = true
 L["Show Hints"] = true
 L["Enable/Disable hints on Tooltip."] = true
-L["Hide Time"] = true
 L["Area Fishing level"] = true
 L["Enable/Disable fishing level on the area."] = true
 L["Battle pet level"] = true
@@ -139,13 +133,8 @@ L["Time"] = true
 L["Show/Hide the gold panel."] = true
 L["Show/Hide the system panel."] = true
 L["Side frames"] = true
-L["Attach to"] = true
-L["Side"] = true
-L["Left"] = true
-L["Right"] = true
 L["Left Slot"] = true
 L["Right Slot"] = true
-L["Show icon"] = true
 L["Crest"] = true
 L["Other"] = true
 L["Show additional info in the Location Panel"] = true
@@ -159,7 +148,7 @@ L["Login message"] = true
 L["Show a message in chat on login."] = true
 L["24H time format"] = true
 L["Use 24-hour time format."] = true
-L["Show seconds (local time)"] = true
+L["Show seconds"] = true
 L["Show seconds when using local time."] = true
 L["Coords update (sec)"] = true
 L["How often to update coordinates."] = true
@@ -175,7 +164,6 @@ L["Show panels"] = true
 L["Show/Hide the extra panels (Coords and Time)."] = true
 L["Show/Hide the coords panel."] = true
 
-L["Location tooltip"] = true
 L["Offset X"] = true
 L["Offset Y"] = true
 L["Show/Hide the coords panel in instances."] = true
@@ -203,14 +191,10 @@ L["Enable"] = true
 L["Tooltips"] = true
 L["Tooltip"] = true
 L["Visibility"] = true
-L["Enable tooltips"] = true
-L["Master switch for all tooltips."] = true
 L["Hide in combat"] = true
 L["Hide tooltips while in combat."] = true
 
-L["Location tooltip"] = true
 L["Enable tooltip on the location panel."] = true
-L["Location tooltip settings"] = true
 L["Show zone status line."] = true
 L["Level range"] = true
 L["Show zone level range."] = true
@@ -235,7 +219,6 @@ L["Hide raids from lists."] = true
 
 L["Time tooltip"] = true
 L["Enable tooltip on the time panel."] = true
-L["Time tooltip settings"] = true
 L["Show saved raids list."] = true
 L["Show saved dungeons list."] = true
 
@@ -247,7 +230,9 @@ L["Set font size."] = true
 L["Border size"] = true
 L["Set border thickness."] = true
 L["Text color"] = true
-L["Set tooltip text color."] = true
+L["Custom"] = true
+L["Class Colors"] = true
+L["Default"] = true
 L["Background color"] = true
 L["Set background color."] = true
 L["Border color"] = true
@@ -260,24 +245,11 @@ L["Automatically manage spacing between panels."] = true
 L["Set spacing between panels."] = true
 L["Profiles"] = true
 
-L["Show DataTexts"] = true
-L["Show/Hide the datatext panels."] = true
-L["DataTexts"] = true
-
-L["Colors"] = true
-L["Custom"] = true
-L["Class Colors"] = true
-L["Default"] = true
-
-L["Coords color"] = true
-L["Coords custom color"] = true
-
 L["Session"] = true
 L["Earned"] = true
 L["Spent"] = true
 L["Profit"] = true
 L["Loss"] = true
-L["Character"] = true
 L["Characters"] = true
 L["On server"] = true
 L["Alliance"] = true
@@ -297,7 +269,5 @@ L["MS"] = true
 L["AddOns"] = true
 L["Total"] = true
 L["Currency"] = true
-L["Pick a custom color for coordinates text."] = true
-
 L["Text custom color"] = true
 L["Pick a custom color for panel text."] = true
