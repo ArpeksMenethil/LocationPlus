@@ -6,16 +6,6 @@ end
 
 _G.ArpeksLPS = _G.ArpeksLPS or {}
 _G.ArpeksLPS.LPS = LPS or {}
-_G.ArpeksLPS.L = setmetatable({}, {
-	__index = function(t, key)
-		if LPS.DEBUG then
-			local c = (LPS.addon and LPS.addon.textColor) or "ffffffff"
-			local n = (LPS.addon and LPS.addon.name) or addonName or "LocationPlus"
-			print("|c"..c..n.."|r: Missing locale: |cFFE24444"..key.."|r")
-		end
-		return key
-	end
-})
 LPS_DB = LPS_DB or {} -- SavedVariables
 
 

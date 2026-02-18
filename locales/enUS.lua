@@ -3,7 +3,7 @@ local L
 if AceLocale then
 	L = AceLocale:NewLocale("LocationPlus", "enUS", true)
 else
-	L = _G.ArpeksLPS and _G.ArpeksLPS.L
+	return
 end
 if not L then return end
 

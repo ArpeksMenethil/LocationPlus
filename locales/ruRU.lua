@@ -3,8 +3,7 @@ local AceLocale = LibStub and LibStub:GetLibrary("AceLocale-3.0", true)
 if AceLocale then
 	L = AceLocale:NewLocale("LocationPlus", "ruRU")
 else
-	if GetLocale() ~= "ruRU" then return end
-	L = _G.ArpeksLPS and _G.ArpeksLPS.L
+	return
 end
 if not L then return end
 

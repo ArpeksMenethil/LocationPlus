@@ -446,15 +446,8 @@ function LPS:L(key)
 		end
 	end
 
-	local legacy = _G.ArpeksLPS and _G.ArpeksLPS.L
-	if legacy then
-		local val = legacy[key]
-		if val == true then
-			return key
-		end
-		if val ~= nil then
-			return val
-		end
+	if LPS.DEBUG then
+		LPS:Print("Missing locale: |cFFE24444"..tostring(key).."|r", false)
 	end
 
 	return key
