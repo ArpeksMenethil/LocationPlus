@@ -372,7 +372,6 @@ function LPS:ResetAllSettingsToDefaults()
 		LPS:CreateMinimapButton()
 	end
 end
-LPS_DB = LPS_DB or {}
 
 function LPS:RefreshAfterProfileChange()
 	self.profileDB = nil
@@ -414,7 +413,7 @@ if LPS.Retail and LibStub:GetLibrary("LibTourist-3.0", true) then
 	Tourist = LibStub("LibTourist-3.0")
 elseif LPS.TBC and  LibStub:GetLibrary("LibTouristClassicBCA", true) then
 	Tourist = LibStub("LibTouristClassicBCA")
-elseif LPS.MISTS and LibStub:GetLibrary("LibTouristClassic-1.0", true) then
+elseif LPS.Mists and LibStub:GetLibrary("LibTouristClassic-1.0", true) then
 	Tourist = LibStub("LibTouristClassic-1.0")
 elseif LPS.Classic and  LibStub:GetLibrary("LibTouristClassicEra", true) then
 	Tourist = LibStub("LibTouristClassicEra")
@@ -538,9 +537,13 @@ end
 
 -- Возвращает название континента, на котором находится игрок
 function LPS:GetContinentName()
-	local mapID = C_Map.GetBestMapForUnit("player")
-	local continentID = C_Map.GetMapInfo(mapID).parentMapID
-	return C_Map.GetMapInfo(continentID).name or nil
+    local mapID = C_Map.GetBestMapForUnit("player")
+    if not mapID then return end
+    local mapInfo = C_Map.GetMapInfo(mapID)
+    if not mapInfo then return end
+    local continentID = mapInfo.parentMapID
+    if not continentID then return end
+    return C_Map.GetMapInfo(continentID).name or nil
 end
 
 -- Возвращает статус зоны (PVP/мирная и т.п.), опционально цвет или цветной текст
@@ -745,13 +748,13 @@ end
 -- Возвращает координаты игрока на текущей карте
 function LPS:GetPlayerCoords()
 	local mapID = C_Map.GetBestMapForUnit("player")
-		if not mapID then return end
-		local pos = C_Map.GetPlayerMapPosition(mapID, "player")
-		if pos then
-			return pos.x, pos.y
-		else
-			return
-		end
+	if not mapID then return end
+	local pos = C_Map.GetPlayerMapPosition(mapID, "player")
+	if pos then
+		return pos.x, pos.y
+	else
+		return
+	end
 end
 
 -- Обертка для Tourist:GetMapNameByIDAlt(mapID)

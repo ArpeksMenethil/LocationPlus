@@ -7,7 +7,7 @@ if LPS.Retail and LibStub:GetLibrary("LibTourist-3.0", true) then
 	Tourist = LibStub("LibTourist-3.0")
 elseif LPS.TBC and  LibStub:GetLibrary("LibTouristClassicBCA", true) then
 	Tourist = LibStub("LibTouristClassicBCA")
-elseif LPS.MISTS and LibStub:GetLibrary("LibTouristClassic-1.0", true) then
+elseif LPS.Mists and LibStub:GetLibrary("LibTouristClassic-1.0", true) then
 	Tourist = LibStub("LibTouristClassic-1.0")
 elseif LPS.Classic and  LibStub:GetLibrary("LibTouristClassicEra", true) then
 	Tourist = LibStub("LibTouristClassicEra")
@@ -77,7 +77,7 @@ end
 
 -- PetBattle Range
 function LPS:GetBattlePetLvl(zoneText)
-	if not (LPS.Retail or LPS.MISTS) then return end
+	if not (LPS.Retail or LPS.Mists) then return end
 	if not Tourist or not Tourist.GetBattlePetLevel then return end
 
 	local uniqueZone = Tourist:GetUniqueZoneNameForLookup(zoneText, LPS:GetContinentID())
@@ -261,7 +261,7 @@ function LPS:BuildLocationTooltip()
 			willShowExtra = true
 		end
 	end
-	if (LPS.Retail or LPS.MISTS) and db.tooltips.location.battlePets then
+	if (LPS.Retail or LPS.Mists) and db.tooltips.location.battlePets then
 		local checkbpet = LPS:GetBattlePetLvl(zoneText)
 		if checkbpet then
 			willShowExtra = true
@@ -288,7 +288,7 @@ function LPS:BuildLocationTooltip()
 	end
 
 	-- Pet Levels
-	if (LPS.Retail or LPS.MISTS) and db.tooltips.location.battlePets then
+	if (LPS.Retail or LPS.Mists) and db.tooltips.location.battlePets then
 		local checkbpet = LPS:GetBattlePetLvl(zoneText)
 		if checkbpet then
 				GameTooltip:AddDoubleLine(LPS:L("Battle Pet level").. ": ", checkbpet.." "..PET_ICON, r, g, b)

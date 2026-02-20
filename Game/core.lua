@@ -89,21 +89,12 @@ function LPS:onLoaded(name)
 		end
 	end
 
-	local DEBUG_BNET_BATTLETAG = "Arpeks#21468"
-	if DEBUG_BNET_BATTLETAG and BNGetInfo then
-		local battleTag = select(2, BNGetInfo())
-		if battleTag == DEBUG_BNET_BATTLETAG then
-			LPS.DEBUG = true
-			LPS:Print("Debug mode enabled", false)
-		end
-	end
-
 	if LPS.DEBUG then
-		LPS:Print("WOW PATCH: "..LPS.wowpatch, false)
-		LPS:Print("WOW BUILD: "..LPS.wowbuild, false)
-		LPS:Print("WOW DATE: "..LPS.wowdate, false)
-		LPS:Print("WOW TOC: "..LPS.wowtoc, false)
-		LPS:Print("WOW PROJECT: "..WOW_PROJECT_ID, false)
+		LPS:Print("WOW PATCH: "..LPS.wow.patch, false)
+		LPS:Print("WOW BUILD: "..LPS.wow.build, false)
+		LPS:Print("WOW DATE: "..LPS.wow.date, false)
+		LPS:Print("WOW TOC: "..LPS.wow.toc, false)
+		LPS:Print("WOW PROJECT: "..LPS.wow.project, false)
 	end
 
 	local db = LPS:GetDB()

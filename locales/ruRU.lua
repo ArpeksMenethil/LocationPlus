@@ -1,5 +1,6 @@
-local L
+if GetLocale() ~= "ruRU" then return end
 local AceLocale = LibStub and LibStub:GetLibrary("AceLocale-3.0", true)
+local L
 if AceLocale then
 	L = AceLocale:NewLocale("LocationPlus", "ruRU")
 else
@@ -158,6 +159,7 @@ L["Show additional info in the Location Panel"] = "Показывать допо
 L["Crest"] = "Герб"
 L["Left Slot"] = "Левый слот"
 L["Right Slot"] = "Правый слот"
+L["Colors"] = "Цвета"
 
 L["Show panels"] = "Показывать панели"
 L["Show/Hide the extra panels (Coords and Time)."] = "Показать/скрыть дополнительные панели (координаты и время)."

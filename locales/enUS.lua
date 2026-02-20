@@ -1,3 +1,4 @@
+if GetLocale() ~= "enUS" then return end
 local AceLocale = LibStub and LibStub:GetLibrary("AceLocale-3.0", true)
 local L
 if AceLocale then
@@ -84,7 +85,6 @@ L["Show Hints"] = true
 L["Enable/Disable hints on Tooltip."] = true
 L["Area Fishing level"] = true
 L["Enable/Disable fishing level on the area."] = true
-L["Battle pet level"] = true
 L["Enable/Disable battle pet level on the area."] = true
 L["Recommended Zones"] = true
 L["Enable/Disable recommended zones on Tooltip."] = true
@@ -158,6 +158,7 @@ L["Move frame"] = true
 L["Toggle move mode for the frame."] = true
 L["Reset holder position"] = true
 L["Reset the holder frame position."] = true
+L["Colors"] = true
 
 L["Show"] = true
 L["Show panels"] = true

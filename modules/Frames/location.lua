@@ -49,7 +49,7 @@ function LPS:CreateLocationFrame()
 						icon = " " .. LPS.icons.Fish
 					end
 				end
-			elseif other == "PET" and (LPS.Retail or LPS.MISTS) and LPS.GetBattlePetLvl then
+			elseif other == "PET" and (LPS.Retail or LPS.Mists) and LPS.GetBattlePetLvl then
 				extra = LPS:GetBattlePetLvl(zone) or ""
 				if showIcon and extra ~= "" then
 					icon = " " .. LPS.icons.Pet

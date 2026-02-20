@@ -83,7 +83,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 		if not LPS.Retail then
 			t["PFISH"] = LPS.icons.Fish.." "..LPS:L("Fishing")
 		end
-		if LPS.Retail or LPS.MISTS then
+		if LPS.Retail or LPS.Mists then
 			t["PET"] = LPS.icons.Pet.." "..LPS:L("Battle pets")
 		end
 		return t
@@ -437,7 +437,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								desc = LPS:L("Enable/Disable battle pet level on the area."),
 								type = "toggle",
 								
-								disabled = function() return not getDb().tooltips.visibility.enable or not (LPS.Retail or LPS.MISTS) end,
+								disabled = function() return not getDb().tooltips.visibility.enable or not (LPS.Retail or LPS.Mists) end,
 								get = function() return getDb().tooltips.location.battlePets end,
 								set = function(_, v) getDb().tooltips.location.battlePets = v end,
 							},

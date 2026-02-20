@@ -9,16 +9,16 @@ _G.ArpeksLPS.LPS = LPS or {}
 LPS_DB = LPS_DB or {} -- SavedVariables
 
 
-LPS.wowpatch, LPS.wowbuild, LPS.wowdate, LPS.wowtoc = GetBuildInfo()
+LPS.wow = LPS.wow or {}
+LPS.wow.patch, LPS.wow.build, LPS.wow.date, LPS.wow.toc = GetBuildInfo()
+LPS.wow.project = WOW_PROJECT_ID
 do
 	LPS.Classic = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 	LPS.TBC = WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC
-	LPS.MISTS = WOW_PROJECT_ID == WOW_PROJECT_MISTS_CLASSIC
+	LPS.Mists = WOW_PROJECT_ID == WOW_PROJECT_MISTS_CLASSIC
 	LPS.Retail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 end
 LPS.frame = LPS.frame or {}
-
-LPS.DEBUG = false
 
 LPS.addon = LPS.addon or {}
 LPS.addon.textColor = LPS.addon.textColor or "ff1784d1"
@@ -33,6 +33,14 @@ LPS.icons.Level = LPS.icons.Level or "|TInterface\\AddOns\\"..LPS.addon.name.."\
 LPS.icons.PathLogo = LPS.icons.PathLogo or "Interface\\AddOns\\"..LPS.addon.name.."\\Media\\Logo.png"
 LPS.icons.PathLogoModern = LPS.icons.PathLogoModern or "Interface\\AddOns\\"..LPS.addon.name.."\\Media\\Logo-Modern.png"
 
+LPS.DEBUG = false
+if BNGetInfo then
+	local battleTag = select(2, BNGetInfo())
+	if battleTag == "Arpeks#21468" then
+		LPS.DEBUG = true
+		print("|c"..LPS.addon.textColor..LPS.addon.name.."|r: Debug mode enabled")
+	end
+end
 
 LPS.defaults = {
 	position = {
