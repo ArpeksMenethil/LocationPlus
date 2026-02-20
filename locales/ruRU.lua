@@ -2,7 +2,7 @@ if GetLocale() ~= "ruRU" then return end
 local AceLocale = LibStub and LibStub:GetLibrary("AceLocale-3.0", true)
 local L
 if AceLocale then
-	L = AceLocale:NewLocale("LocationPlus", "ruRU")
+	L = AceLocale:NewLocale("LocationPlus", "ruRU", true)
 else
 	return
 end
