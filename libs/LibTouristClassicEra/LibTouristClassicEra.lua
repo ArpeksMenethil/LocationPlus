@@ -415,22 +415,13 @@ local function CreateLocalizedZoneNameLookups()
 	end
 
 	-- Load from zoneTranslation
-	local localeZoneTranslation = zoneTranslation and zoneTranslation[GAME_LOCALE]
-	local enZoneTranslation = zoneTranslation and zoneTranslation["enUS"]
-	if type(enZoneTranslation) == "table" then
-		if type(localeZoneTranslation) ~= "table" then
-			localeZoneTranslation = enZoneTranslation
+	for key, localizedZoneName in pairs(zoneTranslation[GAME_LOCALE]) do
+		local englishName = zoneTranslation["enUS"][key]
+		if not BZ[englishName] then
+			BZ[englishName] = localizedZoneName
 		end
-		for key, localizedZoneName in pairs(localeZoneTranslation) do
-			local englishName = enZoneTranslation[key]
-			if englishName and localizedZoneName and localizedZoneName ~= "" then
-				if not BZ[englishName] then
-					BZ[englishName] = localizedZoneName
-				end
-				if not BZR[localizedZoneName] then
-					BZR[localizedZoneName] = englishName
-				end
-			end
+		if not BZR[localizedZoneName] then
+			BZR[localizedZoneName] = englishName
 		end
 	end
 end

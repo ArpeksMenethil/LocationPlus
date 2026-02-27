@@ -1,10 +1,8 @@
 ------------------------------------------------------------------------
-r333 | Odica_Jaedenar | 2025-10-13 20:46:49 +0000 (Mon, 13 Oct 2025) | 2 lines
+r342 | Odica_Jaedenar | 2026-02-12 16:31:58 +0000 (Thu, 12 Feb 2026) | 1 line
 Changed paths:
-   M /trunk/LibTourist-3.0.lua
    M /trunk/LibTourist-3.0.toc
 
-- added Archival Assault (delve)
-- updated version in TOC to 110205
+Updated version in TOC to 120001
 ------------------------------------------------------------------------
 
