@@ -1,7 +1,7 @@
-## Interface: 11508, 20505, 50504, 120007
+## Interface: 11509, 20506, 50504, 120007, 120100
 ## Title: |cff1784d1Location Plus|r |cfd9b9b9b[by Arpeks]|r
 ## Author: Arpeks
-## Version: 1.3.13
+## Version: 1.3.14
 ## SavedVariables: LPS_DB
 ## OptionalDeps: Ace3, LibDeflate, LibDBIcon-1.0, LibTourist-3.0, LibTouristClassic-1.0, LibTouristClassicBCA, LibTouristClassicEra
 ## IconTexture: Interface\AddOns\LocationPlus\Media\Logo.png
