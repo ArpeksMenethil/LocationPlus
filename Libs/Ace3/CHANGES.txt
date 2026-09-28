@@ -1,4 +1,44 @@
 ------------------------------------------------------------------------
+r1402 | nevcairiel | 2026-08-12 05:50:27 +0000 (Wed, 12 Aug 2026) | 1 line
+Changed paths:
+   M /trunk/changelog.txt
+
+Update changelog
+------------------------------------------------------------------------
+r1401 | funkehdude | 2026-08-10 20:19:45 +0000 (Mon, 10 Aug 2026) | 1 line
+Changed paths:
+   M /trunk/Ace3.toc
+
+Bump toc
+------------------------------------------------------------------------
+r1400 | nevcairiel | 2026-08-05 06:13:20 +0000 (Wed, 05 Aug 2026) | 3 lines
+Changed paths:
+   M /trunk
+   M /trunk/.luacheckrc
+   M /trunk/AceComm-3.0/ChatThrottleLib.lua
+
+Ignore secret values in ChatThrottleLib hooks
+
+Secret values can occur during combat when using normal chat, avoid errors from the bandwidth calculation since we can't measure the length of the messages in this case.
+------------------------------------------------------------------------
+r1399 | funkehdude | 2026-07-10 21:40:53 +0000 (Fri, 10 Jul 2026) | 1 line
+Changed paths:
+   M /trunk/Ace3.toc
+
+Bump toc
+------------------------------------------------------------------------
+r1398 | funkehdude | 2026-06-26 15:09:40 +0000 (Fri, 26 Jun 2026) | 1 line
+Changed paths:
+   M /trunk/Ace3.toc
+
+Bump toc
+------------------------------------------------------------------------
+r1397 | funkehdude | 2026-06-20 00:35:53 +0000 (Sat, 20 Jun 2026) | 1 line
+Changed paths:
+   M /trunk/Ace3.toc
+
+Bump toc
+------------------------------------------------------------------------
 r1396 | funkehdude | 2026-06-20 00:33:25 +0000 (Sat, 20 Jun 2026) | 1 line
 Changed paths:
    M /trunk/.luacheckrc

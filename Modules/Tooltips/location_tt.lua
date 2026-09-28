@@ -36,8 +36,8 @@ function LPS:GetLevelRange(uiMapID)
 	local dlevel
 	if not Tourist then
 		if LPS.Forever then
-			minLvl = LPS:GetDB().levelTable[uiMapID].minLevel
-			maxLvl = LPS:GetDB().levelTable[uiMapID].maxLevel
+			minLvl = LPS:GetDB().levelTable[uiMapID].minLevel or nil
+			maxLvl = LPS:GetDB().levelTable[uiMapID].maxLevel or nil
 		end
 
 		if minLvl and maxLvl and minLvl > 0 and maxLvl > 0 then
