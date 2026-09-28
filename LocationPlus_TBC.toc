@@ -1,0 +1,22 @@
+## Interface: 20506
+## Title: |cff1784d1Location Plus TBC|r |cfd9b9b9b[by Arpeks]|r
+## Author: Arpeks
+## Version: 1.4.0
+## SavedVariables: LPS_DB
+## OptionalDeps: Ace3, LibDeflate, LibDBIcon-1.0, LibTouristClassicBCA
+## IconTexture: Interface\AddOns\LocationPlus\Media\Logo.png
+## X-Curse-Project-ID: 1444011
+
+## Notes: Adds location, coords, extra panels and an info-rich tooltip (no ElvUI required)
+## Notes-ruRU: Добавляет локацию, координаты, доп. панели и информативную подсказку (без ElvUI)
+
+## Category: Addons Arpeks
+## Category-ruRU: Аддоны Arpeks
+
+Libs/!load_anniversary.xml
+
+Locales/enUS.lua [AllowLoadTextLocale enUS, deDE, frFR, itIT, koKR, ptBR, esES, esMX, zhCN, zhTW]
+Locales/ruRU.lua [AllowLoadTextLocale ruRU]
+
+Game/!load.xml
+Modules/!load.xml

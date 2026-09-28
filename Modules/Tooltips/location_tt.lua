@@ -5,11 +5,11 @@ LPS_DB = LPS_DB or {}
 local Tourist
 if LPS.Retail and LibStub:GetLibrary("LibTourist-3.0", true) then
 	Tourist = LibStub("LibTourist-3.0")
-elseif LPS.TBC and  LibStub:GetLibrary("LibTouristClassicBCA", true) then
+elseif LPS.TBC and LibStub:GetLibrary("LibTouristClassicBCA", true) then
 	Tourist = LibStub("LibTouristClassicBCA")
 elseif LPS.Mists and LibStub:GetLibrary("LibTouristClassic-1.0", true) then
 	Tourist = LibStub("LibTouristClassic-1.0")
-elseif LPS.Classic and  LibStub:GetLibrary("LibTouristClassicEra", true) then
+elseif LPS.Classic and LibStub:GetLibrary("LibTouristClassicEra", true) then
 	Tourist = LibStub("LibTouristClassicEra")
 end
 
@@ -21,12 +21,10 @@ local FISH_ICON = LPS.icons.Fish
 
 
 -- Zone level range
-function LPS:GetLevelRange(uiMapID, zoneText)
-	local minLvl, maxLvl
-	if type(uiMapID) ~= "number" then
-		zoneText = uiMapID
-		uiMapID = nil
-	end
+function LPS:GetLevelRange(uiMapID)
+	local zoneText = C_Map.GetMapInfo(uiMapID).name
+
+	local minLvl, maxLvl, fishLvl
 
 	if uiMapID and C_Map and C_Map.GetMapLevels then
 		local ok, a, b = pcall(C_Map.GetMapLevels, uiMapID)
@@ -36,13 +34,20 @@ function LPS:GetLevelRange(uiMapID, zoneText)
 	end
 
 	local dlevel
-	if minLvl and maxLvl and minLvl > 0 and maxLvl > 0 then
-		if minLvl ~= maxLvl then
-			dlevel = format("|cff%02x%02x%02x%d-%d|r", 255, 255, 255, minLvl, maxLvl)
-		else
-			dlevel = format("|cff%02x%02x%02x%d|r", 255, 255, 255, maxLvl)
+	if not Tourist then
+		if LPS.Forever then
+			minLvl = LPS:GetDB().levelTable[uiMapID].minLevel
+			maxLvl = LPS:GetDB().levelTable[uiMapID].maxLevel
 		end
-		return dlevel
+
+		if minLvl and maxLvl and minLvl > 0 and maxLvl > 0 then
+			if minLvl ~= maxLvl then
+				dlevel = format("|cff%02x%02x%02x%d-%d|r", 255, 255, 255, minLvl, maxLvl)
+			else
+				dlevel = format("|cff%02x%02x%02x%d|r", 255, 255, 255, maxLvl)
+			end
+			return dlevel
+		end
 	end
 
 	if Tourist and zoneText then
@@ -65,8 +70,14 @@ function LPS:GetFishingLvl()
 	if LPS.Retail then return end
 
 	local mapID = C_Map.GetBestMapForUnit("player")
-	local zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;
-	local minFish, maxFish = Tourist:GetFishingLevel(zoneText)
+	local minFish, maxFish
+
+	if Tourist then
+		local zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN
+		minFish, maxFish = Tourist:GetFishingLevel(zoneText)
+	else
+		minFish = LPS:GetDB().levelTable[mapID].minFish
+	end
 
 	if minFish then
 			return minFish, maxFish
@@ -223,10 +234,45 @@ local function GetRecomDungeons(dungeon)
 	return true
 end
 
+function LPS:GetContinentName()
+    local currentMapID = C_Map.GetBestMapForUnit("player")
+    
+    if not currentMapID then
+        return "UNKNOWN"
+    end
+    
+    local mapID = currentMapID
+    local continentName = nil
+    
+    for i = 1, 10 do
+        local mapInfo = C_Map.GetMapInfo(mapID)
+        
+        if not mapInfo then
+            break
+        end
+        
+        if mapInfo.mapType == Enum.UIMapType.Continent or mapInfo.mapType == Enum.UIMapType.World then
+            continentName = mapInfo.name
+            break
+        end
+        
+        if mapInfo.parentMapID and mapInfo.parentMapID ~= 0 then
+            mapID = mapInfo.parentMapID
+        else
+            if not continentName then
+                continentName = mapInfo.name
+            end
+            break
+        end
+    end
+    
+    return continentName or "UNKNOWN"
+end
+
 function LPS:BuildLocationTooltip()
 	local db = LPS:GetDB()
 	local mapID = C_Map.GetBestMapForUnit("player")
-	local zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;
+	local zoneText = C_Map.GetMapInfo(mapID).name
 
 	local r, g, b = LPS:GetColor("text")
 	local rB, gB, bB = LPS:GetColor("tooltipSetting")
@@ -238,7 +284,7 @@ function LPS:BuildLocationTooltip()
 	GameTooltip:AddDoubleLine(LPS:L("Zone")..": ", zoneText, r, g, b)
 
 	-- Continent
-	GameTooltip:AddDoubleLine(LPS:L("Continent")..": ", Tourist:GetContinent(zoneText), r, g, b)
+	GameTooltip:AddDoubleLine(LPS:L("Continent")..": ", LPS:GetContinentName(), r, g, b)
 
 	-- Home
 	GameTooltip:AddDoubleLine(LPS:L("Home")..": ", GetBindLocation(), r, g, b, 0.41, 0.8, 0.94)
@@ -250,14 +296,14 @@ function LPS:BuildLocationTooltip()
 
 	local willShowExtra = false
 	if db.tooltips.location.level then
-		local zoneLevel = LPS:GetLevelRange(zoneText)
+		local zoneLevel = LPS:GetLevelRange(mapID)
 		if zoneLevel then
 			willShowExtra = true
 		end
 	end
 	if not LPS.Retail and db.tooltips.location.fish then
 		local minFish, maxFish = LPS:GetFishingLvl()
-		if minFish and maxFish then
+		if minFish or maxFish then
 			willShowExtra = true
 		end
 	end
@@ -273,7 +319,7 @@ function LPS:BuildLocationTooltip()
 
 	-- Zone level range
 	if db.tooltips.location.level then
-		local zoneLevel = LPS:GetLevelRange(mapID, zoneText)
+		local zoneLevel = LPS:GetLevelRange(mapID)
 		if zoneLevel then
 				GameTooltip:AddDoubleLine(LEVEL_RANGE..": ", zoneLevel.." "..LEVEL_ICON, r, g, b)
 		end
@@ -284,6 +330,8 @@ function LPS:BuildLocationTooltip()
 			local minFish, maxFish = LPS:GetFishingLvl()
 			if minFish and maxFish then
 				GameTooltip:AddDoubleLine(PROFESSIONS_FISHING..": ", format("%s-%s %s", minFish, maxFish, FISH_ICON), r, g, b)
+			elseif minFish then
+				GameTooltip:AddDoubleLine(PROFESSIONS_FISHING..": ", format("%s %s", minFish, FISH_ICON), r, g, b)
 			end
 	end
 
@@ -341,7 +389,7 @@ function LPS:BuildLocationTooltip()
 		end
 	end
 
-	if LPS.Retail then
+	if LPS.Retail or LPS.Forever then
 		-- Professions
 		local prof1, prof2, archy, fishing, cooking = GetProfessions()
 		if db.tooltips.location.proffession and (prof1 or prof2 or archy or fishing or cooking) then

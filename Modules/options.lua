@@ -80,7 +80,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 			["NONE"] = LPS:L("None"),
 			["RLEVEL"] = LPS.icons.Level.." "..LPS:L("Level range"),
 		}
-		if not LPS.Retail then
+		if not LPS.Retail and not LPS.Mists then
 			t["PFISH"] = LPS.icons.Fish.." "..LPS:L("Fishing")
 		end
 		if LPS.Retail or LPS.Mists then
@@ -207,7 +207,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										name = LPS:L("Addon Compartment"),
 										desc = LPS:L("Show/Hide addon in the Addon Compartment."),
 										order = 2,
-										disabled = function() return not LPS.Retail end,
+										
+										hidden = function() return not (LPS.Retail or LPS.Forever) end,
+										disabled = function() return not (LPS.Retail or LPS.Forever) end,
 										get = function() return getDb().show.addonCompartment end,
 										set = function(_, v)
 											getDb().show.addonCompartment = v
@@ -438,6 +440,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "toggle",
 								
 								disabled = function() return not getDb().tooltips.visibility.enable or not (LPS.Retail or LPS.Mists) end,
+								hidden = function() return not (LPS.Retail or LPS.Mists) end,
 								get = function() return getDb().tooltips.location.battlePets end,
 								set = function(_, v) getDb().tooltips.location.battlePets = v end,
 							},
@@ -457,7 +460,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								desc = LPS:L("Enable/Disable fishing level on the area."),
 								type = "toggle",
 								
-								disabled = function() return not getDb().tooltips.visibility.enable or LPS.Retail end,
+								disabled = function() return not getDb().tooltips.visibility.enable or LPS.Retail or LPS.Mists end,
+								hidden = function() return LPS.Retail or LPS.Mists end,
 								get = function() return getDb().tooltips.location.fish end,
 								set = function(_, v) getDb().tooltips.location.fish = v end,
 							},
@@ -493,13 +497,14 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "group",
 								name = LPS:L("Filters"),
 								inline = true,
+								hidden = function() return LPS.Forever end,
 								args = {
 									tthideraid = {
 										order = 1,
 										name = LPS:L("Hide Raid"),
 										desc = LPS:L("Show/Hide raids on recommended dungeons."),
 										type = "toggle",
-										disabled = function() return not getDb().tooltips.visibility.enable end,
+										disabled = function() return not getDb().tooltips.visibility.enable or LPS.Forever end,
 										get = function() return getDb().tooltips.location.hides.raids end,
 										set = function(_, v) getDb().tooltips.location.hides.raids = v end,
 									},
@@ -508,7 +513,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										name = LPS:L("Hide PvP"),
 										desc = LPS:L("Show/Hide PvP zones, Arenas and BGs on recommended dungeons and zones."),
 										type = "toggle",
-										disabled = function() return not getDb().tooltips.visibility.enable end,
+										disabled = function() return not getDb().tooltips.visibility.enable or LPS.Forever end,
 										get = function() return getDb().tooltips.location.hides.pvp end,
 										set = function(_, v) getDb().tooltips.location.hides.pvp = v end,
 									},
@@ -524,8 +529,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Recommended Zones"),
 								desc = LPS:L("Enable/Disable recommended zones on Tooltip."),
 								type = "toggle",
-								
-								disabled = function() return not getDb().tooltips.visibility.enable end,
+								hidden = function() return LPS.Forever end,
+								disabled = function() return not getDb().tooltips.visibility.enable or LPS.Forever end,
 								get = function() return getDb().tooltips.location.recomZone end,
 								set = function(_, v) getDb().tooltips.location.recomZone = v end,
 							},
@@ -538,7 +543,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								min = 3,
 								max = 20,
 								step = 1,
-								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.location.recomZone end,
+								hidden = function() return LPS.Forever end,
+								disabled = function() return not getDb().tooltips.visibility.enable or LPS.Forever or not getDb().tooltips.location.recomZone end,
 								get = function() return tonumber(getDb().tooltips.location.recomZoneMax) or 5 end,
 								set = function(_, v) getDb().tooltips.location.recomZoneMax = v end,
 							},
@@ -553,7 +559,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								desc = LPS:L("Enable/Disable dungeons in the zone, on Tooltip."),
 								type = "toggle",
 								
-								disabled = function() return not getDb().tooltips.visibility.enable end,
+								hidden = function() return LPS.Forever end,
+								disabled = function() return not getDb().tooltips.visibility.enable or LPS.Forever end,
 								get = function() return getDb().tooltips.location.zoneDungeon end,
 								set = function(_, v) getDb().tooltips.location.zoneDungeon = v end,
 							},
@@ -566,7 +573,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								min = 3,
 								max = 20,
 								step = 1,
-								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.location.zoneDungeon end,
+								hidden = function() return LPS.Forever end,
+								disabled = function() return not getDb().tooltips.visibility.enable or LPS.Forever or not getDb().tooltips.location.zoneDungeon end,
 								get = function() return tonumber(getDb().tooltips.location.zoneDungeonMax) or 5 end,
 								set = function(_, v) getDb().tooltips.location.zoneDungeonMax = v end,
 							},
@@ -581,7 +589,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								desc = LPS:L("Enable/Disable recommended dungeons on Tooltip."),
 								type = "toggle",
 								
-								disabled = function() return not getDb().tooltips.visibility.enable end,
+								hidden = function() return LPS.Forever end,
+								disabled = function() return not getDb().tooltips.visibility.enable or LPS.Forever end,
 								get = function() return getDb().tooltips.location.recomDungeon end,
 								set = function(_, v) getDb().tooltips.location.recomDungeon = v end,
 							},
@@ -591,7 +600,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								desc = LPS:L("Enable/Disable the coords for area dungeons and recommended dungeon entrances, on Tooltip."),
 								type = "toggle",
 								
-								disabled = function() return not getDb().tooltips.visibility.enable or not (getDb().tooltips.location.recomDungeon or getDb().tooltips.location.zoneDungeon) end,
+								hidden = function() return LPS.Forever end,
+								disabled = function() return not getDb().tooltips.visibility.enable or LPS.Forever or not (getDb().tooltips.location.recomDungeon or getDb().tooltips.location.zoneDungeon) end,
 								get = function() return getDb().tooltips.location.recomDungeonCoords end,
 								set = function(_, v) getDb().tooltips.location.recomDungeonCoords = v end,
 							},
@@ -604,6 +614,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								min = 3,
 								max = 20,
 								step = 1,
+								hidden = function() return LPS.Forever end,
 								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.location.recomDungeon end,
 								get = function() return tonumber(getDb().tooltips.location.recomDungeonMax) or 5 end,
 								set = function(_, v) getDb().tooltips.location.recomDungeonMax = v end,
@@ -679,7 +690,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Warband"),
 								desc = LPS:L("Show Warband money in the tooltip (Retail)."),
 								type = "toggle",
-								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable end,
+								hidden = function() return not LPS.Retail end,
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable or LPS.Forever end,
 								get = function() return getDb().tooltips.gold.warband end,
 								set = function(_, v) getDb().tooltips.gold.warband = v end,
 							},
@@ -688,7 +700,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("WoW Token"),
 								desc = LPS:L("Show WoW Token price in the tooltip (Retail)."),
 								type = "toggle",
-								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable end,
+								hidden = function() return not LPS.Retail end,
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable or LPS.Forever end,
 								get = function() return getDb().tooltips.gold.token end,
 								set = function(_, v) getDb().tooltips.gold.token = v end,
 							},
@@ -697,6 +710,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Currency"),
 								desc = LPS:L("Enable/Disable the currencies, on Tooltip."),
 								type = "toggle",
+								
+								hidden = function() return not LPS.Retail end,
 								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable or not LPS.Retail end,
 								get = function() return getDb().tooltips.gold.currency end,
 								set = function(_, v) getDb().tooltips.gold.currency = v end,
@@ -798,7 +813,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Cooldown raids"),
 								desc = LPS:L("Show saved raids list."),
 								type = "toggle",
-								disabled = function() return not getDb().tooltips.time.enable or not getDb().tooltips.visibility.enable end,
+								hidden = function() return LPS.Forever end,
+								disabled = function() return not getDb().tooltips.time.enable or not getDb().tooltips.visibility.enable or LPS.Forever end,
 								get = function() return getDb().tooltips.time.raids end,
 								set = function(_, v) getDb().tooltips.time.raids = v end,
 							},
@@ -807,7 +823,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Cooldown dungeons"),
 								desc = LPS:L("Show saved dungeons list."),
 								type = "toggle",
-								disabled = function() return not getDb().tooltips.time.enable or not getDb().tooltips.visibility.enable end,
+								hidden = function() return LPS.Forever end,
+								disabled = function() return not getDb().tooltips.time.enable or not getDb().tooltips.visibility.enable or LPS.Forever end,
 								get = function() return getDb().tooltips.time.dungeons end,
 								set = function(_, v) getDb().tooltips.time.dungeons = v end,
 							},

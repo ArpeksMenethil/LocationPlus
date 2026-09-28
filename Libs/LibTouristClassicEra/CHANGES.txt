@@ -1,12 +1,12 @@
-tag 1654e1fd3a52d374c7fdbf77ec2deff1bff31265 WoW-1.15.8-release1
+tag 6ab15f0e8bd7c7e78282cdc6aec255bbf9f4938b WoW-1.15.9-release1
 Author:	Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:	Mon Nov 3 19:03:16 2025 +0100
+Date:	Sat Sep 12 18:15:36 2026 +0200
 
-Tagged as WoW-1.15.8-release1
+Tagged as WoW-1.15.9-release1
 
-commit 46c51b793a7e0f426f37c431fc10994af81e8973
+commit d2380757a8fe2b1cb2d341817e36e1cd0bccee3a
 Author: Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:   Mon Nov 3 19:02:42 2025 +0100
+Date:   Sat Sep 12 18:14:45 2026 +0200
 
-    Updated version in TOC to 11508
+    Updated version to 11509
 

@@ -18,7 +18,7 @@ function LPS:CreateLocationFrame()
 		updateFunc = function(f)
 			local db2 = LPS:GetDB()
 			local mapID = C_Map.GetBestMapForUnit("player")
-			local zone = LPS:GetMapNameByIDAlt(mapID) or UNKNOWN
+			local zone = C_Map.GetMapInfo(mapID).name or LPS:GetMapNameByIDAlt(mapID) 
 			local sub = GetSubZoneText()
 			local hasSub = sub and sub ~= "" and sub ~= zone
 			local showZone = db2 and db2.show and db2.show.zone
@@ -41,15 +41,17 @@ function LPS:CreateLocationFrame()
 				if showIcon and extra ~= "" then
 					icon = " " .. LPS.icons.Level
 				end
-			elseif other == "PFISH" and not LPS.Retail and LPS.GetFishingLvl then
+			elseif other == "PFISH" and not LPS.Retail then
 				local minFish, maxFish = LPS:GetFishingLvl()
 				if minFish and maxFish then
-					extra = string.format("%s-%s", minFish, maxFish)
-					if showIcon then
-						icon = " " .. LPS.icons.Fish
-					end
+					extra = format("|cff%02x%02x%02x%d-%d|r", 255, 255, 255, minFish, maxFish)
+				elseif minFish and not maxFish then
+					extra = format("|cff%02x%02x%02x%d|r", 255, 255, 255, minFish)
 				end
-			elseif other == "PET" and (LPS.Retail or LPS.Mists) and LPS.GetBattlePetLvl then
+				if showIcon then
+					icon = " " .. LPS.icons.Fish
+				end
+			elseif other == "PET" and (LPS.Retail or LPS.Mists) then
 				extra = LPS:GetBattlePetLvl(zone) or ""
 				if showIcon and extra ~= "" then
 					icon = " " .. LPS.icons.Pet

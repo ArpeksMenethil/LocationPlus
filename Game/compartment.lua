@@ -54,7 +54,7 @@ local function unregisterAddonCompartment(data)
 end
 
 function LPS:ApplyAddonCompartmentRegistration()
-	if not LPS.Retail then return end
+	if not (LPS.Retail or LPS.Forever) then return end
 	if not AddonCompartmentFrame or not AddonCompartmentFrame.RegisterAddon then return end
 
 	local db = LPS.GetDB and LPS:GetDB()

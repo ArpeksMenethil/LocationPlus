@@ -1,9 +1,9 @@
-## Interface: 11509, 20506, 50504, 120007, 120100
-## Title: |cff1784d1Location Plus|r |cfd9b9b9b[by Arpeks]|r
+## Interface: 11509
+## Title: |cff1784d1Location Plus Vanilla|r |cfd9b9b9b[by Arpeks]|r
 ## Author: Arpeks
-## Version: 1.3.14
+## Version: 1.4.0
 ## SavedVariables: LPS_DB
-## OptionalDeps: Ace3, LibDeflate, LibDBIcon-1.0, LibTourist-3.0, LibTouristClassic-1.0, LibTouristClassicBCA, LibTouristClassicEra
+## OptionalDeps: Ace3, LibDeflate, LibDBIcon-1.0, LibTouristClassicEra
 ## IconTexture: Interface\AddOns\LocationPlus\Media\Logo.png
 ## X-Curse-Project-ID: 1444011
 
@@ -13,15 +13,11 @@
 ## Category: Addons Arpeks
 ## Category-ruRU: Аддоны Arpeks
 
-Libs/!load.xml [AllowLoadGameType mainline]
-Libs/!load_classic.xml [AllowLoadGameType vanilla]
-Libs/!load_mists.xml [AllowLoadGameType mists]
-Libs/!load_anniversary.xml [AllowLoadGameType tbc]
+
+Libs/!load_classic.xml
 
 Locales/enUS.lua [AllowLoadTextLocale enUS, deDE, frFR, itIT, koKR, ptBR, esES, esMX, zhCN, zhTW]
 Locales/ruRU.lua [AllowLoadTextLocale ruRU]
 
 Game/!load.xml
 Modules/!load.xml
-
-Game/compartment.lua [AllowLoadGameType mainline]

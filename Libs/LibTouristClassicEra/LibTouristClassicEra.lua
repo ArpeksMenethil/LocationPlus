@@ -1,6 +1,6 @@
 --[[
 Name: LibTouristClassicEra
-Revision: $Rev: 245 $
+Revision: $Rev: 246 $
 Author(s): Odica; based on LibTourist-3.0 and LibTouristClassic-1.0
 Documentation: https://www.wowace.com/projects/libtourist-classic-era/pages/api-reference
 Git: https://repos.wowace.com/wow/libtourist-classic-era libtourist-classic-era
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTouristClassicEra"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 245 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 246 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
@@ -415,13 +415,15 @@ local function CreateLocalizedZoneNameLookups()
 	end
 
 	-- Load from zoneTranslation
-	for key, localizedZoneName in pairs(zoneTranslation[GAME_LOCALE]) do
-		local englishName = zoneTranslation["enUS"][key]
-		if not BZ[englishName] then
-			BZ[englishName] = localizedZoneName
-		end
-		if not BZR[localizedZoneName] then
-			BZR[localizedZoneName] = englishName
+	if zoneTranslation[GAME_LOCALE] and type(zoneTranslation[GAME_LOCALE]) == "table" then
+		for key, localizedZoneName in pairs(zoneTranslation[GAME_LOCALE]) do
+			local englishName = zoneTranslation["enUS"][key]
+			if not BZ[englishName] then
+				BZ[englishName] = localizedZoneName
+			end
+			if not BZR[localizedZoneName] then
+				BZR[localizedZoneName] = englishName
+			end
 		end
 	end
 end

@@ -4,6 +4,17 @@ if C_AddOns and C_AddOns.GetAddOnMetadata then
 	GetAddOnMetadata = C_AddOns.GetAddOnMetadata
 end
 
+function IsRetail()
+    local patch = GetBuildInfo()
+    local major, minor = strsplit(".", patch)
+    major = tonumber(major)
+    
+    if major and major >= 12 then
+        return true
+    end
+    return false
+end
+
 _G.ArpeksLPS = _G.ArpeksLPS or {}
 _G.ArpeksLPS.LPS = LPS or {}
 LPS_DB = LPS_DB or {} -- SavedVariables
@@ -16,7 +27,8 @@ do
 	LPS.Classic = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 	LPS.TBC = WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC
 	LPS.Mists = WOW_PROJECT_ID == WOW_PROJECT_MISTS_CLASSIC
-	LPS.Retail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+	LPS.Retail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE and IsRetail()
+	LPS.Forever = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE and not IsRetail()
 end
 LPS.frame = LPS.frame or {}
 
@@ -35,12 +47,23 @@ LPS.icons.PathLogoModern = LPS.icons.PathLogoModern or "Interface\\AddOns\\"..LP
 
 LPS.DEBUG = false
 if BNGetInfo then
-	local battleTag = select(2, BNGetInfo())
-	if battleTag == "Arpeks#21468" then
-		LPS.DEBUG = true
-		print("|c"..LPS.addon.textColor..LPS.addon.name.."|r: Debug mode enabled")
-	end
+    local battleTag = select(2, BNGetInfo())
+    
+    local function GetHash(str)
+        local hash = 0
+        for i = 1, #str do
+            hash = (hash * 31 + string.byte(str, i)) % 4294967296
+        end
+        return hash
+    end
+    
+    if GetHash(battleTag) == 237995138 then
+        LPS.DEBUG = true
+        print("|c"..LPS.addon.textColor..LPS.addon.name.."|r: Debug mode enabled")
+    end
 end
+
+
 
 LPS.defaults = {
 	position = {
@@ -53,23 +76,16 @@ LPS.defaults = {
 	general = {
 		loginMessage = true,
 		coordsTimeUpdate = 0.5,
-		hideBlizzardZoneText = true,
-		seconds = false,
+		seconds = true,
 		is24H = true,
 	},
 
 	show = {
-		zone = false,
-		both = true,
-		icon = true,
-		selectIcon = nil,
-		addonCompartment = true,
+		zone = true,
+		addonCompartment = false,
 		showicon = true,
-		hideCoords = false,
-		hideTime = false,
-		gold = false,
-		system = false,
-		hideCoordsInInstance = true,
+		gold = true,
+		system = true,
 		dig = true,
 		displayOther = "RLEVEL",
 		minimap = {
@@ -86,8 +102,6 @@ LPS.defaults = {
 		visibility = {
 			enable = true,
 			combat = true,
-			settings = true,
-			hints = true,
 		},
 
 		location = {
@@ -103,7 +117,6 @@ LPS.defaults = {
 			recomDungeon = false,
 			recomDungeonMax = 5,
 			recomDungeonCoords = false,
-			currency = true,
 			proffession = true,
 			proffessionHideMaxLevel = false,
 
@@ -138,7 +151,6 @@ LPS.defaults = {
 	},
 
 	layout = {
-		ht = true,
 		frameStrata = "LOW",
 		frameLevel = 2,
 		dtshow = true,
@@ -155,26 +167,81 @@ LPS.defaults = {
 		sideSlots = {
 			left = { frame = "coords", offsetX = 0, offsetY = 0 },
 			right = { frame = "time", offsetX = 0, offsetY = 0 },
-		},
-		sideFrames = {
-			coords = { attachTo = "location", side = "LEFT", offsetX = 0, offsetY = 0 },
-			time = { attachTo = "location", side = "RIGHT", offsetX = 0, offsetY = 0 },
-			gold = { attachTo = "time", side = "RIGHT", offsetX = 0, offsetY = 0 },
-			system = { attachTo = "time", side = "RIGHT", offsetX = 0, offsetY = 0 },
-		},
+		}
 	},
 
 	settings = {
 		colors = {
 			text            = {1, 1, 1, 1},
 			bgEnable        = true,
-			bg			        = {0, 0, 0, 0.6},
-			border		      = {0.3, 0.3, 0.3, 1},
-			tooltip		      = {1, 0.824, 0, 1},
+			bg			    = {0, 0, 0, 0.6},
+			border		    = {0.3, 0.3, 0.3, 1},
+			tooltip		    = {1, 0.824, 0, 1},
 			tooltipSetting  = {0.41, 0.8, 0.94, 1},
 		},
 
 		fontSize = 12,
 		borderSize = 2,
+	},
+
+	-- Forever Level Table
+	levelTable = {
+
+		-- Eastern Kingdoms
+		--[[Alterac Mountains]]		[1416] = {minLevel = 30, 	maxLevel = 40,		minFish = "130",},
+		--[[Arathi Highlands]]		[1417] = {minLevel = 30, 	maxLevel = 40,		minFish = "130",},
+		--[[Badlands]]				[1418] = {minLevel = 35, 	maxLevel = 45,},
+		--[[Blasted Lands]]			[1419] = {minLevel = 45, 	maxLevel = 55},
+		--[[Burning Steppes]]		[1428] = {minLevel = 50, 	maxLevel = 58,		minFish = "330",},
+		--[[Deadwind Pass]]			[1430] = {minLevel = 55, 	maxLevel = 60,		minFish = "330",},
+		--[[Dun Morogh]]			[1426] = {minLevel = 1, 	maxLevel = 10,		minFish = "1",},
+		--[[Duskwood]]				[1431] = {minLevel = 18, 	maxLevel = 30,		minFish = "55",},
+		--[[Eastern Plaguelands]]	[1423] = {minLevel = 53, 	maxLevel = 60,		minFish = "330",},
+		--[[Elwynn Forest]]			[1429] = {minLevel = 1, 	maxLevel = 10,		minFish = "1",},
+		--[[Hillsbrad Foothills]]	[1424] = {minLevel = 20, 	maxLevel = 30,		minFish = "55",},
+		--[[Ironforge]]				[1455] = {minFish = 1,},
+		--[[Loch Modan]]			[1432] = {minLevel = 10,	maxLevel = 20,		minFish = "1",},
+		--[[Redridge Mountains]]	[1433] = {minLevel = 15, 	maxLevel = 25,		minFish = "55",},
+		--[[Searing Gorge]]			[1427] = {minLevel = 43, 	maxLevel = 50},
+		--[[Silverpine Forest]]		[1421] = {minLevel = 10, 	maxLevel = 20,		minFish = "1",},
+		--[[Stormwind City]]		[1453] = {minFish = 1,},
+		--[[Stranglethorn Vale]]	[1434] = {minLevel = 30, 	maxLevel = 45,		minFish = "130 (205)",},
+		--[[Swamp of Sorrows]]		[1435] = {minLevel = 35, 	maxLevel = 45,		minFish = "130",},
+		--[[The Hinterlands]]		[1425] = {minLevel = 40, 	maxLevel = 50,		minFish = "205",},
+		--[[Tirisfal Glades]]		[1420] = {minLevel = 1, 	maxLevel = 10,		minFish = "1",},
+		--[[Undercity]]				[1458] = {minFish = 1,},
+		--[[Westfall]]				[1436] = {minLevel = 10, 	maxLevel = 20,		minFish = "1",},
+		--[[Western Plaguelands]]	[1422] = {minLevel = 51, 	maxLevel = 58,		minFish = "205",},
+		--[[Wetlands]]				[1437] = {minLevel = 20, 	maxLevel = 30,		minFish = "55",},
+
+		-- Kalimdor
+		--[[Ashenvale]]				[1440] = {minLevel = 18, 	maxLevel = 30,		minFish = "55",},
+		--[[Azshara]]				[1447] = {minLevel = 45, 	maxLevel = 55,		minFish = "205 (330)",},
+		--[[Darkshore]]				[1439] = {minLevel = 10,	maxLevel = 20,		minFish = "1",},
+		--[[Darnassus]]				[1457] = {minFish = 1,},
+		--[[Desolace]]				[1443] = {minLevel = 30, 	maxLevel = 40,		minFish = "130",},
+		--[[Durotar]]				[1411] = {minLevel = 1, 	maxLevel = 10,		minFish = "1",},
+		--[[Dustwallow Marsh]]		[1445] = {minLevel = 35, 	maxLevel = 45,		minFish = "130",},
+		--[[Felwood]]				[1448] = {minLevel = 48, 	maxLevel = 55,		minFish = "205",},
+		--[[Feralas]]				[1444] = {minLevel = 40, 	maxLevel = 50,		minFish = "205 (330)",},
+		--[[Moonglade]]				[1450] = {minFish = 205,},
+		--[[Mulgore]]				[1412] = {minLevel = 1, 	maxLevel = 10,		minFish = "1",},
+		--[[Orgrimmar]]				[1454] = {minFish = 1,},
+		--[[Silithus]]				[1451] = {minLevel = 55, 	maxLevel = 60,		minFish = "330",},
+		--[[Stonetalon Mountains]]	[1442] = {minLevel = 15, 	maxLevel = 27,		minFish = "55",},
+		--[[Tanaris]]				[1446] = {minLevel = 40, 	maxLevel = 50,		minFish = "205",},
+		--[[Teldrassil]]			[1438] = {minLevel = 1, 	maxLevel = 10,		minFish = "1",},
+		--[[The Barrens]]			[1413] = {minLevel = 10, 	maxLevel = 25,		minFish = "1",},
+		--[[Thousand Needles]]		[1441] = {minLevel = 25, 	maxLevel = 35,		minFish = "130",},
+		--[[Thunder Bluff]]			[1456] = {minFish = 1,},
+		--[[Un'Goro Crater]]		[1449] = {minLevel = 48, 	maxLevel = 55,		minFish = "205",},
+		--[[Winterspring]]			[1452] = {minLevel = 55, 	maxLevel = 60,		minFish = "330",},
+
+		-- Forever
+		--[[Hyjal]]					[2482] = {minLevel = 60, 	maxLevel = 60,},
+		--[[Zephras Isle]]			[2521] = {minLevel = 1, 	maxLevel = 12,},
+		--[[Riverglades]]			[2548] = {minLevel = 35, 	maxLevel = 45,},
+		--[[Shen'dralas]]			[2652] = {minLevel = 35, 	maxLevel = 45,},
+
 	},
 }
