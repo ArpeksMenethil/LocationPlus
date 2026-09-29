@@ -18,11 +18,21 @@ function LPS:CreateLocationFrame()
 		updateFunc = function(f)
 			local db2 = LPS:GetDB()
 			local mapID = C_Map.GetBestMapForUnit("player")
+			local info
 
-			local info = C_Map.GetMapInfo(mapID)
-			local zone = info.name or LPS:GetMapNameByIDAlt(mapID)
-			
+			if mapID then
+				info = C_Map.GetMapInfo(mapID)
+			end
+
 			local sub = GetSubZoneText()
+			local zone = sub
+
+			if info and info.name then
+				zone = info.name
+			else
+				zone = LPS:GetMapNameByIDAlt(mapID)
+			end
+			
 			local hasSub = sub and sub ~= "" and sub ~= zone
 			local showZone = db2 and db2.show and db2.show.zone
 

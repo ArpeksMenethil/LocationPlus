@@ -1,7 +1,7 @@
 ## Interface: 20506
 ## Title: |cff1784d1Location Plus TBC|r |cfd9b9b9b[by Arpeks]|r
 ## Author: Arpeks
-## Version: 1.4.0
+## Version: 1.4.1
 ## SavedVariables: LPS_DB
 ## OptionalDeps: Ace3, LibDeflate, LibDBIcon-1.0, LibTouristClassicBCA
 ## IconTexture: Interface\AddOns\LocationPlus\Media\Logo.png

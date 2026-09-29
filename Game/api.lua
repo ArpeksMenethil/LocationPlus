@@ -759,6 +759,7 @@ end
 
 -- Обертка для Tourist:GetMapNameByIDAlt(mapID)
 function LPS:GetMapNameByIDAlt(mapID)
+	if not Tourist then return end
 	return Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN
 end
 

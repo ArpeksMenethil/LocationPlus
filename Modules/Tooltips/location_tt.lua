@@ -24,7 +24,7 @@ local FISH_ICON = LPS.icons.Fish
 function LPS:GetLevelRange(uiMapID)
 	local zoneText = C_Map.GetMapInfo(uiMapID).name
 
-	local minLvl, maxLvl, fishLvl
+	local minLvl, maxLvl
 
 	if uiMapID and C_Map and C_Map.GetMapLevels then
 		local ok, a, b = pcall(C_Map.GetMapLevels, uiMapID)
@@ -36,8 +36,17 @@ function LPS:GetLevelRange(uiMapID)
 	local dlevel
 	if not Tourist then
 		if LPS.Forever then
-			minLvl = LPS:GetDB().levelTable[uiMapID].minLevel or nil
-			maxLvl = LPS:GetDB().levelTable[uiMapID].maxLevel or nil
+			local levelTable = LPS:GetDB().levelTable[uiMapID]
+			minLvl = nil
+			maxLvl = nil
+
+			if levelTable and levelTable.minLevel then
+				minLvl = levelTable.minLevel
+			end
+			if levelTable and levelTable.maxLevel then
+				maxLvl = levelTable.maxLevel
+			end
+
 		end
 
 		if minLvl and maxLvl and minLvl > 0 and maxLvl > 0 then
@@ -70,17 +79,22 @@ function LPS:GetFishingLvl()
 	if LPS.Retail then return end
 
 	local mapID = C_Map.GetBestMapForUnit("player")
-	local minFish, maxFish
+	local minFish, maxFish = nil
 
 	if Tourist then
 		local zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN
 		minFish, maxFish = Tourist:GetFishingLevel(zoneText)
 	else
-		minFish = LPS:GetDB().levelTable[mapID].minFish
+		local levelTable = LPS:GetDB().levelTable[uiMapID]
+		minFish = nil
+
+		if levelTable and levelTable.minFish then
+			minFish = levelTable.minFish
+		end
 	end
 
 	if minFish then
-			return minFish, maxFish
+		return minFish, maxFish
 	else
 		return
 	end
@@ -92,7 +106,7 @@ function LPS:GetBattlePetLvl(zoneText)
 	if not Tourist or not Tourist.GetBattlePetLevel then return end
 
 	local uniqueZone = Tourist:GetUniqueZoneNameForLookup(zoneText, LPS:GetContinentID())
-	local low,high = Tourist:GetBattlePetLevel(uniqueZone)
+	local low, high = Tourist:GetBattlePetLevel(uniqueZone)
 	local plevel
 
 	if low ~= nil or high ~= nil then
@@ -114,6 +128,8 @@ end
 
 -- Dungeon coords
 local function GetDungeonCoords(zone)
+	if not Tourist then return end
+
 	local db = LPS:GetDB()
 	local z, x, y = "", 0, 0;
 	local dcoords
@@ -137,6 +153,8 @@ end
 
 -- PvP/Raid filter
 local function PvPorRaidFilter(zone)
+	if not Tourist then return end
+
 	local db = LPS:GetDB()
 	local isPvP, isRaid;
 
@@ -169,6 +187,8 @@ end
 
 -- Recommended zones
 local function GetRecomZones(zone)
+	if not Tourist then return end
+
 	local low, high = Tourist:GetLevel(zone)
 	local r, g, b = Tourist:GetLevelColor(zone)
 	local zContinent = Tourist:GetContinent(zone)
@@ -188,6 +208,8 @@ end
 
 -- Dungeons in the zone
 local function GetZoneDungeons(dungeon)
+	if not Tourist then return end
+
 	local low, high = Tourist:GetLevel(dungeon)
 	local r, g, b = Tourist:GetLevelColor(dungeon)
 	local groupSize = Tourist.GetInstanceGroupMinSize and Tourist:GetInstanceGroupMinSize(dungeon) or 0
@@ -212,6 +234,8 @@ end
 
 -- Recommended Dungeons
 local function GetRecomDungeons(dungeon)
+	if not Tourist then return end
+
 	local low, high = Tourist:GetLevel(dungeon);
 	local r, g, b = Tourist:GetLevelColor(dungeon);
 	local instZone = Tourist:GetInstanceZone(dungeon);
@@ -238,7 +262,7 @@ function LPS:GetContinentName()
     local currentMapID = C_Map.GetBestMapForUnit("player")
     
     if not currentMapID then
-        return "UNKNOWN"
+        return LPS:L("UNKNOWN")
     end
     
     local mapID = currentMapID
@@ -266,7 +290,7 @@ function LPS:GetContinentName()
         end
     end
     
-    return continentName or "UNKNOWN"
+    return continentName or LPS:L("UNKNOWN")
 end
 
 function LPS:BuildLocationTooltip()

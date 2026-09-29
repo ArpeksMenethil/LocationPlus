@@ -272,3 +272,4 @@ L["Total"] = true
 L["Currency"] = true
 L["Text custom color"] = true
 L["Pick a custom color for panel text."] = true
+L["UNKNOWN"] = "Unknown"
