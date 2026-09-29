@@ -22,31 +22,44 @@ local FISH_ICON = LPS.icons.Fish
 
 -- Zone level range
 function LPS:GetLevelRange(uiMapID)
-	local zoneText = C_Map.GetMapInfo(uiMapID).name
+	local minLvl, maxLvl, zoneText, info
 
-	local minLvl, maxLvl
-
-	if uiMapID and C_Map and C_Map.GetMapLevels then
-		local ok, a, b = pcall(C_Map.GetMapLevels, uiMapID)
-		if ok then
-			minLvl, maxLvl = a, b
+	if uiMapID and C_Map then
+		if C_Map.GetMapInfo then
+			info = C_Map.GetMapInfo(uiMapID)
+			if info and info.name then
+				zoneText = info.name
+			end
 		end
+
+		if C_Map.GetMapLevels then
+			local ok, a, b = pcall(C_Map.GetMapLevels, uiMapID)
+			if ok then
+				minLvl, maxLvl = a, b
+			end
+		end
+		
 	end
 
 	local dlevel
 	if not Tourist then
 		if LPS.Forever then
-			local levelTable = LPS:GetDB().levelTable[uiMapID]
+			local levelTable = LPS:GetDB().levelTable
 			minLvl = nil
 			maxLvl = nil
 
-			if levelTable and levelTable.minLevel then
-				minLvl = levelTable.minLevel
-			end
-			if levelTable and levelTable.maxLevel then
-				maxLvl = levelTable.maxLevel
-			end
+			if levelTable and levelTable[uiMapID] then
+				local levelCell = levelTable[uiMapID]
 
+				if levelCell then
+					if levelCell.minLevel then
+						minLvl = levelCell.minLevel
+					end
+					if levelCell.maxLevel then
+						maxLvl = levelCell.maxLevel
+					end				
+				end
+			end
 		end
 
 		if minLvl and maxLvl and minLvl > 0 and maxLvl > 0 then
