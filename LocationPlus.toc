@@ -1,7 +1,7 @@
 ## Interface: 120100
 ## Title: |cff1784d1Location Plus|r |cfd9b9b9b[by Arpeks]|r
 ## Author: Arpeks
-## Version: 1.4.1
+## Version: 1.4.2
 ## SavedVariables: LPS_DB
 ## OptionalDeps: Ace3, LibDeflate, LibDBIcon-1.0, LibTourist-3.0
 ## IconTexture: Interface\AddOns\LocationPlus\Media\Logo.png

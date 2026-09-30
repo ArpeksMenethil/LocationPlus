@@ -22,7 +22,7 @@ local FISH_ICON = LPS.icons.Fish
 
 -- Zone level range
 function LPS:GetLevelRange(uiMapID)
-	local minLvl, maxLvl, zoneText, info
+	local minLvl, maxLvl, zoneText, info, dlevel
 
 	if uiMapID and C_Map then
 		if C_Map.GetMapInfo then
@@ -41,7 +41,6 @@ function LPS:GetLevelRange(uiMapID)
 		
 	end
 
-	local dlevel
 	if not Tourist then
 		if LPS.Forever then
 			local levelTable = LPS:GetDB().levelTable
