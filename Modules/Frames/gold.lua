@@ -9,7 +9,11 @@ local function formatThousands(n)
 	return (left or '') .. num .. (right or '')
 end
 
-function LPS:FormatMoneySmart(money)
+-- ОПТИМИЗАЦИЯ (duplicates): FormatMoneySmart и FormatMoney были двумя почти
+-- идентичными функциями — объединены в LPS:FormatMoney(money, keepEmptyUnits),
+-- где keepEmptyUnits=true повторяет поведение старого FormatMoney (всегда
+-- показывает серебро при золоте и медь всегда). FormatMoneySmart — обёртка.
+function LPS:FormatMoney(money, keepEmptyUnits)
 	money = tonumber(money) or 0
 	local gold = math.floor(money / 10000)
 	local silver = math.floor((money % 10000) / 100)
@@ -19,52 +23,24 @@ function LPS:FormatMoneySmart(money)
 	if gold > 0 then
 		parts[#parts + 1] = formatThousands(gold) .. "|TInterface\\MoneyFrame\\UI-GoldIcon:0:0:2:0|t"
 	end
-	if silver > 0 then
+	if silver > 0 or (keepEmptyUnits and gold > 0) then
 		parts[#parts + 1] = silver .. "|TInterface\\MoneyFrame\\UI-SilverIcon:0:0:2:0|t"
 	end
-	if copper > 0 or (gold == 0 and silver == 0) then
+	if copper > 0 or (gold == 0 and silver == 0) or keepEmptyUnits then
 		parts[#parts + 1] = copper .. "|TInterface\\MoneyFrame\\UI-CopperIcon:0:0:2:0|t"
 	end
 	return table.concat(parts, " ")
 end
 
-function LPS:FormatMoney(money)
-	money = tonumber(money) or 0
-	local gold = math.floor(money / 10000)
-	local silver = math.floor((money % 10000) / 100)
-	local copper = math.floor(money % 100)
-
-	local parts = {}
-	if gold > 0 then
-		parts[#parts + 1] = formatThousands(gold) .. "|TInterface\\MoneyFrame\\UI-GoldIcon:0:0:2:0|t"
-	end
-	if silver > 0 or gold > 0 then
-		parts[#parts + 1] = silver .. "|TInterface\\MoneyFrame\\UI-SilverIcon:0:0:2:0|t"
-	end
-	parts[#parts + 1] = copper .. "|TInterface\\MoneyFrame\\UI-CopperIcon:0:0:2:0|t"
-	return table.concat(parts, " ")
+function LPS:FormatMoneySmart(money)
+	return LPS:FormatMoney(money, false)
 end
 
-local function getRealmKey()
-	if GetNormalizedRealmName then
-		return GetNormalizedRealmName() or GetRealmName() or ""
-	end
-	return GetRealmName() or ""
-end
-
-local function getGoldRoot()
-	if LPS.GetAccountDB then
-		local a = LPS:GetAccountDB()
-		if a then
-			a.gold = a.gold or {}
-			return a.gold
-		end
-	end
-	LPS_DB = LPS_DB or {}
-	LPS_DB.global = LPS_DB.global or {}
-	LPS_DB.global.gold = LPS_DB.global.gold or {}
-	return LPS_DB.global.gold
-end
+-- ОПТИМИЗАЦИЯ (duplicates): локальные копии getRealmKey/getGoldRoot удалены —
+-- используются единые методы LPS:GetGoldRealmKey / LPS:GetGoldRoot
+-- (ранее идентичный код дублировался здесь и в Modules/Tooltips/gold_tt.lua).
+local function getRealmKey() return LPS:GetGoldRealmKey() end
+local function getGoldRoot() return LPS:GetGoldRoot() end
 
 local goldMenuFrame
 
@@ -277,14 +253,22 @@ function LPS:CreateGoldFrame()
 		bgColor = {LPS:GetColor("bg")},
 		borderColor = {LPS:GetColor("border")},
 		updateFunc = function(f)
-			local oldData = f.text:GetText()
+			-- ОПТИМИЗАЦИЯ: не пересчитываем layout для скрытого фрейма
+			if not f:IsShown() then return end
+			local oldData = f.text and f.text:GetText()
 			LPS:OnPlayerMoney()
 			local data = LPS:GetGoldSessionData()
 			if f.text then
 				f.text:SetText(data.currentText)
 			end
+			-- ОПТИМИЗАЦИЯ: раньше при смене текста вызывался LPS:ApplyLayout(),
+			-- который перезапускал _lpsUpdateFunc ВСЕХ пяти панелей (шторм событий).
+			-- Размер самого gold-фрейма пересчитывает обёртка авторазмера в
+			-- Game/frames.lua; здесь достаточно батч-заявки на пересчёт holder'а.
 			if oldData and oldData ~= data.currentText then
-				LPS:ApplyLayout()
+				if LPS.ScheduleFrameSizeUpdate then
+					LPS:ScheduleFrameSizeUpdate()
+				end
 			end
 		end,
 		updateEvent = {events = {"PLAYER_ENTERING_WORLD", "PLAYER_MONEY"}},

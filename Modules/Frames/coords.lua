@@ -16,17 +16,13 @@ function LPS:CreateCoordsFrame()
 		bgColor = {LPS:GetColor("bg")},
 		borderColor = {LPS:GetColor("border")},
 		updateFunc = function(f)
+			-- ОПТИМИЗАЦИЯ: ранний выход, если фрейм скрыт. Видимость теперь целиком
+			-- управляется ApplyLayout()/ApplyCoordsVisibility(); раньше здесь была
+			-- третья копия логики видимости (dtshow == false -> f:Hide() + пересчёт
+			-- размера), вызывавшая рекурсивные UpdateFrameSize из каждого тика.
+			if not f:IsShown() then return end
+
 			local db2 = LPS:GetDB()
-			if db2 and db2.layout and db2.layout.dtshow == false then
-				if f:IsShown() then
-					f:Hide()
-					if LPS.UpdateFrameSize then
-						LPS:UpdateFrameSize()
-					end
-				end
-				return
-			end
-			-- Slot-based visibility is handled by ApplyLayout(); here we only update the displayed text.
 
 			local x, y = LPS:GetPlayerCoords()
 			if f.text then
@@ -34,22 +30,36 @@ function LPS:CreateCoordsFrame()
 					local dig = (db2 and db2.show and db2.show.dig) and 2 or 0
 					local xf = LPS:Round(x * 100, dig)
 					local yf = LPS:Round(y * 100, dig)
+					local newText
 					if dig == 0 then
-						f.text:SetText(string.format("%d | %d", xf, yf))
+						newText = string.format("%d | %d", xf, yf)
 					else
-						f.text:SetText(string.format("%.2f | %.2f", xf, yf))
+						newText = string.format("%.2f | %.2f", xf, yf)
 					end
-				else
+					-- ОПТИМИЗАЦИЯ: SetText переинициализирует FontString и запускает
+					-- перерасчёт авторазмера фрейма; пишем только при реальном изменении
+					-- текста (на стоящем игроке тикер молчит вообще).
+					if f._lpsLastText ~= newText then
+						f._lpsLastText = newText
+						f.text:SetText(newText)
+					end
+				elseif f._lpsLastText ~= "N/A" then
+					f._lpsLastText = "N/A"
 					f.text:SetText("N/A")
 				end
 			end
 		end,
-		updateTicker = {interval = tonumber(db.general.coordsTimeUpdate) or 0.2},
+		-- ОПТИМИЗАЦИЯ: нижняя граница интервала (0.05с) как в ApplyCoordsUpdateInterval,
+		-- чтобы опция из слайдера не могла создать тикер на каждый кадр.
+		updateTicker = {interval = math.max(tonumber(db.general and db.general.coordsTimeUpdate) or 0.2, 0.05)},
 		onClick = function(self, button)
 			if button == "LeftButton" then
 				ToggleWorldMap()
-				WorldMapFrame:ClearAllPoints()
-				WorldMapFrame:SetPoint("CENTER", UIParent, "CENTER")
+				-- ЗАЩИТА: nil-guard от краша на кастомных UI-модификациях
+				if WorldMapFrame then
+					WorldMapFrame:ClearAllPoints()
+					WorldMapFrame:SetPoint("CENTER", UIParent, "CENTER")
+				end
 			end
 		end,
 	}

@@ -5,28 +5,6 @@ function LPS:CreateSystemFrame()
 	local db = LPS:GetDB()
 	if not db or not LPS.frame.holder or not LPS.frame.location then return end
 
-	local function colorByThreshold(v, good, warn, invert)
-		v = tonumber(v) or 0
-		local r, g, b
-		if invert then
-			if v <= good then
-				r, g, b = 0.1, 1, 0.1
-			elseif v <= warn then
-				r, g, b = 1, 0.82, 0
-			else
-				r, g, b = 1, 0.1, 0.1
-			end
-		else
-			if v >= good then
-				r, g, b = 0.1, 1, 0.1
-			elseif v >= warn then
-				r, g, b = 1, 0.82, 0
-			else
-				r, g, b = 1, 0.1, 0.1
-			end
-		end
-		return string.format("|cff%02x%02x%02x%d|r", r * 255, g * 255, b * 255, v)
-	end
 
 	---@type LPSFrameParams
 	local params = {
@@ -45,8 +23,8 @@ function LPS:CreateSystemFrame()
 			lagWorld = math.floor(lagWorld or 0)
 			local lag = lagWorld > 0 and lagWorld or lagHome
 			if f.text then
-				local fpsText = colorByThreshold(fps, 60, 30, false)
-				local msText = colorByThreshold(lag, 60, 120, true)
+				local fpsText = LPS:ColorByThreshold(fps, 60, 30, false)
+				local msText = LPS:ColorByThreshold(lag, 60, 120, true)
 				f.text:SetText(string.format("FPS: %s MS: %s", fpsText, msText))
 			end
 		end,

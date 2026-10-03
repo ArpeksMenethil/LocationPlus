@@ -28,6 +28,22 @@ local function PositionMinimapButton(btn)
 	btn:SetPoint("CENTER", Minimap, "CENTER", x, y)
 end
 
+-- ОПТИМИЗАЦИЯ (duplicates): текст тултипа минимап-кнопки был написан дважды
+-- (LDB OnTooltipShow и OnEnter собственной кнопки) — вынесен в общую функцию.
+local function FillMinimapTooltip(tt)
+	local d = LPS:GetDB()
+	local vis = d and d.tooltips and d.tooltips.visibility
+	if not vis or not vis.enable then return end
+	if vis.combat and InCombatLockdown() then return end
+	local r, g, b = LPS:GetColor("text")
+	local rb, gb, bb = LPS:GetColor("tooltipSetting")
+	tt:AddLine(LPS:L("Location Plus"), 1, 0.82, 0)
+	tt:AddLine(LPS:L("Adds location, coords,\nextra panels and an info-rich tooltip\n(no ElvUI required)"), r, g, b)
+	tt:AddLine(" ")
+	tt:AddDoubleLine(LPS:L("LMB"), LPS:L("Move frame"), rb, gb, bb, rb, gb, bb)
+	tt:AddDoubleLine(LPS:L("RMB"), LPS:L("Toggle Configuration"), rb, gb, bb, rb, gb, bb)
+end
+
 function LPS:EnsureLDBMinimapIcon()
 	if not (LDB and LibDBIcon) then return false end
 	local db = LPS:GetDB()
@@ -48,19 +64,7 @@ function LPS:EnsureLDBMinimapIcon()
 					LPS:ToggleOptions()
 				end
 			end,
-			OnTooltipShow = function(tt)
-				local d = LPS:GetDB()
-				local vis = d and d.tooltips and d.tooltips.visibility
-				if not vis or not vis.enable then return end
-				if vis.combat and InCombatLockdown() then return end
-				local r, g, b = LPS:GetColor("text")
-				local rb, gb, bb = LPS:GetColor("tooltipSetting")
-				tt:AddLine(LPS:L("Location Plus"), 1, 0.82, 0)
-				tt:AddLine(LPS:L("Adds location, coords,\nextra panels and an info-rich tooltip\n(no ElvUI required)"), r, g, b)
-				tt:AddLine(" ")
-				tt:AddDoubleLine(LPS:L("LMB"), LPS:L("Move frame"), rb, gb, bb, rb, gb, bb)
-				tt:AddDoubleLine(LPS:L("RMB"), LPS:L("Toggle Configuration"), rb, gb, bb, rb, gb, bb)
-			end,
+			OnTooltipShow = FillMinimapTooltip,
 		})
 	end
 
@@ -156,18 +160,9 @@ function LPS:CreateMinimapButton()
 	end)
 
 	btn:SetScript("OnEnter", function(self)
-		local db = LPS:GetDB()
-		local vis = db and db.tooltips and db.tooltips.visibility
-		if not vis or not vis.enable then return end
-		if vis.combat and InCombatLockdown() then return end
+		-- ОПТИМИЗАЦИЯ: тело тултипа совпадает с LDB OnTooltipShow — общий FillMinimapTooltip
 		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-		local r, g, b = LPS:GetColor("text")
-		local rb, gb, bb = LPS:GetColor("tooltipSetting")
-		GameTooltip:AddLine(LPS:L("Location Plus"), 1, 0.82, 0)
-		GameTooltip:AddLine(LPS:L("Adds location, coords,\nextra panels and an info-rich tooltip\n(no ElvUI required)"), r, g, b)
-		GameTooltip:AddLine(" ")
-		GameTooltip:AddDoubleLine(LPS:L("LMB"), LPS:L("Move frame"), rb, gb, bb, rb, gb, bb)
-		GameTooltip:AddDoubleLine(LPS:L("RMB"), LPS:L("Toggle Configuration"), rb, gb, bb, rb, gb, bb)
+		FillMinimapTooltip(GameTooltip)
 		GameTooltip:Show()
 	end)
 	btn:SetScript("OnLeave", function(self)
@@ -283,6 +278,11 @@ function LPS:SetMoveMode(enabled)
 		end)
 
 		f:SetScript("OnUpdate", function(self)
+			-- ОПТИМИЗАЦИЯ: раньше каждый кадр перетаскивания выполнялось до 18 вызовов
+			-- SetBackdropColor (перекраска ВСЕХ направляющих линий). Теперь линия
+			-- перекрашивается только при смене активной линии снапа (кэш _lastActiveV/_lastActiveH).
+			local grid = f.grid
+			if not grid then return end
 			local left = self:GetLeft()
 			local bottom = self:GetBottom()
 			local width = self:GetWidth()
@@ -304,19 +304,37 @@ function LPS:SetMoveMode(enabled)
 				if nearH < 1 then nearH = 1 elseif nearH > 9 then nearH = 9 end
 			end
 
-			for i, line in ipairs(f.grid.vLines or {}) do
-				if stepX > 0 and nearV == i and math.abs(centerX - (stepX * i)) <= snapRange then
-					line:SetBackdropColor(1, 0, 0, 0.8)
-				else
-					line:SetBackdropColor(1, 1, 1, 0.35)
-				end
+			-- индекс активной (подсвеченной) линии или nil
+			local activeV
+			if stepX > 0 and nearV and math.abs(centerX - (stepX * nearV)) <= snapRange then
+				activeV = nearV
 			end
-			for i, line in ipairs(f.grid.hLines or {}) do
-				if stepY > 0 and nearH == i and math.abs(centerY - (stepY * i)) <= snapRange then
-					line:SetBackdropColor(1, 0, 0, 0.8)
-				else
-					line:SetBackdropColor(1, 1, 1, 0.35)
+			local activeH
+			if stepY > 0 and nearH and math.abs(centerY - (stepY * nearH)) <= snapRange then
+				activeH = nearH
+			end
+
+			if grid._lastActiveV ~= activeV then
+				if grid._lastActiveV then
+					local old = grid.vLines and grid.vLines[grid._lastActiveV]
+					if old then old:SetBackdropColor(1, 1, 1, 0.35) end
 				end
+				if activeV then
+					local line = grid.vLines and grid.vLines[activeV]
+					if line then line:SetBackdropColor(1, 0, 0, 0.8) end
+				end
+				grid._lastActiveV = activeV
+			end
+			if grid._lastActiveH ~= activeH then
+				if grid._lastActiveH then
+					local old = grid.hLines and grid.hLines[grid._lastActiveH]
+					if old then old:SetBackdropColor(1, 1, 1, 0.35) end
+				end
+				if activeH then
+					local line = grid.hLines and grid.hLines[activeH]
+					if line then line:SetBackdropColor(1, 0, 0, 0.8) end
+				end
+				grid._lastActiveH = activeH
 			end
 		end)
 	else

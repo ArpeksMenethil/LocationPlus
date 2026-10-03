@@ -24,12 +24,7 @@ local params = {
 	size = {400, 25},
 	backdrop = { bgFile = "Interface\\Buttons\\WHITE8x8" },
 	bgColor = {1, 1, 1, 0},
-	borderColor = {1, 1, 1, 0},
-	updateEvent = {events = {"ADDON_LOADED"}},
-	updateFunc = function(self, event, name)
-		if name ~= LPS.addon.name then return end
-		if event == "ADDON_LOADED" then LPS:onLoaded(name) end
-	end
+	borderColor = {1, 1, 1, 0}
 }
 LPS.frame.holder = LPS:CreateFrame(params)
 LPS.frame.holder:SetFrameStrata("HIGH")
@@ -43,8 +38,11 @@ LPS.frame.holder:SetScript("OnEvent", function(self, event, name)
 	if event == "ADDON_LOADED" then LPS:onLoaded(name) end
 end)
 
-
 function LPS:onLoaded(name)
+	-- ОПТИМИЗАЦИЯ (bug): защита от повторного входа — обработчик может быть
+	-- вызван повторно (например, другим аддоном или перерегистрацией).
+	if self._loaded then return end
+	self._loaded = true
 	if LibStub and LibStub:GetLibrary("AceDB-3.0", true) and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary("AceConfigDialog-3.0", true) then
 		local AceDB = LibStub("AceDB-3.0")
 		if type(LPS_DB) == "table" and not (LPS_DB.profiles or LPS_DB.profileKeys or LPS_DB.global) then
@@ -99,6 +97,10 @@ function LPS:onLoaded(name)
 
 	local db = LPS:GetDB()
 	LPS:ApplyDefaults(db or {}, LPS.defaults)
+	-- Миграция ключей тултипов (опечатка proffession -> profession).
+	if LPS.MigrateTooltipKeys then
+		LPS:MigrateTooltipKeys()
+	end
 	LPS:ApplyTimeFormat()
 	LPS:ApplyHolderPosition()
 
@@ -115,10 +117,26 @@ function LPS:onLoaded(name)
 		SetCVar("timeMgrUseMilitaryTime", 1)
 	end
 
-	C_Timer.After(1, function()
+	-- ОПТИМИЗАЦИЯ: первичная раскладка больше не ждёт фиксированную секунду —
+	-- выполняется сразу на PLAYER_ENTERING_WORLD (или немедленно, если мир уже
+	-- загружен, например при /reload в игре). C_Timer.After(1) оставлен как
+	-- fallback для клиентов без события PEW до этого момента.
+	if IsLoggedIn and IsLoggedIn() then
 		LPS:UpdateFrameSize()
 		LPS:ApplyLayout()
-	end)
+	else
+		local f = CreateFrame("Frame")
+		f:RegisterEvent("PLAYER_ENTERING_WORLD")
+		f:SetScript("OnEvent", function(self)
+			self:UnregisterAllEvents()
+			LPS:UpdateFrameSize()
+			LPS:ApplyLayout()
+		end)
+		C_Timer.After(1, function()
+			LPS:UpdateFrameSize()
+			LPS:ApplyLayout()
+		end)
+	end
 
 	if db and db.general and db.general.loginMessage then
 		LPS:Print(format(LPS:L("loaded. Current version:").." |c%sv%s|r", LPS.addon.textColor, LPS.addon.version), false)
@@ -129,8 +147,8 @@ function LPS:CreateAllFrames()
 	LPS.frame.location = LPS:CreateLocationFrame()
 	LPS.frame.coords   = LPS:CreateCoordsFrame()
 	LPS.frame.time     = LPS:CreateTimeFrame()
-	LPS.frame.gold     = LPS.CreateGoldFrame and LPS:CreateGoldFrame() or nil
-	LPS.frame.system   = LPS.CreateSystemFrame and LPS:CreateSystemFrame() or nil
+	LPS.frame.gold     = LPS:CreateGoldFrame()
+	LPS.frame.system   = LPS:CreateSystemFrame()
 end
 
 SLASH_LPS1 = "/lps"

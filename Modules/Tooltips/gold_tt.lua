@@ -29,26 +29,9 @@ function LPS:BuildGoldTooltip(tt)
 		return tostring(m or 0)
 	end
 
-	local function getRealmKey()
-		if GetNormalizedRealmName then
-			return GetNormalizedRealmName() or GetRealmName() or ""
-		end
-		return GetRealmName() or ""
-	end
-
-	local function getGoldRoot()
-		if LPS.GetAccountDB then
-			local a = LPS:GetAccountDB()
-			if a then
-				a.gold = a.gold or {}
-				return a.gold
-			end
-		end
-		LPS_DB = LPS_DB or {}
-		LPS_DB.global = LPS_DB.global or {}
-		LPS_DB.global.gold = LPS_DB.global.gold or {}
-		return LPS_DB.global.gold
-	end
+	-- ОПТИМИЗАЦИЯ (duplicates): локальные копии функций заменены общими методами аддона
+	local function getRealmKey() return LPS:GetGoldRealmKey() end
+	local function getGoldRoot() return LPS:GetGoldRoot() end
 
 	local function factionIcon(faction)
 		if faction == "Alliance" or faction == "Horde" then
@@ -162,44 +145,47 @@ function LPS:BuildGoldTooltip(tt)
 		tt:AddDoubleLine(LPS:L("Total")..":", moneyText(accountTotal), whiteR, whiteG, whiteB, whiteR, whiteG, whiteB)
 	end
 
-	local warbandMoney
-	if gold then
-		warbandMoney = tonumber(gold.warbandMoney)
-	end
-	local warbandApiOk = false
-	if C_Bank and C_Bank.FetchDepositedMoney and Enum and Enum.BankType and Enum.BankType.Account then
-		warbandApiOk = true
-		local bankType = Enum.BankType.Account
-		local ok, v = pcall(C_Bank.FetchDepositedMoney, bankType)
-		if ok and v ~= nil then
-			warbandMoney = tonumber(v) or warbandMoney
-			if gold then
-				gold.warbandMoney = warbandMoney
+	if LPS.Retail then
+		local warbandMoney
+		if gold then
+			warbandMoney = tonumber(gold.warbandMoney)
+		end
+		local warbandApiOk = false
+		if C_Bank and C_Bank.FetchDepositedMoney and Enum and Enum.BankType and Enum.BankType.Account then
+			warbandApiOk = true
+			local bankType = Enum.BankType.Account
+			local ok, v = pcall(C_Bank.FetchDepositedMoney, bankType)
+			if ok and v ~= nil then
+				warbandMoney = tonumber(v) or warbandMoney
+				if gold then
+					gold.warbandMoney = warbandMoney
+				end
 			end
 		end
-	end
-	if (not cfg or cfg.warband ~= false) and (warbandApiOk or warbandMoney ~= nil) then
-		tt:AddLine(" ")
-		tt:AddDoubleLine(LPS:L("Warband")..":", moneyText(warbandMoney or 0), whiteR, whiteG, whiteB, whiteR, whiteG, whiteB)
-		if warbandApiOk then
-			tt:AddDoubleLine(LPS:L("Total")..":", moneyText(accountTotal + (tonumber(warbandMoney) or 0)), whiteR, whiteG, whiteB, whiteR, whiteG, whiteB)
+		if (not cfg or cfg.warband ~= false) and (warbandApiOk or warbandMoney ~= nil) then
+			tt:AddLine(" ")
+			tt:AddDoubleLine(LPS:L("Warband")..":", moneyText(warbandMoney or 0), whiteR, whiteG, whiteB, whiteR, whiteG, whiteB)
+			if warbandApiOk then
+				tt:AddDoubleLine(LPS:L("Total")..":", moneyText(accountTotal + (tonumber(warbandMoney) or 0)), whiteR, whiteG, whiteB, whiteR, whiteG, whiteB)
+			end
 		end
-	end
 
-	local tokenPrice
-	if C_WowTokenPublic and C_WowTokenPublic.GetCurrentMarketPrice then
-		tokenPrice = C_WowTokenPublic.GetCurrentMarketPrice()
-	elseif C_WowTokenPublic and C_WowTokenPublic.GetCurrentPrice then
-		tokenPrice = C_WowTokenPublic.GetCurrentPrice()
-	elseif GetWowTokenMarketPrice then
-		tokenPrice = GetWowTokenMarketPrice()
-	end
-	
-	if (not cfg or cfg.token ~= false) and tokenPrice and tonumber(tokenPrice) and tonumber(tokenPrice) > 0 then
-		tt:AddLine(" ")
-		tt:AddDoubleLine(LPS:L("WoW Token")..":", moneyText(tokenPrice), rB, gB, bB, whiteR, whiteG, whiteB)
-	elseif not cfg or cfg.token ~= false then
-		C_WowTokenPublic.UpdateMarketPrice()
+		local tokenPrice
+		if C_WowTokenPublic and C_WowTokenPublic.GetCurrentMarketPrice then
+			tokenPrice = C_WowTokenPublic.GetCurrentMarketPrice()
+		elseif C_WowTokenPublic and C_WowTokenPublic.GetCurrentPrice then
+			tokenPrice = C_WowTokenPublic.GetCurrentPrice()
+		elseif GetWowTokenMarketPrice then
+			tokenPrice = GetWowTokenMarketPrice()
+		end
+		
+		if (not cfg or cfg.token ~= false) and tokenPrice and tonumber(tokenPrice) and tonumber(tokenPrice) > 0 then
+			tt:AddLine(" ")
+			tt:AddDoubleLine(LPS:L("WoW Token")..":", moneyText(tokenPrice), rB, gB, bB, whiteR, whiteG, whiteB)
+		elseif (not cfg or cfg.token ~= false) and C_WowTokenPublic and C_WowTokenPublic.UpdateMarketPrice then
+			-- FIX: был вызов без проверки наличия API (падает на Classic/TBC, где C_WowTokenPublic нет)
+			C_WowTokenPublic.UpdateMarketPrice()
+		end
 	end
 
 	local watched = 0

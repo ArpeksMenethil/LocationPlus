@@ -477,8 +477,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "toggle",
 								
 								disabled = function() return not getDb().tooltips.visibility.enable end,
-								get = function() return getDb().tooltips.location.proffession end,
-								set = function(_, v) getDb().tooltips.location.proffession = v end,
+								get = function() return getDb().tooltips.location.profession end,
+								set = function(_, v) getDb().tooltips.location.profession = v end,
 							},
 							profcap = {
 								order = 3.1,
@@ -487,10 +487,10 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "toggle",
 								
 								disabled = function()
-									return not getDb().tooltips.visibility.enable or not getDb().tooltips.location.proffession
+									return not getDb().tooltips.visibility.enable or not getDb().tooltips.location.profession
 								end,
-								get = function() return getDb().tooltips.location.proffessionHideMaxLevel end,
-								set = function(_, v) getDb().tooltips.location.proffessionHideMaxLevel = v end,
+								get = function() return getDb().tooltips.location.professionHideMaxLevel end,
+								set = function(_, v) getDb().tooltips.location.professionHideMaxLevel = v end,
 							},
 							filters = {
 								order = 50,
@@ -854,8 +854,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().layout.locMinWidth end,
 								set = function(_, v)
 									getDb().layout.locMinWidth = v
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
 									end
 								end,
 							},
@@ -870,8 +870,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().layout.locPaddingX end,
 								set = function(_, v)
 									getDb().layout.locPaddingX = v
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
 									end
 								end,
 							},
@@ -886,8 +886,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().layout.locPaddingY end,
 								set = function(_, v)
 									getDb().layout.locPaddingY = v
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
 									end
 								end,
 							},
@@ -911,8 +911,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									if LPS.ApplyDTVisibility then
 										LPS:ApplyDTVisibility()
 									end
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
 									end
 								end,
 							},
@@ -928,8 +928,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().layout.dtMinWidth end,
 								set = function(_, v)
 									getDb().layout.dtMinWidth = v
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
 									end
 								end,
 							},
@@ -950,8 +950,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().layout.dtPaddingX end,
 								set = function(_, v)
 									getDb().layout.dtPaddingX = v
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
 									end
 								end,
 							},
@@ -967,8 +967,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().layout.dtPaddingY end,
 								set = function(_, v)
 									getDb().layout.dtPaddingY = v
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
 									end
 								end,
 							},
@@ -1008,8 +1008,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										getDb().layout.sideSlots.right.frame = "none"
 									end
 									getDb().layout.sideSlots.left.frame = v
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
 									end
 								end,
 							},
@@ -1029,8 +1029,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									getDb().layout.sideSlots = getDb().layout.sideSlots or {}
 									getDb().layout.sideSlots.left = getDb().layout.sideSlots.left or {}
 									getDb().layout.sideSlots.left.offsetX = v
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
 									end
 								end,
 							},
@@ -1050,8 +1050,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									getDb().layout.sideSlots = getDb().layout.sideSlots or {}
 									getDb().layout.sideSlots.left = getDb().layout.sideSlots.left or {}
 									getDb().layout.sideSlots.left.offsetY = v
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
 									end
 								end,
 							},
@@ -1083,8 +1083,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										getDb().layout.sideSlots.left.frame = "none"
 									end
 									getDb().layout.sideSlots.right.frame = v
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
 									end
 								end,
 							},
@@ -1104,8 +1104,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									getDb().layout.sideSlots = getDb().layout.sideSlots or {}
 									getDb().layout.sideSlots.right = getDb().layout.sideSlots.right or {}
 									getDb().layout.sideSlots.right.offsetX = v
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
 									end
 								end,
 							},
@@ -1125,8 +1125,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									getDb().layout.sideSlots = getDb().layout.sideSlots or {}
 									getDb().layout.sideSlots.right = getDb().layout.sideSlots.right or {}
 									getDb().layout.sideSlots.right.offsetY = v
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
 									end
 								end,
 							},
@@ -1150,8 +1150,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().layout.customColor end,
 								set = function(_, v)
 									getDb().layout.customColor = v
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
 									end
 								end,
 							},
@@ -1172,8 +1172,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										getDb().layout.userColor = c
 									end
 									c.r, c.g, c.b = r, g, b
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
 									end
 								end,
 							},
@@ -1193,8 +1193,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().layout.spacingAuto end,
 								set = function(_, v)
 									getDb().layout.spacingAuto = v
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
 									end
 								end,
 							},
@@ -1210,8 +1210,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().layout.spacingManual end,
 								set = function(_, v)
 									getDb().layout.spacingManual = v
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
 									end
 								end,
 							},
@@ -1232,8 +1232,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().layout.frameStrata end,
 								set = function(_, v)
 									getDb().layout.frameStrata = v
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
 									end
 								end,
 							},
@@ -1248,8 +1248,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return tonumber(getDb().layout.frameLevel) or 1 end,
 								set = function(_, v)
 									getDb().layout.frameLevel = v
-									if LPS.ApplyLayout then
-										LPS:ApplyLayout()
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
 									end
 								end,
 							},
@@ -1279,7 +1279,23 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Border size"),
 								desc = LPS:L("Set border thickness."),
 								order = 1.2,
-								min = 1,
+								-- FIX: минимальная толщина рамки 0 — пользователь может
+	-- FIX: минимальная толщина рамки 0 — пользователь может
+	-- FIX: минимальная толщина рамки 0 — пользователь может
+	-- FIX: минимальная толщина рамки 0 — пользователь может
+	-- FIX: минимальная толщина рамки 0 — пользователь может
+	-- FIX: минимальная толщина рамки 0 — пользователь может
+	-- FIX: минимальная толщина рамки 0 — пользователь может
+	-- FIX: минимальная толщина рамки 0 — пользователь может
+	-- полностью убрать рамку панелей.
+	-- полностью убрать рамку панелей.
+	-- полностью убрать рамку панелей.
+	-- полностью убрать рамку панелей.
+	-- полностью убрать рамку панелей.
+	-- полностью убрать рамку панелей.
+	-- полностью убрать рамку панелей.
+	-- полностью убрать рамку панелей.
+	min = 0,
 								max = 6,
 								step = 1,
 								get = function() return getDb().settings.borderSize end,
@@ -1498,15 +1514,10 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 
 	AceConfig:RegisterOptionsTable(LPS.Options.aceAppName, options)
 
+		-- ОПТИМИЗАЦИЯ (duplicates): deepCopyAce был точной копией локальной
+	-- deepCopy (см. начало файла) — теперь это тонкая обёртка над ней.
 	local function deepCopyAce(v)
-		if type(v) ~= "table" then
-			return v
-		end
-		local out = {}
-		for k2, v2 in pairs(v) do
-			out[deepCopyAce(k2)] = deepCopyAce(v2)
-		end
-		return out
+		return deepCopy(v)
 	end
 
 	local function resolveAceName(v)
@@ -1627,6 +1638,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 	LPS.Options:EnsureAceProfilesTab()
 	LPS.Options:RegisterAceProfiles()
 end
+
 
 -------------------------------------------------
 -- UI HELPERS
@@ -1856,8 +1868,11 @@ function LPS:CreateStyleOptions(parent)
 		function() return getDb().settings.colors.bgEnable end,
 		function(v)
 			getDb().settings.colors.bgEnable = v
-			if LPS.ApplyBackground then
-				LPS:ApplyBackground()
+			-- ИСПРАВЛЕНИЕ (bug): метода ApplyBackground не существует — применяем
+			-- существующий ApplyStyle (он перечитывает цвета через GetColor,
+			-- учитывающий bgEnable), чтобы настройка действовала без /reload.
+			if LPS.ApplyStyle then
+				LPS:ApplyStyle()
 			end
 		end,
 		16, y
@@ -1869,17 +1884,30 @@ function LPS:CreateStyleOptions(parent)
 		"Font size",
 		8, 20, 1,
 		function() return getDb().settings.fontSize end,
-		function(v) getDb().settings.fontSize = v end,
+		-- FIX (настройка «не работает»): set только писал в БД — шрифт
+		-- переставлялся лишь после /reload. Теперь сразу переприменяем.
+		function(v)
+			getDb().settings.fontSize = v
+			if LPS.ApplyStyle then
+				LPS:ApplyStyle()
+			end
+		end,
 		16, y
 	)
 
 	y = y - 50
 
 	self:CreateSlider(parent,
-		"Border size",
-		1, 6, 1,
+		-- FIX: min=0 — рамку можно полностью убрать; set сразу переприменяет
+		-- стиль (раньше писал только в БД — эффект был лишь после /reload).
+		0, 6, 1,
 		function() return getDb().settings.borderSize end,
-		function(v) getDb().settings.borderSize = v end,
+		function(v)
+			getDb().settings.borderSize = v
+			if LPS.ApplyStyle then
+				LPS:ApplyStyle()
+			end
+		end,
 		16, y
 	)
 end

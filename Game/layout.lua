@@ -12,7 +12,11 @@ function LPS:ApplyHolderPosition()
 end
 
 -- Пересчитывает размер главного фрейма по вложенным элементам
+-- ОПТИМИЗАЦИЯ: SetSize вызывается только при реальном изменении размеров,
+-- чтобы не провоцировать лишние layout-пересчёты движка каждый тик.
+local lastW, lastH
 function LPS:UpdateFrameSize()
+	if not (LPS.frame and LPS.frame.holder) then return end
 	local padding = 4
 	local function w(f)
 		return (f and f:IsShown()) and f:GetWidth() or 0
@@ -23,5 +27,23 @@ function LPS:UpdateFrameSize()
 
 	local width = w(LPS.frame.location) + w(LPS.frame.time) + w(LPS.frame.coords) + w(LPS.frame.gold) + w(LPS.frame.system) + padding * 2 + 10
 	local height = math.max(h(LPS.frame.location), h(LPS.frame.time), h(LPS.frame.coords), h(LPS.frame.gold), h(LPS.frame.system)) + 6
-	LPS.frame.holder:SetSize(width, height)
+	if width ~= lastW or height ~= lastH then
+		lastW, lastH = width, height
+		LPS.frame.holder:SetSize(width, height)
+	end
+end
+
+-- ОПТИМИЗАЦИЯ: батчинг перерасчёта размера holder'а.
+-- Все тикеры/апдейты за текущий кадр складывают заявку, а реальный
+-- пересчёт выполняется ровно один раз на следующем тике (0.05с).
+-- Это разрывает цепочку "обновился текст -> пересчитали все размеры -> ..."
+-- и убирает O(N^2) лишних Layout-вызовов при нескольких видимых панелях.
+local sizeUpdatePending = false
+function LPS:ScheduleFrameSizeUpdate()
+	if sizeUpdatePending then return end
+	sizeUpdatePending = true
+	C_Timer.After(0.05, function()
+		sizeUpdatePending = false
+		LPS:UpdateFrameSize()
+	end)
 end
