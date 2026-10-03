@@ -29,26 +29,9 @@ function LPS:BuildGoldTooltip(tt)
 		return tostring(m or 0)
 	end
 
-	local function getRealmKey()
-		if GetNormalizedRealmName then
-			return GetNormalizedRealmName() or GetRealmName() or ""
-		end
-		return GetRealmName() or ""
-	end
-
-	local function getGoldRoot()
-		if LPS.GetAccountDB then
-			local a = LPS:GetAccountDB()
-			if a then
-				a.gold = a.gold or {}
-				return a.gold
-			end
-		end
-		LPS_DB = LPS_DB or {}
-		LPS_DB.global = LPS_DB.global or {}
-		LPS_DB.global.gold = LPS_DB.global.gold or {}
-		return LPS_DB.global.gold
-	end
+	-- ОПТИМИЗАЦИЯ (duplicates): локальные копии функций заменены общими методами аддона
+	local getRealmKey = LPS.GetGoldRealmKey
+	local getGoldRoot = LPS.GetGoldRoot
 
 	local function factionIcon(faction)
 		if faction == "Alliance" or faction == "Horde" then
@@ -198,7 +181,8 @@ function LPS:BuildGoldTooltip(tt)
 	if (not cfg or cfg.token ~= false) and tokenPrice and tonumber(tokenPrice) and tonumber(tokenPrice) > 0 then
 		tt:AddLine(" ")
 		tt:AddDoubleLine(LPS:L("WoW Token")..":", moneyText(tokenPrice), rB, gB, bB, whiteR, whiteG, whiteB)
-	elseif not cfg or cfg.token ~= false then
+	elseif (not cfg or cfg.token ~= false) and C_WowTokenPublic and C_WowTokenPublic.UpdateMarketPrice then
+		-- FIX: был вызов без проверки наличия API (падает на Classic/TBC, где C_WowTokenPublic нет)
 		C_WowTokenPublic.UpdateMarketPrice()
 	end
 

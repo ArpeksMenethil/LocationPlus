@@ -1,6 +1,8 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
+local unpackFn = table.unpack or unpack -- МУЛЬТИКЛАЙЕНТ: на Retail глобальный unpack может отсутствовать
+
 -- Move Mode (перетаскивание)
 function LPS:CreateGuideLines()
 	local grid = { vLines = {}, hLines = {} }
@@ -62,7 +64,7 @@ function LPS:CreateFrame(params)
 
 	local f = CreateFrame(params.frameType or "Frame", params.name, params.parent, params.template or "BackdropTemplate")
 	f:ClearAllPoints()
-	f:SetPoint(unpack(params.anchor or {"CENTER", f:GetParent(), "CENTER", 0, 0}))
+	f:SetPoint(unpackFn(params.anchor or {"CENTER", f:GetParent(), "CENTER", 0, 0}))
 	f._lpsUpdateFunc = nil
 	f._lpsTicker = nil
 
@@ -80,10 +82,10 @@ function LPS:CreateFrame(params)
 		insets   = (params.backdrop and params.backdrop.insets) or {left=1,right=1,top=1,bottom=1},
 	})
 	if params.bgColor then
-		f:SetBackdropColor(unpack(params.bgColor or {LPS:GetColor("bg")} or {1,1,1,1}))
+		f:SetBackdropColor(unpackFn(params.bgColor or {LPS:GetColor("bg")} or {1,1,1,1}))
 	end
 	if params.borderColor then
-		f:SetBackdropBorderColor(unpack(params.borderColor or {LPS:GetColor("border")} or {0,0,0,1}))
+		f:SetBackdropBorderColor(unpackFn(params.borderColor or {LPS:GetColor("border")} or {0,0,0,1}))
 	end
 
 	-- Текст
@@ -91,7 +93,21 @@ function LPS:CreateFrame(params)
 		f.text = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 		f.text:SetPoint("CENTER")
 		f.text:SetJustifyH("CENTER")
-		f.text:SetFont(GameFontNormalSmall:GetFont(), params.fontSize)
+		-- ОПТИМИЗАЦИЯ: GetFont() возвращает (file, size, flags); раньше flags терялся
+		-- и шрифт сбрасывал очертание. Кортеж шрифта кэшируется по размеру — файл за сессию не меняется.
+		local fontCache = LPS._fontTuples
+		if not fontCache then fontCache = {} LPS._fontTuples = fontCache end
+		local tuple = fontCache[params.fontSize]
+		if not tuple then
+			local path, _, flags = GameFontNormalSmall:GetFont()
+			tuple = { path, flags }
+			fontCache[params.fontSize] = tuple
+		end
+		if tuple[1] then
+			f.text:SetFont(tuple[1], params.fontSize, tuple[2])
+		else
+			f.text:SetFont(GameFontNormalSmall:GetFont(), params.fontSize)
+		end
 	end
 
 	-- Авторазмер по тексту
@@ -116,7 +132,8 @@ function LPS:CreateFrame(params)
 				f.text:ClearAllPoints()
 				f.text:SetPoint("TOPLEFT", f, "TOPLEFT", px, -py)
 				f.text:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -px, py)
-				LPS:UpdateFrameSize()
+				-- ОПТИМИЗАЦИЯ: батчинг — несколько фреймов за тик пересчитывают holder один раз
+				LPS:ScheduleFrameSizeUpdate()
 			end
 		end
 	end
@@ -129,8 +146,9 @@ function LPS:CreateFrame(params)
 				f._lpsTicker:Cancel()
 				f._lpsTicker = nil
 			end
+			-- ОПТИМИЗАЦИЯ: тикер не выполняет работу, пока фрейм или holder скрыты
 			f._lpsTicker = C_Timer.NewTicker(params.updateTicker.interval, function()
-				if f._lpsUpdateFunc then
+				if f._lpsUpdateFunc and f:IsShown() and (not f:GetParent() or f:GetParent():IsShown()) then
 					f._lpsUpdateFunc(f)
 				end
 			end)
@@ -148,7 +166,7 @@ function LPS:CreateFrame(params)
 	if params.onClick then
 		f:EnableMouse(true)
 		if params.registerClicks then
-			f:RegisterForClicks(unpack(params.registerClicks))
+			f:RegisterForClicks(unpackFn(params.registerClicks))
 		else
 			f:RegisterForClicks("LeftButtonUp")
 		end

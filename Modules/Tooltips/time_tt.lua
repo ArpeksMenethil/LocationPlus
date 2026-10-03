@@ -278,6 +278,19 @@ function LPS:GetInstanceImages(index, raid)
 	end
 end
 
+-- ОПТИМИЗАЦИЯ: сбор иконок подземелий/рейдов из Encyclopedia/Journal раньше
+-- выполнялся лениво прямо в момент первого OnEnter тултипа (заметный фриз).
+-- Теперь он планируется на C_Timer.After(0) при загрузке интерфейса,
+-- а в BuildTimeTooltip остался лишь fallback для крайних случаев.
+function LPS:ScheduleCollectImages()
+	if collectedImages then return end
+	C_Timer.After(0, function()
+		if not collectedImages and EJ_GetNumTiers then
+			LPS:CollectImages()
+		end
+	end)
+end
+LPS:ScheduleCollectImages()
 local collectedImages = false
 function LPS:CollectImages()
 	local numTiers = (EJ_GetNumTiers() or 0)

@@ -1,4 +1,30 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
+-- ОПТИМИЗАЦИЯ (duplicates): colorByThreshold был продублирован в
+-- Modules/Frames/system.lua и этом файле — теперь общая функция LPS.
+if not LPS.ColorByThreshold then
+        function LPS:ColorByThreshold(v, good, warn, invert)
+                v = tonumber(v) or 0
+                local r, g, b
+                if invert then
+                        if v <= good then
+                                r, g, b = 0.1, 1, 0.1
+                        elseif v <= warn then
+                                r, g, b = 1, 0.82, 0
+                        else
+                                r, g, b = 1, 0.1, 0.1
+                        end
+                else
+                        if v >= good then
+                                r, g, b = 0.1, 1, 0.1
+                        elseif v >= warn then
+                                r, g, b = 1, 0.82, 0
+                        else
+                                r, g, b = 1, 0.1, 0.1
+                        end
+                end
+                return string.format("|cff%02x%02x%02x%d|r", r * 255, g * 255, b * 255, v)
+        end
+end
 if not LPS then return end
 
 local function formatMem(kb)
@@ -41,28 +67,7 @@ local function getAddOnInfo(i)
 	return nil
 end
 
-local function colorByThreshold(v, good, warn, invert)
-	v = tonumber(v) or 0
-	local r, g, b
-	if invert then
-		if v <= good then
-			r, g, b = 0.1, 1, 0.1
-		elseif v <= warn then
-			r, g, b = 1, 0.82, 0
-		else
-			r, g, b = 1, 0.1, 0.1
-		end
-	else
-		if v >= good then
-			r, g, b = 0.1, 1, 0.1
-		elseif v >= warn then
-			r, g, b = 1, 0.82, 0
-		else
-			r, g, b = 1, 0.1, 0.1
-		end
-	end
-	return string.format("|cff%02x%02x%02x%d|r", r * 255, g * 255, b * 255, v)
-end
+-- colorByThreshold -> LPS:ColorByThreshold (общая функция, см. ниже)
 
 function LPS:BuildSystemTooltip(tt)
 	local db = LPS.GetDB and LPS:GetDB() or nil
@@ -76,30 +81,41 @@ function LPS:BuildSystemTooltip(tt)
 	local lag = lagWorld > 0 and lagWorld or lagHome
 
 	if not cfg or cfg.network ~= false then
-		tt:AddDoubleLine(LPS:L("FPS")..":", colorByThreshold(fps, 60, 30, false), 1, 1, 1, 1, 1, 1)
-		tt:AddDoubleLine(LPS:L("MS")..":", colorByThreshold(lag, 60, 120, true), 1, 1, 1, 1, 1, 1)
+		tt:AddDoubleLine(LPS:L("FPS")..":", LPS:ColorByThreshold(fps, 60, 30, false), 1, 1, 1, 1, 1, 1)
+		tt:AddDoubleLine(LPS:L("MS")..":", LPS:ColorByThreshold(lag, 60, 120, true), 1, 1, 1, 1, 1, 1)
 		tt:AddDoubleLine(LPS:L("Local latency")..":", string.format("%d ms", lagHome), 1, 1, 1, 0.41, 0.8, 0.94)
 		tt:AddDoubleLine(LPS:L("Global latency")..":", string.format("%d ms", lagWorld), 1, 1, 1, 0.41, 0.8, 0.94)
 		tt:AddDoubleLine(LPS:L("Bandwidth")..":", string.format("%.2f", bandwidth or 0), 1, 1, 1, 0.41, 0.8, 0.94)
 	end
 
-	if UpdateAddOnMemoryUsage then
-		UpdateAddOnMemoryUsage()
-	end
-	local addons = {}
-	local total = 0
-	local count = getNumAddOns()
-	for i = 1, count do
-		if isAddOnLoaded(i) then
-			local mem = GetAddOnMemoryUsage(i) or 0
-			total = total + mem
-			local name = getAddOnInfo(i)
-			if name then
-				addons[#addons + 1] = { name = name, mem = mem }
+	-- ОПТИМИЗАЦИЯ: раньше при КАЖДОМ наведении сканировалась память всех аддонов
+	-- (UpdateAddOnMemoryUsage + цикл по 100+ аддонам + table.sort) — заметный фриз
+	-- на OnEnter. Результат кэшируется на 2 секунды (LPS._addonMemCache).
+	local now = GetTime()
+	local cache = LPS._addonMemCache
+	if not cache or (now - (cache.time or 0)) > 2 then
+		if UpdateAddOnMemoryUsage then
+			UpdateAddOnMemoryUsage()
+		end
+		local scanned = {}
+		local sum = 0
+		local count = getNumAddOns()
+		for i = 1, count do
+			if isAddOnLoaded(i) then
+				local mem = GetAddOnMemoryUsage(i) or 0
+				sum = sum + mem
+				local name = getAddOnInfo(i)
+				if name then
+					scanned[#scanned + 1] = { name = name, mem = mem }
+				end
 			end
 		end
+		table.sort(scanned, function(a, b) return a.mem > b.mem end)
+		cache = { time = now, addons = scanned, total = sum }
+		LPS._addonMemCache = cache
 	end
-	table.sort(addons, function(a, b) return a.mem > b.mem end)
+	local addons = cache.addons
+	local total = cache.total
 
 	if not cfg or cfg.addons ~= false then
 		if cfg.network ~= false then tt:AddLine(" ") end

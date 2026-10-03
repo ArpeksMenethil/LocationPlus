@@ -2,17 +2,9 @@ local MyAddon = _G.ArpeksLPS
 local LPS = MyAddon.LPS
 LPS_DB = LPS_DB or {}
 
-local Tourist
-if LPS.Retail and LibStub:GetLibrary("LibTourist-3.0", true) then
-	Tourist = LibStub("LibTourist-3.0")
-elseif LPS.TBC and LibStub:GetLibrary("LibTouristClassicBCA", true) then
-	Tourist = LibStub("LibTouristClassicBCA")
-elseif LPS.Mists and LibStub:GetLibrary("LibTouristClassic-1.0", true) then
-	Tourist = LibStub("LibTouristClassic-1.0")
-elseif LPS.Classic and LibStub:GetLibrary("LibTouristClassicEra", true) then
-	Tourist = LibStub("LibTouristClassicEra")
-end
-
+-- ОПТИМИЗАЦИЯ (duplicates): блок выбора LibTourist удалён — единый загрузчик
+-- живёт в Game/api.lua, результат доступен как LPS.Tourist.
+local Tourist = LPS.Tourist
 
 -- Icons on Location Panel
 local PET_ICON = LPS.icons.Pet
@@ -46,7 +38,7 @@ function LPS:GetLevelRange(uiMapID)
 
 	if not Tourist and (playerMinLevel == 0 or playerMaxLevel == 0) then
 		if LPS.Forever then
-			local levelTable = LPS:GetDB().levelTable
+			local levelTable = LPS.GetLevelTable and LPS:GetLevelTable() or (LPS:GetDB() and LPS:GetDB().levelTable)
 
 			if levelTable and levelTable[uiMapID] then
 				local levelCell = levelTable[uiMapID]
@@ -63,6 +55,9 @@ function LPS:GetLevelRange(uiMapID)
 		end
 
 		if playerMinLevel and playerMaxLevel and playerMinLevel > 0 and playerMaxLevel > 0 then
+			-- ЗАЩИТА: ниже по потоку `color.r, ... = Tourist:GetLevelColor(...)` падал
+			-- с "attempt to index a nil value", если цвет не был вычислен. Инициимируем заранее.
+			color = color or { r = 1, g = 1, b = 1 }
 			local playerLevel = UnitLevel("player")
 
 			if playerLevel < playerMinLevel then
@@ -76,8 +71,13 @@ function LPS:GetLevelRange(uiMapID)
 		end
 	end
 
+	-- ЗАЩИТА: без LibTourist (не найден/отключён) этот блок падал
+	-- с "attempt to index a nil value (upvalue 'Tourist')".
 	if Tourist and zoneText then
 		playerMinLevel, playerMaxLevel = Tourist:GetLevel(zoneText)
+		-- ЗАЩИТА: раньше при color == nil (зона без уровней / скиппенный блок)
+		-- эта строка падала с ошибкой "attempt to index a nil value (local 'color')".
+		if not color then color = { r = 1, g = 1, b = 1 } end
 		color.r, color.g, color.b = Tourist:GetLevelColor(zoneText)
 	end
 	
@@ -96,7 +96,10 @@ function LPS:GetFishingLvl()
 		local zoneText = Tourist:GetMapNameByIDAlt(uiMapID) or UNKNOWN
 		minFish, maxFish = Tourist:GetFishingLevel(zoneText)
 	else
-		local levelTable = LPS:GetDB().levelTable[uiMapID]
+		-- ЗАЩИТА: uiMapID может быть nil (подземелья/без карты), а levelTable — отсутствовать
+		local db = LPS:GetDB()
+		local lvls = LPS.GetLevelTable and LPS:GetLevelTable() or (db and db.levelTable)
+	local levelTable = lvls and uiMapID and lvls[uiMapID]
 
 		if levelTable and levelTable.minFish then
 			minFish = levelTable.minFish
@@ -166,10 +169,8 @@ local function PvPorRaidFilter(zone)
 	if not Tourist then return end
 
 	local db = LPS:GetDB()
-	local isPvP, isRaid;
+	local isPvP, isRaid
 
-	isPvP = nil;
-	isRaid = nil;
 
 	local isArena = false
 	if not LPS.TBC then
@@ -202,12 +203,14 @@ local function GetRecomZones(zone)
 	local low, high = Tourist:GetLevel(zone)
 	local r, g, b = Tourist:GetLevelColor(zone)
 	local zContinent = Tourist:GetContinent(zone)
+	-- ОПТИМИЗАЦИЯ: раньше PvPorRaidFilter вызывался 2 раза на одну строку
+	-- (каждый вызов читал БД + делал всю ветку Tourist-проверок). Кэш в локальную.
+	local pvpRaidTag = PvPorRaidFilter(zone)
+	if pvpRaidTag == nil then return end
 	local continentName = LPS:GetContinentName()
 
-	if PvPorRaidFilter(zone) == nil then return end
-
 	GameTooltip:AddDoubleLine(
-		zone..PvPorRaidFilter(zone),
+		zone..pvpRaidTag,
 		format("|cff%02xff00%s|r", continentName == zContinent and 0 or 255, zContinent)
 		..(" |cff%02x%02x%02x%s|r"):format(r *255, g *255, b *255,(low == high and low or ("%d-%d"):format(low, high))),
 		1, 1, 1
@@ -226,14 +229,16 @@ local function GetZoneDungeons(dungeon)
 	local groupSizeStyle = (groupSize > 0 and format("|cFFFFFF00|r (%d)", groupSize) or "")
 	local name = dungeon
 
-	if PvPorRaidFilter(dungeon) == nil then return end
+	-- ОПТИМИЗАЦИЯ: один вызов фильтра вместо двух
+	local pvpRaidTag = PvPorRaidFilter(dungeon)
+	if pvpRaidTag == nil then return end
 
 	local levelText = (low == 0 and high == 0) and "" or ("|cff%02x%02x%02x%s|r"):format(
 		r * 255, g * 255, b * 255, (low == high and low or ("%d-%d"):format(low, high))
 	)
 
 	GameTooltip:AddDoubleLine(
-		name..groupSizeStyle.." "..GetDungeonCoords(dungeon)..PvPorRaidFilter(dungeon),
+		name..groupSizeStyle.." "..GetDungeonCoords(dungeon)..pvpRaidTag,
 		levelText,
 		1, 1, 1
 	)
@@ -251,7 +256,9 @@ local function GetRecomDungeons(dungeon)
 	local instZone = Tourist:GetInstanceZone(dungeon);
 	local name = dungeon
 
-	if PvPorRaidFilter(dungeon) == nil then return end
+	-- ОПТИМИЗАЦИЯ: один вызов фильтра вместо двух
+	local pvpRaidTag = PvPorRaidFilter(dungeon)
+	if pvpRaidTag == nil then return end
 
 	if instZone == nil then
 		instZone = ""
@@ -260,7 +267,7 @@ local function GetRecomDungeons(dungeon)
 	end
 
 	GameTooltip:AddDoubleLine(
-		name..instZone..GetDungeonCoords(dungeon)..PvPorRaidFilter(dungeon),
+		name..instZone..GetDungeonCoords(dungeon)..pvpRaidTag,
 		("|cff%02x%02x%02x%s|r"):format(r *255, g *255, b *255,(low == high and low or ("%d-%d"):format(low, high))),
 		1, 1, 1
 	)
@@ -268,45 +275,17 @@ local function GetRecomDungeons(dungeon)
 	return true
 end
 
-function LPS:GetContinentName()
-    local currentMapID = C_Map.GetBestMapForUnit("player")
-    
-    if not currentMapID then
-        return LPS:L("UNKNOWN")
-    end
-    
-    local mapID = currentMapID
-    local continentName = nil
-    
-    for i = 1, 10 do
-        local mapInfo = C_Map.GetMapInfo(mapID)
-        
-        if not mapInfo then
-            break
-        end
-        
-        if mapInfo.mapType == Enum.UIMapType.Continent or mapInfo.mapType == Enum.UIMapType.World then
-            continentName = mapInfo.name
-            break
-        end
-        
-        if mapInfo.parentMapID and mapInfo.parentMapID ~= 0 then
-            mapID = mapInfo.parentMapID
-        else
-            if not continentName then
-                continentName = mapInfo.name
-            end
-            break
-        end
-    end
-    
-    return continentName or LPS:L("UNKNOWN")
-end
+-- ОПТИМИЗАЦИЯ (duplicates): второе определение GetContinentName удалено —
+-- оно перезаписывало реализацию из Game/api.lua (мёртвый код).
+-- Единая реализация: LPS:GetContinentName() в Game/api.lua.
 
 function LPS:BuildLocationTooltip()
 	local db = LPS:GetDB()
 	local mapID = C_Map.GetBestMapForUnit("player")
-	local zoneText = C_Map.GetMapInfo(mapID).name
+	-- ЗАЩИТА: в подземельях/террасах без карты GetBestMapForUnit вернёт nil,
+	-- а раньше `C_Map.GetMapInfo(mapID).name` падал с "аttempt to index a nil value".
+	local mapInfo = mapID and C_Map.GetMapInfo(mapID)
+	local zoneText = (mapInfo and mapInfo.name) or UNKNOWN
 
 	local r, g, b = LPS:GetColor("text")
 	local rB, gB, bB = LPS:GetColor("tooltipSetting")
@@ -381,7 +360,8 @@ function LPS:BuildLocationTooltip()
 	end
 
 	-- Recommended zones
-	if db.tooltips.location.recomZone then
+	-- ЗАЩИТА: секции ниже обращаются к Tourist без проверки — без либы был краш
+	if db.tooltips.location.recomZone and Tourist then
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(LPS:L("Recommended Zones")..": ", rY, gY, bY)
 		local max = tonumber(db.tooltips.location.recomZoneMax) or 5
@@ -396,7 +376,7 @@ function LPS:BuildLocationTooltip()
 	end
 
 	-- Instances in the zone
-	if db.tooltips.location.zoneDungeon and Tourist:DoesZoneHaveInstances(zoneText) then
+	if db.tooltips.location.zoneDungeon and Tourist and Tourist.DoesZoneHaveInstances and Tourist:DoesZoneHaveInstances(zoneText) then
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(DUNGEONS.." "..LPS:L("in").." "..zoneText..": ", rY, gY, bY)
 		local max = tonumber(db.tooltips.location.zoneDungeonMax) or 5
@@ -412,7 +392,7 @@ function LPS:BuildLocationTooltip()
 
 	-- Recommended Instances
 	local level = UnitLevel('player')
-	if db.tooltips.location.recomDungeon and Tourist:HasRecommendedInstances() and level >= 15 then
+	if db.tooltips.location.recomDungeon and Tourist and Tourist.HasRecommendedInstances and Tourist:HasRecommendedInstances() and level >= 15 then
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(LPS:L("Recommended Dungeons")..": ", rY, gY, bY)
 		local max = tonumber(db.tooltips.location.recomDungeonMax) or 5
@@ -429,7 +409,7 @@ function LPS:BuildLocationTooltip()
 	if LPS.Retail or LPS.Forever then
 		-- Professions
 		local prof1, prof2, archy, fishing, cooking = GetProfessions()
-		if db.tooltips.location.proffession and (prof1 or prof2 or archy or fishing or cooking) then
+		if db.tooltips.location.profession and (prof1 or prof2 or archy or fishing or cooking) then
 			GameTooltip:AddLine(" ")
 			GameTooltip:AddLine(TRADE_SKILLS..":", rY, gY, bY)
 
@@ -438,7 +418,7 @@ function LPS:BuildLocationTooltip()
 				if id then
 					local name, icon, rank, maxRank, _, _, _, rankModifier = GetProfessionInfo(id)
 
-					if rank < maxRank or not db.tooltips.location.proffessionHideMaxLevel then
+					if rank < maxRank or not db.tooltips.location.professionHideMaxLevel then
 						icon = ("|T%s:12:12:1:0|t"):format(icon)
 
 						if rankModifier and rankModifier > 0 then
@@ -461,7 +441,7 @@ function LPS:BuildLocationTooltip()
 			end
 		end
 	else
-		if db.tooltips.location.proffession then
+		if db.tooltips.location.profession then
 			local lines = {}
 
 			-- Список профессий, которые нужно показывать
@@ -483,7 +463,7 @@ function LPS:BuildLocationTooltip()
 					GetSkillLineInfo(skillIndex)
 
 				if skillName and not isHeader and professionsSet[skillName] then
-					if skillRank < skillMaxRank or not db.tooltips.location.proffessionHideMaxLevel then
+					if skillRank < skillMaxRank or not db.tooltips.location.professionHideMaxLevel then
 						local rightText
 
 						if skillModifier and skillModifier > 0 then

@@ -35,16 +35,19 @@ LPS.frame.holder = LPS:CreateFrame(params)
 LPS.frame.holder:SetFrameStrata("HIGH")
 
 ----------------------------------------------------------------
--- ADDON_LOADED
+-- ADDON_LOADED обрабатывается ОДИН раз: через updateEvent/updateFunc выше.
+-- ОПТИМИЗАЦИЯ (bug): раньше событие было зарегистрировано дважды (params +
+-- явный RegisterEvent/SetScript ниже), из-за чего onLoaded мог отработать
+-- дважды. Явная дублирующая регистрация и SetScript("OnEvent", ...) удалены,
+-- плюс добавлен re-entry guard в самом LPS:onLoaded().
 ----------------------------------------------------------------
-LPS.frame.holder:RegisterEvent("ADDON_LOADED")
-LPS.frame.holder:SetScript("OnEvent", function(self, event, name)
-	if name ~= LPS.addon.name then return end
-	if event == "ADDON_LOADED" then LPS:onLoaded(name) end
-end)
 
 
 function LPS:onLoaded(name)
+	-- ОПТИМИЗАЦИЯ (bug): защита от повторного входа — обработчик может быть
+	-- вызван повторно (например, другим аддоном или перерегистрацией).
+	if self._loaded then return end
+	self._loaded = true
 	if LibStub and LibStub:GetLibrary("AceDB-3.0", true) and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary("AceConfigDialog-3.0", true) then
 		local AceDB = LibStub("AceDB-3.0")
 		if type(LPS_DB) == "table" and not (LPS_DB.profiles or LPS_DB.profileKeys or LPS_DB.global) then
@@ -115,10 +118,26 @@ function LPS:onLoaded(name)
 		SetCVar("timeMgrUseMilitaryTime", 1)
 	end
 
-	C_Timer.After(1, function()
+	-- ОПТИМИЗАЦИЯ: первичная раскладка больше не ждёт фиксированную секунду —
+	-- выполняется сразу на PLAYER_ENTERING_WORLD (или немедленно, если мир уже
+	-- загружен, например при /reload в игре). C_Timer.After(1) оставлен как
+	-- fallback для клиентов без события PEW до этого момента.
+	if IsLoggedIn and IsLoggedIn() then
 		LPS:UpdateFrameSize()
 		LPS:ApplyLayout()
-	end)
+	else
+		local f = CreateFrame("Frame")
+		f:RegisterEvent("PLAYER_ENTERING_WORLD")
+		f:SetScript("OnEvent", function(self)
+			self:UnregisterAllEvents()
+			LPS:UpdateFrameSize()
+			LPS:ApplyLayout()
+		end)
+		C_Timer.After(1, function()
+			LPS:UpdateFrameSize()
+			LPS:ApplyLayout()
+		end)
+	end
 
 	if db and db.general and db.general.loginMessage then
 		LPS:Print(format(LPS:L("loaded. Current version:").." |c%sv%s|r", LPS.addon.textColor, LPS.addon.version), false)

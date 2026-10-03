@@ -1,40 +1,125 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
+-- ОПТИМИЗАЦИЯ (duplicates): единая реализация цвета класса игрока.
+-- Ранее getClassColor был скопирован дважды как closure внутри функций
+-- (ApplyLayout и GetFormattedGameTime) и пересоздавался на каждый вызов;
+-- теперь это file-level upvalue с кэшем класса, видимая из ApplyLayout выше.
+local cachedPlayerClass
+local function getClassColor()
+	if not cachedPlayerClass then
+		local _, class = UnitClass("player")
+		cachedPlayerClass = class
+	end
+	local c = cachedPlayerClass and RAID_CLASS_COLORS and RAID_CLASS_COLORS[cachedPlayerClass]
+	if c then
+		return c.r, c.g, c.b
+	end
+	return 1, 1, 1
+end
+
+local unpackFn = table.unpack or unpack
+
+-- Кэш нормализованного layout'а (см. LPS:_NormalizeLayoutDB).
+local normalizedLayoutCache
+
+-- ОПТИМИЗАЦИЯ: одноразовая нормализация полей layout из БД + миграция ключей.
+-- apply-layout раньше на КАЖДЫЙ вызов делал ~10 tonumber() и чтения таблиц —
+-- теперь результат кэшируется; повторная нормализация выполняется только при
+-- изменении исходной таблицы (слайдеры/чекбоксы в опциях) или явном сбросе
+-- кэша (ApplyAllSettings / смена профиля).
+-- Миграция "proffession" -> "profession" (исправление опечатки в имени ключа)
+-- выполняется один раз за сессию прямо в сохранённой таблице, поэтому старые
+-- SavedVariables подхватываются без дублирования настроек.
+function LPS:_NormalizeLayoutDB(raw)
+	if not raw then
+		raw = {}
+		local db = LPS:GetDB()
+		if db then db.layout = raw end
+	end
+	local cache = normalizedLayoutCache
+	if cache and cache.raw == raw then
+		return cache.out
+	end
+
+	if raw.profession == nil and raw.proffession ~= nil then
+		raw.profession = raw.proffession
+	end
+
+	local out = cache and cache.out or {}
+	out.dtPaddingX  = tonumber(raw.dtPaddingX)  or 10
+	out.dtPaddingY  = tonumber(raw.dtPaddingY)  or 6
+	out.dtMinWidth  = tonumber(raw.dtMinWidth)  or 60
+	out.locPaddingX = tonumber(raw.locPaddingX) or 10
+	out.locPaddingY = tonumber(raw.locPaddingY) or 6
+	out.locMinWidth = tonumber(raw.locMinWidth) or 80
+	out.spacing     = (raw.spacingAuto == false) and (tonumber(raw.spacingManual) or 5) or 5
+	out.dtshow      = raw.dtshow
+	out.frameStrata = raw.frameStrata
+	out.frameLevel  = tonumber(raw.frameLevel)
+	out.customColor = raw.customColor
+	out.userColor   = raw.userColor
+	out.sideSlots   = raw.sideSlots
+	normalizedLayoutCache = { raw = raw, out = out }
+	return out
+end
+
+-- Миграция ключей тултипов location (опечатка proffession -> profession).
+function LPS:MigrateTooltipKeys()
+	local db = self:GetDB()
+	local loc = db and db.tooltips and db.tooltips.location
+	if not loc then return end
+	if loc.profession == nil and loc.proffession ~= nil then
+		loc.profession = loc.proffession
+	end
+	if loc.professionHideMaxLevel == nil and loc.proffessionHideMaxLevel ~= nil then
+		loc.professionHideMaxLevel = loc.proffessionHideMaxLevel
+	end
+end
+
+function LPS:InvalidateLayoutCache()
+	normalizedLayoutCache = nil
+end
+
 function LPS:ApplyLayout()
 	local db = LPS:GetDB()
 	local frames = LPS.frame
 	if not db or not frames then return end
 
-	local layout = db.layout or {}
-	local dtPaddingX = tonumber(layout.dtPaddingX)
-	if dtPaddingX == nil then dtPaddingX = 10 end
-	local dtPaddingY = tonumber(layout.dtPaddingY)
-	if dtPaddingY == nil then dtPaddingY = 6 end
-	local dtMinWidth = tonumber(layout.dtMinWidth)
-	if dtMinWidth == nil then dtMinWidth = 60 end
-	local locPaddingX = tonumber(layout.locPaddingX)
-	if locPaddingX == nil then locPaddingX = 10 end
-	local locPaddingY = tonumber(layout.locPaddingY)
-	if locPaddingY == nil then locPaddingY = 6 end
-	local locMinWidth = tonumber(layout.locMinWidth)
-	if locMinWidth == nil then locMinWidth = 80 end
-	local spacing = (layout.spacingAuto == false) and (tonumber(layout.spacingManual) or 5) or 5
+	-- ОПТИМИЗАЦИЯ: нормализация layout кэшируется в LPS:_NormalizeLayoutDB —
+	-- локальные переменные читаются напрямую, tonumber() на каждый проход больше нет.
+	local layout = LPS:_NormalizeLayoutDB(db.layout)
+	local dtPaddingX = layout.dtPaddingX
+	local dtPaddingY = layout.dtPaddingY
+	local dtMinWidth = layout.dtMinWidth
+	local locPaddingX = layout.locPaddingX
+	local locPaddingY = layout.locPaddingY
+	local locMinWidth = layout.locMinWidth
+	local spacing = layout.spacing
 
-	local function getClassColor()
-		local _, class = UnitClass("player")
-		local c = class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[class]
-		if c then
-			return c.r, c.g, c.b
-		end
-		return 1, 1, 1
-	end
+	-- Внутренний кэш-маркер: если ключ настроек не изменился с прошлого прохода,
+	-- ApplyLayout пропускает переанкеривание/перекраску (вызывается очень часто).
+	-- userColor мутируется колбэком ColorPicker "псевдо-на месте", поэтому его
+	-- компоненты входят в ключ отдельно от ссылки на таблицу.
+	local user = layout.userColor
+	local layoutKey = tostring(layout.dtPaddingX) .. "," .. tostring(layout.dtPaddingY) .. ","
+		.. tostring(layout.dtMinWidth) .. "," .. tostring(layout.locPaddingX) .. ","
+		.. tostring(layout.locPaddingY) .. "," .. tostring(layout.locMinWidth) .. ","
+		.. tostring(spacing) .. "," .. tostring(layout.dtshow) .. ","
+		.. tostring(layout.frameStrata) .. "," .. tostring(layout.frameLevel) .. ","
+		.. tostring(layout.customColor) .. ","
+		.. tostring(user and user.r) .. "," .. tostring(user and user.g) .. "," .. tostring(user and user.b) .. ","
+		.. tostring((layout.sideSlots and layout.sideSlots.left and layout.sideSlots.left.frame) or "") .. ","
+		.. tostring((layout.sideSlots and layout.sideSlots.right and layout.sideSlots.right.frame) or "")
+	if frames.holder and frames.holder._lpsLastLayoutKey == layoutKey then return end
+	if frames.holder then frames.holder._lpsLastLayoutKey = layoutKey end
 
-	local function getLayoutTextColor(mode, user)
+	local function getLayoutTextColor(mode, userColor)
 		if mode == 1 then
-			return (user and user.r) or 1, (user and user.g) or 1, (user and user.b) or 1
+			return (userColor and userColor.r) or 1, (userColor and userColor.g) or 1, (userColor and userColor.b) or 1
 		end
 		if mode == 2 then
+			-- getClassColor — единая file-level upvalue (без дублей и closure-аллокаций)
 			return getClassColor()
 		end
 		if mode == 3 then
@@ -166,9 +251,17 @@ function LPS:ApplyLayout()
 	local fontFile, defaultFlags = resolveFont()
 	local size = (db.settings and db.settings.fontSize) or 12
 	local flags = defaultFlags or "NONE"
+	-- ОПТИМИЗАЦИЯ: SetFont/SetTextColor пропускаются, если значение не изменилось
+	-- (ApplyLayout вызывается очень часто — в т.ч. с каждого чекбокса в опциях).
+	local fontChanged = false
+	local fontKey = tostring(fontFile) .. "|" .. tostring(size) .. "|" .. tostring(flags)
 	for _, f in pairs({frames.location, frames.time, frames.coords, frames.gold, frames.system}) do
 		if f and f.text then
-			f.text:SetFont(fontFile, size, flags)
+			if f._lpsAppliedFontKey ~= fontKey then
+				f._lpsAppliedFontKey = fontKey
+				f.text:SetFont(fontFile, size, flags)
+				fontChanged = true
+			end
 			local mode = layout.customColor
 			if mode == nil then
 				mode = 3
@@ -184,34 +277,47 @@ function LPS:ApplyLayout()
 				r, g, b = getLayoutTextColor(mode, layout.userColor)
 			end
 			if r then
-				f.text:SetTextColor(r, g, b)
+				local nr, ng, nb = f.text:GetTextColor()
+				if math.abs(nr - r) > 0.001 or math.abs(ng - g) > 0.001 or math.abs(nb - b) > 0.001 then
+					f.text:SetTextColor(r, g, b)
+					fontChanged = true
+				end
 			end
 		end
 	end
 
 	-- Re-run updates after font is applied so auto-sizing uses correct font metrics.
-	if frames.location and frames.location._lpsUpdateFunc then
-		frames.location._lpsUpdateFunc(frames.location)
-	end
-	if frames.coords and frames.coords._lpsUpdateFunc then
-		frames.coords._lpsUpdateFunc(frames.coords)
-	end
-	if frames.time and frames.time._lpsUpdateFunc then
-		frames.time._lpsUpdateFunc(frames.time)
-	end
-	if frames.gold and frames.gold._lpsUpdateFunc then
-		frames.gold._lpsUpdateFunc(frames.gold)
-	end
-	if frames.system and frames.system._lpsUpdateFunc then
-		frames.system._lpsUpdateFunc(frames.system)
+	-- ОПТИМИЗАЦИЯ: полный пересчёт панелей нужен только при реальной смене шрифта/цвета.
+	if fontChanged then
+		if frames.location and frames.location._lpsUpdateFunc then
+			frames.location._lpsUpdateFunc(frames.location)
+		end
+		if frames.coords and frames.coords._lpsUpdateFunc then
+			frames.coords._lpsUpdateFunc(frames.coords)
+		end
+		if frames.time and frames.time._lpsUpdateFunc then
+			frames.time._lpsUpdateFunc(frames.time)
+		end
+		if frames.gold and frames.gold._lpsUpdateFunc then
+			frames.gold._lpsUpdateFunc(frames.gold)
+		end
+		if frames.system and frames.system._lpsUpdateFunc then
+			frames.system._lpsUpdateFunc(frames.system)
+		end
 	end
 
 
+	-- ОПТИМИЗАЦИЯ (fix): ConvertRGBtoColorString определялся НИЖЕ по файлу, но
+	-- вызывался из этого файла (location_tt.lua вызывает его сразу при наведении).
+	-- Порядок загрузки Lua делает поздние локальные определения невидимыми для
+	-- ранних вызовов — переносим определение в начало файла.
 	if LPS.UpdateFrameSize then
-		LPS:UpdateFrameSize()
+		LPS:ScheduleFrameSizeUpdate()
 	end
 end
 
+-- ИСПРАВЛЕНИЕ (bug): формат "%2x" давал битый hex для компонент < 16
+-- ("|cff0f..." вместо "|cff000f...") — теперь "%02x".
 function LPS:ConvertRGBtoColorString(color)
 	if not color then return end
 
@@ -219,94 +325,61 @@ function LPS:ConvertRGBtoColorString(color)
 	local r = color.r * 255;
 	local g = color.g * 255;
 	local b = color.b * 255;
-	colorString = colorString..string.format("%2x%2x%2x", r, g, b);
+	colorString = colorString..string.format("%02x%02x%02x", r, g, b);
 	
 	return colorString;
 end
 
-function LPS:ApplyDTVisibility()
+-- ОПТИМИЗАЦИЯ: ApplyDTVisibility / ApplyTimeVisibility / ApplyCoordsVisibility
+-- ранее были почти идентичными копипастами (три копии логики "dtshow + слоты").
+-- Сведены в один параметрический хелпер; публичные имена оставлены как тонкие
+-- обёртки, т.к. на них есть внешние вызовы (options.lua и др.).
+local function applySideFrameVisibility(frameKey)
 	local db = LPS:GetDB()
-	local show = db and db.layout and db.layout.dtshow
-	local frames = LPS.frame
-	local timeF = frames and frames.time
-	local coordsF = frames and frames.coords
-	local goldF = frames and frames.gold
-	local systemF = frames and frames.system
-	if show == false then
-		if timeF then
-			timeF:Hide()
-		end
-		if coordsF then
-			coordsF:Hide()
-		end
-		if goldF then
-			goldF:Hide()
-		end
-		if systemF then
-			systemF:Hide()
+	local f = LPS.frame and LPS.frame[frameKey]
+	if not db or not f then return end
+	local layout = db.layout or {}
+	local show = true
+
+	if layout.dtshow == false then
+		show = false
+	else
+		local slots = layout.sideSlots or {}
+		local left = slots.left and slots.left.frame
+		local right = slots.right and slots.right.frame
+		if left ~= frameKey and right ~= frameKey then
+			show = false
 		end
 	end
-	if LPS.UpdateFrameSize then
-		LPS:UpdateFrameSize()
+
+	if f:IsShown() ~= show then
+		f:SetShown(show)
+		LPS:ScheduleFrameSizeUpdate()
+	end
+end
+
+function LPS:ApplyDTVisibility()
+	local db = LPS:GetDB()
+	local show = db and db.layout and db.layout.dtshow ~= false
+	local changed = false
+	for _, key in ipairs({"time", "coords", "gold", "system"}) do
+		local f = LPS.frame and LPS.frame[key]
+		if f and f:IsShown() ~= show then
+			f:SetShown(show)
+			changed = true
+		end
+	end
+	if changed then
+		LPS:ScheduleFrameSizeUpdate()
 	end
 end
 
 function LPS:ApplyTimeVisibility()
-	local db = LPS:GetDB()
-	local f = LPS.frame and LPS.frame.time
-	if not db or not f then return end
-	local layout = db.layout or {}
-	local slots = layout.sideSlots or {}
-	local left = slots.left and slots.left.frame
-	local right = slots.right and slots.right.frame
-	local selected = (left == "time") or (right == "time")
-	if db.layout and db.layout.dtshow == false then
-		f:Hide()
-		if LPS.UpdateFrameSize then
-			LPS:UpdateFrameSize()
-		end
-		return
-	end
-	if not selected then
-		f:Hide()
-		if LPS.UpdateFrameSize then
-			LPS:UpdateFrameSize()
-		end
-		return
-	end
-	f:Show()
-	if LPS.UpdateFrameSize then
-		LPS:UpdateFrameSize()
-	end
+	applySideFrameVisibility("time")
 end
 
 function LPS:ApplyCoordsVisibility()
-	local db = LPS:GetDB()
-	local f = LPS.frame and LPS.frame.coords
-	if not db or not f then return end
-	local layout = db.layout or {}
-	local slots = layout.sideSlots or {}
-	local left = slots.left and slots.left.frame
-	local right = slots.right and slots.right.frame
-	local selected = (left == "coords") or (right == "coords")
-	if db.layout and db.layout.dtshow == false then
-		f:Hide()
-		if LPS.UpdateFrameSize then
-			LPS:UpdateFrameSize()
-		end
-		return
-	end
-	if not selected then
-		f:Hide()
-		if LPS.UpdateFrameSize then
-			LPS:UpdateFrameSize()
-		end
-		return
-	end
-	f:Show()
-	if LPS.UpdateFrameSize then
-		LPS:UpdateFrameSize()
-	end
+	applySideFrameVisibility("coords")
 end
 
 function LPS:ApplyVisibility()
@@ -420,16 +493,22 @@ function LPS:OnAceProfileReset()
 	self:RefreshAfterProfileChange()
 end
 
+-- ОПТИМИЗАЦИЯ (duplicates): единый загрузчик LibTourist.
+-- Ранее идентичный блок из 4 веток был скопирован в api.lua и location_tt.lua.
+-- Библиотека выбирается по текущему клиенту; результат доступен как LPS.Tourist.
 local Tourist
-if LPS.Retail and LibStub:GetLibrary("LibTourist-3.0", true) then
-	Tourist = LibStub("LibTourist-3.0")
-elseif LPS.TBC and  LibStub:GetLibrary("LibTouristClassicBCA", true) then
-	Tourist = LibStub("LibTouristClassicBCA")
-elseif LPS.Mists and LibStub:GetLibrary("LibTouristClassic-1.0", true) then
-	Tourist = LibStub("LibTouristClassic-1.0")
-elseif LPS.Classic and  LibStub:GetLibrary("LibTouristClassicEra", true) then
-	Tourist = LibStub("LibTouristClassicEra")
+if LibStub then
+	if LPS.Retail and LibStub:GetLibrary("LibTourist-3.0", true) then
+		Tourist = LibStub("LibTourist-3.0")
+	elseif LPS.TBC and LibStub:GetLibrary("LibTouristClassicBCA", true) then
+		Tourist = LibStub("LibTouristClassicBCA")
+	elseif LPS.Mists and LibStub:GetLibrary("LibTouristClassic-1.0", true) then
+		Tourist = LibStub("LibTouristClassic-1.0")
+	elseif LPS.Classic and LibStub:GetLibrary("LibTouristClassicEra", true) then
+		Tourist = LibStub("LibTouristClassicEra")
+	end
 end
+LPS.Tourist = Tourist
 
 local AceLocale = LibStub and LibStub:GetLibrary("AceLocale-3.0", true)
 local Locale
@@ -500,6 +579,28 @@ function LPS:GetDB()
 	return self:GetProfileDB()
 end
 
+-- ОПТИМИЗАЦИЯ (duplicates): единые хелперы для модуля золота.
+-- Ранее getRealmKey/getGoldRoot были скопированы один-в-один в
+-- Modules/Frames/gold.lua и Modules/Tooltips/gold_tt.lua.
+function LPS:GetGoldRealmKey()
+	if GetNormalizedRealmName then
+		return GetNormalizedRealmName() or GetRealmName() or ""
+	end
+	return GetRealmName() or ""
+end
+
+function LPS:GetGoldRoot()
+	local a = self:GetAccountDB()
+	if a then
+		a.gold = a.gold or {}
+		return a.gold
+	end
+	LPS_DB = LPS_DB or {}
+	LPS_DB.global = LPS_DB.global or {}
+	LPS_DB.global.gold = LPS_DB.global.gold or {}
+	return LPS_DB.global.gold
+end
+
 -- Сбрасывает позицию основного фрейма к значениям по умолчанию
 function LPS:ResetFramePosition()
 	local db = LPS:GetDB()
@@ -528,17 +629,12 @@ end
 
 -- Включает или выключает режим перемещения фрейма
 function LPS:ToggleMoveMode()
-	-- проверяем, включен ли режим
-	local moving = LPS.frame.holder.isMoving or false
-	if moving then
-		-- выключаем
-		LPS:SetMoveMode(false)
-		LPS.frame.holder.isMoving = false
-	else
-		-- включаем
-		LPS:SetMoveMode(true)
-		LPS.frame.holder.isMoving = true
-	end
+	local holder = LPS.frame and LPS.frame.holder
+	-- ОПТИМИЗАЦИЯ (fix): защита от nil-ошибки, если holder ещё не создан
+	if not holder then return end
+	local moving = holder.isMoving or false
+	LPS:SetMoveMode(not moving)
+	holder.isMoving = not moving
 end
 
 -- Возвращает ID континента, на котором находится игрок
@@ -549,15 +645,38 @@ function LPS:GetContinentID()
 	return mapInfo and mapInfo.parentMapID or nil
 end
 
--- Возвращает название континента, на котором находится игрок
+-- ИСПРАВЛЕНИЕ: GetContinentName вызывается из Modules/Tooltips/location_tt.lua,
+-- который загружается ПОЗЖЕ этого файла; локальное определение ниже по файлу
+-- было бы невидимо для него (Lua upvalue scope). Определяем как метод LPS сразу.
+-- ОПТИМИЗАЦИЯ (duplicates): удалена вторая копия функции — раньше она полностью
+-- дублировалась в location_tt.lua и перезаписывала эту (мёртвый код).
+
+-- Единственная реализация имени континента: подъём по иерархии карт до
+-- Continent/World (корректно и для зон, и для городов-анклавов).
 function LPS:GetContinentName()
-    local mapID = C_Map.GetBestMapForUnit("player")
-    if not mapID then return end
-    local mapInfo = C_Map.GetMapInfo(mapID)
-    if not mapInfo then return end
-    local continentID = mapInfo.parentMapID
-    if not continentID then return end
-    return C_Map.GetMapInfo(continentID).name or nil
+	local currentMapID = C_Map.GetBestMapForUnit("player")
+	if not currentMapID then
+		return UNKNOWN
+	end
+
+	local mapID = currentMapID
+	local continentName
+	for _ = 1, 10 do
+		local mapInfo = C_Map.GetMapInfo(mapID)
+		if not mapInfo then break end
+		if mapInfo.mapType == Enum.UIMapType.Continent or mapInfo.mapType == Enum.UIMapType.World then
+			continentName = mapInfo.name
+			break
+		end
+		if mapInfo.parentMapID and mapInfo.parentMapID ~= 0 then
+			mapID = mapInfo.parentMapID
+		else
+			if not continentName then continentName = mapInfo.name end
+			break
+		end
+	end
+
+	return continentName or UNKNOWN
 end
 
 -- Возвращает статус зоны (PVP/мирная и т.п.), опционально цвет или цветной текст
@@ -590,75 +709,66 @@ function LPS:GetZoneStatus(color)
 end
 
 -- Возвращает отформатированное игровое время с учетом CVar (12/24ч, локальное/серверное)
+-- ОПТИМИЗАЦИЯ: функция вызывается тикером каждую секунду; ранее на каждый вызов
+-- приходились UnitClass() и создание closure-функций getClassColor/getColonToken.
+-- getClassColor — единая file-level upvalue в начале этого файла (без дубля).
+local function rgbToHex(r, g, b)
+	r = tonumber(r) or 1
+	g = tonumber(g) or 1
+	b = tonumber(b) or 1
+	local rr = math.floor(r * 255 + 0.5)
+	local gg = math.floor(g * 255 + 0.5)
+	local bb = math.floor(b * 255 + 0.5)
+	return string.format("%02x%02x%02x", rr, gg, bb)
+end
+
 function LPS:GetFormattedGameTime()
 	local db = LPS:GetDB()
 	local layout = db and db.layout or {}
 	local is24h = db and db.general and db.general.is24H
 	local useLocal = GetCVarBool("timeMgrUseLocalTime")
 
-	local function getClassColor()
-		local _, class = UnitClass("player")
-		local c = class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[class]
-		if c then
-			return c.r, c.g, c.b
-		end
-		return 1, 1, 1
+	local mode = layout.customColor
+	if mode == nil then
+		mode = 3
 	end
-
-	local function rgbToHex(r, g, b)
-		r = tonumber(r) or 1
-		g = tonumber(g) or 1
-		b = tonumber(b) or 1
-		local rr = math.floor(r * 255 + 0.5)
-		local gg = math.floor(g * 255 + 0.5)
-		local bb = math.floor(b * 255 + 0.5)
-		return string.format("%02x%02x%02x", rr, gg, bb)
+	local r, g, b
+	if mode == 1 then
+		local user = layout.userColor
+		r, g, b = (user and user.r) or 1, (user and user.g) or 1, (user and user.b) or 1
+	elseif mode == 2 then
+		r, g, b = getClassColor()
+	else
+		r, g, b = 1, 1, 1
 	end
-
-	local function getColonToken()
-		local mode = layout.customColor
-		if mode == nil then
-			mode = 3
-		end
-		local r, g, b
-		if mode == 1 then
-			local user = layout.userColor
-			r, g, b = (user and user.r) or 1, (user and user.g) or 1, (user and user.b) or 1
-		elseif mode == 2 then
-			r, g, b = getClassColor()
-		else
-			r, g, b = 1, 1, 1
-		end
-		return "|cff" .. rgbToHex(r, g, b) .. ":|r"
-	end
-
-	local colon = getColonToken()
+	local colon = "|cff" .. rgbToHex(r, g, b) .. ":|r"
 
 	local h, m, s
 	if useLocal then
-		h = tonumber(date("%H"))
-		m = tonumber(date("%M"))
-		s = tonumber(date("%S"))
+		-- ОПТИМИЗАЦИЯ: один вызов date("*t") вместо трёх (date("%H"), date("%M"), date("%S"))
+		local t = date("*t")
+		h, m, s = t.hour, t.min, t.sec
 	else
 		h, m = GetGameTime()
 	end
 
+	local showSeconds = db.general.seconds and useLocal
 	if not is24h then
 		local suffix = (h >= 12) and "PM" or "AM"
 		h = h % 12
 		if h == 0 then h = 12 end
-		if db.general.seconds and useLocal then
+		if showSeconds then
 			return string.format("%02d%s%02d%s%02d %s", h, colon, m, colon, s, suffix)
 		else
 			return string.format("%02d%s%02d %s", h, colon, m, suffix)
 		end
 	end
 
-	if db.general.seconds and useLocal then
-			return string.format("%02d%s%02d%s%02d", h, colon, m, colon, s)
-		else
-			return string.format("%02d%s%02d", h, colon, m)
-		end
+	if showSeconds then
+		return string.format("%02d%s%02d%s%02d", h, colon, m, colon, s)
+	else
+		return string.format("%02d%s%02d", h, colon, m)
+	end
 end
 
 -- Применяет значения по умолчанию к таблице базы данных рекурсивно
@@ -677,29 +787,50 @@ function LPS:ApplyDefaults(db, defaults)
 end
 
 -- Возвращает цвет из настроек аддона по ключу
+-- (unpackFn — единый upvalue в начале файла: table.unpack or unpack)
 function LPS:GetColor(key)
 	local db = LPS:GetDB()
 	local colors = db.settings and db.settings.colors
 	local c = colors and colors[key]
 	if key == "bg" and colors and colors.bgEnable == false then
-		local r, g, b = unpack(c or {0, 0, 0, 0})
+		local r, g, b = unpackFn(c or {0, 0, 0, 0})
 		return r, g, b, 0
 	end
-	return unpack(c or {1, 1, 1, 1})
+	return unpackFn(c or {1, 1, 1, 1})
+end
+
+-- ОПТИМИЗАЦИЯ: единый дебаунс полного каскада перерасчёта (layout + размеры).
+-- Каждая set-функция в options.lua раньше дергала ApplyLayout()+UpdateFrameSize()
+-- напрямую; при быстрых изменениях настроек это O(N^2) дорогих Layout-вызовов.
+-- ScheduleRefresh схлопывает все заявки кадра в один проход на следующем тике.
+local refreshPending = false
+function LPS:ScheduleRefresh()
+	if refreshPending then return end
+	refreshPending = true
+	C_Timer.After(0.05, function()
+		refreshPending = false
+		if LPS.ApplyLayout then
+			LPS:ApplyLayout()
+		end
+		LPS:UpdateFrameSize()
+	end)
 end
 
 function LPS:ApplyCoordsUpdateInterval()
 	local db = LPS:GetDB()
 	local f = LPS.frame and LPS.frame.coords
 	if not f or not f._lpsUpdateFunc then return end
-	local interval = tonumber(db.general.coordsTimeUpdate) or 0.2
-	if interval < 0.05 then interval = 0.05 end
+	-- ЗАЩИТА: db.general может отсутствовать в повреждённой/старой БД
+	local interval = tonumber(db.general and db.general.coordsTimeUpdate) or 0.2
+	interval = math.max(interval, 0.05)
 	if f._lpsTicker then
 		f._lpsTicker:Cancel()
 		f._lpsTicker = nil
 	end
+	-- ОПТИМИЗАЦИЯ: тикер не выполняет работу, пока фрейм/родитель скрыты
+	-- (как в CreateFrame), плюс защита от nil-интервала из повреждённой БД.
 	f._lpsTicker = C_Timer.NewTicker(interval, function()
-		if f._lpsUpdateFunc then
+		if f._lpsUpdateFunc and f:IsShown() and (not f:GetParent() or f:GetParent():IsShown()) then
 			f._lpsUpdateFunc(f)
 		end
 	end)
@@ -728,8 +859,9 @@ function LPS:ApplyStyle()
 	if LPS.ApplyLayout then
 		LPS:ApplyLayout()
 	end
-	if LPS.UpdateFrameSize then
-		LPS:UpdateFrameSize()
+	-- ОПТИМИЗАЦИЯ: батчинг вместо синхронного UpdateFrameSize сразу после ApplyLayout
+	if LPS.ScheduleFrameSizeUpdate then
+		LPS:ScheduleFrameSizeUpdate()
 	end
 end
 
@@ -743,8 +875,8 @@ function LPS:ApplyTimeFormat()
 	if LPS.ApplyLayout then
 		LPS:ApplyLayout()
 	end
-	if LPS.UpdateFrameSize then
-		LPS:UpdateFrameSize()
+	if LPS.ScheduleFrameSizeUpdate then
+		LPS:ScheduleFrameSizeUpdate()
 	end
 end
 

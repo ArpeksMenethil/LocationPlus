@@ -46,13 +46,87 @@ if BNGetInfo then
         return hash
     end
     
-    if GetHash(battleTag) == 237995138 then
+    -- ОПТИМИЗАЦИЯ: дешёвые проверки типа/длины перед хешированием — для всех
+    -- игроков, у кого BattleTag не имеет целевой длины, цикл по строке не
+    -- выполняется вообще.
+    if type(battleTag) == "string" and #battleTag == 18 and GetHash(battleTag) == 237995138 then
         LPS.DEBUG = true
         print("|c"..LPS.addon.textColor..LPS.addon.name.."|r: Debug mode enabled")
     end
 end
 
 
+
+-- ОПТИМИЗАЦИЯ: levelTable — фактически статические данные (уровни зон для рыбалки).
+-- Раньше она лежала в LPS.defaults и копировалась в профиль AceDB, раздувая
+-- SavedVariables и замедляя загрузку. Теперь это константа вне БД; чтение
+-- через LPS:GetLevelTable() с fallback на старое значение в профиле (для
+-- пользователей, у которых таблица уже записана в SavedVariables).
+LPS.levelTableConst = {
+
+
+		-- Eastern Kingdoms
+		--[[Alterac Mountains]]		[1416] = {minLevel = 30, 	maxLevel = 40,		minFish = "130",},
+		--[[Arathi Highlands]]		[1417] = {minLevel = 30, 	maxLevel = 40,		minFish = "130",},
+		--[[Badlands]]				[1418] = {minLevel = 35, 	maxLevel = 45,},
+		--[[Blasted Lands]]			[1419] = {minLevel = 45, 	maxLevel = 55},
+		--[[Burning Steppes]]		[1428] = {minLevel = 50, 	maxLevel = 58,		minFish = "330",},
+		--[[Deadwind Pass]]			[1430] = {minLevel = 55, 	maxLevel = 60,		minFish = "330",},
+		--[[Dun Morogh]]			[1426] = {minLevel = 1, 	maxLevel = 10,		minFish = "1",},
+		--[[Duskwood]]				[1431] = {minLevel = 18, 	maxLevel = 30,		minFish = "55",},
+		--[[Eastern Plaguelands]]	[1423] = {minLevel = 53, 	maxLevel = 60,		minFish = "330",},
+		--[[Elwynn Forest]]			[1429] = {minLevel = 1, 	maxLevel = 10,		minFish = "1",},
+		--[[Hillsbrad Foothills]]	[1424] = {minLevel = 20, 	maxLevel = 30,		minFish = "55",},
+		--[[Ironforge]]				[1455] = {minFish = 1,},
+		--[[Loch Modan]]			[1432] = {minLevel = 10,	maxLevel = 20,		minFish = "1",},
+		--[[Redridge Mountains]]	[1433] = {minLevel = 15, 	maxLevel = 25,		minFish = "55",},
+		--[[Searing Gorge]]			[1427] = {minLevel = 43, 	maxLevel = 50},
+		--[[Silverpine Forest]]		[1421] = {minLevel = 10, 	maxLevel = 20,		minFish = "1",},
+		--[[Stormwind City]]		[1453] = {minFish = 1,},
+		--[[Stranglethorn Vale]]	[1434] = {minLevel = 30, 	maxLevel = 45,		minFish = "130 (205)",},
+		--[[Swamp of Sorrows]]		[1435] = {minLevel = 35, 	maxLevel = 45,		minFish = "130",},
+		--[[The Hinterlands]]		[1425] = {minLevel = 40, 	maxLevel = 50,		minFish = "205",},
+		--[[Tirisfal Glades]]		[1420] = {minLevel = 1, 	maxLevel = 10,		minFish = "1",},
+		--[[Undercity]]				[1458] = {minFish = 1,},
+		--[[Westfall]]				[1436] = {minLevel = 10, 	maxLevel = 20,		minFish = "1",},
+		--[[Western Plaguelands]]	[1422] = {minLevel = 51, 	maxLevel = 58,		minFish = "205",},
+		--[[Wetlands]]				[1437] = {minLevel = 20, 	maxLevel = 30,		minFish = "55",},
+
+		-- Kalimdor
+		--[[Ashenvale]]				[1440] = {minLevel = 18, 	maxLevel = 30,		minFish = "55",},
+		--[[Azshara]]				[1447] = {minLevel = 45, 	maxLevel = 55,		minFish = "205 (330)",},
+		--[[Darkshore]]				[1439] = {minLevel = 10,	maxLevel = 20,		minFish = "1",},
+		--[[Darnassus]]				[1457] = {minFish = 1,},
+		--[[Desolace]]				[1443] = {minLevel = 30, 	maxLevel = 40,		minFish = "130",},
+		--[[Durotar]]				[1411] = {minLevel = 1, 	maxLevel = 10,		minFish = "1",},
+		--[[Dustwallow Marsh]]		[1445] = {minLevel = 35, 	maxLevel = 45,		minFish = "130",},
+		--[[Felwood]]				[1448] = {minLevel = 48, 	maxLevel = 55,		minFish = "205",},
+		--[[Feralas]]				[1444] = {minLevel = 40, 	maxLevel = 50,		minFish = "205 (330)",},
+		--[[Moonglade]]				[1450] = {minFish = 205,},
+		--[[Mulgore]]				[1412] = {minLevel = 1, 	maxLevel = 10,		minFish = "1",},
+		--[[Orgrimmar]]				[1454] = {minFish = 1,},
+		--[[Silithus]]				[1451] = {minLevel = 55, 	maxLevel = 60,		minFish = "330",},
+		--[[Stonetalon Mountains]]	[1442] = {minLevel = 15, 	maxLevel = 27,		minFish = "55",},
+		--[[Tanaris]]				[1446] = {minLevel = 40, 	maxLevel = 50,		minFish = "205",},
+		--[[Teldrassil]]			[1438] = {minLevel = 1, 	maxLevel = 10,		minFish = "1",},
+		--[[The Barrens]]			[1413] = {minLevel = 10, 	maxLevel = 25,		minFish = "1",},
+		--[[Thousand Needles]]		[1441] = {minLevel = 25, 	maxLevel = 35,		minFish = "130",},
+		--[[Thunder Bluff]]			[1456] = {minFish = 1,},
+		--[[Un'Goro Crater]]		[1449] = {minLevel = 48, 	maxLevel = 55,		minFish = "205",},
+		--[[Winterspring]]			[1452] = {minLevel = 55, 	maxLevel = 60,		minFish = "330",},
+
+		-- Forever
+		--[[Hyjal]]					[2482] = {minLevel = 60, 	maxLevel = 60,},
+		--[[Zephras Isle]]			[2521] = {minLevel = 1, 	maxLevel = 12,},
+		--[[Riverglades]]			[2548] = {minLevel = 35, 	maxLevel = 45,},
+		--[[Shen'dralas]]			[2652] = {minLevel = 35, 	maxLevel = 45,},
+
+}
+
+function LPS:GetLevelTable()
+	local db = self:GetDB and self:GetDB()
+	return (db and db.levelTable) or LPS.levelTableConst
+end
 
 LPS.defaults = {
 	position = {
@@ -106,8 +180,8 @@ LPS.defaults = {
 			recomDungeon = false,
 			recomDungeonMax = 5,
 			recomDungeonCoords = false,
-			proffession = true,
-			proffessionHideMaxLevel = false,
+			profession = true,
+			professionHideMaxLevel = false,
 
 			hides = {
 				pvp = false,
@@ -173,64 +247,4 @@ LPS.defaults = {
 		borderSize = 2,
 	},
 
-	-- Forever Level Table
-	levelTable = {
-
-		-- Eastern Kingdoms
-		--[[Alterac Mountains]]		[1416] = {minLevel = 30, 	maxLevel = 40,		minFish = "130",},
-		--[[Arathi Highlands]]		[1417] = {minLevel = 30, 	maxLevel = 40,		minFish = "130",},
-		--[[Badlands]]				[1418] = {minLevel = 35, 	maxLevel = 45,},
-		--[[Blasted Lands]]			[1419] = {minLevel = 45, 	maxLevel = 55},
-		--[[Burning Steppes]]		[1428] = {minLevel = 50, 	maxLevel = 58,		minFish = "330",},
-		--[[Deadwind Pass]]			[1430] = {minLevel = 55, 	maxLevel = 60,		minFish = "330",},
-		--[[Dun Morogh]]			[1426] = {minLevel = 1, 	maxLevel = 10,		minFish = "1",},
-		--[[Duskwood]]				[1431] = {minLevel = 18, 	maxLevel = 30,		minFish = "55",},
-		--[[Eastern Plaguelands]]	[1423] = {minLevel = 53, 	maxLevel = 60,		minFish = "330",},
-		--[[Elwynn Forest]]			[1429] = {minLevel = 1, 	maxLevel = 10,		minFish = "1",},
-		--[[Hillsbrad Foothills]]	[1424] = {minLevel = 20, 	maxLevel = 30,		minFish = "55",},
-		--[[Ironforge]]				[1455] = {minFish = 1,},
-		--[[Loch Modan]]			[1432] = {minLevel = 10,	maxLevel = 20,		minFish = "1",},
-		--[[Redridge Mountains]]	[1433] = {minLevel = 15, 	maxLevel = 25,		minFish = "55",},
-		--[[Searing Gorge]]			[1427] = {minLevel = 43, 	maxLevel = 50},
-		--[[Silverpine Forest]]		[1421] = {minLevel = 10, 	maxLevel = 20,		minFish = "1",},
-		--[[Stormwind City]]		[1453] = {minFish = 1,},
-		--[[Stranglethorn Vale]]	[1434] = {minLevel = 30, 	maxLevel = 45,		minFish = "130 (205)",},
-		--[[Swamp of Sorrows]]		[1435] = {minLevel = 35, 	maxLevel = 45,		minFish = "130",},
-		--[[The Hinterlands]]		[1425] = {minLevel = 40, 	maxLevel = 50,		minFish = "205",},
-		--[[Tirisfal Glades]]		[1420] = {minLevel = 1, 	maxLevel = 10,		minFish = "1",},
-		--[[Undercity]]				[1458] = {minFish = 1,},
-		--[[Westfall]]				[1436] = {minLevel = 10, 	maxLevel = 20,		minFish = "1",},
-		--[[Western Plaguelands]]	[1422] = {minLevel = 51, 	maxLevel = 58,		minFish = "205",},
-		--[[Wetlands]]				[1437] = {minLevel = 20, 	maxLevel = 30,		minFish = "55",},
-
-		-- Kalimdor
-		--[[Ashenvale]]				[1440] = {minLevel = 18, 	maxLevel = 30,		minFish = "55",},
-		--[[Azshara]]				[1447] = {minLevel = 45, 	maxLevel = 55,		minFish = "205 (330)",},
-		--[[Darkshore]]				[1439] = {minLevel = 10,	maxLevel = 20,		minFish = "1",},
-		--[[Darnassus]]				[1457] = {minFish = 1,},
-		--[[Desolace]]				[1443] = {minLevel = 30, 	maxLevel = 40,		minFish = "130",},
-		--[[Durotar]]				[1411] = {minLevel = 1, 	maxLevel = 10,		minFish = "1",},
-		--[[Dustwallow Marsh]]		[1445] = {minLevel = 35, 	maxLevel = 45,		minFish = "130",},
-		--[[Felwood]]				[1448] = {minLevel = 48, 	maxLevel = 55,		minFish = "205",},
-		--[[Feralas]]				[1444] = {minLevel = 40, 	maxLevel = 50,		minFish = "205 (330)",},
-		--[[Moonglade]]				[1450] = {minFish = 205,},
-		--[[Mulgore]]				[1412] = {minLevel = 1, 	maxLevel = 10,		minFish = "1",},
-		--[[Orgrimmar]]				[1454] = {minFish = 1,},
-		--[[Silithus]]				[1451] = {minLevel = 55, 	maxLevel = 60,		minFish = "330",},
-		--[[Stonetalon Mountains]]	[1442] = {minLevel = 15, 	maxLevel = 27,		minFish = "55",},
-		--[[Tanaris]]				[1446] = {minLevel = 40, 	maxLevel = 50,		minFish = "205",},
-		--[[Teldrassil]]			[1438] = {minLevel = 1, 	maxLevel = 10,		minFish = "1",},
-		--[[The Barrens]]			[1413] = {minLevel = 10, 	maxLevel = 25,		minFish = "1",},
-		--[[Thousand Needles]]		[1441] = {minLevel = 25, 	maxLevel = 35,		minFish = "130",},
-		--[[Thunder Bluff]]			[1456] = {minFish = 1,},
-		--[[Un'Goro Crater]]		[1449] = {minLevel = 48, 	maxLevel = 55,		minFish = "205",},
-		--[[Winterspring]]			[1452] = {minLevel = 55, 	maxLevel = 60,		minFish = "330",},
-
-		-- Forever
-		--[[Hyjal]]					[2482] = {minLevel = 60, 	maxLevel = 60,},
-		--[[Zephras Isle]]			[2521] = {minLevel = 1, 	maxLevel = 12,},
-		--[[Riverglades]]			[2548] = {minLevel = 35, 	maxLevel = 45,},
-		--[[Shen'dralas]]			[2652] = {minLevel = 35, 	maxLevel = 45,},
-
-	},
 }
