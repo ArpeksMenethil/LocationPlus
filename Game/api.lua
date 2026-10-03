@@ -42,10 +42,6 @@ function LPS:_NormalizeLayoutDB(raw)
 		return cache.out
 	end
 
-	if raw.profession == nil and raw.proffession ~= nil then
-		raw.profession = raw.proffession
-	end
-
 	local out = cache and cache.out or {}
 	out.dtPaddingX  = tonumber(raw.dtPaddingX)  or 10
 	out.dtPaddingY  = tonumber(raw.dtPaddingY)  or 6
@@ -54,12 +50,31 @@ function LPS:_NormalizeLayoutDB(raw)
 	out.locPaddingY = tonumber(raw.locPaddingY) or 6
 	out.locMinWidth = tonumber(raw.locMinWidth) or 80
 	out.spacing     = (raw.spacingAuto == false) and (tonumber(raw.spacingManual) or 5) or 5
-	out.dtshow      = raw.dtshow
+	-- ЗАЩИТА (fix «фреймы не показываются»): раньше при отсутствии/повреждении
+	-- db.layout нормализация молча подставляла дефолты, а ApplyLayout скрывал
+	-- все панели (dtshow=nil → скрыт; sideSlots=nil → слоты NONE).
+	-- Теперь пустые поля layout заполняются значениями по умолчанию один раз в БД,
+	-- а dtshow трактуется как «скрыт только при явном false» — ровно как в эталоне.
+	if raw.dtshow == nil and LPS.defaults and LPS.defaults.layout then
+		raw.dtshow = LPS.defaults.layout.dtshow
+	end
+	if raw.sideSlots == nil and LPS.defaults and LPS.defaults.layout then
+		raw.sideSlots = LPS.defaults.layout.sideSlots
+	end
+	out.dtshow      = raw.dtshow ~= false
 	out.frameStrata = raw.frameStrata
 	out.frameLevel  = tonumber(raw.frameLevel)
 	out.customColor = raw.customColor
 	out.userColor   = raw.userColor
 	out.sideSlots   = raw.sideSlots
+	-- ЗАЩИТА ОТ САМОКЛИКИ КЭША: если нормализованный вывод (включая ссылки на
+	-- вложенные таблицы userColor/sideSlots, которые AceDB иногда пересоздаёт)
+	-- полностью идентичен прежнему закешированному объекту, оставляем прежний
+	-- `out` — иначе ApplyLayout каждый проход видел бы новый layoutKey и
+	-- бесконечно перезапускался через C_Timer.After.
+	if cache and cache.out == out then
+		return out
+	end
 	normalizedLayoutCache = { raw = raw, out = out }
 	return out
 end
@@ -146,7 +161,7 @@ function LPS:ApplyLayout()
 		end
 	end
 
-	local showDT = layout.dtshow ~= false
+	local showDT = layout.dtshow ~= false -- layout.dtshow уже нормализован в bool (_NormalizeLayoutDB)
 	if frames.coords then
 		frames.coords:SetShown(showDT)
 	end
@@ -341,10 +356,13 @@ local function applySideFrameVisibility(frameKey)
 	local layout = db.layout or {}
 	local show = true
 
-	if layout.dtshow == false then
+	-- ЗАЩИТА (fix): nil-safe чтение + трактовка dtshow ровно как в эталоне:
+	-- скрыто только при ЯВНОМ false (nil/отсутствующая БД ≠ скрыть).
+	local norm = LPS._NormalizeLayoutDB and LPS:_NormalizeLayoutDB(layout)
+	if norm and norm.dtshow == false then
 		show = false
 	else
-		local slots = layout.sideSlots or {}
+		local slots = (norm and norm.sideSlots) or layout.sideSlots or {}
 		local left = slots.left and slots.left.frame
 		local right = slots.right and slots.right.frame
 		if left ~= frameKey and right ~= frameKey then

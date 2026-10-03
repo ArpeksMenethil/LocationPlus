@@ -124,8 +124,11 @@ LPS.levelTableConst = {
 }
 
 function LPS:GetLevelTable()
-	local db = self:GetDB and self:GetDB()
-	return (db and db.levelTable) or LPS.levelTableConst
+	local db = self.GetDB and self:GetDB()
+	if db and type(db.levelTable) == "table" and next(db.levelTable) then
+		return db.levelTable
+	end
+	return LPS.levelTableConst
 end
 
 LPS.defaults = {

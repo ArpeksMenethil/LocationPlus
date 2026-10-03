@@ -102,6 +102,10 @@ function LPS:onLoaded(name)
 
 	local db = LPS:GetDB()
 	LPS:ApplyDefaults(db or {}, LPS.defaults)
+	-- Миграция ключей тултипов (опечатка proffession -> profession).
+	if LPS.MigrateTooltipKeys then
+		LPS:MigrateTooltipKeys()
+	end
 	LPS:ApplyTimeFormat()
 	LPS:ApplyHolderPosition()
 
