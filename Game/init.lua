@@ -4,17 +4,6 @@ if C_AddOns and C_AddOns.GetAddOnMetadata then
 	GetAddOnMetadata = C_AddOns.GetAddOnMetadata
 end
 
-function IsRetail()
-    local patch = GetBuildInfo()
-    local major, minor = strsplit(".", patch)
-    major = tonumber(major)
-    
-    if major and major >= 12 then
-        return true
-    end
-    return false
-end
-
 _G.ArpeksLPS = _G.ArpeksLPS or {}
 _G.ArpeksLPS.LPS = LPS or {}
 LPS_DB = LPS_DB or {} -- SavedVariables
@@ -27,8 +16,8 @@ do
 	LPS.Classic = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 	LPS.TBC = WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC
 	LPS.Mists = WOW_PROJECT_ID == WOW_PROJECT_MISTS_CLASSIC
-	LPS.Retail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE and IsRetail()
-	LPS.Forever = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE and not IsRetail()
+	LPS.Retail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+	LPS.Forever = WOW_PROJECT_ID == WOW_PROJECT_CAMELOT
 end
 LPS.frame = LPS.frame or {}
 

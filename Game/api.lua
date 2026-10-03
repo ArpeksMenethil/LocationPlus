@@ -212,6 +212,18 @@ function LPS:ApplyLayout()
 	end
 end
 
+function LPS:ConvertRGBtoColorString(color)
+	if not color then return end
+
+	local colorString = "|cff";
+	local r = color.r * 255;
+	local g = color.g * 255;
+	local b = color.b * 255;
+	colorString = colorString..string.format("%2x%2x%2x", r, g, b);
+	
+	return colorString;
+end
+
 function LPS:ApplyDTVisibility()
 	local db = LPS:GetDB()
 	local show = db and db.layout and db.layout.dtshow
@@ -426,8 +438,10 @@ if AceLocale then
 end
 
 -- Выводит сообщение в чат с префиксом аддона и поддержкой локализации
-function LPS:Print(msg, translate)
-	if translate ~= false then
+--- @param msg string Сообщение
+--- @param isTranslate boolean Флаг перевода msg
+function LPS:Print(msg, isTranslate)
+	if isTranslate ~= false then
 		msg = LPS:L(msg)
 	end
 	print("|c"..LPS.addon.textColor..LPS.addon.name.."|r: " .. tostring(msg))

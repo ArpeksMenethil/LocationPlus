@@ -21,8 +21,15 @@ local FISH_ICON = LPS.icons.Fish
 
 
 -- Zone level range
+---@param uiMapID number
+---@return string playerMinLevel
+---@return string playerMaxLevel
+---@return string playerLevelColor
 function LPS:GetLevelRange(uiMapID)
-	local minLvl, maxLvl, zoneText, info, dlevel
+	if not uiMapID then return end
+
+	local playerMinLevel, playerMaxLevel, playerLevelColor
+	local zoneText, info, color
 
 	if uiMapID and C_Map then
 		if C_Map.GetMapInfo then
@@ -33,72 +40,63 @@ function LPS:GetLevelRange(uiMapID)
 		end
 
 		if C_Map.GetMapLevels then
-			local ok, a, b = pcall(C_Map.GetMapLevels, uiMapID)
-			if ok then
-				minLvl, maxLvl = a, b
-			end
+			playerMinLevel, playerMaxLevel = C_Map.GetMapLevels(uiMapID)
 		end
-		
 	end
 
-	if not Tourist then
+	if not Tourist and (playerMinLevel == 0 or playerMaxLevel == 0) then
 		if LPS.Forever then
 			local levelTable = LPS:GetDB().levelTable
-			minLvl = nil
-			maxLvl = nil
 
 			if levelTable and levelTable[uiMapID] then
 				local levelCell = levelTable[uiMapID]
 
 				if levelCell then
 					if levelCell.minLevel then
-						minLvl = levelCell.minLevel
+						playerMinLevel = levelCell.minLevel
 					end
 					if levelCell.maxLevel then
-						maxLvl = levelCell.maxLevel
+						playerMaxLevel = levelCell.maxLevel
 					end				
 				end
 			end
 		end
 
-		if minLvl and maxLvl and minLvl > 0 and maxLvl > 0 then
-			if minLvl ~= maxLvl then
-				dlevel = format("|cff%02x%02x%02x%d-%d|r", 255, 255, 255, minLvl, maxLvl)
+		if playerMinLevel and playerMaxLevel and playerMinLevel > 0 and playerMaxLevel > 0 then
+			local playerLevel = UnitLevel("player")
+
+			if playerLevel < playerMinLevel then
+				color = GetQuestDifficultyColor(playerMinLevel)
+			elseif playerLevel > playerMaxLevel then
+				color = GetQuestDifficultyColor(playerMaxLevel - 2)
 			else
-				dlevel = format("|cff%02x%02x%02x%d|r", 255, 255, 255, maxLvl)
+				color = QuestDifficultyColors["difficult"]
 			end
-			return dlevel
+
 		end
 	end
 
 	if Tourist and zoneText then
-		local low, high = Tourist:GetLevel(zoneText)
-		if low and high and low > 0 and high > 0 then
-			local r, g, b = Tourist:GetLevelColor(zoneText)
-			if low ~= high then
-				dlevel = format("|cff%02x%02x%02x%d-%d|r", r*255, g*255, b*255, low, high)
-			else
-				dlevel = format("|cff%02x%02x%02x%d|r", r*255, g*255, b*255, high)
-			end
-		end
+		playerMinLevel, playerMaxLevel = Tourist:GetLevel(zoneText)
+		color.r, color.g, color.b = Tourist:GetLevelColor(zoneText)
 	end
-
-	return dlevel
+	
+	playerLevelColor = LPS:ConvertRGBtoColorString(color)
+	return playerMinLevel, playerMaxLevel, playerLevelColor
 end
 
 -- Fishing Level
 function LPS:GetFishingLvl()
 	if LPS.Retail then return end
 
-	local mapID = C_Map.GetBestMapForUnit("player")
-	local minFish, maxFish = nil
+	local uiMapID = C_Map.GetBestMapForUnit("player")
+	local minFish, maxFish
 
 	if Tourist then
-		local zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN
+		local zoneText = Tourist:GetMapNameByIDAlt(uiMapID) or UNKNOWN
 		minFish, maxFish = Tourist:GetFishingLevel(zoneText)
 	else
 		local levelTable = LPS:GetDB().levelTable[uiMapID]
-		minFish = nil
 
 		if levelTable and levelTable.minFish then
 			minFish = levelTable.minFish
@@ -330,53 +328,56 @@ function LPS:BuildLocationTooltip()
 		GameTooltip:AddDoubleLine(LPS:L("Status")..": ", LPS:GetZoneStatus(), r, g, b)
 	end
 
-	local willShowExtra = false
+	-- Предварительно получаем данные для проверки необходимости пробела
+	local levelMin, levelMax, levelColor
+	local fishMin, fishMax
+	local battlePetLevel
+
 	if db.tooltips.location.level then
-		local zoneLevel = LPS:GetLevelRange(mapID)
-		if zoneLevel then
-			willShowExtra = true
-		end
+		levelMin, levelMax, levelColor = LPS:GetLevelRange(mapID)
 	end
+
 	if not LPS.Retail and db.tooltips.location.fish then
-		local minFish, maxFish = LPS:GetFishingLvl()
-		if minFish or maxFish then
-			willShowExtra = true
-		end
+		fishMin, fishMax = LPS:GetFishingLvl()
 	end
+
 	if (LPS.Retail or LPS.Mists) and db.tooltips.location.battlePets then
-		local checkbpet = LPS:GetBattlePetLvl(zoneText)
-		if checkbpet then
-			willShowExtra = true
-		end
+		battlePetLevel = LPS:GetBattlePetLvl(zoneText)
 	end
+
+	-- Добавляем пробел, если будет дополнительная информация
+	local willShowExtra = (levelMin or levelMax) or (fishMin or fishMax) or battlePetLevel
 	if willShowExtra then
 		GameTooltip:AddLine(" ")
 	end
 
 	-- Zone level range
-	if db.tooltips.location.level then
-		local zoneLevel = LPS:GetLevelRange(mapID)
+	if db.tooltips.location.level and levelMin then
+		local zoneLevel
+				
+		if levelMin ~= levelMax then
+			zoneLevel = levelColor..levelMin.."-"..levelMax..FONT_COLOR_CODE_CLOSE
+		else
+			zoneLevel = levelColor..levelMax..FONT_COLOR_CODE_CLOSE
+		end
+
 		if zoneLevel then
-				GameTooltip:AddDoubleLine(LEVEL_RANGE..": ", zoneLevel.." "..LEVEL_ICON, r, g, b)
+			GameTooltip:AddDoubleLine(LEVEL_RANGE..": ", zoneLevel.." "..LEVEL_ICON, r, g, b)
 		end
 	end
 
 	-- Fishing
 	if not LPS.Retail and db.tooltips.location.fish then
-			local minFish, maxFish = LPS:GetFishingLvl()
-			if minFish and maxFish then
-				GameTooltip:AddDoubleLine(PROFESSIONS_FISHING..": ", format("%s-%s %s", minFish, maxFish, FISH_ICON), r, g, b)
-			elseif minFish then
-				GameTooltip:AddDoubleLine(PROFESSIONS_FISHING..": ", format("%s %s", minFish, FISH_ICON), r, g, b)
-			end
+		if fishMin and fishMax then
+			GameTooltip:AddDoubleLine(PROFESSIONS_FISHING..": ", format("%s-%s %s", fishMin, fishMax, FISH_ICON), r, g, b)
+		elseif fishMin then
+			GameTooltip:AddDoubleLine(PROFESSIONS_FISHING..": ", format("%s %s", fishMin, FISH_ICON), r, g, b)
+		end
 	end
 
 	-- Pet Levels
-	if (LPS.Retail or LPS.Mists) and db.tooltips.location.battlePets then
-		local checkbpet = LPS:GetBattlePetLvl(zoneText)
-		if checkbpet then
-				GameTooltip:AddDoubleLine(LPS:L("Battle Pet level").. ": ", checkbpet.." "..PET_ICON, r, g, b)
-		end
+	if (LPS.Retail or LPS.Mists) and db.tooltips.location.battlePets and battlePetLevel then
+		GameTooltip:AddDoubleLine(LPS:L("Battle Pet level").. ": ", battlePetLevel.." "..PET_ICON, r, g, b)
 	end
 
 	-- Recommended zones

@@ -37,20 +37,27 @@ function LPS:CreateLocationFrame()
 			local showZone = db2 and db2.show and db2.show.zone
 
 			local baseText
-			if showZone and hasSub then
+			if showZone and hasSub and zone then
 				baseText = string.format("%s: %s", zone, sub)
 			else
 				baseText = hasSub and sub or zone
 			end
 			baseText = baseText or ""
 
-			local extra = ""
+			local playerMinLevel, playerMaxLevel, playerLevelColor, extra
 			local icon = ""
 			local other = db2 and db2.show and db2.show.displayOther
 			local showIcon = db2 and db2.show and db2.show.showicon
 
 			if other == "RLEVEL" then
-				extra = LPS:GetLevelRange(mapID, zone) or ""
+				playerMinLevel, playerMaxLevel, playerLevelColor = LPS:GetLevelRange(mapID)
+				
+				if playerMinLevel ~= playerMaxLevel then
+					extra = playerLevelColor..playerMinLevel.."-"..playerMaxLevel..FONT_COLOR_CODE_CLOSE
+				else
+					extra = playerLevelColor..playerMaxLevel..FONT_COLOR_CODE_CLOSE
+				end
+
 				if showIcon and extra ~= "" then
 					icon = " " .. LPS.icons.Level
 				end
@@ -72,8 +79,8 @@ function LPS:CreateLocationFrame()
 			end
 
 			local text = baseText
-			if extra ~= "" then
-				text = string.format("%s (%s)%s", baseText, extra, icon)
+			if extra and extra ~= "" then
+				text = string.format("%s (%s) %s", baseText, extra, icon)
 			end
 
 			if f.text then
