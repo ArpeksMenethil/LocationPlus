@@ -55,11 +55,20 @@ function LPS:CreateLocationFrame()
 				if playerMinLevel ~= playerMaxLevel then
 					extra = playerLevelColor..playerMinLevel.."-"..playerMaxLevel..FONT_COLOR_CODE_CLOSE
 				else
-					extra = playerLevelColor..playerMaxLevel..FONT_COLOR_CODE_CLOSE
+					if playerMinLevel ~= "" then
+						extra = playerLevelColor..playerMinLevel..FONT_COLOR_CODE_CLOSE
+					else
+						extra = ""
+					end
 				end
 
 				if showIcon and extra ~= "" then
 					icon = " " .. LPS.icons.Level
+				end
+
+				if playerMaxLevel == 0 or playerMinLevel == 0 then
+					extra = ""
+					icon = ""
 				end
 			elseif other == "PFISH" and not LPS.Retail then
 				local minFish, maxFish = LPS:GetFishingLvl()
