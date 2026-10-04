@@ -21,7 +21,7 @@ function LPS:GetLevelRange(uiMapID)
 	if not uiMapID then return end
 
 	local playerMinLevel, playerMaxLevel, playerLevelColor
-	local zoneText, info, color
+	local zoneText, info, color = { r = 1, g = 1, b = 1 }
 
 	if uiMapID and C_Map then
 		if C_Map.GetMapInfo then
@@ -38,7 +38,7 @@ function LPS:GetLevelRange(uiMapID)
 
 	if not Tourist and (playerMinLevel == 0 or playerMaxLevel == 0) then
 		if LPS.Forever then
-			local levelTable = LPS.GetLevelTable and LPS:GetLevelTable() or (LPS:GetDB() and LPS:GetDB().levelTable)
+			local levelTable = LPS:GetLevelTable()
 
 			if levelTable and levelTable[uiMapID] then
 				local levelCell = levelTable[uiMapID]
@@ -55,9 +55,6 @@ function LPS:GetLevelRange(uiMapID)
 		end
 
 		if playerMinLevel and playerMaxLevel and playerMinLevel > 0 and playerMaxLevel > 0 then
-			-- ЗАЩИТА: ниже по потоку `color.r, ... = Tourist:GetLevelColor(...)` падал
-			-- с "attempt to index a nil value", если цвет не был вычислен. Инициимируем заранее.
-			color = color or { r = 1, g = 1, b = 1 }
 			local playerLevel = UnitLevel("player")
 
 			if playerLevel < playerMinLevel then
@@ -67,17 +64,11 @@ function LPS:GetLevelRange(uiMapID)
 			else
 				color = QuestDifficultyColors["difficult"]
 			end
-
 		end
 	end
 
-	-- ЗАЩИТА: без LibTourist (не найден/отключён) этот блок падал
-	-- с "attempt to index a nil value (upvalue 'Tourist')".
 	if Tourist and zoneText then
 		playerMinLevel, playerMaxLevel = Tourist:GetLevel(zoneText)
-		-- ЗАЩИТА: раньше при color == nil (зона без уровней / скиппенный блок)
-		-- эта строка падала с ошибкой "attempt to index a nil value (local 'color')".
-		if not color then color = { r = 1, g = 1, b = 1 } end
 		color.r, color.g, color.b = Tourist:GetLevelColor(zoneText)
 	end
 	

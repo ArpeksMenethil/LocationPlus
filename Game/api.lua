@@ -470,7 +470,7 @@ end
 -- ИСПРАВЛЕНИЕ (bug): формат "%2x" давал битый hex для компонент < 16
 -- ("|cff0f..." вместо "|cff000f...") — теперь "%02x".
 function LPS:ConvertRGBtoColorString(color)
-	if not color then return end
+	if not color then color = { r = 1, g = 1, b = 1 } end
 
 	local colorString = "|cff";
 	local r = color.r * 255;

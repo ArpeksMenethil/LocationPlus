@@ -51,15 +51,12 @@ function LPS:CreateLocationFrame()
 
 			if other == "RLEVEL" then
 				playerMinLevel, playerMaxLevel, playerLevelColor = LPS:GetLevelRange(mapID)
+				extra = ""
 				
-				if playerMinLevel ~= playerMaxLevel then
+				if playerMinLevel and playerMaxLevel and playerMinLevel ~= playerMaxLevel then
 					extra = playerLevelColor..playerMinLevel.."-"..playerMaxLevel..FONT_COLOR_CODE_CLOSE
-				else
-					if playerMinLevel ~= "" then
-						extra = playerLevelColor..playerMinLevel..FONT_COLOR_CODE_CLOSE
-					else
-						extra = ""
-					end
+				elseif playerMinLevel and playerMinLevel ~= "" then
+					extra = playerLevelColor..playerMinLevel..FONT_COLOR_CODE_CLOSE
 				end
 
 				if showIcon and extra ~= "" then
