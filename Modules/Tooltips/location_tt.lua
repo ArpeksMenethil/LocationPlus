@@ -21,7 +21,8 @@ function LPS:GetLevelRange(uiMapID)
 	if not uiMapID then return end
 
 	local playerMinLevel, playerMaxLevel, playerLevelColor
-	local zoneText, info, color = { r = 1, g = 1, b = 1 }
+	local zoneText, info
+	local color = { r = 1, g = 1, b = 1 }
 
 	if uiMapID and C_Map then
 		if C_Map.GetMapInfo then
@@ -49,7 +50,7 @@ function LPS:GetLevelRange(uiMapID)
 					end
 					if levelCell.maxLevel then
 						playerMaxLevel = levelCell.maxLevel
-					end				
+					end
 				end
 			end
 		end
