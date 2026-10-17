@@ -46,9 +46,6 @@ if BNGetInfo then
         return hash
     end
     
-    -- ОПТИМИЗАЦИЯ: дешёвые проверки типа/длины перед хешированием — для всех
-    -- игроков, у кого BattleTag не имеет целевой длины, цикл по строке не
-    -- выполняется вообще.
     if type(battleTag) == "string" and GetHash(battleTag) == 237995138 then
         LPS.DEBUG = true
         print("|c"..LPS.addon.textColor..LPS.addon.name.."|r: Debug mode enabled")
@@ -56,14 +53,7 @@ if BNGetInfo then
 end
 
 
-
--- ОПТИМИЗАЦИЯ: levelTable — фактически статические данные (уровни зон для рыбалки).
--- Раньше она лежала в LPS.defaults и копировалась в профиль AceDB, раздувая
--- SavedVariables и замедляя загрузку. Теперь это константа вне БД; чтение
--- через LPS:GetLevelTable() с fallback на старое значение в профиле (для
--- пользователей, у которых таблица уже записана в SavedVariables).
 LPS.levelTableConst = {
-
 
 		-- Eastern Kingdoms
 		--[[Alterac Mountains]]		[1416] = {minLevel = 30, 	maxLevel = 40,		minFish = "130",},
@@ -191,6 +181,7 @@ LPS.defaults = {
 			enable = true,
 			raids = true,
 			dungeons = true,
+			playedTime = true,
 		},
 		gold = {
 			enable = true,
