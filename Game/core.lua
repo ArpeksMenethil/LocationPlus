@@ -39,8 +39,6 @@ LPS.frame.holder:SetScript("OnEvent", function(self, event, name)
 end)
 
 function LPS:onLoaded(name)
-	-- ОПТИМИЗАЦИЯ (bug): защита от повторного входа — обработчик может быть
-	-- вызван повторно (например, другим аддоном или перерегистрацией).
 	if self._loaded then return end
 	self._loaded = true
 	if LibStub and LibStub:GetLibrary("AceDB-3.0", true) and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary("AceConfigDialog-3.0", true) then
@@ -117,10 +115,6 @@ function LPS:onLoaded(name)
 		SetCVar("timeMgrUseMilitaryTime", 1)
 	end
 
-	-- ОПТИМИЗАЦИЯ: первичная раскладка больше не ждёт фиксированную секунду —
-	-- выполняется сразу на PLAYER_ENTERING_WORLD (или немедленно, если мир уже
-	-- загружен, например при /reload в игре). C_Timer.After(1) оставлен как
-	-- fallback для клиентов без события PEW до этого момента.
 	if IsLoggedIn and IsLoggedIn() then
 		LPS:UpdateFrameSize()
 		LPS:ApplyLayout()

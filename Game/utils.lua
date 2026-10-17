@@ -7,9 +7,6 @@ function LPS:Round(num, decimals)
   return math.floor(num * mult + 0.5) / mult
 end
 
--- ОПТИМИЗАЦИЯ (duplicates): colorByThreshold был продублирован в
--- Modules/Frames/system.lua и Modules/Tooltips/system_tt.lua — теперь общая
--- функция LPS здесь (Game/ грузится раньше Modules/).
 function LPS:ColorByThreshold(v, good, warn, invert)
 	v = tonumber(v) or 0
 	local r, g, b

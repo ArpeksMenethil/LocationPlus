@@ -9,10 +9,6 @@ local function formatThousands(n)
 	return (left or '') .. num .. (right or '')
 end
 
--- ОПТИМИЗАЦИЯ (duplicates): FormatMoneySmart и FormatMoney были двумя почти
--- идентичными функциями — объединены в LPS:FormatMoney(money, keepEmptyUnits),
--- где keepEmptyUnits=true повторяет поведение старого FormatMoney (всегда
--- показывает серебро при золоте и медь всегда). FormatMoneySmart — обёртка.
 function LPS:FormatMoney(money, keepEmptyUnits)
 	money = tonumber(money) or 0
 	local gold = math.floor(money / 10000)
@@ -36,9 +32,6 @@ function LPS:FormatMoneySmart(money)
 	return LPS:FormatMoney(money, false)
 end
 
--- ОПТИМИЗАЦИЯ (duplicates): локальные копии getRealmKey/getGoldRoot удалены —
--- используются единые методы LPS:GetGoldRealmKey / LPS:GetGoldRoot
--- (ранее идентичный код дублировался здесь и в Modules/Tooltips/gold_tt.lua).
 local function getRealmKey() return LPS:GetGoldRealmKey() end
 local function getGoldRoot() return LPS:GetGoldRoot() end
 
@@ -253,7 +246,6 @@ function LPS:CreateGoldFrame()
 		bgColor = {LPS:GetColor("bg")},
 		borderColor = {LPS:GetColor("border")},
 		updateFunc = function(f)
-			-- ОПТИМИЗАЦИЯ: не пересчитываем layout для скрытого фрейма
 			if not f:IsShown() then return end
 			local oldData = f.text and f.text:GetText()
 			LPS:OnPlayerMoney()
@@ -261,10 +253,6 @@ function LPS:CreateGoldFrame()
 			if f.text then
 				f.text:SetText(data.currentText)
 			end
-			-- ОПТИМИЗАЦИЯ: раньше при смене текста вызывался LPS:ApplyLayout(),
-			-- который перезапускал _lpsUpdateFunc ВСЕХ пяти панелей (шторм событий).
-			-- Размер самого gold-фрейма пересчитывает обёртка авторазмера в
-			-- Game/frames.lua; здесь достаточно батч-заявки на пересчёт holder'а.
 			if oldData and oldData ~= data.currentText then
 				if LPS.ScheduleFrameSizeUpdate then
 					LPS:ScheduleFrameSizeUpdate()

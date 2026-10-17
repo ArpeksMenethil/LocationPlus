@@ -29,7 +29,6 @@ function LPS:BuildGoldTooltip(tt)
 		return tostring(m or 0)
 	end
 
-	-- ОПТИМИЗАЦИЯ (duplicates): локальные копии функций заменены общими методами аддона
 	local function getRealmKey() return LPS:GetGoldRealmKey() end
 	local function getGoldRoot() return LPS:GetGoldRoot() end
 
@@ -183,7 +182,6 @@ function LPS:BuildGoldTooltip(tt)
 			tt:AddLine(" ")
 			tt:AddDoubleLine(LPS:L("WoW Token")..":", moneyText(tokenPrice), rB, gB, bB, whiteR, whiteG, whiteB)
 		elseif (not cfg or cfg.token ~= false) and C_WowTokenPublic and C_WowTokenPublic.UpdateMarketPrice then
-			-- FIX: был вызов без проверки наличия API (падает на Classic/TBC, где C_WowTokenPublic нет)
 			C_WowTokenPublic.UpdateMarketPrice()
 		end
 	end
