@@ -4,6 +4,7 @@ if not LPS then return end
 function LPS:CreateTimeFrame()
 	local db = LPS:GetDB()
 	if not db or not LPS.frame.holder then return end
+	local brokerPlayedTime = LibStub:GetLibrary("LibDataBroker-1.1"):GetDataObjectByName("Time Played")
 
 
 	---@type LPSFrameParams
@@ -23,7 +24,7 @@ function LPS:CreateTimeFrame()
 			end
 		end,
 		updateTicker = {interval = 1},
-		registerClicks = {"LeftButtonUp", "RightButtonUp"},
+		registerClicks = {"LeftButtonUp", "RightButtonUp", "MiddleButtonUp"},
 		onClick = function(self, button)
 			if button == "LeftButton" then
 				if ToggleTimeManager then
@@ -32,6 +33,11 @@ function LPS:CreateTimeFrame()
 					TimeManagerClockButton_OnClick(TimeManagerClockButton)
 				end
 			elseif button == "RightButton" then
+				brokerPlayedTime.OnClick(self, button)
+				if TimeManagerFrame:IsVisible() then
+					GameTooltip:Hide()
+				end
+			elseif button == "MiddleButton" then
 				if ToggleCalendar then
 					ToggleCalendar()
 				end

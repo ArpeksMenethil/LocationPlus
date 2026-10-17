@@ -38,6 +38,7 @@ L["in"] = "в"
 
 L["LMB"] = "ЛКМ"
 L["RMB"] = "ПКМ"
+L["MMB"] = "СКМ"
 L["Shift+LMB"] = "Shift+ЛКМ"
 
 L["The frame position is reset"] = "положение сброшено"
@@ -274,3 +275,5 @@ L["Total"] = "Всего"
 L["Text custom color"] = "Свой цвет текста"
 L["Pick a custom color for panel text."] = "Выберите свой цвет для текста панели."
 L["UNKNOWN"] = "Неизвестно"
+
+L["Broker Time settings"] = "Настройки Broker Time"

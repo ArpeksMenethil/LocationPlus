@@ -38,6 +38,7 @@ L["in"] = true
 
 L["LMB"] = true
 L["RMB"] = true
+L["MMB"] = true
 L["Shift+LMB"] = true
 
 L["The frame position is reset"] = true
@@ -273,3 +274,5 @@ L["Currency"] = true
 L["Text custom color"] = true
 L["Pick a custom color for panel text."] = true
 L["UNKNOWN"] = "Unknown"
+
+L["Broker Time settings"] = true

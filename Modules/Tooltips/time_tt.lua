@@ -5,6 +5,28 @@ LPS_DB = LPS_DB or {}
 
 local OVERRIDE_ICON = [[Interface\EncounterJournal\UI-EJ-Dungeonbutton-%s]]
 
+local brokerPlayedTime = LibStub:GetLibrary("LibDataBroker-1.1"):GetDataObjectByName("Time Played")
+local function RemoveGrayParenthesesLine(tooltip)
+    for i = 1, tooltip:NumLines() do
+        local leftText = _G["GameTooltipTextLeft" .. i]
+        if leftText then
+            local text = leftText:GetText()
+            -- Ищем серый текст в скобках: |cffa8a8a8(...)
+            if text and text:match("|cffa8a8a8%(.-%)|r") then
+                leftText:SetText("")
+                leftText:Hide()
+                
+                local rightText = _G["GameTooltipTextRight" .. i]
+                if rightText then
+                    rightText:SetText("")
+                    rightText:Hide()
+                end
+                break
+            end
+        end
+    end
+end
+
 -- Таблица для перевода сложности в букву
 local difficultyLetter = {
 	[1] = "О",
@@ -398,12 +420,20 @@ function LPS:BuildTimeTooltip()
 	local calTime = C_DateAndTime.GetCurrentCalendarTime()
 	GameTooltip:AddDoubleLine(LPS:L("Server time"), string.format("%02d:%02d", calTime.hour, calTime.minute), r, g, b, r, g, b)
 
-	GameTooltip:AddDoubleLine(" ")
+	GameTooltip:AddLine(" ")
+
+    brokerPlayedTime.OnTooltipShow(GameTooltip)
+
+    GameTooltip:AddLine(" ")
+	GameTooltip:AddLine(" ")
 	GameTooltip:AddDoubleLine(LPS:L("LMB"), LPS:L("Toggle time"), rB, gB, bB, rB, gB, bB)
+	GameTooltip:AddDoubleLine(LPS:L("RMB"), LPS:L("Broker Time settings"), rB, gB, bB, rB, gB, bB)
 
 	if ToggleCalendar then
-		GameTooltip:AddDoubleLine(LPS:L("RMB"), LPS:L("Toggle calendar"), rB, gB, bB, rB, gB, bB)
+		GameTooltip:AddDoubleLine(LPS:L("MMB"), LPS:L("Toggle calendar"), rB, gB, bB, rB, gB, bB)
 	end
+
+	RemoveGrayParenthesesLine(GameTooltip)
 
 	if GameTooltipTextLeft1 then
 		local rT, gT, bT = GameTooltipTextLeft1:GetTextColor()
