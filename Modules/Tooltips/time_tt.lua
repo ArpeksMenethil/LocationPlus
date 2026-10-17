@@ -420,20 +420,26 @@ function LPS:BuildTimeTooltip()
 	local calTime = C_DateAndTime.GetCurrentCalendarTime()
 	GameTooltip:AddDoubleLine(LPS:L("Server time"), string.format("%02d:%02d", calTime.hour, calTime.minute), r, g, b, r, g, b)
 
-	GameTooltip:AddLine(" ")
-
-    brokerPlayedTime.OnTooltipShow(GameTooltip)
+	
+	if brokerPlayedTime and db.tooltips.time.playedTime then
+		GameTooltip:AddLine(" ")
+    	brokerPlayedTime.OnTooltipShow(GameTooltip)
+		RemoveGrayParenthesesLine(GameTooltip)
+	end
 
     GameTooltip:AddLine(" ")
 	GameTooltip:AddLine(" ")
 	GameTooltip:AddDoubleLine(LPS:L("LMB"), LPS:L("Toggle time"), rB, gB, bB, rB, gB, bB)
-	GameTooltip:AddDoubleLine(LPS:L("RMB"), LPS:L("Broker Time settings"), rB, gB, bB, rB, gB, bB)
+
+	if brokerPlayedTime and db.tooltips.time.playedTime then
+    	GameTooltip:AddDoubleLine(LPS:L("RMB"), LPS:L("Broker Time settings"), rB, gB, bB, rB, gB, bB)
+	end
+	
 
 	if ToggleCalendar then
 		GameTooltip:AddDoubleLine(LPS:L("MMB"), LPS:L("Toggle calendar"), rB, gB, bB, rB, gB, bB)
 	end
-
-	RemoveGrayParenthesesLine(GameTooltip)
+	
 
 	if GameTooltipTextLeft1 then
 		local rT, gT, bT = GameTooltipTextLeft1:GetTextColor()

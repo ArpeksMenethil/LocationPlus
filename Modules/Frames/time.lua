@@ -32,7 +32,7 @@ function LPS:CreateTimeFrame()
 				elseif TimeManagerClockButton_OnClick and TimeManagerClockButton then
 					TimeManagerClockButton_OnClick(TimeManagerClockButton)
 				end
-			elseif button == "RightButton" then
+			elseif button == "RightButton" and brokerPlayedTime then
 				brokerPlayedTime.OnClick(self, button)
 				if TimeManagerFrame:IsVisible() then
 					GameTooltip:Hide()

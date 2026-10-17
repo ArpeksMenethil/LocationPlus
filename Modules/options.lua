@@ -828,6 +828,15 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().tooltips.time.dungeons end,
 								set = function(_, v) getDb().tooltips.time.dungeons = v end,
 							},
+							playedTime = {
+								order = 4,
+								name = LPS:L("Played Time"),
+								desc = LPS:L("Show played time across all your characters (Required 'Broker: Played Time')"),
+								type = "toggle",
+								disabled = function() return not getDb().tooltips.time.enable or not getDb().tooltips.visibility.enable end,
+								get = function() return getDb().tooltips.time.playedTime end,
+								set = function(_, v) getDb().tooltips.time.playedTime = v end,
+							}
 						},
 					},
 				},

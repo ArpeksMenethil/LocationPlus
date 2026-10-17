@@ -276,3 +276,5 @@ L["Pick a custom color for panel text."] = true
 L["UNKNOWN"] = "Unknown"
 
 L["Broker Time settings"] = true
+L["Played Time"] = true
+L["Show played time across all your characters (Required 'Broker: Played Time')"] = true

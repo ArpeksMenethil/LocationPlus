@@ -277,3 +277,5 @@ L["Pick a custom color for panel text."] = "Выберите свой цвет �
 L["UNKNOWN"] = "Неизвестно"
 
 L["Broker Time settings"] = "Настройки Broker Time"
+L["Played Time"] = "Время игры"
+L["Show played time across all your characters (Required 'Broker: Played Time')"] = "Показать время игры для всех ваших персонажей (Required 'Broker: Played Time')"
