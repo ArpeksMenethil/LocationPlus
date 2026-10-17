@@ -1,7 +1,7 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
-local unpackFn = table.unpack or unpack -- МУЛЬТИКЛАЙЕНТ: на Retail глобальный unpack может отсутствовать
+local unpackFn = table.unpack or unpack
 
 -- Move Mode (перетаскивание)
 function LPS:CreateGuideLines()
@@ -93,8 +93,6 @@ function LPS:CreateFrame(params)
 		f.text = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 		f.text:SetPoint("CENTER")
 		f.text:SetJustifyH("CENTER")
-		-- ОПТИМИЗАЦИЯ: GetFont() возвращает (file, size, flags); раньше flags терялся
-		-- и шрифт сбрасывал очертание. Кортеж шрифта кэшируется по размеру — файл за сессию не меняется.
 		local fontCache = LPS._fontTuples
 		if not fontCache then fontCache = {} LPS._fontTuples = fontCache end
 		local tuple = fontCache[params.fontSize]
@@ -133,7 +131,6 @@ function LPS:CreateFrame(params)
 				f.text:ClearAllPoints()
 				f.text:SetPoint("TOPLEFT", f, "TOPLEFT", px, -py)
 				f.text:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -px, py)
-				-- ОПТИМИЗАЦИЯ: батчинг — несколько фреймов за тик пересчитывают holder один раз
 				LPS:ScheduleFrameSizeUpdate()
 			end
 		end
@@ -147,7 +144,6 @@ function LPS:CreateFrame(params)
 				f._lpsTicker:Cancel()
 				f._lpsTicker = nil
 			end
-			-- ОПТИМИЗАЦИЯ: тикер не выполняет работу, пока фрейм или holder скрыты
 			f._lpsTicker = C_Timer.NewTicker(params.updateTicker.interval, function()
 				if f._lpsUpdateFunc and f:IsShown() and (not f:GetParent() or f:GetParent():IsShown()) then
 					f._lpsUpdateFunc(f)

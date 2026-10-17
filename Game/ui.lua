@@ -28,8 +28,6 @@ local function PositionMinimapButton(btn)
 	btn:SetPoint("CENTER", Minimap, "CENTER", x, y)
 end
 
--- ОПТИМИЗАЦИЯ (duplicates): текст тултипа минимап-кнопки был написан дважды
--- (LDB OnTooltipShow и OnEnter собственной кнопки) — вынесен в общую функцию.
 local function FillMinimapTooltip(tt)
 	local d = LPS:GetDB()
 	local vis = d and d.tooltips and d.tooltips.visibility
@@ -160,7 +158,6 @@ function LPS:CreateMinimapButton()
 	end)
 
 	btn:SetScript("OnEnter", function(self)
-		-- ОПТИМИЗАЦИЯ: тело тултипа совпадает с LDB OnTooltipShow — общий FillMinimapTooltip
 		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
 		FillMinimapTooltip(GameTooltip)
 		GameTooltip:Show()
@@ -278,9 +275,6 @@ function LPS:SetMoveMode(enabled)
 		end)
 
 		f:SetScript("OnUpdate", function(self)
-			-- ОПТИМИЗАЦИЯ: раньше каждый кадр перетаскивания выполнялось до 18 вызовов
-			-- SetBackdropColor (перекраска ВСЕХ направляющих линий). Теперь линия
-			-- перекрашивается только при смене активной линии снапа (кэш _lastActiveV/_lastActiveH).
 			local grid = f.grid
 			if not grid then return end
 			local left = self:GetLeft()

@@ -10,5 +10,7 @@
 	<Include file='.\Frames\gold.lua'/>
 	<Include file='.\Frames\system.lua'/>
 
-	<Include file='.\options.lua'/>
+	<Include file='.\datatexts.lua'/>
+
+        <Include file='.\options.lua'/>
 </Ui>

@@ -1,11 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
--- ИСПРАВЛЕНИЕ (bug): проверка nil стояла ПОСЛЕ блока ColorByThreshold,
--- который уже обращался к LPS — при незагруженном ядре был краш.
 if not LPS then return end
 
--- ОПТИМИЗАЦИЯ (duplicates): colorByThreshold был продублирован в
--- Modules/Frames/system.lua и этом файле — теперь общая функция LPS
--- (определена в Game/utils.lua, грузится раньше Modules).
 
 local function formatMem(kb)
 	kb = tonumber(kb) or 0
@@ -66,9 +61,6 @@ function LPS:BuildSystemTooltip(tt)
 		tt:AddDoubleLine(LPS:L("Bandwidth")..":", string.format("%.2f", bandwidth or 0), 1, 1, 1, 0.41, 0.8, 0.94)
 	end
 
-	-- ОПТИМИЗАЦИЯ: раньше при КАЖДОМ наведении сканировалась память всех аддонов
-	-- (UpdateAddOnMemoryUsage + цикл по 100+ аддонам + table.sort) — заметный фриз
-	-- на OnEnter. Результат кэшируется на 2 секунды (LPS._addonMemCache).
 	local now = GetTime()
 	local cache = LPS._addonMemCache
 	if not cache or (now - (cache.time or 0)) > 2 then

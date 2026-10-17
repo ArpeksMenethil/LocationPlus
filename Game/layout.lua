@@ -12,8 +12,6 @@ function LPS:ApplyHolderPosition()
 end
 
 -- Пересчитывает размер главного фрейма по вложенным элементам
--- ОПТИМИЗАЦИЯ: SetSize вызывается только при реальном изменении размеров,
--- чтобы не провоцировать лишние layout-пересчёты движка каждый тик.
 local lastW, lastH
 function LPS:UpdateFrameSize()
 	if not (LPS.frame and LPS.frame.holder) then return end
@@ -33,11 +31,6 @@ function LPS:UpdateFrameSize()
 	end
 end
 
--- ОПТИМИЗАЦИЯ: батчинг перерасчёта размера holder'а.
--- Все тикеры/апдейты за текущий кадр складывают заявку, а реальный
--- пересчёт выполняется ровно один раз на следующем тике (0.05с).
--- Это разрывает цепочку "обновился текст -> пересчитали все размеры -> ..."
--- и убирает O(N^2) лишних Layout-вызовов при нескольких видимых панелях.
 local sizeUpdatePending = false
 function LPS:ScheduleFrameSizeUpdate()
 	if sizeUpdatePending then return end

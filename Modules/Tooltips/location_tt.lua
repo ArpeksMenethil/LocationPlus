@@ -2,8 +2,6 @@ local MyAddon = _G.ArpeksLPS
 local LPS = MyAddon.LPS
 LPS_DB = LPS_DB or {}
 
--- ОПТИМИЗАЦИЯ (duplicates): блок выбора LibTourist удалён — единый загрузчик
--- живёт в Game/api.lua, результат доступен как LPS.Tourist.
 local Tourist = LPS.Tourist
 
 -- Icons on Location Panel
@@ -88,7 +86,6 @@ function LPS:GetFishingLvl()
 		local zoneText = Tourist:GetMapNameByIDAlt(uiMapID) or UNKNOWN
 		minFish, maxFish = Tourist:GetFishingLevel(zoneText)
 	else
-		-- ЗАЩИТА: uiMapID может быть nil (подземелья/без карты), а levelTable — отсутствовать
 		local db = LPS:GetDB()
 		local lvls = LPS.GetLevelTable and LPS:GetLevelTable() or (db and db.levelTable)
 	local levelTable = lvls and uiMapID and lvls[uiMapID]
@@ -195,8 +192,6 @@ local function GetRecomZones(zone)
 	local low, high = Tourist:GetLevel(zone)
 	local r, g, b = Tourist:GetLevelColor(zone)
 	local zContinent = Tourist:GetContinent(zone)
-	-- ОПТИМИЗАЦИЯ: раньше PvPorRaidFilter вызывался 2 раза на одну строку
-	-- (каждый вызов читал БД + делал всю ветку Tourist-проверок). Кэш в локальную.
 	local pvpRaidTag = PvPorRaidFilter(zone)
 	if pvpRaidTag == nil then return end
 	local continentName = LPS:GetContinentName()
@@ -221,7 +216,6 @@ local function GetZoneDungeons(dungeon)
 	local groupSizeStyle = (groupSize > 0 and format("|cFFFFFF00|r (%d)", groupSize) or "")
 	local name = dungeon
 
-	-- ОПТИМИЗАЦИЯ: один вызов фильтра вместо двух
 	local pvpRaidTag = PvPorRaidFilter(dungeon)
 	if pvpRaidTag == nil then return end
 
@@ -248,7 +242,6 @@ local function GetRecomDungeons(dungeon)
 	local instZone = Tourist:GetInstanceZone(dungeon);
 	local name = dungeon
 
-	-- ОПТИМИЗАЦИЯ: один вызов фильтра вместо двух
 	local pvpRaidTag = PvPorRaidFilter(dungeon)
 	if pvpRaidTag == nil then return end
 
@@ -267,15 +260,10 @@ local function GetRecomDungeons(dungeon)
 	return true
 end
 
--- ОПТИМИЗАЦИЯ (duplicates): второе определение GetContinentName удалено —
--- оно перезаписывало реализацию из Game/api.lua (мёртвый код).
--- Единая реализация: LPS:GetContinentName() в Game/api.lua.
 
 function LPS:BuildLocationTooltip()
 	local db = LPS:GetDB()
 	local mapID = C_Map.GetBestMapForUnit("player")
-	-- ЗАЩИТА: в подземельях/террасах без карты GetBestMapForUnit вернёт nil,
-	-- а раньше `C_Map.GetMapInfo(mapID).name` падал с "аttempt to index a nil value".
 	local mapInfo = mapID and C_Map.GetMapInfo(mapID)
 	local zoneText = (mapInfo and mapInfo.name) or UNKNOWN
 
@@ -352,7 +340,6 @@ function LPS:BuildLocationTooltip()
 	end
 
 	-- Recommended zones
-	-- ЗАЩИТА: секции ниже обращаются к Tourist без проверки — без либы был краш
 	if db.tooltips.location.recomZone and Tourist then
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(LPS:L("Recommended Zones")..": ", rY, gY, bY)

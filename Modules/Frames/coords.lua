@@ -16,10 +16,6 @@ function LPS:CreateCoordsFrame()
 		bgColor = {LPS:GetColor("bg")},
 		borderColor = {LPS:GetColor("border")},
 		updateFunc = function(f)
-			-- ОПТИМИЗАЦИЯ: ранний выход, если фрейм скрыт. Видимость теперь целиком
-			-- управляется ApplyLayout()/ApplyCoordsVisibility(); раньше здесь была
-			-- третья копия логики видимости (dtshow == false -> f:Hide() + пересчёт
-			-- размера), вызывавшая рекурсивные UpdateFrameSize из каждого тика.
 			if not f:IsShown() then return end
 
 			local db2 = LPS:GetDB()
@@ -36,9 +32,6 @@ function LPS:CreateCoordsFrame()
 					else
 						newText = string.format("%.2f | %.2f", xf, yf)
 					end
-					-- ОПТИМИЗАЦИЯ: SetText переинициализирует FontString и запускает
-					-- перерасчёт авторазмера фрейма; пишем только при реальном изменении
-					-- текста (на стоящем игроке тикер молчит вообще).
 					if f._lpsLastText ~= newText then
 						f._lpsLastText = newText
 						f.text:SetText(newText)
@@ -49,13 +42,10 @@ function LPS:CreateCoordsFrame()
 				end
 			end
 		end,
-		-- ОПТИМИЗАЦИЯ: нижняя граница интервала (0.05с) как в ApplyCoordsUpdateInterval,
-		-- чтобы опция из слайдера не могла создать тикер на каждый кадр.
 		updateTicker = {interval = math.max(tonumber(db.general and db.general.coordsTimeUpdate) or 0.2, 0.05)},
 		onClick = function(self, button)
 			if button == "LeftButton" then
 				ToggleWorldMap()
-				-- ЗАЩИТА: nil-guard от краша на кастомных UI-модификациях
 				if WorldMapFrame then
 					WorldMapFrame:ClearAllPoints()
 					WorldMapFrame:SetPoint("CENTER", UIParent, "CENTER")
