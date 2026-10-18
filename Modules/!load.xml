@@ -4,13 +4,45 @@
 	<Include file='.\Tooltips\gold_tt.lua'/>
 	<Include file='.\Tooltips\system_tt.lua'/>
 
-	<Include file='.\Frames\location.lua'/>
+	
+<Include file='.\Frames\location.lua'/>
 	<Include file='.\Frames\coords.lua'/>
 	<Include file='.\Frames\time.lua'/>
 	<Include file='.\Frames\gold.lua'/>
 	<Include file='.\Frames\system.lua'/>
 
 	<Include file='.\datatexts.lua'/>
+
+	<!-- Панели: каждая в своём файле; грузятся после реестра и хелперов (datatexts.lua) -->
+	<Include file='.\Frames\agility.lua'/>
+	<Include file='.\Frames\armor.lua'/>
+	<Include file='.\Frames\attackPower.lua'/>
+	<Include file='.\Frames\bags.lua'/>
+	<Include file='.\Frames\combatIndicator.lua'/>
+	<Include file='.\Frames\combatTime.lua'/>
+	<Include file='.\Frames\crit.lua'/>
+	<Include file='.\Frames\currencies.lua'/>
+	<Include file='.\Frames\difficulty.lua'/>
+	<Include file='.\Frames\dps.lua'/>
+	<Include file='.\Frames\durability.lua'/>
+	<Include file='.\Frames\experience.lua'/>
+	<Include file='.\Frames\friends.lua'/>
+	<Include file='.\Frames\guild.lua'/>
+	<Include file='.\Frames\haste.lua'/>
+	<Include file='.\Frames\healPower.lua'/>
+	<Include file='.\Frames\hps.lua'/>
+	<Include file='.\Frames\intellect.lua'/>
+	<Include file='.\Frames\itemLevel.lua'/>
+	<Include file='.\Frames\mail.lua'/>
+	<Include file='.\Frames\mastery.lua'/>
+	<Include file='.\Frames\microBar.lua'/>
+	<Include file='.\Frames\quests.lua'/>
+	<Include file='.\Frames\reputation.lua'/>
+	<Include file='.\Frames\spellPower.lua'/>
+	<Include file='.\Frames\spirit.lua'/>
+	<Include file='.\Frames\stamina.lua'/>
+	<Include file='.\Frames\strength.lua'/>
+	<Include file='.\Frames\volume.lua'/>
 
         <Include file='.\options.lua'/>
 </Ui>

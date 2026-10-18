@@ -129,6 +129,22 @@ function LPS:MigrateTooltipKeys()
 	end
 end
 
+-- Миграция: панель timePlayed удалена (встроено в time_tt) — чистим БД и слоты.
+function LPS:MigrateRemoveTimePlayed()
+        local db = self:GetDB()
+        if not db then return end
+        if db.panels and db.panels.timePlayed ~= nil then
+                db.panels.timePlayed = nil
+        end
+        if db.layout and type(db.layout.sideSlots) == "table" then
+                for _, s in pairs(db.layout.sideSlots) do
+                        if type(s) == "table" and s.frame == "timePlayed" then
+                                s.frame = "NONE"
+                        end
+                end
+        end
+end
+
 function LPS:InvalidateLayoutCache()
 	normalizedLayoutCache = nil
 	local holder = LPS.frame and LPS.frame.holder

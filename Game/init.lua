@@ -245,7 +245,6 @@ LPS.defaults = {
 		microBar = { enable = true },
 		quests = { enable = true, maxLimit = 15 },
 		reputation = { enable = true },
-		timePlayed = { enable = true },
 		volume = { enable = true },
 		armor = { enable = true },
 		attackPower = { enable = true },

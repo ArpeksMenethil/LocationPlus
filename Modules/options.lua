@@ -75,6 +75,256 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 		return LPS:GetDB()
 	end
 
+	-- ==== Хелперы панелей и слотов (Panel Options / Side Panels) ====
+	-- Каскад слотов: нет панели в слоте N — слоты N+1..3 неактивны.
+	local function slotIsFilled(side, n)
+		local ss = getDb().layout and getDb().layout.sideSlots
+		local s = ss and ss[side .. n]
+		if not s then return false end
+		local v = s.frame
+		return v ~= nil and v ~= "" and v ~= "NONE" and v ~= "None" and v ~= "none"
+	end
+
+	local function makeSlotDisabledFunc(side, n)
+		return function()
+			if n == 2 then
+				return not slotIsFilled(side, 1)
+			elseif n == 3 then
+				return not slotIsFilled(side, 1) or not slotIsFilled(side, 2)
+			end
+			return false
+		end
+	end
+
+	-- При выборе «none» в слоте N очищаем нижележащие слоты этой же стороны.
+	local function cascadeClearSlots(ss, side, n)
+		if not ss then return end
+		for i = n + 1, 3 do
+			local other = ss[side .. i]
+			if type(other) == "table" then other.frame = "NONE" end
+		end
+	end
+
+	-- Панель выключена (enable=false): убираем её из всех слотов и каскадно чистим нижние.
+	local function clearPanelFromSlots(db, key)
+		local ss = db.layout and db.layout.sideSlots
+		if type(ss) ~= "table" then return end
+		for _, sside in ipairs({ "left", "right" }) do
+			for n = 1, 3 do
+				local s = ss[sside .. n]
+				if type(s) == "table" and s.frame == key then
+					s.frame = "NONE"
+					cascadeClearSlots(ss, sside, n)
+				end
+			end
+		end
+	end
+
+	-- Дополнительные настройки конкретных панелей для автогенерации Panel Options
+	local PANEL_EXTRA = {
+		bags = {
+			display = {
+				order = 3,
+				name = LPS:L("Display"),
+				values = {
+					USED_TOTAL = LPS:L("Used / Total"),
+					FREE = LPS:L("Free slots"),
+					USED = LPS:L("Used slots"),
+				},
+			},
+		},
+		experience = {
+			display = {
+				order = 3,
+				name = LPS:L("Display"),
+				values = {
+					PERCENT = LPS:L("Percent"),
+					CURMAX = LPS:L("Current / Max"),
+					CUR = LPS:L("Current"),
+					REM = LPS:L("Remaining"),
+				},
+			},
+		},
+		friends = { maxLimit = true },
+		guild = { maxLimit = true },
+		quests = { maxLimit = true },
+	}
+
+	-- Фабрика группы настроек одной панели (enable + tooltip + display/maxLimit/label)
+	local function makePanelOptionGroup(key, def, order)
+		local args = {}
+		args.enable = {
+			order = 1,
+			type = "toggle",
+			name = LPS:L("Enable"),
+			desc = string.format(LPS:L("Show the %s panel."), def.name),
+			width = "full",
+			get = function(info)
+				local p = getDb().panels and getDb().panels[info[#info]]
+				return not (p and p.enable == false)
+			end,
+			set = function(info, v)
+				local k = info[#info]
+				local db = getDb()
+				db.panels = db.panels or {}
+				local p = db.panels[k]
+				if type(p) ~= "table" then
+					p = {}
+					db.panels[k] = p
+				end
+				p.enable = v and true or false
+				if not v then
+					clearPanelFromSlots(db, k)
+				end
+				if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+				if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+			end,
+		}
+		if def.tooltip then
+			args.tooltip = {
+				order = 2,
+				type = "toggle",
+				name = LPS:L("Tooltip"),
+				desc = LPS:L("Show a tooltip when hovering over this panel."),
+				width = "full",
+				get = function(info)
+					local p = getDb().panels and getDb().panels[info[#info]]
+					return not (p and p.tooltip == false)
+				end,
+				set = function(info, v)
+					local k = info[#info]
+					local db = getDb()
+					db.panels = db.panels or {}
+					local p = db.panels[k]
+					if type(p) ~= "table" then
+						p = {}
+						db.panels[k] = p
+					end
+					p.tooltip = v and true or false
+				end,
+			}
+		end
+		local extra = PANEL_EXTRA[key]
+		if extra then
+			if extra.display then
+				args.display = {
+					order = extra.display.order,
+					type = "select",
+					name = extra.display.name,
+					values = extra.display.values,
+					get = function(info)
+						local p = getDb().panels and getDb().panels[info[#info]]
+						return (p and p.display) or next(extra.display.values)
+					end,
+					set = function(info, v)
+						local k = info[#info]
+						local db = getDb()
+						db.panels = db.panels or {}
+						local p = db.panels[k]
+						if type(p) ~= "table" then
+							p = {}
+							db.panels[k] = p
+						end
+						p.display = v
+						if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+					end,
+				}
+			end
+			if extra.maxLimit then
+				args.maxLimit = {
+					order = 4,
+					type = "range",
+					name = LPS:L("Max entries in tooltip"),
+					min = 1,
+					max = 30,
+					step = 1,
+					get = function(info)
+						local p = getDb().panels and getDb().panels[info[#info]]
+						return (p and tonumber(p.maxLimit)) or 15
+					end,
+					set = function(info, v)
+						local k = info[#info]
+						local db = getDb()
+						db.panels = db.panels or {}
+						local p = db.panels[k]
+						if type(p) ~= "table" then
+							p = {}
+							db.panels[k] = p
+						end
+						p.maxLimit = math.floor(v)
+					end,
+				}
+			end
+		end
+		if key == "bags" then
+			args.noLabel = {
+				order = 5,
+				type = "toggle",
+				name = LPS:L("Hide label"),
+				width = "half",
+				get = function()
+					local p = getDb().panels and getDb().panels.bags
+					return p and p.noLabel or false
+				end,
+				set = function(_, v)
+					local db = getDb()
+					db.panels = db.panels or {}
+					local p = db.panels.bags
+					if type(p) ~= "table" then p = {}; db.panels.bags = p end
+					p.noLabel = v and true or false
+					if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+				end,
+			}
+			args.label = {
+				order = 6,
+				type = "input",
+				name = LPS:L("Custom label"),
+				width = "half",
+				disabled = function()
+					local p = getDb().panels and getDb().panels.bags
+					return p and p.noLabel or false
+				end,
+				get = function()
+					local p = getDb().panels and getDb().panels.bags
+					return (p and p.label) or ""
+				end,
+				set = function(_, v)
+					local db = getDb()
+					db.panels = db.panels or {}
+					local p = db.panels.bags
+					if type(p) ~= "table" then p = {}; db.panels.bags = p end
+					p.label = v or ""
+					if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+				end,
+			}
+		end
+		return {
+			order = order,
+			type = "group",
+			inline = true,
+			name = def.name,
+			args = args,
+		}
+	end
+
+	-- Автогенерация группы Panel Options из реестра зарегистрированных панелей
+	local function buildPanelOptionsArgs()
+		local out = {}
+		local i = 1
+		local added = {}
+		local list = (LPS.GetSlotKeyList and LPS:GetSlotKeyList()) or {}
+		for _, k in ipairs(list) do
+			local def = LPS.datatexts and LPS.datatexts[k]
+			if def and not added[k] then
+				added[k] = true
+				out[k] = makePanelOptionGroup(k, def, i)
+				i = i + 1
+			end
+		end
+		return out
+	end
+
+
 	local function getDisplayOtherValues()
 		local t = {
 			["NONE"] = LPS:L("None"),
@@ -1032,6 +1282,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										end
 									end
 									cur.frame = (v == "none") and "NONE" or v
+									if v == "none" then cascadeClearSlots(ss, "left", 1) end
 									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
 									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
 								end,
@@ -1119,6 +1370,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										end
 									end
 									cur.frame = (v == "none") and "NONE" or v
+									if v == "none" then cascadeClearSlots(ss, "right", 1) end
 									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
 									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
 								end,
@@ -1164,6 +1416,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								end,
 							},
 							leftSlot2 = {
+							disabled = makeSlotDisabledFunc("left", 2),
 								order = 2.1,
 								name = LPS:L("Left Slot 2"),
 								type = "select",
@@ -1206,11 +1459,13 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										end
 									end
 									cur.frame = (v == "none") and "NONE" or v
+									if v == "none" then cascadeClearSlots(ss, "left", 2) end
 									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
 									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
 								end,
 							},
 							leftOffsetX2 = {
+							disabled = makeSlotDisabledFunc("left", 2),
 								order = 2.11,
 								name = LPS:L("Left Offset X 2"),
 								type = "range",
@@ -1231,6 +1486,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								end,
 							},
 							leftOffsetY2 = {
+							disabled = makeSlotDisabledFunc("left", 2),
 								order = 2.12,
 								name = LPS:L("Left Offset Y 2"),
 								type = "range",
@@ -1251,6 +1507,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								end,
 							},
 							rightSlot2 = {
+							disabled = makeSlotDisabledFunc("right", 2),
 								order = 2.2,
 								name = LPS:L("Right Slot 2"),
 								type = "select",
@@ -1293,11 +1550,13 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										end
 									end
 									cur.frame = (v == "none") and "NONE" or v
+									if v == "none" then cascadeClearSlots(ss, "right", 2) end
 									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
 									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
 								end,
 							},
 							rightOffsetX2 = {
+							disabled = makeSlotDisabledFunc("right", 2),
 								order = 2.21,
 								name = LPS:L("Right Offset X 2"),
 								type = "range",
@@ -1318,6 +1577,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								end,
 							},
 							rightOffsetY2 = {
+							disabled = makeSlotDisabledFunc("right", 2),
 								order = 2.22,
 								name = LPS:L("Right Offset Y 2"),
 								type = "range",
@@ -1338,6 +1598,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								end,
 							},
 							leftSlot3 = {
+							disabled = makeSlotDisabledFunc("left", 3),
 								order = 3.1,
 								name = LPS:L("Left Slot 3"),
 								type = "select",
@@ -1385,6 +1646,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								end,
 							},
 							leftOffsetX3 = {
+							disabled = makeSlotDisabledFunc("left", 3),
 								order = 3.11,
 								name = LPS:L("Left Offset X 3"),
 								type = "range",
@@ -1405,6 +1667,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								end,
 							},
 							leftOffsetY3 = {
+							disabled = makeSlotDisabledFunc("left", 3),
 								order = 3.12,
 								name = LPS:L("Left Offset Y 3"),
 								type = "range",
@@ -1425,6 +1688,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								end,
 							},
 							rightSlot3 = {
+							disabled = makeSlotDisabledFunc("right", 3),
 								order = 3.2,
 								name = LPS:L("Right Slot 3"),
 								type = "select",
@@ -1472,6 +1736,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								end,
 							},
 							rightOffsetX3 = {
+							disabled = makeSlotDisabledFunc("right", 3),
 								order = 3.21,
 								name = LPS:L("Right Offset X 3"),
 								type = "range",
@@ -1492,6 +1757,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								end,
 							},
 							rightOffsetY3 = {
+							disabled = makeSlotDisabledFunc("right", 3),
 								order = 3.22,
 								name = LPS:L("Right Offset Y 3"),
 								type = "range",
@@ -1519,1254 +1785,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 						name = LPS:L("Panel Options"),
 						desc = LPS:L("Individual settings for info panels."),
 						guiInline = false,
-						args = {
-							combatIndicator = {
-								order = 1,
-								type = "group",
-								inline = true,
-								name = LPS:L("Combat Indicator"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							currencies = {
-								order = 2,
-								type = "group",
-								inline = true,
-								name = LPS:L("Currencies"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							dps = {
-								order = 3,
-								type = "group",
-								inline = true,
-								name = LPS:L("DPS"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							hps = {
-								order = 4,
-								type = "group",
-								inline = true,
-								name = LPS:L("HPS"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							difficulty = {
-								order = 5,
-								type = "group",
-								inline = true,
-								name = LPS:L("Difficulty"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							durability = {
-								order = 6,
-								type = "group",
-								inline = true,
-								name = LPS:L("Durability"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							friends = {
-								order = 7,
-								type = "group",
-								inline = true,
-								name = LPS:L("Friends"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							guild = {
-								order = 8,
-								type = "group",
-								inline = true,
-								name = LPS:L("Guild"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							itemLevel = {
-								order = 9,
-								type = "group",
-								inline = true,
-								name = LPS:L("Item Level"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							mail = {
-								order = 10,
-								type = "group",
-								inline = true,
-								name = LPS:L("Mail"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							microBar = {
-								order = 11,
-								type = "group",
-								inline = true,
-								name = LPS:L("Micro Bar"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							reputation = {
-								order = 12,
-								type = "group",
-								inline = true,
-								name = LPS:L("Reputation"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							timePlayed = {
-								order = 13,
-								type = "group",
-								inline = true,
-								name = LPS:L("Time Played"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							volume = {
-								order = 14,
-								type = "group",
-								inline = true,
-								name = LPS:L("Volume"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							armor = {
-								order = 15,
-								type = "group",
-								inline = true,
-								name = LPS:L("Armor"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							attackPower = {
-								order = 16,
-								type = "group",
-								inline = true,
-								name = LPS:L("Attack Power"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							spellPower = {
-								order = 17,
-								type = "group",
-								inline = true,
-								name = LPS:L("Spell Power"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							healPower = {
-								order = 18,
-								type = "group",
-								inline = true,
-								name = LPS:L("Heal Power"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							crit = {
-								order = 19,
-								type = "group",
-								inline = true,
-								name = LPS:L("Crit Chance"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							haste = {
-								order = 20,
-								type = "group",
-								inline = true,
-								name = LPS:L("Haste"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							mastery = {
-								order = 21,
-								type = "group",
-								inline = true,
-								name = LPS:L("Mastery"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							strength = {
-								order = 22,
-								type = "group",
-								inline = true,
-								name = LPS:L("Strength"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							agility = {
-								order = 23,
-								type = "group",
-								inline = true,
-								name = LPS:L("Agility"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							stamina = {
-								order = 24,
-								type = "group",
-								inline = true,
-								name = LPS:L("Stamina"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							intellect = {
-								order = 25,
-								type = "group",
-								inline = true,
-								name = LPS:L("Intellect"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							spirit = {
-								order = 26,
-								type = "group",
-								inline = true,
-								name = LPS:L("Spirit"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-							},
-							},
-							bags = {
-								order = 27,
-								type = "group",
-								inline = true,
-								name = LPS:L("Bags"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-								display = {
-								order = 2,
-								type = "select",
-								name = LPS:L("Display mode"),
-								values = {
-									USED_TOTAL = LPS:L("Used / Total"),
-									FREE = LPS:L("Free slots"),
-									USED = LPS:L("Used slots"),
-								},
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return (p and p.display) or "USED_TOTAL"
-								end,
-								set = function(info, v)
-									local p = getDb().panels[info[#info]]
-									if p then p.display = v end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							},
-							},
-							experience = {
-								order = 28,
-								type = "group",
-								inline = true,
-								name = LPS:L("Experience"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-								display = {
-								order = 2,
-								type = "select",
-								name = LPS:L("Display mode"),
-								values = {
-									PERCENT = LPS:L("Percent"),
-									RESTED = LPS:L("Rested percent"),
-									VALUE = LPS:L("XP value"),
-								},
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return (p and p.display) or "PERCENT"
-								end,
-								set = function(info, v)
-									local p = getDb().panels[info[#info]]
-									if p then p.display = v end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							},
-							},
-							quests = {
-								order = 29,
-								type = "group",
-								inline = true,
-								name = LPS:L("Quests"),
-								args = {
-								enable = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Enable"),
-								width = "full",
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return not (p and p.enable == false)
-								end,
-								set = function(info, v)
-									local key = info[#info]
-									local db = getDb()
-									db.panels = db.panels or {}
-									local p = db.panels[key]
-									if type(p) ~= "table" then
-										p = {}
-										db.panels[key] = p
-									end
-									p.enable = v and true or false
-									if not v then
-										local ss = db.layout and db.layout.sideSlots
-										if type(ss) == "table" then
-											for _, s in pairs(ss) do
-												if type(s) == "table" and s.frame == key then
-													s.frame = "NONE"
-												end
-											end
-									end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end
-								end,
-								},
-								maxLimit = {
-								order = 2,
-								type = "range",
-								name = LPS:L("Tooltip limit"),
-								desc = LPS:L("Maximum number of entries shown in the tooltip."),
-								min = 1,
-								max = 30,
-								step = 1,
-								get = function(info)
-									local p = getDb().panels and getDb().panels[info[#info]]
-									return (p and tonumber(p.maxLimit)) or 15
-								end,
-								set = function(info, v)
-									local p = getDb().panels[info[#info]]
-									if p then p.maxLimit = math.floor(v) end
-								end,
-							},
-							},
-							},
-						},
+						args = buildPanelOptionsArgs(),
 					},
 
 					colors = {
