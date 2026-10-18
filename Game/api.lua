@@ -281,8 +281,9 @@ end
 
 -- Собираем активные слоты в цепочки left[] / right[] (slotN1 — ближайший к локации)
 local leftChain, rightChain = {}, {}
-for i = 1, math.max(tonumber(layout.slotCount) or 2, 2) do
-	for _, side in ipairs({"left", "right"}) do
+for _, side in ipairs({ "left", "right" }) do
+	-- сначала слот 1 (ближе к локации), затем 2, 3 — привязка идёт по цепочке
+	for i = 1, math.max(tonumber(layout.slotCount) or 2, 2) do
 		local cfg = sideSlots[side .. i]
 		if cfg then
 			local key = normalizeSlotFrameKey(cfg.frame)
