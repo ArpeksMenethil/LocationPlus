@@ -105,21 +105,6 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 		end
 	end
 
-	-- Панель выключена (enable=false): убираем её из всех слотов и каскадно чистим нижние.
-	local function clearPanelFromSlots(db, key)
-		local ss = db.layout and db.layout.sideSlots
-		if type(ss) ~= "table" then return end
-		for _, sside in ipairs({ "left", "right" }) do
-			for n = 1, 3 do
-				local s = ss[sside .. n]
-				if type(s) == "table" and s.frame == key then
-					s.frame = "NONE"
-					cascadeClearSlots(ss, sside, n)
-				end
-			end
-		end
-	end
-
 	-- Дополнительные настройки конкретных панелей для автогенерации Panel Options
 	local PANEL_EXTRA = {
 		bags = {
@@ -150,41 +135,16 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 		quests = { maxLimit = true },
 	}
 
-	-- Фабрика группы настроек одной панели (enable + tooltip + display/maxLimit/label)
+	-- Фабрика группы настроек одной панели (tooltip + display/maxLimit/label)
+	-- Включение/выключение панелей не является настройкой: панель активна,
+	-- когда выбрана в слот (Side Panels), и скрыта, когда слот пуст.
 	local function makePanelOptionGroup(key, def, order)
 		local args = {}
-		args.enable = {
-			order = 1,
-			type = "toggle",
-			name = LPS:L("Enable"),
-			desc = string.format(LPS:L("Show the %s panel."), def.name),
-			width = "full",
-			get = function(info)
-				local p = getDb().panels and getDb().panels[info[#info]]
-				return not (p and p.enable == false)
-			end,
-			set = function(info, v)
-				local k = info[#info]
-				local db = getDb()
-				db.panels = db.panels or {}
-				local p = db.panels[k]
-				if type(p) ~= "table" then
-					p = {}
-					db.panels[k] = p
-				end
-				p.enable = v and true or false
-				if not v then
-					clearPanelFromSlots(db, k)
-				end
-				if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-				if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-			end,
-		}
 		local extra = PANEL_EXTRA[key]
 		if extra then
 			if extra.display then
 				args.display = {
-					order = extra.display.order,
+					order = extra.display.order - 2,
 					type = "select",
 					name = extra.display.name,
 					values = extra.display.values,
@@ -208,7 +168,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 			end
 			if extra.maxLimit then
 				args.maxLimit = {
-					order = 4,
+					order = 2,
 					type = "range",
 					name = LPS:L("Max entries in tooltip"),
 					min = 1,
@@ -500,6 +460,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										LPS:ResetAllSettingsToDefaults()
 									end
 								end,
+							},
 							},
 						},
 					},
@@ -1256,8 +1217,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 						name = LPS:L("Panel Options"),
 						desc = LPS:L("Individual settings for info panels."),
 						inline = true,
-						args = {
-							chainAnchor = {
+						args = buildPanelOptionsArgs(),
+					},
+					chainAnchor = {
 						order = 3,
 						type = "select",
 						name = LPS:L("Frame anchor mode"),
@@ -1447,14 +1409,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									local cur = ss.left1
 									v = v or "none"
 									if v ~= "none" then
-										local pCfg = db.panels and db.panels[v]
-										if pCfg and pCfg.enable == false then
-											v = "none"
-										else
-											for _, other in pairs(ss) do
-												if type(other) == "table" and other ~= cur and other.frame == v then
-													other.frame = "NONE"
-												end
+										for _, other in pairs(ss) do
+											if type(other) == "table" and other ~= cur and other.frame == v then
+												other.frame = "NONE"
 											end
 										end
 									end
@@ -1535,14 +1492,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									local cur = ss.right1
 									v = v or "none"
 									if v ~= "none" then
-										local pCfg = db.panels and db.panels[v]
-										if pCfg and pCfg.enable == false then
-											v = "none"
-										else
-											for _, other in pairs(ss) do
-												if type(other) == "table" and other ~= cur and other.frame == v then
-													other.frame = "NONE"
-												end
+										for _, other in pairs(ss) do
+											if type(other) == "table" and other ~= cur and other.frame == v then
+												other.frame = "NONE"
 											end
 										end
 									end
@@ -1624,14 +1576,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									local cur = ss.left2
 									v = v or "none"
 									if v ~= "none" then
-										local pCfg = db.panels and db.panels[v]
-										if pCfg and pCfg.enable == false then
-											v = "none"
-										else
-											for _, other in pairs(ss) do
-												if type(other) == "table" and other ~= cur and other.frame == v then
-													other.frame = "NONE"
-												end
+										for _, other in pairs(ss) do
+											if type(other) == "table" and other ~= cur and other.frame == v then
+												other.frame = "NONE"
 											end
 										end
 									end
@@ -1715,14 +1662,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									local cur = ss.right2
 									v = v or "none"
 									if v ~= "none" then
-										local pCfg = db.panels and db.panels[v]
-										if pCfg and pCfg.enable == false then
-											v = "none"
-										else
-											for _, other in pairs(ss) do
-												if type(other) == "table" and other ~= cur and other.frame == v then
-													other.frame = "NONE"
-												end
+										for _, other in pairs(ss) do
+											if type(other) == "table" and other ~= cur and other.frame == v then
+												other.frame = "NONE"
 											end
 										end
 									end
@@ -1806,14 +1748,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									local cur = ss.left3
 									v = v or "none"
 									if v ~= "none" then
-										local pCfg = db.panels and db.panels[v]
-										if pCfg and pCfg.enable == false then
-											v = "none"
-										else
-											for _, other in pairs(ss) do
-												if type(other) == "table" and other ~= cur and other.frame == v then
-													other.frame = "NONE"
-												end
+										for _, other in pairs(ss) do
+											if type(other) == "table" and other ~= cur and other.frame == v then
+												other.frame = "NONE"
 											end
 										end
 									end
@@ -1896,14 +1833,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									local cur = ss.right3
 									v = v or "none"
 									if v ~= "none" then
-										local pCfg = db.panels and db.panels[v]
-										if pCfg and pCfg.enable == false then
-											v = "none"
-										else
-											for _, other in pairs(ss) do
-												if type(other) == "table" and other ~= cur and other.frame == v then
-													other.frame = "NONE"
-												end
+										for _, other in pairs(ss) do
+											if type(other) == "table" and other ~= cur and other.frame == v then
+												other.frame = "NONE"
 											end
 										end
 									end
@@ -2318,7 +2250,6 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 				},
 			},
 		},
-	}
 
 	AceConfig:RegisterOptionsTable(LPS.Options.aceAppName, options)
 
