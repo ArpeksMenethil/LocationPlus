@@ -144,9 +144,11 @@ function LPS:CreateFrame(params)
 			end
 			local w = f.text:GetStringWidth() or 0
 			local h = f.text:GetStringHeight() or 0
-			-- Отрицательная ширина означает «нет ограничения»: так текст не
-			-- обрезается при последующем позиционировании внутри фрейма.
-			f.text:SetWidth(-(w + 1))
+			-- Сбрасываем ограничения размера строки (0 = без ограничения).
+			-- Отрицательная ширина недопустима: WoW трактует её как некорректное
+			-- значение и текст на фрейме становится невидимым.
+			f.text:SetWidth(0)
+			f.text:SetHeight(0)
 			f:SetSize(math.max(minW, w + px * 2), math.max(26, h + py * 2))
 			f.text:SetPoint("CENTER", f, "CENTER", 0, 0)
 			LPS:ScheduleFrameSizeUpdate()
