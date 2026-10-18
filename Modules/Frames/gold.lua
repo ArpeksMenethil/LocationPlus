@@ -239,6 +239,7 @@ function LPS:CreateGoldFrame()
 	local params = {
 		name = "LPS_Gold",
 		frameType = "Button",
+		hidden = true,
 		parent = LPS.frame.location,
 		anchor = {"LEFT", LPS.frame.location, "RIGHT", 5, 0},
 		padding = {((db.layout and db.layout.dtPaddingX) or 10), ((db.layout and db.layout.dtPaddingY) or 6)},

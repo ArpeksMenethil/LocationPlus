@@ -25,51 +25,13 @@ function LPS:_NormalizeLayoutDB(raw)
 		local db = LPS:GetDB()
 		if db then db.layout = raw end
 	end
-	local cache = normalizedLayoutCache
-	if cache and cache.raw == raw then
-		local function slotsUnchanged(prev, cur)
-			if prev == cur then return true end
-			if type(prev) ~= "table" or type(cur) ~= "table" then return false end
-			for side, b in pairs(cur) do
-				local a = prev[side]
-				if a ~= b then
-					if type(a) ~= "table" or type(b) ~= "table" then return false end
-					if a.frame ~= b.frame or a.offsetX ~= b.offsetX or a.offsetY ~= b.offsetY then
-						return false
-					end
-				end
-			end
-			for side in pairs(prev) do
-				if cur[side] == nil then return false end
-			end
-			return true
-		end
-		if slotsUnchanged(cache.sideSlots, raw.sideSlots) then
-			cache.sideSlots = raw.sideSlots
-			return cache.out
-		end
-	end
-
-	local out = cache and cache.out or {}
-	if cache and cache.raw == raw then
-		local numericFresh = true
-		for _, k in ipairs({ "dtPaddingX", "dtPaddingY", "dtMinWidth",
-				"locPaddingX", "locPaddingY", "locMinWidth", "spacingManual", "slotCount" }) do
-			if (tonumber(raw[k]) or -999999) ~= (out[k] or -999999) then
-				numericFresh = false
-				break
-			end
-		end
-		if numericFresh and (raw.spacingAuto == false) ~= (out.spacing ~= 5) then
-			numericFresh = false
-		end
-		if numericFresh and (raw.dtshow == false) ~= (out.dtshow == false) then
-			numericFresh = false
-		end
-		if numericFresh then
-			return out
-		end
-	end
+-- ВАЖНО: кэш нормализации не должен «съедать» изменения настроек.
+-- AceDB может мутировать профиль in-place (та же таблица), поэтому
+-- проверка «изменились ли значения» здесь ненадёжна и раньше приводила
+-- к тому, что правки в табаке «Макет» (padding/minWidth/spacing) не
+-- применялись. Нормализация дешёвая — выполняем её всегда; настоящая
+-- защита от лишних перекладок — ключ ApplyLayout + InvalidateLayoutCache.
+local out = normalizedLayoutCache and normalizedLayoutCache.out or {}
 	out.dtPaddingX  = tonumber(raw.dtPaddingX)
 	out.dtPaddingY  = tonumber(raw.dtPaddingY)
 	out.dtMinWidth  = tonumber(raw.dtMinWidth)
@@ -96,6 +58,8 @@ function LPS:_NormalizeLayoutDB(raw)
 	out.frameLevel  = tonumber(raw.frameLevel)
 	out.customColor = raw.customColor
 	out.userColor   = raw.userColor
+	-- режим якоря цепочки ("chain" | "location") — входит в layoutKey ApplyLayout
+	out.chainAnchor = raw.chainAnchor
 	local function copySlots(slots)
 		if type(slots) ~= "table" then return nil end
 		local res = {}
@@ -112,10 +76,7 @@ function LPS:_NormalizeLayoutDB(raw)
 		return res
 	end
 	out.sideSlots   = copySlots(raw.sideSlots)
-	if cache and cache.out == out then
-		return out
-	end
-	normalizedLayoutCache = { raw = raw, out = out, sideSlots = raw.sideSlots }
+	normalizedLayoutCache = { raw = raw, out = out }
 	return out
 end
 
@@ -208,13 +169,6 @@ local frames = LPS.frame
 if not db or not frames then return end
 
 local layout = LPS:_NormalizeLayoutDB(db.layout)
-local dtPaddingX = layout.dtPaddingX
-local dtPaddingY = layout.dtPaddingY
-local dtMinWidth = layout.dtMinWidth
-local locPaddingX = layout.locPaddingX
-local locPaddingY = layout.locPaddingY
-local locMinWidth = layout.locMinWidth
-local spacing = layout.spacing
 
 -- Внутренний кэш-маркер: если ключ настроек не изменился с прошлого прохода,
 -- ApplyLayout пропускает переанкеривание/перекраску (вызывается очень часто).
@@ -230,16 +184,24 @@ local layoutKey = tostring(layout.dtPaddingX) .. "," .. tostring(layout.dtPaddin
 .. tostring(user and user.r) .. "," .. tostring(user and user.g) .. "," .. tostring(user and user.b) .. ","
 .. tostring(layout.slotCount or 2) .. ","
 .. table.concat(LPS._CollectSlotKeys(layout.sideSlots), ";") .. ","
-.. tostring(db.settings and db.settings.fontSize or 12)
+.. tostring(db.settings and db.settings.fontSize or 12) .. ","
+.. tostring(layout.chainAnchor)
 
+-- forcePass = первый полный проход после загрузки/сброса кэша. Раньше он
+-- зависел от holder:IsShown(), который в момент инициализации ещё false, —
+-- из-за этого флаг никогда не сбрасывался и часть пересчётов пропускалась.
 local forcePass = not (frames.holder and frames.holder._lpsEverApplied)
-if not forcePass and frames.holder._lpsLastLayoutKey == layoutKey then
+if not forcePass and frames.holder and frames.holder._lpsLastLayoutKey == layoutKey then
 return
 end
 local prevKey = frames.holder and frames.holder._lpsLastLayoutKey
 if frames.holder then
 frames.holder._lpsLastLayoutKey = layoutKey
 end
+-- Принудительный пересчёт габаритов на первом проходе (в т.ч. когда holder
+-- ещё скрыт): иначе padding/minWidth из таба "Макет" не применяются до
+-- первого изменения любой другой настройки.
+local firstPass = forcePass
 
 local function getLayoutTextColor(mode, userColor)
 if mode == 1 then
@@ -366,6 +328,11 @@ end
 positionChain(leftChain, "LEFT")
 positionChain(rightChain, "RIGHT")
 
+-- Показываем/скрываем панели строго по настройкам ("Показывать панели" и
+-- занятым слотам). Без этого вызова фреймы, созданные без hidden = true
+-- (coords/time/gold/system), оставались видимыми всегда.
+applyPanelVisibility(frames, slotList, showDT)
+
 if frames.holder and not frames.holder.isMoving then
 if layout.frameStrata then
 frames.holder:SetFrameStrata(layout.frameStrata)
@@ -433,12 +400,28 @@ end
 end
 end
 
+-- Первый проход (или смена layout-чисел при скрытом локации): гарантируем
+-- пересчёт размеров локации и панелей даже если updateFuncы выше ничего
+-- не поменяли (текст уже был актуален) — иначе настройки "Макета"
+-- (padding / minWidth) выглядят "не работающими".
+if firstPass or layoutNumsChanged then
+local loc = frames.location
+if loc and loc._lpsUpdateFunc then
+loc._lpsUpdateFunc(loc)
+end
+for _, f in ipairs({ frames.coords, frames.time, frames.gold, frames.system }) do
+if f and f._lpsUpdateFunc and f:IsShown() then
+f._lpsUpdateFunc(f)
+end
+end
+end
+
 
 if LPS.UpdateFrameSize then
 LPS:ScheduleFrameSizeUpdate()
 end
 
-if frames.holder and frames.holder:IsShown() then
+if frames.holder then
 frames.holder._lpsEverApplied = true
 end
 end
