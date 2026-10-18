@@ -12,51 +12,71 @@ do
 		return false
 	end
 
-	--- Число ПРИНЯТЫХ квестов. Считаются ТОЛЬКО реально взятые задания:
-	--- 1) приоритет — официальный счётчик категорий журнала (numAccepted):
-	---    ровно то число, что показывает сам журнал;
-	--- 2) если API недоступен — обход записей с фильтром questLogIndex/IsOnQuest.
-	--- Раньше в подсчёт попадали видимые в журнале, но НЕ принятые задания
-	--- (44 «квеста» при 12 принятых), поэтому число завышалось.
-	local function getAcceptedCount()
-		if C_QuestLog and C_QuestLog.GetNumQuestLogAcceptableCategories then
-			local ok, categories = pcall(C_QuestLog.GetNumQuestLogAcceptableCategories)
-			if ok and type(categories) == "table" then
-				local total, found = 0, false
-				for _, cat in ipairs(categories) do
-					if cat and cat.numAccepted then
-						total = total + (tonumber(cat.numAccepted) or 0)
-						found = true
-					end
-				end
-				if found then return total end
-			end
-		end
+	--- Число ПРИНЯТЫХ квестов — ровно то, что показывает сам журнал заданий.
+	--- Никаких эвристик по полному списку записей (именно они давали 44/35
+	--- вместо реальных принятых): используются только точные источники:
+	--- 1) GetCVar("questLogQuantity") — внутренний счётчик принятых заданий,
+	---    тот же, что печатает стандартный журнал в заголовке;
+	--- 2) GetNumQuestLogQuestions() — классический API числа взятых квестов;
+	--- 3) обход слотов журнала GetQuestLogTitle(i), i = 1..GetMaxNumQuests()
+	---    (в классических клиентах в этих слотах лежат только принятые);
+	--- 4) GetQuestLogSize() — запасной вариант.
+	--- Берётся максимум из достоверных источников, чтобы временный нуль
+	--- (журнал ещё не прогрузился) не занижал счётчик.
+	local function acceptedCountFromSlots()
+		local maxSlots = (C_QuestLog and C_QuestLog.GetMaxNumQuests) and C_QuestLog.GetMaxNumQuests()
+			or (GetMaxNumQuests and GetMaxNumQuests())
+		if not maxSlots or not GetQuestLogTitle then return nil end
 		local count = 0
-		local numEntries
-		if C_QuestLog and C_QuestLog.GetNumQuestLogEntries then
-			numEntries = C_QuestLog.GetNumQuestLogEntries()
+		for i = 1, maxSlots do
+			if GetQuestLogTitle(i) then count = count + 1 end
 		end
-		if not numEntries then
-			numEntries = GetNumQuestLogEntries and GetNumQuestLogEntries()
+		return count
+	end
+
+	local function getAcceptedCount()
+		local candidates = {}
+
+		-- 1) точный счётчик самого журнала
+		if GetCVar then
+			local ok, v = pcall(GetCVar, "questLogQuantity")
+			if ok then v = tonumber(v) end
+			if v and v >= 0 then candidates[#candidates + 1] = v end
 		end
-		numEntries = numEntries or 0
+
+		-- 2) официальный API числа взятых заданий (классические клиенты)
+		if GetNumQuestLogQuestions then
+			local ok, v = pcall(GetNumQuestLogQuestions)
+			if ok then v = tonumber(v) end
+			if v and v >= 0 then candidates[#candidates + 1] = v end
+		end
+
+		-- 3) прямой обход слотов журнала
+		local ok, slots = pcall(acceptedCountFromSlots)
+		if ok and slots and slots >= 0 then candidates[#candidates + 1] = slots end
+
+		-- 4) GetQuestLogSize (есть не на всех клиентах)
+		if GetQuestLogSize then
+			local ok, v = pcall(GetQuestLogSize)
+			if ok then v = tonumber(v) end
+			if v and v >= 0 then candidates[#candidates + 1] = v end
+		end
+
+		local best
+		for _, n in ipairs(candidates) do
+			if not best or n > best then best = n end
+		end
+		if best then return best end
+
+		-- крайний случай: строгий фильтр IsOnQuest по записям журнала
+		local count = 0
+		local numEntries = (C_QuestLog and C_QuestLog.GetNumQuestLogEntries and C_QuestLog.GetNumQuestLogEntries())
+			or (GetNumQuestLogEntries and GetNumQuestLogEntries())
+			or 0
 		for qi = 1, numEntries do
 			if C_QuestLog and C_QuestLog.GetInfo then
 				local info = C_QuestLog.GetInfo(qi)
-				-- header'ы и task'и пропускаем; questLogIndex > 0 — признак
-				-- принятого задания (запись из журнала, а не из списка доступных)
-				if info and not info.isHeader and not info.isTask then
-					if info.questLogIndex and info.questLogIndex > 0 then
-						count = count + 1
-					elseif isOnQuest(info.questID) then
-						count = count + 1
-					end
-				end
-			elseif GetQuestLogTitle then
-				local title, _, _, isHeader = GetQuestLogTitle(qi)
-				-- в классических клиентах в самом журнале лежат только принятые
-				if title and not isHeader then
+				if info and not info.isHeader and not info.isTask and isOnQuest(info.questID) then
 					count = count + 1
 				end
 			end
