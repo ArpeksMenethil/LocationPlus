@@ -99,6 +99,9 @@ function LPS:onLoaded(name)
 	if LPS.MigrateTooltipKeys then
 		LPS:MigrateTooltipKeys()
 	end
+	if LPS.MigrateRemoveTimePlayed then
+		LPS:MigrateRemoveTimePlayed()
+	end
 	LPS:ApplyTimeFormat()
 	LPS:ApplyHolderPosition()
 
