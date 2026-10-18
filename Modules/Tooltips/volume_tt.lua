@@ -37,7 +37,7 @@ function LPS:BuildVolumeTooltip(GameTooltip)
                                         tt:AddDoubleLine(s.Name, streamString(s), 1, 1, 1, 1, 1, 1)
                                 end
                                 tt:AddLine(" ")
-                                tt:AddLine(LPS:L("LMB") .. ": " .. LPS:L("Select Volume Stream"), 0.65, 0.65, 0.65)
-                                tt:AddLine(LPS:L("MMB") .. ": " .. LPS:L("Mute"), 0.65, 0.65, 0.65)
-                                tt:AddLine(LPS:L("RMB") .. ": " .. LPS:L("Toggle Volume Stream"), 0.65, 0.65, 0.65)
+                                tt:AddDoubleLine(LPS:L("LMB"), LPS:L("Select Volume Stream"), rB, gB, bB, rB, gB, bB)
+                                tt:AddDoubleLine(LPS:L("MMB"), LPS:L("Mute"), rB, gB, bB, rB, gB, bB)
+                                tt:AddDoubleLine(LPS:L("RMB"), LPS:L("Toggle Volume Stream"), rB, gB, bB, rB, gB, bB)
 end

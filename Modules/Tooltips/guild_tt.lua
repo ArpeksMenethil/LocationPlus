@@ -40,5 +40,5 @@ function LPS:BuildGuildTooltip(GameTooltip)
                                 end
 
     tt:AddLine(" ")
-    tt:AddLine(LPS:L("LMB") .. ": " .. LPS:L("Open guild frame"), 0.65, 0.65, 0.65)
+    tt:AddDoubleLine(LPS:L("LMB"), LPS:L("Open guild frame"), rB, gB, bB, rB, gB, bB)
 end

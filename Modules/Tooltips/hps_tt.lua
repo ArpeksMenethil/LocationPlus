@@ -15,5 +15,5 @@ function LPS:BuildHpsTooltip(GameTooltip)
                         tt:AddDoubleLine(LPS:L("Healing:"), DT.shortValue(healTotal), 1, 1, 1, 1, 1, 1)
                         tt:AddDoubleLine(LPS:L("Time:"), string.format("%.0f s", combatTime), 1, 1, 1, 1, 1, 1)
                         tt:AddLine(" ")
-                        tt:AddLine(LPS:L("LMB") .. ": " .. LPS:L("Reset counters"), 0.65, 0.65, 0.65)
+                        tt:AddDoubleLine(LPS:L("LMB"), LPS:L("Reset counters"), rB, gB, bB, rB, gB, bB)
 end

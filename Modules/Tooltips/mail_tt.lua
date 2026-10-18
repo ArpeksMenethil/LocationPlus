@@ -19,5 +19,5 @@ function LPS:BuildMailTooltip(GameTooltip)
         			end
 
     tt:AddLine(" ")
-    tt:AddLine(LPS:L("LMB") .. ": " .. LPS:L("Open mailbox"), 0.65, 0.65, 0.65)
+    tt:AddDoubleLine(LPS:L("LMB"), LPS:L("Open mailbox"), rB, gB, bB, rB, gB, bB)
 end

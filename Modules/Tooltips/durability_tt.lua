@@ -29,5 +29,5 @@ function LPS:BuildDurabilityTooltip(GameTooltip)
                                 end
 
     tt:AddLine(" ")
-    tt:AddLine(LPS:L("LMB") .. ": " .. LPS:L("Open character panel"), 0.65, 0.65, 0.65)
+    tt:AddDoubleLine(LPS:L("LMB"), LPS:L("Open character panel"), rB, gB, bB, rB, gB, bB)
 end

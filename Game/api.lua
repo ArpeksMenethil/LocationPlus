@@ -127,19 +127,26 @@ local function applyPanelVisibility(frames, slotList, showDT)
 		end
 		return false
 	end
-	if frames.coords then frames.coords:SetShown(showDT and isSelectedInSlots("coords")) end
-	if frames.time   then frames.time:SetShown(showDT   and isSelectedInSlots("time"))   end
-	if frames.gold   then frames.gold:SetShown(showDT   and isSelectedInSlots("gold"))   end
-	if frames.system then frames.system:SetShown(showDT and isSelectedInSlots("system")) end
+	local shownNow = {}
+	if frames.coords then frames.coords:SetShown(showDT and isSelectedInSlots("coords")); if frames.coords:IsShown() then shownNow[#shownNow+1] = frames.coords end end
+	if frames.time   then frames.time:SetShown(showDT   and isSelectedInSlots("time"));   if frames.time:IsShown()   then shownNow[#shownNow+1] = frames.time   end end
+	if frames.gold   then frames.gold:SetShown(showDT   and isSelectedInSlots("gold"));   if frames.gold:IsShown()   then shownNow[#shownNow+1] = frames.gold   end end
+	if frames.system then frames.system:SetShown(showDT and isSelectedInSlots("system")); if frames.system:IsShown() then shownNow[#shownNow+1] = frames.system end end
 	-- динамические панели (datatexts): показываем только занятые слоты
 	if LPS.datatexts then
 		for key, f in pairs(frames) do
 			if key ~= "holder" and key ~= "location" and key ~= "coords" and key ~= "time"
 				and key ~= "gold" and key ~= "system" and f and f.SetShown then
 				f:SetShown(showDT and isSelectedInSlots(key))
+				if f:IsShown() then shownNow[#shownNow + 1] = f end
 			end
 		end
 	end
+	-- Принудительное первичное заполнение ТОЛЬКО что показанных панелей:
+	-- без этого скрытая при создании панель (hidden = true), показанная в этом
+	-- же проходе, оставалась пустой до первого события/тикера («выбрал Золото
+	-- — оно пустое, пока не обновлю»). Скрытые панели не трогаем.
+	LPS._pendingPanelPrimes = shownNow
 end
 LPS._ApplyPanelVisibility = applyPanelVisibility -- общий для ApplyLayout и Apply*Visibility
 
@@ -343,6 +350,18 @@ positionChain(rightChain, "RIGHT")
 -- занятым слотам). Без этого вызова фреймы, созданные без hidden = true
 -- (coords/time/gold/system), оставались видимыми всегда.
 applyPanelVisibility(frames, slotList, showDT)
+
+-- Первичное заполнение панелей, показанных в этом же проходе:
+-- текст ставится сразу, без ожидания события/тикера.
+if LPS._pendingPanelPrimes then
+	for _, f in ipairs(LPS._pendingPanelPrimes) do
+		if f and f:IsShown() and f._lpsUpdateFunc then
+			f._lpsUpdateFunc(f)
+			if f._lpsResizeToFit then f._lpsResizeToFit() end
+		end
+	end
+	LPS._pendingPanelPrimes = nil
+end
 
 if frames.holder and not frames.holder.isMoving then
 if layout.frameStrata then
