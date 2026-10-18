@@ -39,17 +39,6 @@ function LPS:BuildGuildTooltip(GameTooltip)
                                         tt:AddLine(LPS:L("No members online"), 0.65, 0.65, 0.65)
                                 end
 
-    GameTooltip:AddLine(" ")
-        GameTooltip:AddDoubleLine(LPS:L("LMB"), LPS:L("Click"), rB, gB, bB, rB, gB, bB)
-
-        if GameTooltipTextLeft1 then
-                local rT, gT, bT = GameTooltipTextLeft1:GetTextColor()
-                GameTooltipTextLeft1:SetFontObject(GameTooltipText)
-                GameTooltipTextLeft1:SetTextColor(rT, gT, bT)
-        end
-        if GameTooltipTextRight1 then
-                local rT, gT, bT = GameTooltipTextRight1:GetTextColor()
-                GameTooltipTextRight1:SetFontObject(GameTooltipText)
-                GameTooltipTextRight1:SetTextColor(rT, gT, bT)
-        end
+    tt:AddLine(" ")
+    tt:AddLine(LPS:L("LMB") .. ": " .. LPS:L("Open guild frame"), 0.65, 0.65, 0.65)
 end

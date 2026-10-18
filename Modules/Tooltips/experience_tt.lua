@@ -21,17 +21,4 @@ function LPS:BuildExperienceTooltip(GameTooltip)
                                         tt:AddDoubleLine(LPS:L("Rested:"), "+" .. DT.shortValue(rested), 1, 1, 1, 0, 1, 0)
                                 end
 
-    GameTooltip:AddLine(" ")
-        GameTooltip:AddDoubleLine(LPS:L("LMB"), LPS:L("Click"), rB, gB, bB, rB, gB, bB)
-
-        if GameTooltipTextLeft1 then
-                local rT, gT, bT = GameTooltipTextLeft1:GetTextColor()
-                GameTooltipTextLeft1:SetFontObject(GameTooltipText)
-                GameTooltipTextLeft1:SetTextColor(rT, gT, bT)
-        end
-        if GameTooltipTextRight1 then
-                local rT, gT, bT = GameTooltipTextRight1:GetTextColor()
-                GameTooltipTextRight1:SetFontObject(GameTooltipText)
-                GameTooltipTextRight1:SetTextColor(rT, gT, bT)
-        end
 end

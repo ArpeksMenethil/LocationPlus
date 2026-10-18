@@ -40,18 +40,4 @@ function LPS:BuildVolumeTooltip(GameTooltip)
                                 tt:AddLine(LPS:L("LMB") .. ": " .. LPS:L("Select Volume Stream"), 0.65, 0.65, 0.65)
                                 tt:AddLine(LPS:L("MMB") .. ": " .. LPS:L("Mute"), 0.65, 0.65, 0.65)
                                 tt:AddLine(LPS:L("RMB") .. ": " .. LPS:L("Toggle Volume Stream"), 0.65, 0.65, 0.65)
-
-    GameTooltip:AddLine(" ")
-        GameTooltip:AddDoubleLine(LPS:L("LMB"), LPS:L("Click"), rB, gB, bB, rB, gB, bB)
-
-        if GameTooltipTextLeft1 then
-                local rT, gT, bT = GameTooltipTextLeft1:GetTextColor()
-                GameTooltipTextLeft1:SetFontObject(GameTooltipText)
-                GameTooltipTextLeft1:SetTextColor(rT, gT, bT)
-        end
-        if GameTooltipTextRight1 then
-                local rT, gT, bT = GameTooltipTextRight1:GetTextColor()
-                GameTooltipTextRight1:SetFontObject(GameTooltipText)
-                GameTooltipTextRight1:SetTextColor(rT, gT, bT)
-        end
 end

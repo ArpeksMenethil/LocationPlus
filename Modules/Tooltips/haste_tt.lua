@@ -15,17 +15,4 @@ function LPS:BuildHasteTooltip(GameTooltip)
                                 tt:AddDoubleLine(LPS:L("Bonus"), string.format("%.2f%%", GetCombatRatingBonus(CR_HASTE_MELEE) or 0), 1, 1, 1, 1, 1, 1)
                         end
 
-    GameTooltip:AddLine(" ")
-        GameTooltip:AddDoubleLine(LPS:L("LMB"), LPS:L("Click"), rB, gB, bB, rB, gB, bB)
-
-        if GameTooltipTextLeft1 then
-                local rT, gT, bT = GameTooltipTextLeft1:GetTextColor()
-                GameTooltipTextLeft1:SetFontObject(GameTooltipText)
-                GameTooltipTextLeft1:SetTextColor(rT, gT, bT)
-        end
-        if GameTooltipTextRight1 then
-                local rT, gT, bT = GameTooltipTextRight1:GetTextColor()
-                GameTooltipTextRight1:SetFontObject(GameTooltipText)
-                GameTooltipTextRight1:SetTextColor(rT, gT, bT)
-        end
 end
