@@ -566,10 +566,10 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								step = 0.05,
 								get = function() return getDb().general.coordsTimeUpdate end,
 								set = function(_, v)
-								getDb().general.coordsTimeUpdate = v
-								if LPS.ApplyCoordsUpdateInterval then
-								LPS:ApplyCoordsUpdateInterval()
-								end
+									getDb().general.coordsTimeUpdate = v
+									if LPS.ApplyCoordsUpdateInterval then
+										LPS:ApplyCoordsUpdateInterval()
+									end
 								end,
 							},
 						},
@@ -593,56 +593,64 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								},
 								get = function() return getDb().show.experience.display or "PERCENT" end,
 								set = function(_, v)
-								getDb().show.experience.display = v
-								applySettingsRefresh()
+									getDb().show.experience.display = v
+									applySettingsRefresh()
 								end,
 							},
 						},
-						bagsGroup = {
-							order = 4,
-							type = "group",
-							name = LPS:L("Bags"),
-							inline = true,
-							
-							args = {
-								bags = {
-									order = 1,
-									type = "select",
-									name = LPS:L("Bags") .. " " .. LPS:L("Display"),
-									values = {
-										USED_TOTAL = LPS:L("Used / Total"),
-										FREE = LPS:L("Free slots"),
-										USED = LPS:L("Used slots"),
-									},
-									get = function() return getDb().show.bags.display or "USED_TOTAL" end,
-									set = function(_, v)
+					},
+					bagsGroup = {
+						order = 4,
+						type = "group",
+						name = LPS:L("Bags"),
+						inline = true,
+						
+						args = {
+							bags = {
+								order = 1,
+								type = "select",
+								name = LPS:L("Bags") .. " " .. LPS:L("Display"),
+								values = {
+									USED_TOTAL = LPS:L("Used / Total"),
+									FREE = LPS:L("Free slots"),
+									USED = LPS:L("Used slots"),
+								},
+								get = function() return getDb().show.bags.display or "USED_TOTAL" end,
+								set = function(_, v)
 									getDb().show.bags.display = v
 									applySettingsRefresh()
-									end,
-								},
-								bagsNoLabel = {
-									order = 2,
-									type = "toggle",
-									name = LPS:L("Hide label"),
-									width = "half",
-									get = function() return getDb().show.bags.noLabel or false end,
-									set = function(_, v)
-									getDb().show.bags.noLabel = v and true or false
-									applySettingsRefresh()
-									end,
-								},
-								bagsLabel = {
-									order = 3,
-									type = "input",
-									name = LPS:L("Custom label"),
-									width = "half",
-									disabled = function() return getDb().show.bags.noLabel end,
-									get = function() return getDb().show.bags.label or "" end,
-									set = function(_, v)
+								end,
+							},
+							spacer1_bags = {
+								order = 1.2,
+								type = "description",
+								name = "",
+							},
+							spacer2_bags = {
+								order = 1.3,
+								type = "description",
+								name = "",
+							},
+							bagsLabel = {
+								order = 2,
+								type = "input",
+								name = LPS:L("Custom label"),
+								disabled = function() return getDb().show.bags.noLabel end,
+								get = function() return getDb().show.bags.label or "" end,
+								set = function(_, v)
 									getDb().show.bags.label = v or ""
 									applySettingsRefresh()
-									end,
-								},
+								end,
+							},
+							bagsNoLabel = {
+								order = 3,
+								type = "toggle",
+								name = LPS:L("Hide label"),
+								get = function() return getDb().show.bags.noLabel or false end,
+								set = function(_, v)
+									getDb().show.bags.noLabel = v and true or false
+									applySettingsRefresh()
+								end,
 							},
 						},
 					},
