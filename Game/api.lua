@@ -548,8 +548,7 @@ function LPS:ResetAllSettingsToDefaults()
 	end
 	if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
 	LPS:ApplyHolderPosition()
-		LPS:ApplyAllSettings()
-	end
+	LPS:ApplyAllSettings()
 	if LPS.UpdateMinimapButton then
 		LPS:UpdateMinimapButton()
 	end

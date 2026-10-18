@@ -7,7 +7,7 @@ do
 	LPS:RegisterDatatext({
 		key = "experience",
 		name = LPS:L("Experience"),
-		events = { "PLAYER_XP_UPDATE", "DISABLE_XP_GAIN", "ENABLE_XP_GAIN", "UPDATE_EXHAUSTION", "LEVEL_UP" },
+		events = { "PLAYER_XP_UPDATE", "DISABLE_XP_GAIN", "ENABLE_XP_GAIN", "UPDATE_EXHAUSTION", "PLAYER_LEVEL_UP" },
 		update = function(f)
 			if not UnitXP or not UnitXPMax then return end
 			local level = UnitLevel("player")

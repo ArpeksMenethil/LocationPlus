@@ -3,6 +3,9 @@ if not LPS then return end
 
 local unpackFn = table.unpack or unpack
 
+-- Мост для отложенной (после боя) регистрации событий панелей
+local frameEventBridge
+
 -- Move Mode (перетаскивание)
 function LPS:CreateGuideLines()
 	local grid = { vLines = {}, hLines = {} }
@@ -65,6 +68,12 @@ function LPS:CreateFrame(params)
 	local f = CreateFrame(params.frameType or "Frame", params.name, params.parent, params.template or "BackdropTemplate")
 	f:ClearAllPoints()
 	f:SetPoint(unpackFn(params.anchor or {"CENTER", f:GetParent(), "CENTER", 0, 0}))
+	if params.hidden then
+		-- Фрейм создаётся скрытым; ApplyLayout позиционирует его в цепочке
+		-- и покажет через applyPanelVisibility. Без этого новая панель
+		-- мелькала поверх предыдущей группы до первого пересчёта layout'а.
+		f:Hide()
+	end
 	f._lpsUpdateFunc = nil
 	f._lpsTicker = nil
 
@@ -157,10 +166,12 @@ function LPS:CreateFrame(params)
 				PLAYER_ENTERING_WORLD = true, PLAYER_LOGIN = true, ADDON_LOADED = true,
 				ZONE_CHANGED = true, ZONE_CHANGED_NEW_AREA = true, ZONE_CHANGED_INDOORS = true,
 				PLAYER_REGEN_DISABLED = true, PLAYER_REGEN_ENABLED = true, PLAYER_LEAVE_COMBAT = true,
+				COMBAT_LOG_EVENT_UNFILTERED = true,
 				UNIT_PET = true, CVAR_UPDATE = true,
 				-- опыт / уровень
 				PLAYER_XP_UPDATE = true, DISABLE_XP_GAIN = true, ENABLE_XP_GAIN = true,
-				UPDATE_EXHAUSTION = true, LEVEL_UP = true,
+				-- (LEVEL_UP в WoW API не существует — правильное событие PLAYER_LEVEL_UP)
+				UPDATE_EXHAUSTION = true, PLAYER_LEVEL_UP = true,
 				-- броня / инвентарь / предметы
 				-- (UNIT_ARMOR в WoW API не существует)
 				PLAYER_EQUIPMENT_CHANGED = true, EQUIPMENT_SETS_CHANGED = true,
@@ -170,15 +181,16 @@ function LPS:CreateFrame(params)
 				UNIT_STATS = true, UNIT_AURA = true, SPELLS_CHANGED = true,
 				UNIT_ATTACK_POWER = true,
 				-- деньги / почта / сумки
-				PLAYER_MONEY = true, BAG_UPDATE_DELAYED = true, BAG_CONTAINER_UPDATE = true,
+				PLAYER_MONEY = true, PLAYER_GUILD_UPDATE = true,
+				BAG_UPDATE_DELAYED = true, BAG_CONTAINER_UPDATE = true,
 				MAIL_INBOX_UPDATE = true, UPDATE_PENDING_MAIL = true, MAIL_CLOSED = true, MAIL_SHOW = true,
-				CURRENCY_DISPLAY_UPDATE = true, CHAT_MSG_CURRENCY = true,
+				CURRENCY_DISPLAY_UPDATE = true, CHAT_MSG_CURRENCY = true, CHAT_MSG_SYSTEM = true,
 				-- квесты
 				QUEST_ACCEPTED = true, QUEST_REMOVED = true, QUEST_TURNED_IN = true, QUEST_LOG_UPDATE = true,
 				-- репутация / гильдия / друзья
 				UPDATE_FACTION = true, COMBAT_TEXT_UPDATE = true,
-				GUILD_ROSTER_UPDATE = true, PLAYER_GUILD_UPDATE = true, GUILD_MOTD = true,
-				FRIENDLIST_UPDATE = true, CHAT_MSG_SYSTEM = true,
+				GUILD_ROSTER_UPDATE = true, GUILD_MEMBERS_ACCOUNT_STATUSES_UPDATE = true, GUILD_MOTD = true,
+				FRIENDLIST_UPDATE = true,
 				BN_FRIEND_ACCOUNT_ONLINE = true, BN_FRIEND_ACCOUNT_OFFLINE = true, BN_FRIEND_INFO_CHANGED = true,
 				-- бой / подземелья
 				ENCOUNTER_START = true, ENCOUNTER_END = true,
@@ -188,12 +200,35 @@ function LPS:CreateFrame(params)
 			for _, evt in ipairs(params.updateEvent.events) do
 				if KNOWN_EVENTS[evt] then
 					filtered[#filtered + 1] = evt
-					f:RegisterEvent(evt)
 				else
 					geterrorhandler()(("LPS: %s: пропущено неизвестное событие \"%s\""):format(tostring(params.name), tostring(evt)))
 				end
 			end
 			params.updateEvent.events = filtered
+			-- Регистрация событий защищённа (taint): во время боя RegisterEvent
+			-- вызывать нельзя (ADDON_ACTION_FORBIDDEN) — откладываем до выхода из боя.
+			local function registerEvents()
+				for _, evt in ipairs(filtered) do
+					f:RegisterEvent(evt)
+				end
+			end
+			if InCombatLockdown() then
+				f._lpsPendingEventRegister = registerEvents
+				if not frameEventBridge then
+					frameEventBridge = CreateFrame("Frame")
+					frameEventBridge:RegisterEvent("PLAYER_REGEN_ENABLED")
+					frameEventBridge:SetScript("OnEvent", function()
+						for _, fr in pairs(LPS.frame or {}) do
+							if type(fr) == "table" and fr._lpsPendingEventRegister then
+								fr._lpsPendingEventRegister()
+								fr._lpsPendingEventRegister = nil
+							end
+						end
+					end)
+				end
+			else
+				registerEvents()
+			end
 			f:SetScript("OnEvent", function(_, ev) params.updateFunc(f, ev) end)
 		else
 			params.updateFunc(f)
