@@ -72,18 +72,20 @@ do
 
 	local updaters = {}
 	function LPS:_RefreshCombatStats()
+            LPS._combatStats = { dmg = dmgTotal, heal = healTotal, time = combatTime }
+
 		for _, fn in ipairs(updaters) do fn() end
 	end
 
 	LPS:RegisterDatatext({
 		key = "dps",
-		name = STAT_DPS_SHORT or LPS:L("DPS"),
+		name = STAT_DPS_SHORT,
 		ticker = 0.5,
 		create = function(f)
 			ensureLog()
 			local fn = function()
 				if f.text and f:IsShown() then
-					f.text:SetText(string.format("%s: %s", STAT_DPS_SHORT or LPS:L("DPS"), DT.shortValue(combatTime > 0 and (dmgTotal / combatTime) or 0)))
+					f.text:SetText(string.format("%s: %s", STAT_DPS_SHORT, DT.shortValue(combatTime > 0 and (dmgTotal / combatTime) or 0)))
 				end
 			end
 			updaters[#updaters + 1] = fn
@@ -91,17 +93,9 @@ do
 		end,
 		update = function(f)
 			if f.text then
-				f.text:SetText(string.format("%s: %s", STAT_DPS_SHORT or LPS:L("DPS"), DT.shortValue(combatTime > 0 and (dmgTotal / combatTime) or 0)))
+				f.text:SetText(string.format("%s: %s", STAT_DPS_SHORT, DT.shortValue(combatTime > 0 and (dmgTotal / combatTime) or 0)))
 			end
 		end,
-tooltip = function(tt)
-                        tt:AddLine(STAT_DPS_SHORT or LPS:L("DPS"), 1, 0.82, 0)
-                        tt:AddLine(" ")
-                        tt:AddDoubleLine(LPS:L("Damage:") or "Damage:", DT.shortValue(dmgTotal), 1, 1, 1, 1, 1, 1)
-                        tt:AddDoubleLine(LPS:L("Time:") or "Time:", string.format("%.0f s", combatTime), 1, 1, 1, 1, 1, 1)
-                        tt:AddLine(" ")
-                        tt:AddLine((LPS:L("Click") or "Click") .. ": " .. (LPS:L("Reset counters") or "Reset counters"), 0.65, 0.65, 0.65)
-                end,
 		onClick = function(self)
 			timeStamp, combatTime, dmgTotal = 0, 0, 0
 			if self._lpsUpdateFunc then self._lpsUpdateFunc(self) end

@@ -5,11 +5,11 @@ local DT = LPS._DT
 -------------------------------------------------- Volume
 do
 	local AudioStreams = {
-		{ Name = MASTER_VOLUME or LPS:L("Master"), volume = "Sound_MasterVolume", enabled = "Sound_EnableAllSound" },
-		{ Name = SOUND_VOLUME or FX_VOLUME or LPS:L("Effects"), volume = "Sound_SFXVolume", enabled = "Sound_EnableSFX" },
-		{ Name = AMBIENCE_VOLUME or LPS:L("Ambience"), volume = "Sound_AmbienceVolume", enabled = "Sound_EnableAmbience" },
-		{ Name = DIALOG_VOLUME or LPS:L("Dialog"), volume = "Sound_DialogVolume", enabled = "Sound_EnableDialog" },
-		{ Name = MUSIC_VOLUME or LPS:L("Music"), volume = "Sound_MusicVolume", enabled = "Sound_EnableMusic" },
+		{ Name = MASTER_VOLUME, volume = "Sound_MasterVolume", enabled = "Sound_EnableAllSound" },
+		{ Name = SOUND_VOLUME or FX_VOLUME, volume = "Sound_SFXVolume", enabled = "Sound_EnableSFX" },
+		{ Name = AMBIENCE_VOLUME, volume = "Sound_AmbienceVolume", enabled = "Sound_EnableAmbience" },
+		{ Name = DIALOG_VOLUME, volume = "Sound_DialogVolume", enabled = "Sound_EnableDialog" },
+		{ Name = MUSIC_VOLUME, volume = "Sound_MusicVolume", enabled = "Sound_EnableMusic" },
 	}
 	local activeIndex = 1
 
@@ -65,17 +65,6 @@ do
 				end
 				DT.showMenu(self, list)
 			end
-		end,
-tooltip = function(tt)
-        			tt:AddLine(LPS:L("Volume Streams"), 1, 0.82, 0)
-        			tt:AddLine(" ")
-        			for _, s in ipairs(AudioStreams) do
-        				tt:AddDoubleLine(s.Name, streamString(s), 1, 1, 1, 1, 1, 1)
-        			end
-        			tt:AddLine(" ")
-        			tt:AddLine((LPS:L("LMB") or "/lmb") .. ": " .. LPS:L("Select Volume Stream"), 0.65, 0.65, 0.65)
-        			tt:AddLine((LPS:L("MMB") or "/mmb") .. ": " .. LPS:L("Mute"), 0.65, 0.65, 0.65)
-        			tt:AddLine((LPS:L("RMB") or "/rmb") .. ": " .. LPS:L("Toggle Volume Stream"), 0.65, 0.65, 0.65)
 		end,
 	})
 end

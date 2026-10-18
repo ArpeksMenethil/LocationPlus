@@ -20,6 +20,8 @@ do
                         base = base or 0
                         totalAP = DT.NotSecret(base) and (base + (pos or 0) + (neg or 0)) or nil
                         baseAPText = tostring(math.floor(base))
+                        LPS._dtState = LPS._dtState or {}
+                        LPS._dtState.attackPower = { totalAP = totalAP, baseAPText = baseAPText, isHunter = isHunter }
                         if f.text then
                                 local label = isHunter and (RANGED_ATTACK_POWER or "Ranged AP") or (ATTACK_POWER or "Attack Power")
                                 if totalAP then
@@ -27,14 +29,6 @@ do
                                 else
                                         f.text:SetText(string.format("%s: |cFF888888%s|r", label, baseAPText))
                                 end
-                        end
-                end,
-                tooltip = function(tt)
-                        tt:AddLine(isHunter and (RANGED_ATTACK_POWER or "Ranged Attack Power") or (MELEE_ATTACK_POWER or "Attack Power"), 1, 0.82, 0)
-                        if totalAP then
-                                tt:AddDoubleLine(" ", tostring(math.floor(totalAP)), 1, 1, 1, 1, 1, 1)
-                        else
-                                tt:AddDoubleLine(" ", "|cFF888888" .. tostring(baseAPText or "?") .. "|r", 1, 1, 1, 1, 1, 1)
                         end
                 end,
         })

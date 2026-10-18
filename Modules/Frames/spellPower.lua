@@ -29,14 +29,5 @@ do
                                 f.text:SetText(string.format("%s: %d", SPELL_POWER or "Spell Power", math.floor(minSP)))
                         end
                 end,
-                tooltip = function(tt)
-                        tt:AddLine(SPELL_POWER or "Spell Power", 1, 0.82, 0)
-                        for i = 2, MAX_SCHOOLS do
-                                local value = GetSpellBonusDamage and GetSpellBonusDamage(i)
-                                if value and DT.NotSecret(value) then
-                                        tt:AddDoubleLine(_G["SCHOOL_" .. i .. "_NAME"] or ("School " .. i), tostring(math.floor(value)), 1, 1, 1, 1, 1, 1)
-                                end
-                        end
-                end,
         })
 end

@@ -378,3 +378,27 @@ L["Volume Streams"] = true
 L["XP value"] = true
 L["XP:"] = true
 L["ilvl"] = true
+
+-- Frame anchor mode (Layout -> Show tab)
+L["Frame anchor mode"] = true
+L["Side panels always grow along their edge: left panels attach to the LEFT side of the group, right panels attach to the RIGHT side. This option controls what the FIRST panel of each chain anchors to: the location panel edges (default) or the outer edges of the whole holder frame."] = true
+L["Location panel edges"] = true
+L["Holder outer edges"] = true
+
+-- Panel options (enable/tooltip/display/label)
+L["Show the %s panel."] = true
+L["Show a tooltip when hovering over this panel."] = true
+L["Display"] = true
+L["Hide label"] = true
+L["Custom label"] = true
+L["Max entries in tooltip"] = true
+L["Current"] = true
+L["Current / Max"] = true
+L["Remaining"] = true
+
+-- Tooltip lines
+L["Click"] = true
+L["Reset counters"] = true
+L["Damage:"] = true
+L["Healing:"] = true
+L["Time:"] = true

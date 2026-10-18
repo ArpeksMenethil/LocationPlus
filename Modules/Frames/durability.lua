@@ -40,20 +40,5 @@ do
 				ToggleCharacter("PaperDollFrame")
 			end
 		end,
-tooltip = function(tt)
-        			tt:AddLine(DURABILITY or LPS:L("Durability"), 1, 0.82, 0)
-        			tt:AddLine(" ")
-        			for slotName, index in pairs(inventorySlots) do
-        				local cur, max = GetInventoryItemDurability(index)
-        				if cur and max and max > 0 then
-        					local perc = math.floor(cur / max * 100 + 0.5)
-        					local link = GetInventoryItemLink("player", index) or _G[slotName] or slotName
-        					local icon = GetInventoryItemTexture("player", index)
-        					local r, g, b = DT.colorGradient(perc * 0.01, 1, .1, .1, 1, 1, .1, .1, 1, .1)
-        					tt:AddDoubleLine(icon and string.format("|T%s:14:14:0:0:64:64:4:60:4:60|t %s", icon, link) or link,
-        						string.format("%d%%", perc), 1, 1, 1, r, g, b)
-        				end
-        			end
-		end,
 	})
 end

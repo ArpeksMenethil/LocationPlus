@@ -100,7 +100,10 @@ function LPS:_NormalizeLayoutDB(raw)
 		if type(slots) ~= "table" then return nil end
 		local res = {}
 		for side, s in pairs(slots) do
-			if type(s) == "table" then
+			if side == "userTouched" then
+				-- служебная таблица (не слот): сохраняем ссылку как есть
+				res[side] = s
+			elseif type(s) == "table" then
 				res[side] = { frame = s.frame, offsetX = s.offsetX, offsetY = s.offsetY }
 			else
 				res[side] = {}
@@ -184,7 +187,9 @@ function LPS._CollectSlotKeys(sideSlots)
 	local res = {}
 	if type(sideSlots) ~= "table" then return res end
 	local names = {}
-	for name in pairs(sideSlots) do names[#names + 1] = tostring(name) end
+	for name in pairs(sideSlots) do
+		if name ~= "userTouched" then names[#names + 1] = tostring(name) end
+	end
 	table.sort(names)
 	for _, name in ipairs(names) do
 		local s = sideSlots[name]
@@ -908,7 +913,7 @@ function LPS:ApplyDefaults(db, defaults)
 					ss[name] = s
 				end
 				local defS = defL.sideSlots and defL.sideSlots[name]
-				if not ss.userTouched[name] and defS and (s.frame == nil or s.frame == "" or s.frame:upper() == "NONE") then
+				if not ss.userTouched[name] and defS and (s.frame == nil or s.frame == "") then
 					-- слот ещё никогда не настраивался пользователем -> назначаем
 					-- панель по умолчанию, чтобы первая группа фреймов была видима
 					-- сразу после установки (или после сброса настроек).

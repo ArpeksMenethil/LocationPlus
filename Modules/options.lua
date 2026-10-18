@@ -180,30 +180,6 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 				if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
 			end,
 		}
-		if def.tooltip then
-			args.tooltip = {
-				order = 2,
-				type = "toggle",
-				name = LPS:L("Tooltip"),
-				desc = LPS:L("Show a tooltip when hovering over this panel."),
-				width = "full",
-				get = function(info)
-					local p = getDb().panels and getDb().panels[info[#info]]
-					return not (p and p.tooltip == false)
-				end,
-				set = function(info, v)
-					local k = info[#info]
-					local db = getDb()
-					db.panels = db.panels or {}
-					local p = db.panels[k]
-					if type(p) ~= "table" then
-						p = {}
-						db.panels[k] = p
-					end
-					p.tooltip = v and true or false
-				end,
-			}
-		end
 		local extra = PANEL_EXTRA[key]
 		if extra then
 			if extra.display then
@@ -308,6 +284,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 	end
 
 	-- Автогенерация группы Panel Options из реестра зарегистрированных панелей
+	local MOVED_TT_PANELS = { quests = true, friends = true, guild = true, experience = true, bags = true }
 	local function buildPanelOptionsArgs()
 		local out = {}
 		local i = 1
@@ -315,7 +292,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 		local list = (LPS.GetSlotKeyList and LPS:GetSlotKeyList()) or {}
 		for _, k in ipairs(list) do
 			local def = LPS.datatexts and LPS.datatexts[k]
-			if def and not added[k] then
+			-- quests/friends/guild/experience/bags: настройки подсказок вынесены
+			-- на вкладку «Подсказка», в автогенерации не участвуют.
+			if def and not added[k] and not MOVED_TT_PANELS[k] then
 				added[k] = true
 				out[k] = makePanelOptionGroup(k, def, i)
 				i = i + 1
@@ -531,6 +510,919 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 				name = LPS:L("Show"),
 				order = 2,
 				args = {
+					chainAnchor = {
+						order = 3,
+						type = "select",
+						name = LPS:L("Frame anchor mode"),
+						desc = LPS:L("Side panels always grow along their edge: left panels attach to the LEFT side of the group, right panels attach to the RIGHT side. This option controls what the FIRST panel of each chain anchors to: the location panel edges (default) or the outer edges of the whole holder frame."),
+						values = {
+							chain = LPS:L("Location panel edges"),
+							location = LPS:L("Holder outer edges"),
+						},
+						get = function() return getDb().layout.chainAnchor or "chain" end,
+						set = function(_, v)
+							getDb().layout.chainAnchor = v
+							if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+							if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+						end,
+					},
+					locpanel = {
+						order = 4,
+						type = "group",
+						name = LPS:L("Location Panel"),
+						inline = true,
+						args = {
+							locMinWidth = {
+								order = 0,
+								type = "range",
+								name = LPS:L("Minimum width"),
+								desc = LPS:L("Sets the minimum width of the location panel."),
+								min = 200,
+								max = 300,
+								step = 1,
+								get = function() return getDb().layout.locMinWidth end,
+								set = function(_, v)
+									getDb().layout.locMinWidth = v
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
+									end
+								end,
+							},
+							locPaddingX = {
+								order = 1,
+								type = "range",
+								name = LPS:L("Text padding X"),
+								desc = LPS:L("Adjust horizontal text padding inside location panel."),
+								min = 20,
+								max = 30,
+								step = 1,
+								get = function() return getDb().layout.locPaddingX end,
+								set = function(_, v)
+									getDb().layout.locPaddingX = v
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
+									end
+								end,
+							},
+							locPaddingY = {
+								order = 2,
+								type = "range",
+								name = LPS:L("Text padding Y"),
+								desc = LPS:L("Adjust vertical text padding inside location panel."),
+								min = 7,
+								max = 20,
+								step = 1,
+								get = function() return getDb().layout.locPaddingY end,
+								set = function(_, v)
+									getDb().layout.locPaddingY = v
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
+									end
+								end,
+							},
+						},
+					},
+					panels = {
+						order = 5,
+						type = "group",
+						name = LPS:L("Panels"),
+						inline = true,
+						args = {
+							dtshow = {
+								order = 0,
+								name = LPS:L("Show panels"),
+								desc = LPS:L("Show/Hide the extra panels (Coords and Time)."),
+								type = "toggle",
+								
+								get = function() return getDb().layout.dtshow end,
+								set = function(_, v)
+									getDb().layout.dtshow = v
+									if LPS.ApplyDTVisibility then
+										LPS:ApplyDTVisibility()
+									end
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
+									end
+								end,
+							},
+							dtMinWidth = {
+								order = 0.5,
+								type = "range",
+								name = LPS:L("Minimum width"),
+								desc = LPS:L("Sets the minimum width of the extra panels."),
+								min = 100,
+								max = 200,
+								step = 1,
+								disabled = function() return getDb().layout.dtshow == false end,
+								get = function() return getDb().layout.dtMinWidth end,
+								set = function(_, v)
+									getDb().layout.dtMinWidth = v
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
+									end
+								end,
+							},
+							spacer1_dt = {
+								order = 0.6,
+								type = "description",
+								name = "",
+							},
+							dtPaddingX = {
+								order = 1,
+								type = "range",
+								name = LPS:L("Text padding X"),
+								desc = LPS:L("Adjust horizontal text padding inside panels."),
+								min = 20,
+								max = 30,
+								step = 1,
+								disabled = function() return getDb().layout.dtshow == false end,
+								get = function() return getDb().layout.dtPaddingX end,
+								set = function(_, v)
+									getDb().layout.dtPaddingX = v
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
+									end
+								end,
+							},
+							dtPaddingY = {
+								order = 2,
+								type = "range",
+								name = LPS:L("Text padding Y"),
+								desc = LPS:L("Adjust vertical text padding inside panels."),
+								min = 7,
+								max = 20,
+								step = 1,
+								disabled = function() return getDb().layout.dtshow == false end,
+								get = function() return getDb().layout.dtPaddingY end,
+								set = function(_, v)
+									getDb().layout.dtPaddingY = v
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
+									end
+								end,
+							},
+						},
+					},
+					panelsGroup = {
+						order = 6,
+						type = "group",
+						name = LPS:L("Side Panels"),
+						inline = true,
+						args = {
+							leftSlot1 = {
+								order = 1.1,
+								name = LPS:L("Left Slot 1"),
+								type = "select",
+								values = function()
+									local vals = { none = LPS:L("None"), coords = LPS:L("Coords"), time = LPS:L("Time"), gold = LPS:L("Gold"), system = LPS:L("System") }
+									if LPS.GetSlotKeyList then
+										for _, k in ipairs(LPS:GetSlotKeyList()) do
+											local def = LPS.datatexts and LPS.datatexts[k]
+											vals[k] = def and def.name or k
+										end
+									end
+									return vals
+								end,
+								get = function()
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["left1"]
+									local v = (s and s.frame) or "NONE"
+									if v == "NONE" or v == "None" or v == "" or v == nil then
+										return "none"
+									end
+									return v
+								end,
+								set = function(_, v)
+									local db = getDb()
+									db.layout.sideSlots = db.layout.sideSlots or {}
+									local ss = db.layout.sideSlots
+									ss.left1 = ss.left1 or { offsetX = 0, offsetY = 0 }
+									local cur = ss.left1
+									v = v or "none"
+									if v ~= "none" then
+										local pCfg = db.panels and db.panels[v]
+										if pCfg and pCfg.enable == false then
+											v = "none"
+										else
+											for _, other in pairs(ss) do
+												if type(other) == "table" and other ~= cur and other.frame == v then
+													other.frame = "NONE"
+												end
+											end
+										end
+									end
+									cur.frame = (v == "none") and "NONE" or v
+									if v == "none" then cascadeClearSlots(ss, "left", 1) end
+									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							leftOffsetX1 = {
+								order = 1.11,
+								name = LPS:L("Left Offset X 1"),
+								type = "range",
+								min = -200,
+								max = 200,
+								step = 1,
+								get = function()
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["left1"]
+									return tonumber(s and s.offsetX) or 0
+								end,
+								set = function(_, v)
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["left1"]
+									if s then s.offsetX = v end
+									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							leftOffsetY1 = {
+								order = 1.12,
+								name = LPS:L("Left Offset Y 1"),
+								type = "range",
+								min = -200,
+								max = 200,
+								step = 1,
+								get = function()
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["left1"]
+									return tonumber(s and s.offsetY) or 0
+								end,
+								set = function(_, v)
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["left1"]
+									if s then s.offsetY = v end
+									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							rightSlot1 = {
+								order = 1.2,
+								name = LPS:L("Right Slot 1"),
+								type = "select",
+								values = function()
+									local vals = { none = LPS:L("None"), coords = LPS:L("Coords"), time = LPS:L("Time"), gold = LPS:L("Gold"), system = LPS:L("System") }
+									if LPS.GetSlotKeyList then
+										for _, k in ipairs(LPS:GetSlotKeyList()) do
+											local def = LPS.datatexts and LPS.datatexts[k]
+											vals[k] = def and def.name or k
+										end
+									end
+									return vals
+								end,
+								get = function()
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["right1"]
+									local v = (s and s.frame) or "NONE"
+									if v == "NONE" or v == "None" or v == "" or v == nil then
+										return "none"
+									end
+									return v
+								end,
+								set = function(_, v)
+									local db = getDb()
+									db.layout.sideSlots = db.layout.sideSlots or {}
+									local ss = db.layout.sideSlots
+									ss.right1 = ss.right1 or { offsetX = 0, offsetY = 0 }
+									local cur = ss.right1
+									v = v or "none"
+									if v ~= "none" then
+										local pCfg = db.panels and db.panels[v]
+										if pCfg and pCfg.enable == false then
+											v = "none"
+										else
+											for _, other in pairs(ss) do
+												if type(other) == "table" and other ~= cur and other.frame == v then
+													other.frame = "NONE"
+												end
+											end
+										end
+									end
+									cur.frame = (v == "none") and "NONE" or v
+									if v == "none" then cascadeClearSlots(ss, "right", 1) end
+									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							rightOffsetX1 = {
+								order = 1.21,
+								name = LPS:L("Right Offset X 1"),
+								type = "range",
+								min = -200,
+								max = 200,
+								step = 1,
+								get = function()
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["right1"]
+									return tonumber(s and s.offsetX) or 0
+								end,
+								set = function(_, v)
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["right1"]
+									if s then s.offsetX = v end
+									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							rightOffsetY1 = {
+								order = 1.22,
+								name = LPS:L("Right Offset Y 1"),
+								type = "range",
+								min = -200,
+								max = 200,
+								step = 1,
+								get = function()
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["right1"]
+									return tonumber(s and s.offsetY) or 0
+								end,
+								set = function(_, v)
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["right1"]
+									if s then s.offsetY = v end
+									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							leftSlot2 = {
+							disabled = makeSlotDisabledFunc("left", 2),
+								order = 2.1,
+								name = LPS:L("Left Slot 2"),
+								type = "select",
+								values = function()
+									local vals = { none = LPS:L("None"), coords = LPS:L("Coords"), time = LPS:L("Time"), gold = LPS:L("Gold"), system = LPS:L("System") }
+									if LPS.GetSlotKeyList then
+										for _, k in ipairs(LPS:GetSlotKeyList()) do
+											local def = LPS.datatexts and LPS.datatexts[k]
+											vals[k] = def and def.name or k
+										end
+									end
+									return vals
+								end,
+								get = function()
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["left2"]
+									local v = (s and s.frame) or "NONE"
+									if v == "NONE" or v == "None" or v == "" or v == nil then
+										return "none"
+									end
+									return v
+								end,
+								set = function(_, v)
+									local db = getDb()
+									db.layout.sideSlots = db.layout.sideSlots or {}
+									local ss = db.layout.sideSlots
+									ss.left2 = ss.left2 or { offsetX = 0, offsetY = 0 }
+									local cur = ss.left2
+									v = v or "none"
+									if v ~= "none" then
+										local pCfg = db.panels and db.panels[v]
+										if pCfg and pCfg.enable == false then
+											v = "none"
+										else
+											for _, other in pairs(ss) do
+												if type(other) == "table" and other ~= cur and other.frame == v then
+													other.frame = "NONE"
+												end
+											end
+										end
+									end
+									cur.frame = (v == "none") and "NONE" or v
+									if v == "none" then cascadeClearSlots(ss, "left", 2) end
+									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							leftOffsetX2 = {
+							disabled = makeSlotDisabledFunc("left", 2),
+								order = 2.11,
+								name = LPS:L("Left Offset X 2"),
+								type = "range",
+								min = -200,
+								max = 200,
+								step = 1,
+								get = function()
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["left2"]
+									return tonumber(s and s.offsetX) or 0
+								end,
+								set = function(_, v)
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["left2"]
+									if s then s.offsetX = v end
+									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							leftOffsetY2 = {
+							disabled = makeSlotDisabledFunc("left", 2),
+								order = 2.12,
+								name = LPS:L("Left Offset Y 2"),
+								type = "range",
+								min = -200,
+								max = 200,
+								step = 1,
+								get = function()
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["left2"]
+									return tonumber(s and s.offsetY) or 0
+								end,
+								set = function(_, v)
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["left2"]
+									if s then s.offsetY = v end
+									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							rightSlot2 = {
+							disabled = makeSlotDisabledFunc("right", 2),
+								order = 2.2,
+								name = LPS:L("Right Slot 2"),
+								type = "select",
+								values = function()
+									local vals = { none = LPS:L("None"), coords = LPS:L("Coords"), time = LPS:L("Time"), gold = LPS:L("Gold"), system = LPS:L("System") }
+									if LPS.GetSlotKeyList then
+										for _, k in ipairs(LPS:GetSlotKeyList()) do
+											local def = LPS.datatexts and LPS.datatexts[k]
+											vals[k] = def and def.name or k
+										end
+									end
+									return vals
+								end,
+								get = function()
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["right2"]
+									local v = (s and s.frame) or "NONE"
+									if v == "NONE" or v == "None" or v == "" or v == nil then
+										return "none"
+									end
+									return v
+								end,
+								set = function(_, v)
+									local db = getDb()
+									db.layout.sideSlots = db.layout.sideSlots or {}
+									local ss = db.layout.sideSlots
+									ss.right2 = ss.right2 or { offsetX = 0, offsetY = 0 }
+									local cur = ss.right2
+									v = v or "none"
+									if v ~= "none" then
+										local pCfg = db.panels and db.panels[v]
+										if pCfg and pCfg.enable == false then
+											v = "none"
+										else
+											for _, other in pairs(ss) do
+												if type(other) == "table" and other ~= cur and other.frame == v then
+													other.frame = "NONE"
+												end
+											end
+										end
+									end
+									cur.frame = (v == "none") and "NONE" or v
+									if v == "none" then cascadeClearSlots(ss, "right", 2) end
+									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							rightOffsetX2 = {
+							disabled = makeSlotDisabledFunc("right", 2),
+								order = 2.21,
+								name = LPS:L("Right Offset X 2"),
+								type = "range",
+								min = -200,
+								max = 200,
+								step = 1,
+								get = function()
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["right2"]
+									return tonumber(s and s.offsetX) or 0
+								end,
+								set = function(_, v)
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["right2"]
+									if s then s.offsetX = v end
+									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							rightOffsetY2 = {
+							disabled = makeSlotDisabledFunc("right", 2),
+								order = 2.22,
+								name = LPS:L("Right Offset Y 2"),
+								type = "range",
+								min = -200,
+								max = 200,
+								step = 1,
+								get = function()
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["right2"]
+									return tonumber(s and s.offsetY) or 0
+								end,
+								set = function(_, v)
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["right2"]
+									if s then s.offsetY = v end
+									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							leftSlot3 = {
+							disabled = makeSlotDisabledFunc("left", 3),
+								order = 3.1,
+								name = LPS:L("Left Slot 3"),
+								type = "select",
+								values = function()
+									local vals = { none = LPS:L("None"), coords = LPS:L("Coords"), time = LPS:L("Time"), gold = LPS:L("Gold"), system = LPS:L("System") }
+									if LPS.GetSlotKeyList then
+										for _, k in ipairs(LPS:GetSlotKeyList()) do
+											local def = LPS.datatexts and LPS.datatexts[k]
+											vals[k] = def and def.name or k
+										end
+									end
+									return vals
+								end,
+								get = function()
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["left3"]
+									local v = (s and s.frame) or "NONE"
+									if v == "NONE" or v == "None" or v == "" or v == nil then
+										return "none"
+									end
+									return v
+								end,
+								set = function(_, v)
+									local db = getDb()
+									db.layout.sideSlots = db.layout.sideSlots or {}
+									local ss = db.layout.sideSlots
+									ss.left3 = ss.left3 or { offsetX = 0, offsetY = 0 }
+									local cur = ss.left3
+									v = v or "none"
+									if v ~= "none" then
+										local pCfg = db.panels and db.panels[v]
+										if pCfg and pCfg.enable == false then
+											v = "none"
+										else
+											for _, other in pairs(ss) do
+												if type(other) == "table" and other ~= cur and other.frame == v then
+													other.frame = "NONE"
+												end
+											end
+										end
+									end
+									cur.frame = (v == "none") and "NONE" or v
+									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							leftOffsetX3 = {
+							disabled = makeSlotDisabledFunc("left", 3),
+								order = 3.11,
+								name = LPS:L("Left Offset X 3"),
+								type = "range",
+								min = -200,
+								max = 200,
+								step = 1,
+								get = function()
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["left3"]
+									return tonumber(s and s.offsetX) or 0
+								end,
+								set = function(_, v)
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["left3"]
+									if s then s.offsetX = v end
+									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							leftOffsetY3 = {
+							disabled = makeSlotDisabledFunc("left", 3),
+								order = 3.12,
+								name = LPS:L("Left Offset Y 3"),
+								type = "range",
+								min = -200,
+								max = 200,
+								step = 1,
+								get = function()
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["left3"]
+									return tonumber(s and s.offsetY) or 0
+								end,
+								set = function(_, v)
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["left3"]
+									if s then s.offsetY = v end
+									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							rightSlot3 = {
+							disabled = makeSlotDisabledFunc("right", 3),
+								order = 3.2,
+								name = LPS:L("Right Slot 3"),
+								type = "select",
+								values = function()
+									local vals = { none = LPS:L("None"), coords = LPS:L("Coords"), time = LPS:L("Time"), gold = LPS:L("Gold"), system = LPS:L("System") }
+									if LPS.GetSlotKeyList then
+										for _, k in ipairs(LPS:GetSlotKeyList()) do
+											local def = LPS.datatexts and LPS.datatexts[k]
+											vals[k] = def and def.name or k
+										end
+									end
+									return vals
+								end,
+								get = function()
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["right3"]
+									local v = (s and s.frame) or "NONE"
+									if v == "NONE" or v == "None" or v == "" or v == nil then
+										return "none"
+									end
+									return v
+								end,
+								set = function(_, v)
+									local db = getDb()
+									db.layout.sideSlots = db.layout.sideSlots or {}
+									local ss = db.layout.sideSlots
+									ss.right3 = ss.right3 or { offsetX = 0, offsetY = 0 }
+									local cur = ss.right3
+									v = v or "none"
+									if v ~= "none" then
+										local pCfg = db.panels and db.panels[v]
+										if pCfg and pCfg.enable == false then
+											v = "none"
+										else
+											for _, other in pairs(ss) do
+												if type(other) == "table" and other ~= cur and other.frame == v then
+													other.frame = "NONE"
+												end
+											end
+										end
+									end
+									cur.frame = (v == "none") and "NONE" or v
+									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							rightOffsetX3 = {
+							disabled = makeSlotDisabledFunc("right", 3),
+								order = 3.21,
+								name = LPS:L("Right Offset X 3"),
+								type = "range",
+								min = -200,
+								max = 200,
+								step = 1,
+								get = function()
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["right3"]
+									return tonumber(s and s.offsetX) or 0
+								end,
+								set = function(_, v)
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["right3"]
+									if s then s.offsetX = v end
+									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							rightOffsetY3 = {
+							disabled = makeSlotDisabledFunc("right", 3),
+								order = 3.22,
+								name = LPS:L("Right Offset Y 3"),
+								type = "range",
+								min = -200,
+								max = 200,
+								step = 1,
+								get = function()
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["right3"]
+									return tonumber(s and s.offsetY) or 0
+								end,
+								set = function(_, v)
+									local ss = getDb().layout.sideSlots
+									local s = ss and ss["right3"]
+									if s then s.offsetY = v end
+									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+						},
+					},
+					spacingGroup = {
+						order = 7,
+						type = "group",
+						name = LPS:L("Spacing"),
+						inline = true,
+						args = {
+							spacingAuto = {
+								order = 1,
+								type = "toggle",
+								name = LPS:L("Auto"),
+								desc = LPS:L("Automatically manage spacing between panels."),
+								get = function() return getDb().layout.spacingAuto end,
+								set = function(_, v)
+									getDb().layout.spacingAuto = v
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
+									end
+								end,
+							},
+							spacingManual = {
+								order = 2,
+								type = "range",
+								name = LPS:L("Manual"),
+								desc = LPS:L("Set spacing between panels."),
+								min = 0,
+								max = 50,
+								step = 1,
+								disabled = function() return getDb().layout.spacingAuto end,
+								get = function() return getDb().layout.spacingManual end,
+								set = function(_, v)
+									getDb().layout.spacingManual = v
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
+									end
+								end,
+							},
+						},
+					},
+					style = {
+						type = "group",
+						name = LPS:L("Style"),
+						order = 8,
+						inline = true,
+						args = {
+							frameStrata = {
+								type = "select",
+								name = LPS:L("Frame strata"),
+								desc = LPS:L("Controls how high the LocationPlus panels are drawn."),
+								order = 0,
+								values = strataValues,
+								get = function() return getDb().layout.frameStrata end,
+								set = function(_, v)
+									getDb().layout.frameStrata = v
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
+									end
+								end,
+							},
+							frameLevel = {
+								type = "range",
+								name = LPS:L("Frame level"),
+								desc = LPS:L("Fine-tune draw order within the selected strata."),
+								order = 0.1,
+								min = 0,
+								max = 1000,
+								step = 1,
+								get = function() return tonumber(getDb().layout.frameLevel) or 1 end,
+								set = function(_, v)
+									getDb().layout.frameLevel = v
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
+									end
+								end,
+							},
+							spacer1_fontSize = {
+								type = "description",
+								name = " ",
+								order = 0.5,
+							},
+							fontSize = {
+								type = "range",
+								name = LPS:L("Font size"),
+								desc = LPS:L("Set font size."),
+								order = 1.1,
+								min = 8,
+								max = 20,
+								step = 1,
+								get = function() return getDb().settings.fontSize end,
+								set = function(_, v)
+									getDb().settings.fontSize = v
+									if LPS.ApplyStyle then
+										LPS:ApplyStyle()
+									end
+								end,
+							},
+							borderSize = {
+								type = "range",
+								name = LPS:L("Border size"),
+								desc = LPS:L("Set border thickness."),
+								order = 1.2,
+	min = 0,
+								max = 6,
+								step = 1,
+								get = function() return getDb().settings.borderSize end,
+								set = function(_, v)
+									getDb().settings.borderSize = v
+									if LPS.ApplyStyle then
+										LPS:ApplyStyle()
+									end
+								end,
+							},
+							spacer1_bgEnable = {
+								type = "description",
+								name = " ",
+								order = 1.5,
+							},
+							bgEnable = {
+								type = "toggle",
+								name = LPS:L("Enable background"),
+								desc = LPS:L("Toggle background on the panel."),
+								order = 2.1,
+								get = function() return getDb().settings.colors.bgEnable end,
+								set = function(_, v)
+									getDb().settings.colors.bgEnable = v
+									if LPS.ApplyStyle then
+										LPS:ApplyStyle()
+									end
+								end,
+							},
+							bgColor = {
+								type = "color",
+								name = LPS:L("Background color"),
+								desc = LPS:L("Set background color."),
+								order = 2.2,
+								hasAlpha = true,
+								get = function()
+									local c = getDb().settings.colors.bg
+									return c[1], c[2], c[3], c[4]
+								end,
+								set = function(_, r, g, b, a)
+									local c = getDb().settings.colors.bg
+									c[1], c[2], c[3], c[4] = r, g, b, a
+									if LPS.ApplyStyle then
+										LPS:ApplyStyle()
+									end
+								end,
+							},
+							borderColor = {
+								type = "color",
+								name = LPS:L("Border color"),
+								desc = LPS:L("Set border color."),
+								order = 3.3,
+								hasAlpha = true,
+								get = function()
+									local c = getDb().settings.colors.border
+									return c[1], c[2], c[3], c[4]
+								end,
+								set = function(_, r, g, b, a)
+									local c = getDb().settings.colors.border
+									c[1], c[2], c[3], c[4] = r, g, b, a
+									if LPS.ApplyStyle then
+										LPS:ApplyStyle()
+									end
+								end,
+							},
+						},
+					},
+					colors = {
+						order = 9,
+						type = "group",
+						name = LPS:L("Colors"),
+						inline = true,
+						args = {
+							customColor = {
+								order = 1,
+								name = LPS:L("Text color"),
+								type = "select",
+								values = {
+									[1] = LPS:L("Custom"),
+									[2] = LPS:L("Class Colors"),
+									[3] = LPS:L("Default"),
+								},
+								get = function() return getDb().layout.customColor end,
+								set = function(_, v)
+									getDb().layout.customColor = v
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
+									end
+								end,
+							},
+							userColor = {
+								order = 2,
+								name = LPS:L("Text custom color"),
+								desc = LPS:L("Pick a custom color for panel text."),
+								type = "color",
+								disabled = function() return getDb().layout.customColor ~= 1 end,
+								get = function()
+									local c = getDb().layout.userColor
+									return (c and c.r) or 1, (c and c.g) or 1, (c and c.b) or 1
+								end,
+								set = function(_, r, g, b)
+									local c = getDb().layout.userColor
+									if not c then
+										c = { r = 1, g = 1, b = 1 }
+										getDb().layout.userColor = c
+									end
+									c.r, c.g, c.b = r, g, b
+									if LPS.ScheduleRefresh then
+										LPS:ScheduleRefresh()
+									end
+								end,
+							},
+						},
+					},
 					locationGroup = {
 						order = 1,
 						type = "group",
@@ -1088,6 +1980,181 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								set = function(_, v) getDb().tooltips.time.playedTime = v end,
 							}
 						},
+						quests = {
+							order = 50,
+							type = "group",
+							name = LPS:L("Quest Log"),
+							inline = true,
+							args = {
+								enable = {
+									order = 1,
+									name = LPS:L("Enable"),
+									desc = LPS:L("Show a tooltip when hovering over this panel."),
+									type = "toggle",
+									disabled = function() return not getDb().tooltips.visibility.enable end,
+									get = function() return getDb().tooltips.quests.enable end,
+									set = function(_, v) getDb().tooltips.quests.enable = v end,
+								},
+								maxLimit = {
+									order = 2,
+									type = "range",
+									name = LPS:L("Max entries in tooltip"),
+									min = 1,
+									max = 30,
+									step = 1,
+									disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.quests.enable end,
+									get = function() return tonumber(getDb().tooltips.quests.maxLimit) or 15 end,
+									set = function(_, v) getDb().tooltips.quests.maxLimit = math.floor(v) end,
+								},
+							},
+						},
+						friends = {
+							order = 51,
+							type = "group",
+							name = LPS:L("Friends"),
+							inline = true,
+							args = {
+								enable = {
+									order = 1,
+									name = LPS:L("Enable"),
+									desc = LPS:L("Show a tooltip when hovering over this panel."),
+									type = "toggle",
+									disabled = function() return not getDb().tooltips.visibility.enable end,
+									get = function() return getDb().tooltips.friends.enable end,
+									set = function(_, v) getDb().tooltips.friends.enable = v end,
+								},
+								maxLimit = {
+									order = 2,
+									type = "range",
+									name = LPS:L("Max entries in tooltip"),
+									min = 1,
+									max = 30,
+									step = 1,
+									disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.friends.enable end,
+									get = function() return tonumber(getDb().tooltips.friends.maxLimit) or 15 end,
+									set = function(_, v) getDb().tooltips.friends.maxLimit = math.floor(v) end,
+								},
+							},
+						},
+						guild = {
+							order = 52,
+							type = "group",
+							name = LPS:L("Guild"),
+							inline = true,
+							args = {
+								enable = {
+									order = 1,
+									name = LPS:L("Enable"),
+									desc = LPS:L("Show a tooltip when hovering over this panel."),
+									type = "toggle",
+									disabled = function() return not getDb().tooltips.visibility.enable end,
+									get = function() return getDb().tooltips.guild.enable end,
+									set = function(_, v) getDb().tooltips.guild.enable = v end,
+								},
+								maxLimit = {
+									order = 2,
+									type = "range",
+									name = LPS:L("Max entries in tooltip"),
+									min = 1,
+									max = 30,
+									step = 1,
+									disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.guild.enable end,
+									get = function() return tonumber(getDb().tooltips.guild.maxLimit) or 15 end,
+									set = function(_, v) getDb().tooltips.guild.maxLimit = math.floor(v) end,
+								},
+							},
+						},
+						experience = {
+							order = 53,
+							type = "group",
+							name = LPS:L("Experience"),
+							inline = true,
+							args = {
+								enable = {
+									order = 1,
+									name = LPS:L("Enable"),
+									desc = LPS:L("Show a tooltip when hovering over this panel."),
+									type = "toggle",
+									disabled = function() return not getDb().tooltips.visibility.enable end,
+									get = function() return getDb().tooltips.experience.enable end,
+									set = function(_, v) getDb().tooltips.experience.enable = v end,
+								},
+								display = {
+									order = 2,
+									type = "select",
+									name = LPS:L("Display"),
+									values = {
+										PERCENT = LPS:L("Percent"),
+										CURMAX = LPS:L("Current / Max"),
+										CUR = LPS:L("Current"),
+										REM = LPS:L("Remaining"),
+									},
+									disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.experience.enable end,
+									get = function() return getDb().tooltips.experience.display or "PERCENT" end,
+									set = function(_, v)
+										getDb().tooltips.experience.display = v
+										if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+									end,
+								},
+							},
+						},
+						bags = {
+							order = 54,
+							type = "group",
+							name = LPS:L("Bags"),
+							inline = true,
+							args = {
+								enable = {
+									order = 1,
+									name = LPS:L("Enable"),
+									desc = LPS:L("Show a tooltip when hovering over this panel."),
+									type = "toggle",
+									disabled = function() return not getDb().tooltips.visibility.enable end,
+									get = function() return getDb().tooltips.bags.enable end,
+									set = function(_, v) getDb().tooltips.bags.enable = v end,
+								},
+								display = {
+									order = 2,
+									type = "select",
+									name = LPS:L("Display"),
+									values = {
+										USED_TOTAL = LPS:L("Used / Total"),
+										FREE = LPS:L("Free slots"),
+										USED = LPS:L("Used slots"),
+									},
+									disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.bags.enable end,
+									get = function() return getDb().tooltips.bags.display or "USED_TOTAL" end,
+									set = function(_, v)
+										getDb().tooltips.bags.display = v
+										if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+									end,
+								},
+								noLabel = {
+									order = 3,
+									type = "toggle",
+									name = LPS:L("Hide label"),
+									width = "half",
+									disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.bags.enable end,
+									get = function() return getDb().tooltips.bags.noLabel or false end,
+									set = function(_, v)
+										getDb().tooltips.bags.noLabel = v and true or false
+										if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+									end,
+								},
+								label = {
+									order = 4,
+									type = "input",
+									name = LPS:L("Custom label"),
+									width = "half",
+									disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.bags.enable or getDb().tooltips.bags.noLabel end,
+									get = function() return getDb().tooltips.bags.label or "" end,
+									set = function(_, v)
+										getDb().tooltips.bags.label = v or ""
+										if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+									end,
+								},
+							},
+						},
 					},
 				},
 			},
@@ -1096,705 +2163,6 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 				name = LPS:L("Layout"),
 				order = 4,
 				args = {
-					chainAnchor = {
-						order = 0,
-						type = "select",
-						name = LPS:L("Frame anchor mode"),
-						desc = LPS:L("Side panels always grow along their edge: left panels attach to the LEFT side of the group, right panels attach to the RIGHT side. This option controls what the FIRST panel of each chain anchors to: the location panel edges (default) or the outer edges of the whole holder frame."),
-						values = {
-							chain = LPS:L("Location panel edges"),
-							location = LPS:L("Holder outer edges"),
-						},
-						get = function() return getDb().layout.chainAnchor or "chain" end,
-						set = function(_, v)
-							getDb().layout.chainAnchor = v
-							if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-							if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-						end,
-					},
-					locpanel = {
-						order = 1,
-						type = "group",
-						name = LPS:L("Location Panel"),
-						inline = true,
-						args = {
-							locMinWidth = {
-								order = 0,
-								type = "range",
-								name = LPS:L("Minimum width"),
-								desc = LPS:L("Sets the minimum width of the location panel."),
-								min = 200,
-								max = 300,
-								step = 1,
-								get = function() return getDb().layout.locMinWidth end,
-								set = function(_, v)
-									getDb().layout.locMinWidth = v
-									if LPS.ScheduleRefresh then
-										LPS:ScheduleRefresh()
-									end
-								end,
-							},
-							locPaddingX = {
-								order = 1,
-								type = "range",
-								name = LPS:L("Text padding X"),
-								desc = LPS:L("Adjust horizontal text padding inside location panel."),
-								min = 20,
-								max = 30,
-								step = 1,
-								get = function() return getDb().layout.locPaddingX end,
-								set = function(_, v)
-									getDb().layout.locPaddingX = v
-									if LPS.ScheduleRefresh then
-										LPS:ScheduleRefresh()
-									end
-								end,
-							},
-							locPaddingY = {
-								order = 2,
-								type = "range",
-								name = LPS:L("Text padding Y"),
-								desc = LPS:L("Adjust vertical text padding inside location panel."),
-								min = 7,
-								max = 20,
-								step = 1,
-								get = function() return getDb().layout.locPaddingY end,
-								set = function(_, v)
-									getDb().layout.locPaddingY = v
-									if LPS.ScheduleRefresh then
-										LPS:ScheduleRefresh()
-									end
-								end,
-							},
-						},
-					},
-					panels = {
-						order = 2,
-						type = "group",
-						name = LPS:L("Panels"),
-						inline = true,
-						args = {
-							dtshow = {
-								order = 0,
-								name = LPS:L("Show panels"),
-								desc = LPS:L("Show/Hide the extra panels (Coords and Time)."),
-								type = "toggle",
-								
-								get = function() return getDb().layout.dtshow end,
-								set = function(_, v)
-									getDb().layout.dtshow = v
-									if LPS.ApplyDTVisibility then
-										LPS:ApplyDTVisibility()
-									end
-									if LPS.ScheduleRefresh then
-										LPS:ScheduleRefresh()
-									end
-								end,
-							},
-							dtMinWidth = {
-								order = 0.5,
-								type = "range",
-								name = LPS:L("Minimum width"),
-								desc = LPS:L("Sets the minimum width of the extra panels."),
-								min = 100,
-								max = 200,
-								step = 1,
-								disabled = function() return getDb().layout.dtshow == false end,
-								get = function() return getDb().layout.dtMinWidth end,
-								set = function(_, v)
-									getDb().layout.dtMinWidth = v
-									if LPS.ScheduleRefresh then
-										LPS:ScheduleRefresh()
-									end
-								end,
-							},
-							spacer1_dt = {
-								order = 0.6,
-								type = "description",
-								name = "",
-							},
-							dtPaddingX = {
-								order = 1,
-								type = "range",
-								name = LPS:L("Text padding X"),
-								desc = LPS:L("Adjust horizontal text padding inside panels."),
-								min = 20,
-								max = 30,
-								step = 1,
-								disabled = function() return getDb().layout.dtshow == false end,
-								get = function() return getDb().layout.dtPaddingX end,
-								set = function(_, v)
-									getDb().layout.dtPaddingX = v
-									if LPS.ScheduleRefresh then
-										LPS:ScheduleRefresh()
-									end
-								end,
-							},
-							dtPaddingY = {
-								order = 2,
-								type = "range",
-								name = LPS:L("Text padding Y"),
-								desc = LPS:L("Adjust vertical text padding inside panels."),
-								min = 7,
-								max = 20,
-								step = 1,
-								disabled = function() return getDb().layout.dtshow == false end,
-								get = function() return getDb().layout.dtPaddingY end,
-								set = function(_, v)
-									getDb().layout.dtPaddingY = v
-									if LPS.ScheduleRefresh then
-										LPS:ScheduleRefresh()
-									end
-								end,
-							},
-						},
-					},
-					panelsGroup = {
-						order = 3,
-						type = "group",
-						name = LPS:L("Side Panels"),
-						inline = true,
-						args = {
-							leftSlot1 = {
-								order = 1.1,
-								name = LPS:L("Left Slot 1"),
-								type = "select",
-								values = function()
-									local vals = { none = LPS:L("None"), coords = LPS:L("Coords"), time = LPS:L("Time"), gold = LPS:L("Gold"), system = LPS:L("System") }
-									if LPS.GetSlotKeyList then
-										for _, k in ipairs(LPS:GetSlotKeyList()) do
-											local def = LPS.datatexts and LPS.datatexts[k]
-											vals[k] = def and def.name or k
-										end
-									end
-									return vals
-								end,
-								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left1"]
-									local v = (s and s.frame) or "NONE"
-									if v == "NONE" or v == "None" or v == "" or v == nil then
-										return "none"
-									end
-									return v
-								end,
-								set = function(_, v)
-									local db = getDb()
-									db.layout.sideSlots = db.layout.sideSlots or {}
-									local ss = db.layout.sideSlots
-									ss.left1 = ss.left1 or { offsetX = 0, offsetY = 0 }
-									local cur = ss.left1
-									v = v or "none"
-									if v ~= "none" then
-										local pCfg = db.panels and db.panels[v]
-										if pCfg and pCfg.enable == false then
-											v = "none"
-										else
-											for _, other in pairs(ss) do
-												if type(other) == "table" and other ~= cur and other.frame == v then
-													other.frame = "NONE"
-												end
-											end
-										end
-									end
-									cur.frame = (v == "none") and "NONE" or v
-									if v == "none" then cascadeClearSlots(ss, "left", 1) end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							leftOffsetX1 = {
-								order = 1.11,
-								name = LPS:L("Left Offset X 1"),
-								type = "range",
-								min = -200,
-								max = 200,
-								step = 1,
-								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left1"]
-									return tonumber(s and s.offsetX) or 0
-								end,
-								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left1"]
-									if s then s.offsetX = v end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							leftOffsetY1 = {
-								order = 1.12,
-								name = LPS:L("Left Offset Y 1"),
-								type = "range",
-								min = -200,
-								max = 200,
-								step = 1,
-								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left1"]
-									return tonumber(s and s.offsetY) or 0
-								end,
-								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left1"]
-									if s then s.offsetY = v end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							rightSlot1 = {
-								order = 1.2,
-								name = LPS:L("Right Slot 1"),
-								type = "select",
-								values = function()
-									local vals = { none = LPS:L("None"), coords = LPS:L("Coords"), time = LPS:L("Time"), gold = LPS:L("Gold"), system = LPS:L("System") }
-									if LPS.GetSlotKeyList then
-										for _, k in ipairs(LPS:GetSlotKeyList()) do
-											local def = LPS.datatexts and LPS.datatexts[k]
-											vals[k] = def and def.name or k
-										end
-									end
-									return vals
-								end,
-								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right1"]
-									local v = (s and s.frame) or "NONE"
-									if v == "NONE" or v == "None" or v == "" or v == nil then
-										return "none"
-									end
-									return v
-								end,
-								set = function(_, v)
-									local db = getDb()
-									db.layout.sideSlots = db.layout.sideSlots or {}
-									local ss = db.layout.sideSlots
-									ss.right1 = ss.right1 or { offsetX = 0, offsetY = 0 }
-									local cur = ss.right1
-									v = v or "none"
-									if v ~= "none" then
-										local pCfg = db.panels and db.panels[v]
-										if pCfg and pCfg.enable == false then
-											v = "none"
-										else
-											for _, other in pairs(ss) do
-												if type(other) == "table" and other ~= cur and other.frame == v then
-													other.frame = "NONE"
-												end
-											end
-										end
-									end
-									cur.frame = (v == "none") and "NONE" or v
-									if v == "none" then cascadeClearSlots(ss, "right", 1) end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							rightOffsetX1 = {
-								order = 1.21,
-								name = LPS:L("Right Offset X 1"),
-								type = "range",
-								min = -200,
-								max = 200,
-								step = 1,
-								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right1"]
-									return tonumber(s and s.offsetX) or 0
-								end,
-								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right1"]
-									if s then s.offsetX = v end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							rightOffsetY1 = {
-								order = 1.22,
-								name = LPS:L("Right Offset Y 1"),
-								type = "range",
-								min = -200,
-								max = 200,
-								step = 1,
-								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right1"]
-									return tonumber(s and s.offsetY) or 0
-								end,
-								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right1"]
-									if s then s.offsetY = v end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							leftSlot2 = {
-							disabled = makeSlotDisabledFunc("left", 2),
-								order = 2.1,
-								name = LPS:L("Left Slot 2"),
-								type = "select",
-								values = function()
-									local vals = { none = LPS:L("None"), coords = LPS:L("Coords"), time = LPS:L("Time"), gold = LPS:L("Gold"), system = LPS:L("System") }
-									if LPS.GetSlotKeyList then
-										for _, k in ipairs(LPS:GetSlotKeyList()) do
-											local def = LPS.datatexts and LPS.datatexts[k]
-											vals[k] = def and def.name or k
-										end
-									end
-									return vals
-								end,
-								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left2"]
-									local v = (s and s.frame) or "NONE"
-									if v == "NONE" or v == "None" or v == "" or v == nil then
-										return "none"
-									end
-									return v
-								end,
-								set = function(_, v)
-									local db = getDb()
-									db.layout.sideSlots = db.layout.sideSlots or {}
-									local ss = db.layout.sideSlots
-									ss.left2 = ss.left2 or { offsetX = 0, offsetY = 0 }
-									local cur = ss.left2
-									v = v or "none"
-									if v ~= "none" then
-										local pCfg = db.panels and db.panels[v]
-										if pCfg and pCfg.enable == false then
-											v = "none"
-										else
-											for _, other in pairs(ss) do
-												if type(other) == "table" and other ~= cur and other.frame == v then
-													other.frame = "NONE"
-												end
-											end
-										end
-									end
-									cur.frame = (v == "none") and "NONE" or v
-									if v == "none" then cascadeClearSlots(ss, "left", 2) end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							leftOffsetX2 = {
-							disabled = makeSlotDisabledFunc("left", 2),
-								order = 2.11,
-								name = LPS:L("Left Offset X 2"),
-								type = "range",
-								min = -200,
-								max = 200,
-								step = 1,
-								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left2"]
-									return tonumber(s and s.offsetX) or 0
-								end,
-								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left2"]
-									if s then s.offsetX = v end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							leftOffsetY2 = {
-							disabled = makeSlotDisabledFunc("left", 2),
-								order = 2.12,
-								name = LPS:L("Left Offset Y 2"),
-								type = "range",
-								min = -200,
-								max = 200,
-								step = 1,
-								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left2"]
-									return tonumber(s and s.offsetY) or 0
-								end,
-								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left2"]
-									if s then s.offsetY = v end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							rightSlot2 = {
-							disabled = makeSlotDisabledFunc("right", 2),
-								order = 2.2,
-								name = LPS:L("Right Slot 2"),
-								type = "select",
-								values = function()
-									local vals = { none = LPS:L("None"), coords = LPS:L("Coords"), time = LPS:L("Time"), gold = LPS:L("Gold"), system = LPS:L("System") }
-									if LPS.GetSlotKeyList then
-										for _, k in ipairs(LPS:GetSlotKeyList()) do
-											local def = LPS.datatexts and LPS.datatexts[k]
-											vals[k] = def and def.name or k
-										end
-									end
-									return vals
-								end,
-								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right2"]
-									local v = (s and s.frame) or "NONE"
-									if v == "NONE" or v == "None" or v == "" or v == nil then
-										return "none"
-									end
-									return v
-								end,
-								set = function(_, v)
-									local db = getDb()
-									db.layout.sideSlots = db.layout.sideSlots or {}
-									local ss = db.layout.sideSlots
-									ss.right2 = ss.right2 or { offsetX = 0, offsetY = 0 }
-									local cur = ss.right2
-									v = v or "none"
-									if v ~= "none" then
-										local pCfg = db.panels and db.panels[v]
-										if pCfg and pCfg.enable == false then
-											v = "none"
-										else
-											for _, other in pairs(ss) do
-												if type(other) == "table" and other ~= cur and other.frame == v then
-													other.frame = "NONE"
-												end
-											end
-										end
-									end
-									cur.frame = (v == "none") and "NONE" or v
-									if v == "none" then cascadeClearSlots(ss, "right", 2) end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							rightOffsetX2 = {
-							disabled = makeSlotDisabledFunc("right", 2),
-								order = 2.21,
-								name = LPS:L("Right Offset X 2"),
-								type = "range",
-								min = -200,
-								max = 200,
-								step = 1,
-								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right2"]
-									return tonumber(s and s.offsetX) or 0
-								end,
-								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right2"]
-									if s then s.offsetX = v end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							rightOffsetY2 = {
-							disabled = makeSlotDisabledFunc("right", 2),
-								order = 2.22,
-								name = LPS:L("Right Offset Y 2"),
-								type = "range",
-								min = -200,
-								max = 200,
-								step = 1,
-								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right2"]
-									return tonumber(s and s.offsetY) or 0
-								end,
-								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right2"]
-									if s then s.offsetY = v end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							leftSlot3 = {
-							disabled = makeSlotDisabledFunc("left", 3),
-								order = 3.1,
-								name = LPS:L("Left Slot 3"),
-								type = "select",
-								values = function()
-									local vals = { none = LPS:L("None"), coords = LPS:L("Coords"), time = LPS:L("Time"), gold = LPS:L("Gold"), system = LPS:L("System") }
-									if LPS.GetSlotKeyList then
-										for _, k in ipairs(LPS:GetSlotKeyList()) do
-											local def = LPS.datatexts and LPS.datatexts[k]
-											vals[k] = def and def.name or k
-										end
-									end
-									return vals
-								end,
-								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left3"]
-									local v = (s and s.frame) or "NONE"
-									if v == "NONE" or v == "None" or v == "" or v == nil then
-										return "none"
-									end
-									return v
-								end,
-								set = function(_, v)
-									local db = getDb()
-									db.layout.sideSlots = db.layout.sideSlots or {}
-									local ss = db.layout.sideSlots
-									ss.left3 = ss.left3 or { offsetX = 0, offsetY = 0 }
-									local cur = ss.left3
-									v = v or "none"
-									if v ~= "none" then
-										local pCfg = db.panels and db.panels[v]
-										if pCfg and pCfg.enable == false then
-											v = "none"
-										else
-											for _, other in pairs(ss) do
-												if type(other) == "table" and other ~= cur and other.frame == v then
-													other.frame = "NONE"
-												end
-											end
-										end
-									end
-									cur.frame = (v == "none") and "NONE" or v
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							leftOffsetX3 = {
-							disabled = makeSlotDisabledFunc("left", 3),
-								order = 3.11,
-								name = LPS:L("Left Offset X 3"),
-								type = "range",
-								min = -200,
-								max = 200,
-								step = 1,
-								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left3"]
-									return tonumber(s and s.offsetX) or 0
-								end,
-								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left3"]
-									if s then s.offsetX = v end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							leftOffsetY3 = {
-							disabled = makeSlotDisabledFunc("left", 3),
-								order = 3.12,
-								name = LPS:L("Left Offset Y 3"),
-								type = "range",
-								min = -200,
-								max = 200,
-								step = 1,
-								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left3"]
-									return tonumber(s and s.offsetY) or 0
-								end,
-								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left3"]
-									if s then s.offsetY = v end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							rightSlot3 = {
-							disabled = makeSlotDisabledFunc("right", 3),
-								order = 3.2,
-								name = LPS:L("Right Slot 3"),
-								type = "select",
-								values = function()
-									local vals = { none = LPS:L("None"), coords = LPS:L("Coords"), time = LPS:L("Time"), gold = LPS:L("Gold"), system = LPS:L("System") }
-									if LPS.GetSlotKeyList then
-										for _, k in ipairs(LPS:GetSlotKeyList()) do
-											local def = LPS.datatexts and LPS.datatexts[k]
-											vals[k] = def and def.name or k
-										end
-									end
-									return vals
-								end,
-								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right3"]
-									local v = (s and s.frame) or "NONE"
-									if v == "NONE" or v == "None" or v == "" or v == nil then
-										return "none"
-									end
-									return v
-								end,
-								set = function(_, v)
-									local db = getDb()
-									db.layout.sideSlots = db.layout.sideSlots or {}
-									local ss = db.layout.sideSlots
-									ss.right3 = ss.right3 or { offsetX = 0, offsetY = 0 }
-									local cur = ss.right3
-									v = v or "none"
-									if v ~= "none" then
-										local pCfg = db.panels and db.panels[v]
-										if pCfg and pCfg.enable == false then
-											v = "none"
-										else
-											for _, other in pairs(ss) do
-												if type(other) == "table" and other ~= cur and other.frame == v then
-													other.frame = "NONE"
-												end
-											end
-										end
-									end
-									cur.frame = (v == "none") and "NONE" or v
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							rightOffsetX3 = {
-							disabled = makeSlotDisabledFunc("right", 3),
-								order = 3.21,
-								name = LPS:L("Right Offset X 3"),
-								type = "range",
-								min = -200,
-								max = 200,
-								step = 1,
-								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right3"]
-									return tonumber(s and s.offsetX) or 0
-								end,
-								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right3"]
-									if s then s.offsetX = v end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							rightOffsetY3 = {
-							disabled = makeSlotDisabledFunc("right", 3),
-								order = 3.22,
-								name = LPS:L("Right Offset Y 3"),
-								type = "range",
-								min = -200,
-								max = 200,
-								step = 1,
-								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right3"]
-									return tonumber(s and s.offsetY) or 0
-								end,
-								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right3"]
-									if s then s.offsetY = v end
-									if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-						},
-					},
 					panelOptions = {
 						order = 4,
 						type = "group",
@@ -1804,220 +2172,6 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 						args = buildPanelOptionsArgs(),
 					},
 
-					colors = {
-						order = 4.5,
-						type = "group",
-						name = LPS:L("Colors"),
-						inline = true,
-						args = {
-							customColor = {
-								order = 1,
-								name = LPS:L("Text color"),
-								type = "select",
-								values = {
-									[1] = LPS:L("Custom"),
-									[2] = LPS:L("Class Colors"),
-									[3] = LPS:L("Default"),
-								},
-								get = function() return getDb().layout.customColor end,
-								set = function(_, v)
-									getDb().layout.customColor = v
-									if LPS.ScheduleRefresh then
-										LPS:ScheduleRefresh()
-									end
-								end,
-							},
-							userColor = {
-								order = 2,
-								name = LPS:L("Text custom color"),
-								desc = LPS:L("Pick a custom color for panel text."),
-								type = "color",
-								disabled = function() return getDb().layout.customColor ~= 1 end,
-								get = function()
-									local c = getDb().layout.userColor
-									return (c and c.r) or 1, (c and c.g) or 1, (c and c.b) or 1
-								end,
-								set = function(_, r, g, b)
-									local c = getDb().layout.userColor
-									if not c then
-										c = { r = 1, g = 1, b = 1 }
-										getDb().layout.userColor = c
-									end
-									c.r, c.g, c.b = r, g, b
-									if LPS.ScheduleRefresh then
-										LPS:ScheduleRefresh()
-									end
-								end,
-							},
-						},
-					},
-					spacingGroup = {
-						order = 5,
-						type = "group",
-						name = LPS:L("Spacing"),
-						inline = true,
-						args = {
-							spacingAuto = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Auto"),
-								desc = LPS:L("Automatically manage spacing between panels."),
-								get = function() return getDb().layout.spacingAuto end,
-								set = function(_, v)
-									getDb().layout.spacingAuto = v
-									if LPS.ScheduleRefresh then
-										LPS:ScheduleRefresh()
-									end
-								end,
-							},
-							spacingManual = {
-								order = 2,
-								type = "range",
-								name = LPS:L("Manual"),
-								desc = LPS:L("Set spacing between panels."),
-								min = 0,
-								max = 50,
-								step = 1,
-								disabled = function() return getDb().layout.spacingAuto end,
-								get = function() return getDb().layout.spacingManual end,
-								set = function(_, v)
-									getDb().layout.spacingManual = v
-									if LPS.ScheduleRefresh then
-										LPS:ScheduleRefresh()
-									end
-								end,
-							},
-						},
-					},
-					style = {
-						type = "group",
-						name = LPS:L("Style"),
-						order = 20,
-						inline = true,
-						args = {
-							frameStrata = {
-								type = "select",
-								name = LPS:L("Frame strata"),
-								desc = LPS:L("Controls how high the LocationPlus panels are drawn."),
-								order = 0,
-								values = strataValues,
-								get = function() return getDb().layout.frameStrata end,
-								set = function(_, v)
-									getDb().layout.frameStrata = v
-									if LPS.ScheduleRefresh then
-										LPS:ScheduleRefresh()
-									end
-								end,
-							},
-							frameLevel = {
-								type = "range",
-								name = LPS:L("Frame level"),
-								desc = LPS:L("Fine-tune draw order within the selected strata."),
-								order = 0.1,
-								min = 0,
-								max = 1000,
-								step = 1,
-								get = function() return tonumber(getDb().layout.frameLevel) or 1 end,
-								set = function(_, v)
-									getDb().layout.frameLevel = v
-									if LPS.ScheduleRefresh then
-										LPS:ScheduleRefresh()
-									end
-								end,
-							},
-							spacer1_fontSize = {
-								type = "description",
-								name = " ",
-								order = 0.5,
-							},
-							fontSize = {
-								type = "range",
-								name = LPS:L("Font size"),
-								desc = LPS:L("Set font size."),
-								order = 1.1,
-								min = 8,
-								max = 20,
-								step = 1,
-								get = function() return getDb().settings.fontSize end,
-								set = function(_, v)
-									getDb().settings.fontSize = v
-									if LPS.ApplyStyle then
-										LPS:ApplyStyle()
-									end
-								end,
-							},
-							borderSize = {
-								type = "range",
-								name = LPS:L("Border size"),
-								desc = LPS:L("Set border thickness."),
-								order = 1.2,
-	min = 0,
-								max = 6,
-								step = 1,
-								get = function() return getDb().settings.borderSize end,
-								set = function(_, v)
-									getDb().settings.borderSize = v
-									if LPS.ApplyStyle then
-										LPS:ApplyStyle()
-									end
-								end,
-							},
-							spacer1_bgEnable = {
-								type = "description",
-								name = " ",
-								order = 1.5,
-							},
-							bgEnable = {
-								type = "toggle",
-								name = LPS:L("Enable background"),
-								desc = LPS:L("Toggle background on the panel."),
-								order = 2.1,
-								get = function() return getDb().settings.colors.bgEnable end,
-								set = function(_, v)
-									getDb().settings.colors.bgEnable = v
-									if LPS.ApplyStyle then
-										LPS:ApplyStyle()
-									end
-								end,
-							},
-							bgColor = {
-								type = "color",
-								name = LPS:L("Background color"),
-								desc = LPS:L("Set background color."),
-								order = 2.2,
-								hasAlpha = true,
-								get = function()
-									local c = getDb().settings.colors.bg
-									return c[1], c[2], c[3], c[4]
-								end,
-								set = function(_, r, g, b, a)
-									local c = getDb().settings.colors.bg
-									c[1], c[2], c[3], c[4] = r, g, b, a
-									if LPS.ApplyStyle then
-										LPS:ApplyStyle()
-									end
-								end,
-							},
-							borderColor = {
-								type = "color",
-								name = LPS:L("Border color"),
-								desc = LPS:L("Set border color."),
-								order = 3.3,
-								hasAlpha = true,
-								get = function()
-									local c = getDb().settings.colors.border
-									return c[1], c[2], c[3], c[4]
-								end,
-								set = function(_, r, g, b, a)
-									local c = getDb().settings.colors.border
-									c[1], c[2], c[3], c[4] = r, g, b, a
-									if LPS.ApplyStyle then
-										LPS:ApplyStyle()
-									end
-								end,
-							},
-						},
-					},
 				},
 			},
 			profiles = {

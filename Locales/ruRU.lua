@@ -383,3 +383,27 @@ L["Volume Streams"] = "Аудиоканалы"
 L["XP value"] = "Значение опыта"
 L["XP:"] = "Опыт:"
 L["ilvl"] = "ilvl"
+
+-- Frame anchor mode (вкладка Отображение)
+L["Frame anchor mode"] = "Режим привязки фреймов"
+L["Side panels always grow along their edge: left panels attach to the LEFT side of the group, right panels attach to the RIGHT side. This option controls what the FIRST panel of each chain anchors to: the location panel edges (default) or the outer edges of the whole holder frame."] = "Боковые панели всегда растут вдоль своего края: левые панели крепятся к ЛЕВОЙ стороне группы, правые — к ПРАВОЙ. Эта настройка определяет, к чему крепится ПЕРВАЯ панель каждой цепочки: к краям панели локации (по умолчанию) или к внешним краям всего фрейма."
+L["Location panel edges"] = "Края панели локации"
+L["Holder outer edges"] = "Внешние края фрейма"
+
+-- Настройки панелей (включение/подсказка/отображение/подпись)
+L["Show the %s panel."] = "Показать панель «%s»."
+L["Show a tooltip when hovering over this panel."] = "Показывать подсказку при наведении на эту панель."
+L["Display"] = "Отображение"
+L["Hide label"] = "Скрыть подпись"
+L["Custom label"] = "Своя подпись"
+L["Max entries in tooltip"] = "Макс. записей в подсказке"
+L["Current"] = "Текущее"
+L["Current / Max"] = "Текущее / Макс."
+L["Remaining"] = "Осталось"
+
+-- Строки подсказок
+L["Click"] = "Нажатие"
+L["Reset counters"] = "Сбросить счётчики"
+L["Damage:"] = "Урон:"
+L["Healing:"] = "Исцеление:"
+L["Time:"] = "Время:"

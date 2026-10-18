@@ -3,6 +3,25 @@
 	<Include file='.\Tooltips\time_tt.lua'/>
 	<Include file='.\Tooltips\gold_tt.lua'/>
 	<Include file='.\Tooltips\system_tt.lua'/>
+        <Include file='.\Tooltips\attackPower_tt.lua'/>
+        <Include file='.\Tooltips\bags_tt.lua'/>
+        <Include file='.\Tooltips\crit_tt.lua'/>
+        <Include file='.\Tooltips\currencies_tt.lua'/>
+        <Include file='.\Tooltips\difficulty_tt.lua'/>
+        <Include file='.\Tooltips\dps_tt.lua'/>
+        <Include file='.\Tooltips\durability_tt.lua'/>
+        <Include file='.\Tooltips\experience_tt.lua'/>
+        <Include file='.\Tooltips\friends_tt.lua'/>
+        <Include file='.\Tooltips\guild_tt.lua'/>
+        <Include file='.\Tooltips\haste_tt.lua'/>
+        <Include file='.\Tooltips\hps_tt.lua'/>
+        <Include file='.\Tooltips\itemLevel_tt.lua'/>
+        <Include file='.\Tooltips\mail_tt.lua'/>
+        <Include file='.\Tooltips\mastery_tt.lua'/>
+        <Include file='.\Tooltips\quests_tt.lua'/>
+        <Include file='.\Tooltips\reputation_tt.lua'/>
+        <Include file='.\Tooltips\spellPower_tt.lua'/>
+        <Include file='.\Tooltips\volume_tt.lua'/>
 
 	
 <Include file='.\Frames\location.lua'/>
