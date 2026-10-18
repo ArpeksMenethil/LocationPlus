@@ -23,8 +23,25 @@ function LPS:UpdateFrameSize()
 		return (f and f:IsShown()) and f:GetHeight() or 0
 	end
 
-	local width = w(LPS.frame.location) + w(LPS.frame.time) + w(LPS.frame.coords) + w(LPS.frame.gold) + w(LPS.frame.system) + padding * 2 + 10
-	local height = math.max(h(LPS.frame.location), h(LPS.frame.time), h(LPS.frame.coords), h(LPS.frame.gold), h(LPS.frame.system)) + 6
+	-- ВАЖНО: coords/time/gold/system переписаны на общий реестр
+	-- RegisterDatatext и лежат в LPS.frame под своими ключами. Старый код
+	-- суммировал размеры только этих четырёх панелей + локации; как только
+	-- в слоты ставились другие панели (dps, bags, combatTime...), holder'у
+	-- считался размер БЕЗ них — вся сборка сжималась до размера одной
+	-- локации и панели «вообще не отображались». Теперь учитываются ВСЕ
+	-- показанные дочерние фреймы holder'а (кроме служебных).
+	local width = w(LPS.frame.location)
+	local height = h(LPS.frame.location)
+	for key, f in pairs(LPS.frame) do
+		if key ~= "holder" and key ~= "location" and key ~= "minimapButton"
+			and type(f) == "table" and f.IsShown and f.GetWidth and f:GetParent() == LPS.frame.holder
+			and f:IsShown() then
+			width = width + f:GetWidth()
+			height = math.max(height, f:GetHeight())
+		end
+	end
+	width = width + padding * 2 + 10
+	height = height + 6
 	if width ~= lastW or height ~= lastH then
 		lastW, lastH = width, height
 		LPS.frame.holder:SetSize(width, height)

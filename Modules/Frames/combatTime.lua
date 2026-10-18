@@ -14,7 +14,9 @@ local startTime
 local function formatTime(t)
 local m = math.floor(t / 60)
 local s = math.floor(t % 60)
-return string.format("%s: |cFFFFFFFF%02d|cFFFFFFFF:%02d|r", LPS:L("Combat"), m, s)
+--修复：旧 строка открывала |c второй раз без закрытия первого — клиент
+--рендерил битую/пустую строку. Теперь один цвет на всё время mm:ss.
+return string.format("%s: |cFFFFFFFF%02d:%02d|r", LPS:L("Combat"), m, s)
 end
 
 local function emptyText()
@@ -48,6 +50,7 @@ name = LPS:L("Combat/Arena Time"),
 events = {
 "ENCOUNTER_START", "ENCOUNTER_END",
 "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED",
+"PLAYER_LEAVE_COMBAT",
 "PLAYER_ENTERING_WORLD",
 },
 create = function(f)
@@ -68,8 +71,8 @@ ensureTicker()
 f._lpsCombatTime = true
 
 if ev == "PLAYER_REGEN_DISABLED" or ev == "ENCOUNTER_START" then
-startTime = GetTime()
-elseif ev == "PLAYER_REGEN_ENABLED" or ev == "ENCOUNTER_END" then
+if not startTime then startTime = GetTime() end
+elseif ev == "PLAYER_REGEN_ENABLED" or ev == "ENCOUNTER_END" or ev == "PLAYER_LEAVE_COMBAT" then
 startTime = nil
 elseif ev == "PLAYER_ENTERING_WORLD" then
 if UnitAffectingCombat("player") then

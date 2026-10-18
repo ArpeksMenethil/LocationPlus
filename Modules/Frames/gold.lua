@@ -239,6 +239,11 @@ end
 
 LPS:RegisterDatatext({
 	key = "gold",
+	create = function(f)
+		-- gold всегда белый текст (эталонное поведение); флаг читается
+		-- в ApplyLayout вместо хрупкого сравнения ссылок frames.gold.
+		if f then f._lpsForceWhite = true end
+	end,
 	name = LPS:L("Gold"),
 	events = { "PLAYER_ENTERING_WORLD", "PLAYER_MONEY" },
 	update = function(f)
