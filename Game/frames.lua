@@ -149,7 +149,12 @@ function LPS:CreateFrame(params)
 			-- значение и текст на фрейме становится невидимым.
 			f.text:SetWidth(0)
 			f.text:SetHeight(0)
-			f:SetSize(math.max(minW, w + px * 2), math.max(26, h + py * 2))
+			-- ВАЖНО про отступы Y: жёсткий пол «26» раньше перекрывал любой
+			-- эффект padding по вертикали (текст ~13px + 2*py < 26 при py<=6,
+			-- а базовая высота шрифта всегда больше минимальной высоты панели),
+			-- из-за чего «Отступ текста Y» выглядел неработающим. Пол убираем;
+			-- итоговая высота = высота текста + 2*paddingY.
+			f:SetSize(math.max(minW, w + px * 2), math.max(1, h + py * 2))
 			f.text:SetPoint("CENTER", f, "CENTER", 0, 0)
 			LPS:ScheduleFrameSizeUpdate()
 		end

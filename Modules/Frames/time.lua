@@ -19,6 +19,10 @@ LPS:RegisterDatatext({
 	name = LPS:L("Time"),
 	ticker = 1,
 	clicks = { "LeftButtonUp", "RightButtonUp", "MiddleButtonUp" },
+        create = function(f)
+                -- time всегда белый текст (см. gold.lua / ApplyLayout).
+                if f then f._lpsForceWhite = true end
+        end,
 	update = function(f)
 		if f.text then
 			local newText = LPS:GetFormattedGameTime()
