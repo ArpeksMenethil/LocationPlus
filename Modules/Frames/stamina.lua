@@ -4,7 +4,7 @@ local DT = LPS._DT
 
 -------------------------------------------------- Stamina (attribute)
 do
-	local statDefs = { { key = "stamina", label = function() return STAMINA or "Stamina" end, attr = LE_UNIT_ATTRIBUTE_STAMINA or 3 } }
+	local statDefs = { { key = "stamina", label = function() return LPS:L("Stamina") end, attr = LE_UNIT_ATTRIBUTE_STAMINA or 3 } }
 for _, sd in ipairs(statDefs) do
 		LPS:RegisterDatatext({
 			key = sd.key,

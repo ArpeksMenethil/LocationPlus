@@ -7,7 +7,7 @@ do
         local haste
         LPS:RegisterDatatext({
                 key = "haste",
-                name = STAT_HASTE or "Haste",
+                name = LPS:L("Haste"),
                 events = { "PLAYER_ENTERING_WORLD", "UNIT_STATS", "SPELLS_CHANGED" },
                 update = function(f)
                         LPS._dtState = LPS._dtState or {}

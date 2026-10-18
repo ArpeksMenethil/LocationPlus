@@ -6,14 +6,14 @@ local DT = LPS._DT
 do
         LPS:RegisterDatatext({
                 key = "healPower",
-                name = HEALING or "Healing",
+                name = LPS:L("Heal Power"),
                 events = { "PLAYER_ENTERING_WORLD", "SPELLS_CHANGED", "UNIT_STATS" },
                 update = function(f)
                         local heal = GetSpellHealingBonus and GetSpellHealingBonus(4)
                         if heal and DT.NotSecret(heal) then
-                                if f.text then f.text:SetText(string.format("%s: %d", HEALING or "Healing", math.floor(heal))) end
+                                if f.text then f.text:SetText(string.format("%s: %d", LPS:L("Heal Power"), math.floor(heal))) end
                         else
-                                if f.text then f.text:SetText(string.format("%s: |cFF888888?|r", HEALING or "Healing")) end
+                                if f.text then f.text:SetText(string.format("%s: |cFF888888?|r", LPS:L("Heal Power"))) end
                         end
                 end,
         })

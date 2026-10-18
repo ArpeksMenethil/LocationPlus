@@ -7,35 +7,32 @@ if not LPS then return end
 -- Вспомогательные функции (LPS._DT.*) перенесены в Game/utils.lua.
 --------------------------------------------------------------------
 
--- Ключи слотов layout.sideSlots, которые нельзя переназначать (зарезервированы под старые панели)
-local RESERVED_SLOT_KEYS = { coords = true, time = true, gold = true, system = true }
-
--- Реестр: key -> конфиг панели
 local registry = {}
 LPS.datatexts = registry
 
--- Встроенные панели (координаты/время/золото/система): их названия всегда
--- английские, поэтому сортировка по алфавиту возможна напрямую.
-local BUILTIN_SLOT_NAMES = {
-	coords = "Coords",
-	time   = "Time",
-	gold   = "Gold",
-	system = "System",
-}
+-- Координаты/время/золото/система больше не «зарезервированные» панели с
+-- отдельными конструкторами: они регистрируются через RegisterDatatext наравне
+-- со всеми остальными, поэтому и создаются общим GetOrCreatePanelFrame.
 
 -- Панели, которые нельзя показывать в списках слотов: microBar — это не
 -- инфотекст (перемещает микро-бар Blizzard), отдельного текста не имеет.
 local HIDDEN_SLOT_KEYS = { microBar = true }
 
--- Реестр «ключ -> английское название» для сортировки списков по алфавиту.
--- Заполняется при регистрации панелей; игровые названия статов (AGILITY и
--- т.п.) приводятся к нижнему регистру, чтобы порядок не зависел от локали.
-local englishNames = {}
-LPS._DatatextEnglishNames = englishNames
-for k, v in pairs(BUILTIN_SLOT_NAMES) do englishNames[k] = v end
+--- Название панели для списков: ВСЕГДА локализованное (язык клиента).
+--- Английские имена в списках больше не используются: панель отображается
+--- так же, как она называется на экране. Координаты/время/золото/система
+--- теперь тоже регистрируются через RegisterDatatext, поэтому их имена
+--- берутся из реестра наравне с остальными панелями.
+function LPS:GetDatatextDisplayName(key)
+	if key == "location" then return LPS:L("Location") end
+	local def = registry[key]
+	if def and def.name then return tostring(def.name) end
+	return key
+end
 
---- Список ключей панелей для слотов: встроенные + зарегистрированные,
---- отсортированные по алфавиту английских названий. Кэш пересобирается при
+--- Список ключей панелей для слотов: все зарегистрированные панели,
+--- отсортированные по названию на языке клиента (русский клиент — по
+--- русскому алфавиту, enUS — по английскому). Кэш пересобирается при
 --- каждой новой регистрации панели (панели грузятся после datatexts.lua).
 local sortedKeysCache
 local function invalidateSortedKeys()
@@ -45,17 +42,15 @@ end
 function LPS:GetSlotKeyList()
 	if not sortedKeysCache then
 		local keys = {}
-		for key in pairs(BUILTIN_SLOT_NAMES) do
-			keys[#keys + 1] = key
-		end
 		for key in pairs(registry) do
 			if not HIDDEN_SLOT_KEYS[key] then
 				keys[#keys + 1] = key
 			end
 		end
+		local nameOf = LPS.GetDatatextDisplayName
 		table.sort(keys, function(a, b)
-			local na = (englishNames[a] or a):lower()
-			local nb = (englishNames[b] or b):lower()
+			local na = tostring(nameOf(a)):lower()
+			local nb = tostring(nameOf(b)):lower()
 			if na == nb then return a < b end
 			return na < nb
 		end)
@@ -78,9 +73,6 @@ local datatextCreateQueueRegistered = false
 function LPS:RegisterDatatext(def)
 	assert(def and def.key and def.name, "LPS RegisterDatatext: bad definition")
 	registry[def.key] = def
-	-- Английское имя панели используется для сортировки списков по алфавиту
-	-- (независимо от текущей локали клиента).
-	englishNames[def.key] = tostring(def.name)
 	invalidateSortedKeys()
 end
 
@@ -112,6 +104,17 @@ function LPS:CreateDatatextFrame(key)
 		bgColor = { LPS:GetColor("bg") },
 		borderColor = { LPS:GetColor("border") },
 		updateFunc = function(f)
+			-- Отступы/минимальная ширина ВСЕГДА перечитываются из db.layout перед
+			-- расчётом габаритов. Раньше padding фиксировался только при создании
+			-- фрейма; теперь через этот реестр идут и coords/time/gold/system —
+			-- их фреймы могли создаваться ещё до миграции layout-значений, и без
+			-- этого пункта «огромные отступы» закрепились бы навсегда.
+			local lay = LPS.GetDB and (LPS:GetDB().layout or {})
+			local px = tonumber(lay and lay.dtPaddingX) or 20
+			local py = tonumber(lay and lay.dtPaddingY) or 7
+			f._lpsPaddingX = px
+			f._lpsPaddingY = py
+			f._lpsMinWidth = tonumber(lay and lay.dtMinWidth) or f._lpsMinWidth or 60
 			if def.update then def.update(f) end
 		end,
 	}
@@ -123,7 +126,7 @@ function LPS:CreateDatatextFrame(key)
 	end
 
 	if def.onClick then
-		params.registerClicks = { "LeftButtonUp", "RightButtonUp" }
+		params.registerClicks = def.clicks or { "LeftButtonUp", "RightButtonUp" }
 		params.onClick = function(self, button) def.onClick(self, button) end
 	end
 
@@ -132,8 +135,12 @@ function LPS:CreateDatatextFrame(key)
 	-- (Build<Key>Tooltip). Раньше условие было только `def.tooltip`, из-за чего
 	-- у панелей friends/guild/quests/experience/bags (подсказки вынесены в
 	-- *_tt.lua) подсказка вообще не появлялась.
+	-- def.customTooltip = true — панель сама задаёт params.tooltipFunc через
+	-- колбэк def.buildTooltip(self) (нестандартное поведение: time/gold/system).
 	local builderName = "Build" .. key:gsub("^%l", string.upper) .. "Tooltip"
-	if def.tooltip or LPS[builderName] then
+	if def.customTooltip and def.buildTooltip then
+		params.tooltipFunc = function(self) def.buildTooltip(self) end
+	elseif def.tooltip or LPS[builderName] then
 		params.tooltipFunc = function(self)
 			if not LPS._DT.tooltipGuard(key) then return end
 			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
@@ -220,15 +227,14 @@ end)
 --------------------------------------------------------------------
 
 function LPS:GetDatatextName(key)
-	local def = registry[key]
-	return def and def.name or key
+	return LPS:GetDatatextDisplayName(key)
 end
 
 --- Публичный доступ к отсортированному по алфавиту списку ключей панелей
 --- реализован выше через LPS:GetSlotKeyList().
 
 function LPS:IsDatatextKey(key)
-	return key ~= nil and registry[key] ~= nil and not RESERVED_SLOT_KEYS[key]
+	return key ~= nil and registry[key] ~= nil
 end
 
 --- Возвращает фрейм панели по ключу слота (создаёт при необходимости)
@@ -238,7 +244,6 @@ end
 local _lpsCreatingPanels = {}
 
 function LPS:GetOrCreatePanelFrame(key)
-	if RESERVED_SLOT_KEYS[key] then return nil end
 	local frames = LPS.frame
 	if not frames then return nil end
 	if frames[key] then return frames[key] end

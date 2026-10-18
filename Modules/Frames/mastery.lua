@@ -7,7 +7,7 @@ do
         local mastery
         LPS:RegisterDatatext({
                 key = "mastery",
-                name = STAT_MASTERY or "Mastery",
+                name = LPS:L("Mastery"),
                 events = { "PLAYER_ENTERING_WORLD", "UNIT_STATS", "SPELLS_CHANGED" },
                 update = function(f)
                         LPS._dtState = LPS._dtState or {}

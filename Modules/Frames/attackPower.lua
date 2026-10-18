@@ -8,7 +8,7 @@ do
         local totalAP, baseAPText
         LPS:RegisterDatatext({
                 key = "attackPower",
-                name = ATTACK_POWER or "Attack Power",
+                name = LPS:L("Attack Power"),
                 events = { "UNIT_ATTACK_POWER", "PLAYER_ENTERING_WORLD" },
                 update = function(f)
                         local base, pos, neg
@@ -23,7 +23,7 @@ do
                         LPS._dtState = LPS._dtState or {}
                         LPS._dtState.attackPower = { totalAP = totalAP, baseAPText = baseAPText, isHunter = isHunter }
                         if f.text then
-                                local label = isHunter and (RANGED_ATTACK_POWER or "Ranged AP") or (ATTACK_POWER or "Attack Power")
+                                local label = isHunter and LPS:L("Ranged AP") or LPS:L("Attack Power")
                                 if totalAP then
                                         f.text:SetText(string.format("%s: %d", label, math.floor(totalAP)))
                                 else

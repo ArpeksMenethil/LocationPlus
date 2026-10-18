@@ -4,61 +4,88 @@ local DT = LPS._DT
 
 -------------------------------------------------- Combat / Arena Time
 do
-	local timer, startTime
-	local frame = nil
+-- Время боя считаем НЕ накоплением elapsed в OnUpdate, а по часам:
+-- timer = GetTime() - startTime. Накопление ломалось, потому что
+-- OnUpdate-тикинг и колбэк f._lpsCombatTime навешивались только в
+-- create(), а create() при боевом локдауне откладывается
+-- (_lpsPendingCreate) — весь первый бой панель молчала.
+local startTime
 
-	local function ensureTicker(f)
-		if not frame then
-			frame = CreateFrame("Frame")
-			frame:SetScript("OnUpdate", function(self, elapsed)
-				if timer and startTime then
-					timer = timer + elapsed
-					local m = math.floor(timer / 60)
-					local s = math.floor(timer % 60)
-					for _, fr in pairs(LPS.frame or {}) do
-						if fr._lpsCombatTime then
-							fr._lpsCombatTime(m, s)
-						end
-					end
-				end
-			end)
-		end
-	end
+local function formatTime(t)
+local m = math.floor(t / 60)
+local s = math.floor(t % 60)
+return string.format("%s: |cFFFFFFFF%02d|cFFFFFFFF:%02d|r", LPS:L("Combat"), m, s)
+end
 
-	LPS:RegisterDatatext({
-		key = "combatTime",
-		name = LPS:L("Combat/Arena Time"),
-		events = { "ENCOUNTER_START", "ENCOUNTER_END", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED" },
-		create = function(f)
-			ensureTicker(f)
-			f._lpsCombatTime = function(m, s)
-				if f.text and f:IsShown() then
-					f.text:SetText(string.format("%s: |cFFFFFFFF%02d|cFFFFFFFF:%02d|r", LPS:L("Combat"), m, s))
-				end
-			end
-			-- начальное значение, чтобы панель не была пустой до первого боя
-			if f.text then
-				f.text:SetText(string.format("%s: |cFFFFFFFF00:00|r", LPS:L("Combat")))
-			end
-		end,
-		update = function(f, ev)
-			-- гарантируем непустую панель при первом обновлении вне боя
-			if not ev and timer == nil and f.text and (f.text:GetText() == "" or f.text:GetText() == nil) then
-				f.text:SetText(string.format("%s: |cFFFFFFFF00:00|r", LPS:L("Combat")))
-			end
-			if ev == "PLAYER_REGEN_DISABLED" or ev == "ENCOUNTER_START" then
-				timer, startTime = 0, GetTime()
-			elseif ev == "PLAYER_REGEN_ENABLED" or ev == "ENCOUNTER_END" then
-				timer, startTime = nil, nil
-				if f.text then
-					f.text:SetText(string.format("%s: |cFFFFFFFF00:00|r", LPS:L("Combat")))
-				end
-			end
-			if timer ~= nil and f.text then
-				local m = math.floor(timer / 60)
-				local s = math.floor(timer % 60)
-				f.text:SetText(string.format("%s: |cFFFFFFFF%02d|cFFFFFFFF:%02d|r", LPS:L("Combat"), m, s))
-			end
-		end,
-	})
+local function emptyText()
+return string.format("%s: |cFFFFFFFF00:00|r", LPS:L("Combat"))
+end
+
+-- Общий тикер: раз в секунду обновляем текст всех панелей combatTime.
+-- Обновляем напрямую через f.text (колбэк _lpsCombatTime не обязателен).
+local ticker
+local function ensureTicker()
+if ticker then return end
+ticker = CreateFrame("Frame")
+local acc = 0
+ticker:SetScript("OnUpdate", function(self, elapsed)
+if not startTime then return end
+acc = acc + elapsed
+if acc < 1 then return end
+acc = 0
+local txt = formatTime(GetTime() - startTime)
+for _, fr in pairs(LPS.frame or {}) do
+if type(fr) == "table" and fr._lpsCombatTime and fr.text and fr:IsShown() then
+fr.text:SetText(txt)
+end
+end
+end)
+end
+
+LPS:RegisterDatatext({
+key = "combatTime",
+name = LPS:L("Combat/Arena Time"),
+events = {
+"ENCOUNTER_START", "ENCOUNTER_END",
+"PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED",
+"PLAYER_ENTERING_WORLD",
+},
+create = function(f)
+ensureTicker()
+f._lpsCombatTime = true -- маркер панели для тикера
+if f.text then
+if startTime then
+f.text:SetText(formatTime(GetTime() - startTime))
+else
+f.text:SetText(emptyText())
+end
+end
+end,
+update = function(f, ev)
+ensureTicker()
+-- create() мог быть отложен боевым локдауном — проставляем
+-- маркер здесь, чтобы тикер заработал сразу, а не после боя.
+f._lpsCombatTime = true
+
+if ev == "PLAYER_REGEN_DISABLED" or ev == "ENCOUNTER_START" then
+startTime = GetTime()
+elseif ev == "PLAYER_REGEN_ENABLED" or ev == "ENCOUNTER_END" then
+startTime = nil
+elseif ev == "PLAYER_ENTERING_WORLD" then
+if UnitAffectingCombat("player") then
+startTime = GetTime()
+else
+startTime = nil
+end
+end
+
+if f.text then
+if startTime then
+f.text:SetText(formatTime(GetTime() - startTime))
+else
+f.text:SetText(emptyText())
+end
+end
+end,
+})
 end

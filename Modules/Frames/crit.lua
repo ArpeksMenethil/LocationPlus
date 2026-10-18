@@ -7,7 +7,7 @@ do
         local critMelee, spellIndex, ratingIndex = 0, 0, CR_CRIT_MELEE or 1
         LPS:RegisterDatatext({
                 key = "crit",
-                name = MELEE_CRIT_CHANCE or "Melee Crit Chance",
+                name = LPS:L("Crit Chance"),
                 events = { "PLAYER_ENTERING_WORLD", "UNIT_STATS", "SPELLS_CHANGED" },
                 update = function(f)
                         critMelee = GetCritChance() or 0

@@ -231,70 +231,64 @@ function LPS:OnPlayerMoney()
 	end
 end
 
-function LPS:CreateGoldFrame()
-	local db = LPS:GetDB()
-	if not db or not LPS.frame.holder or not LPS.frame.location then return end
+-- Панель «Золото» переписана на общий реестр LPS:RegisterDatatext():
+-- фрейм создаётся конструктором CreateDatatextFrame, отступы/минимальная
+-- ширина перечитываются из db.layout при каждом обновлении (старый
+-- CreateGoldFrame фиксировал padding при создании — из-за этого панель
+-- «наследовала» огромные отступы).
 
-	---@type LPSFrameParams
-	local params = {
-		name = "LPS_Gold",
-		frameType = "Button",
-		hidden = true,
-		parent = LPS.frame.location,
-		anchor = {"LEFT", LPS.frame.location, "RIGHT", 5, 0},
-		padding = {((db.layout and db.layout.dtPaddingX) or 20), ((db.layout and db.layout.dtPaddingY) or 7)},
-		fontSize = db.settings.fontSize or 12,
-		bgColor = {LPS:GetColor("bg")},
-		borderColor = {LPS:GetColor("border")},
-		updateFunc = function(f)
-			-- ВАЖНО: здесь НЕ должно быть early-return по f:IsShown().
-			-- Панель создаётся скрытой (hidden = true) и показывается в
-			-- applyPanelVisibility; если выходить по видимости, первичные
-			-- вызовы updateFunc из ApplyLayout игнорируются и панель
-			-- остаётся пустой («выбрал Золото — оно пустое»), пока не
-			-- придёт PLAYER_MONEY или панель не обновят вручную.
-			local oldData = f.text and f.text:GetText()
-			LPS:OnPlayerMoney()
-			local data = LPS:GetGoldSessionData()
-			if f.text then
-				f.text:SetText(data.currentText)
+LPS:RegisterDatatext({
+	key = "gold",
+	name = LPS:L("Gold"),
+	events = { "PLAYER_ENTERING_WORLD", "PLAYER_MONEY" },
+	update = function(f)
+		-- ВАЖНО: здесь НЕ должно быть early-return по f:IsShown().
+		-- Панель создаётся скрытой (hidden = true) и показывается в
+		-- applyPanelVisibility; если выходить по видимости, первичные
+		-- вызовы updateFunc из ApplyLayout игнорируются и панель
+		-- остаётся пустой («выбрал Золото — оно пустое»), пока не
+		-- придёт PLAYER_MONEY или панель не обновят вручную.
+		local oldData = f.text and f.text:GetText()
+		LPS:OnPlayerMoney()
+		local data = LPS:GetGoldSessionData()
+		if f.text then
+			f.text:SetText(data.currentText)
+		end
+		if oldData and oldData ~= data.currentText then
+			if LPS.ScheduleFrameSizeUpdate then
+				LPS:ScheduleFrameSizeUpdate()
 			end
-			if oldData and oldData ~= data.currentText then
-				if LPS.ScheduleFrameSizeUpdate then
-					LPS:ScheduleFrameSizeUpdate()
+		end
+	end,
+	onClick = function(self, button)
+		if button == "RightButton" then
+			if IsControlKeyDown() then
+				LPS:ResetGoldSession()
+				if self._lpsUpdateFunc then
+					self._lpsUpdateFunc(self)
 				end
+				return
 			end
-		end,
-		updateEvent = {events = {"PLAYER_ENTERING_WORLD", "PLAYER_MONEY"}},
-		registerClicks = {"LeftButtonUp", "RightButtonUp"},
-		onClick = function(self, button)
-			if button == "RightButton" then
-				if IsControlKeyDown() then
-					LPS:ResetGoldSession()
-					if self._lpsUpdateFunc then
-						self._lpsUpdateFunc(self)
-					end
-					return
-				end
-				if IsShiftKeyDown() and LPS.ShowGoldResetMenu then
-					LPS:ShowGoldResetMenu(self)
-					return
-				end
+			if IsShiftKeyDown() and LPS.ShowGoldResetMenu then
+				LPS:ShowGoldResetMenu(self)
+				return
 			end
-		end,
-		tooltipFunc = function(self)
-			local d = LPS:GetDB()
-			if not d.tooltips.visibility.enable then return end
-			if d.tooltips.visibility.combat and InCombatLockdown() then return end
-			if d.tooltips.gold and d.tooltips.gold.enable == false then return end
-			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
-			GameTooltip:ClearLines()
-			if LPS.BuildGoldTooltip then
-				LPS:BuildGoldTooltip(GameTooltip)
-			end
-			GameTooltip:Show()
-		end,
-	}
-
-	return LPS:CreateFrame(params)
-end
+		end
+	end,
+	-- Своя подсказка (проверки visibility отличаются от общего tooltipGuard).
+	customTooltip = true,
+	buildTooltip = function(self)
+		local d = LPS:GetDB()
+		local tt = d and d.tooltips or {}
+		local vis = tt.visibility or {}
+		if not vis.enable then return end
+		if vis.combat and InCombatLockdown() then return end
+		if tt.gold and tt.gold.enable == false then return end
+		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:ClearLines()
+		if LPS.BuildGoldTooltip then
+			LPS:BuildGoldTooltip(GameTooltip)
+		end
+		GameTooltip:Show()
+	end,
+})
