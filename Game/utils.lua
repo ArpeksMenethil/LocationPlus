@@ -61,13 +61,37 @@ LPS._DT.panelCfg = function(key)
 end
 
 -- Тултип-хелпер: стандартная проверка видимости подсказок
+-- Панели с отдельным конфигом в db.tooltips.<key> (location/gold/system/time
+-- и перенесённые на вкладку «Подсказка» quests/friends/guild/experience/bags)
+-- управляются этим конфигом; для остальных панелей — настройка panels[key].tooltip.
+local PANEL_TT_KEYS = {
+	location = true, gold = true, system = true, time = true,
+	quests = true, friends = true, guild = true, experience = true, bags = true,
+}
+
+-- Конфиг подсказки панели: для панелей с отдельным конфигом на вкладке
+-- «Подсказка» (db.tooltips.<key>) берётся он, иначе — panels.<key>.
+LPS._DT.tooltipCfg = function(key)
+	local d = LPS:GetDB()
+	if not d then return nil end
+	if PANEL_TT_KEYS[key] and d.tooltips and d.tooltips[key] then
+		return d.tooltips[key]
+	end
+	return LPS._DT.panelCfg(key)
+end
+
 LPS._DT.tooltipGuard = function(key)
 	local d = LPS:GetDB()
 	if not d then return false end
 	if not (d.tooltips and d.tooltips.visibility and d.tooltips.visibility.enable) then return false end
 	if d.tooltips.visibility.combat and InCombatLockdown() then return false end
-	local cfg = LPS._DT.panelCfg(key)
-	if cfg and cfg.tooltip == false then return false end
+	if PANEL_TT_KEYS[key] then
+		local tcfg = d.tooltips[key]
+		if tcfg and tcfg.enable == false then return false end
+	else
+		local cfg = LPS._DT.panelCfg(key)
+		if cfg and cfg.tooltip == false then return false end
+	end
 	return true
 end
 

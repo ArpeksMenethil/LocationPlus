@@ -31,15 +31,5 @@ do
 			end
 			if f.text then f.text:SetText(text) end
 		end,
-tooltip = function(tt)
-        			tt:AddLine(LPS:L("Current Difficulties:") or LPS:L("Difficulty"), 1, 0.82, 0)
-        			tt:AddLine(" ")
-        			if GetDungeonDifficultyID then
-        				tt:AddDoubleLine(LPS:L("Dungeon"), diffLabel(GetDungeonDifficultyID()), 1, 1, 1, 1, 1, 1)
-        			end
-        			if GetRaidDifficultyID then
-        				tt:AddDoubleLine(LPS:L("Raid"), diffLabel(GetRaidDifficultyID()), 1, 1, 1, 1, 1, 1)
-        			end
-		end,
 	})
 end

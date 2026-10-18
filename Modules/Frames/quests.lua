@@ -50,39 +50,11 @@ do
 				maxQ = C_QuestLog.GetMaxNumQuestsCanAccept() or maxQ
 			end
 			if f.text then
-				f.text:SetText(string.format("%s: %d/%d", LPS:L("Quests") or TRACKER_HEADER_QUESTS, numQuests, maxQ))
+				f.text:SetText(string.format("%s: %d/%d", LPS:L("Quests"), numQuests, maxQ))
 			end
 		end,
 		onClick = function()
 			if ToggleQuestLog then ToggleQuestLog() end
-		end,
-tooltip = function(tt)
-        			tt:AddLine(TRACKER_HEADER_QUESTS or LPS:L("Quest Log"), 1, 0.82, 0)
-        			tt:AddLine(" ")
-        			local numEntries = questCounts()
-        			local limit = (DT.panelCfg("quests") or {}).maxLimit or 15
-        			local shown = 0
-        			for qi = 1, numEntries do
-        				local title, level, _, isHeader, _, isComplete
-        				if C_QuestLog and C_QuestLog.GetInfo then
-        					local info = C_QuestLog.GetInfo(qi)
-        					if info then
-        						title, level, isHeader, isComplete = info.title, info.level, info.isHeader, info.isComplete
-        					end
-        				else
-        					title, level, _, isHeader, _, _, _, _, _, isComplete = GetQuestLogTitle(qi)
-        				end
-        				if title and not isHeader then
-        					shown = shown + 1
-        					if shown <= limit then
-        						tt:AddDoubleLine(title, isComplete and COMPLETE or INCOMPLETE, 1, 1, 1,
-        							isComplete and .2 or 1, isComplete and 1 or .2, .2)
-        					end
-        				end
-        			end
-        			if shown == 0 then
-        				tt:AddLine(LPS:L("No quests"), 0.65, 0.65, 0.65)
-        			end
 		end,
 	})
 end

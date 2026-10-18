@@ -8,7 +8,7 @@ do
 		key = "microBar",
 		name = LPS:L("Micro Bar"),
 		update = function(f)
-			if f.text then f.text:SetText(LPS:L("Game Menu") or MENU) end
+			if f.text then f.text:SetText(LPS:L("Game Menu")) end
 		end,
 		onClick = function(self, button)
 			if button == "LeftButton" then

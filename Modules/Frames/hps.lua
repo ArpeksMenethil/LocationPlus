@@ -47,6 +47,8 @@ else
 amount, _, _, _, _, _, overhealing = select(12, getCLE()())
 end
 healTotal = healTotal + math.max(0, (amount or 0) - (overhealing or 0))
+                        LPS._combatStats = { dmg = 0, heal = healTotal, time = combatTime }
+
 end
 end
 end)
@@ -64,14 +66,6 @@ if f.text then
 f.text:SetText(string.format("%s: %s", LPS:L("HPS"), DT.shortValue(combatTime > 0 and (healTotal / combatTime) or 0)))
 end
 end,
-tooltip = function(tt)
-                        tt:AddLine(LPS:L("HPS"), 1, 0.82, 0)
-                        tt:AddLine(" ")
-                        tt:AddDoubleLine(LPS:L("Healing:") or "Healing:", DT.shortValue(healTotal), 1, 1, 1, 1, 1, 1)
-                        tt:AddDoubleLine(LPS:L("Time:") or "Time:", string.format("%.0f s", combatTime), 1, 1, 1, 1, 1, 1)
-                        tt:AddLine(" ")
-                        tt:AddLine((LPS:L("Click") or "Click") .. ": " .. (LPS:L("Reset counters") or "Reset counters"), 0.65, 0.65, 0.65)
-                end,
 onClick = function(self)
 timeStamp, combatTime, healTotal = 0, 0, 0
 if self._lpsUpdateFunc then self._lpsUpdateFunc(self) end

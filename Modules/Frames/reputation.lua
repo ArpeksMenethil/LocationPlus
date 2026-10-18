@@ -43,18 +43,5 @@ do
 		onClick = function()
 			if ToggleCharacter then ToggleCharacter("ReputationFrame") end
 		end,
-tooltip = function(tt)
-        			local data = watchedFaction()
-        			if not data then return end
-        			tt:AddLine(data.name or "", 1, 0.82, 0)
-        			tt:AddLine(" ")
-        			local reaction = data.reaction or data.standing or 5
-        			tt:AddDoubleLine(STANDING .. ":", _G["FACTION_STANDING_LABEL" .. reaction] or UNKNOWN, 1, 1, 1, 1, 1, 1)
-        			local cur = (data.currentValue or 0) - (data.offsetValue or 0)
-        			local max = (data.maxValue or 0) - (data.offsetValue or 0)
-        			if max > 0 then
-        				tt:AddDoubleLine(REPUTATION .. ":", string.format("%d / %d (%d%%)", cur, max, cur / max * 100), 1, 1, 1, 1, 1, 1)
-        			end
-		end,
 	})
 end

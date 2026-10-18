@@ -42,17 +42,5 @@ do
 				ToggleCharacter("TokenFrame")
 			end
 		end,
-tooltip = function(tt)
-        			tt:AddLine(CURRENCY or LPS:L("Currencies"), 1, 0.82, 0)
-        			tt:AddLine(" ")
-        			local tokens = watchedTokens()
-        			for _, cur in ipairs(tokens) do
-        				if type(cur) == "table" then
-        					tt:AddDoubleLine(string.format("|T%s:16:16:0:0:64:64:4:60:4:60|t %s", cur.icon, cur.name), tostring(cur.count), 1, 1, 1, 1, 1, 1)
-        				end
-        			end
-        			tt:AddLine(" ")
-        			tt:AddDoubleLine((LPS:L("Gold") or GOLD)..":", LPS:FormatMoneySmart(GetMoney() or 0), nil, nil, nil, 1, 1, 1)
-		end,
 	})
 end

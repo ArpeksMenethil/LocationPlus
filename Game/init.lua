@@ -201,6 +201,28 @@ LPS.defaults = {
 			addonsMax = 15,
 			total = true,
 		},
+		quests = {
+			enable = true,
+			maxLimit = 15,
+		},
+		friends = {
+			enable = true,
+			maxLimit = 15,
+		},
+		guild = {
+			enable = true,
+			maxLimit = 15,
+		},
+		experience = {
+			enable = true,
+			display = "PERCENT",
+		},
+		bags = {
+			enable = true,
+			display = "USED_TOTAL",
+			noLabel = false,
+			label = "",
+		},
 	},
 
 	layout = {
@@ -232,7 +254,7 @@ LPS.defaults = {
 	},
 
 	panels = {
-		bags = { enable = true, display = "USED_TOTAL", noLabel = false, label = "" },
+bags = { enable = true },,
 		combatIndicator = { enable = true },
 		combatTime = { enable = true },
 		currencies = { enable = true },
@@ -240,13 +262,13 @@ LPS.defaults = {
 		hps = { enable = true },
 		difficulty = { enable = true },
 		durability = { enable = true },
-		experience = { enable = true, display = "PERCENT" },
-		friends = { enable = true, maxLimit = 15 },
-		guild = { enable = true, maxLimit = 15 },
+experience = { enable = true },,
+friends = { enable = true },,
+guild = { enable = true },,
 		itemLevel = { enable = true },
 		mail = { enable = true },
 		microBar = { enable = true },
-		quests = { enable = true, maxLimit = 15 },
+quests = { enable = true },,
 		reputation = { enable = true },
 		volume = { enable = true },
 		armor = { enable = true },

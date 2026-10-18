@@ -7,10 +7,12 @@ do
         local critMelee, spellIndex, ratingIndex = 0, 0, CR_CRIT_MELEE or 1
         LPS:RegisterDatatext({
                 key = "crit",
-                name = LPS:L("Crit Chance") or CR_CRIT_CHANCE or "Crit",
+                name = MELEE_CRIT_CHANCE or "Melee Crit Chance",
                 events = { "PLAYER_ENTERING_WORLD", "UNIT_STATS", "SPELLS_CHANGED" },
                 update = function(f)
                         critMelee = GetCritChance() or 0
+                        LPS._dtState = LPS._dtState or {}
+                        LPS._dtState.crit = { critMelee = critMelee, ratingIndex = ratingIndex }
                         local text = critMelee
                         if GetRangedCritChance then
                                 local critRanged = GetRangedCritChance() or 0
@@ -30,13 +32,6 @@ do
                         end
                         if f.text then
                                 f.text:SetText(string.format("%.2f%%", text))
-                        end
-                end,
-                tooltip = function(tt)
-                        tt:AddLine(string.format("|cffFFFFFF%s:|r %.2f%%", MELEE_CRIT_CHANCE or "Melee", critMelee))
-                        if GetCombatRatingBonus and ratingIndex then
-                                local rating = GetCombatRating and GetCombatRating(ratingIndex) or 0
-                                tt:AddDoubleLine(CR_CRIT_TOOLTIP or "Crit Rating", format("%.2f%% from %d", GetCombatRatingBonus(ratingIndex) or 0, rating or 0), 1, 1, 1, 1, 1, 1)
                         end
                 end,
         })
