@@ -466,7 +466,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 			},
 			show = {
 				type = "group",
-				name = LPS:L("Show"),
+				name = LPS:L("Display"),
 				order = 2,
 				args = {
 					locationGroup = {
@@ -584,7 +584,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 							experience = {
 								order = 1,
 								type = "select",
-								name = LPS:L("Experience") .. " " .. LPS:L("Display"),
+								name = LPS:L("Display"),
 								values = {
 									PERCENT = LPS:L("Percent"),
 									CURMAX = LPS:L("Current / Max"),
@@ -609,7 +609,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 							bags = {
 								order = 1,
 								type = "select",
-								name = LPS:L("Bags") .. " " .. LPS:L("Display"),
+								name = LPS:L("Display"),
 								values = {
 									USED_TOTAL = LPS:L("Used / Total"),
 									FREE = LPS:L("Free slots"),
@@ -2718,7 +2718,7 @@ makeSubPanel("general", LPS:L("General"), function(p)
 	LPS.Options:CreateToggleMoveButton(p)
 end)
 
-makeSubPanel("show", LPS:L("Show"), function(p)
+makeSubPanel("show", LPS:L("Display"), function(p)
 	LPS:CreateShowOptions(p)
 end)
 

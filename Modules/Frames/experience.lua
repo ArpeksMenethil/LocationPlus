@@ -11,7 +11,7 @@ do
 		update = function(f)
 			if not UnitXP or not UnitXPMax then return end
 			local level = UnitLevel("player")
-			local maxPlayer = MAX_PLAYER_LEVEL or (GetMaxLevelForPlayer and GetMaxLevelForPlayer(select(4, GetBuildInfo())))
+			local maxPlayer = GetMaxPlayerLevel()
 			if level == nil or level <= 0 or (maxPlayer and level >= maxPlayer) then
 				-- На максимальном уровне — локализованное «Макс. уровень» вместо
 				-- глобального MAX_LEVEL; подсказка на этом уровне не показывается

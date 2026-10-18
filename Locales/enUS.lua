@@ -162,7 +162,6 @@ L["Reset holder position"] = true
 L["Reset the holder frame position."] = true
 L["Colors"] = true
 
-L["Show"] = true
 L["Show panels"] = true
 L["Show/Hide the extra panels (Coords and Time)."] = true
 L["Show/Hide the coords panel."] = true

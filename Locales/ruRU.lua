@@ -153,7 +153,6 @@ L["Toggle move mode for the frame."] = "Включить/выключить ре
 L["Reset holder position"] = "Сброс позиции"
 L["Reset the holder frame position."] = "Сбросить позицию основного фрейма."
 
-L["Show"] = "Отображение"
 L["Hide Coords"] = "Скрыть координаты"
 L["Hide Coords in Instance"] = "Скрыть координаты в инстансах"
 L["Detailed Coords"] = "Точные координаты"
