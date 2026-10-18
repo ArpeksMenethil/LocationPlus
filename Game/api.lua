@@ -178,7 +178,7 @@ local user = layout.userColor
 local layoutKey = tostring(layout.dtPaddingX) .. "," .. tostring(layout.dtPaddingY) .. ","
 .. tostring(layout.dtMinWidth) .. "," .. tostring(layout.locPaddingX) .. ","
 .. tostring(layout.locPaddingY) .. "," .. tostring(layout.locMinWidth) .. ","
-.. tostring(spacing) .. "," .. tostring(layout.dtshow) .. ","
+.. tostring(layout.spacing) .. "," .. tostring(layout.dtshow) .. ","
 .. tostring(layout.frameStrata) .. "," .. tostring(layout.frameLevel) .. ","
 .. tostring(layout.customColor) .. ","
 .. tostring(user and user.r) .. "," .. tostring(user and user.g) .. "," .. tostring(user and user.b) .. ","
@@ -198,6 +198,17 @@ local prevKey = frames.holder and frames.holder._lpsLastLayoutKey
 if frames.holder then
 frames.holder._lpsLastLayoutKey = layoutKey
 end
+
+-- Локальные имена layout-параметров (без них ниже шли nil-присваивания:
+-- f._lpsPaddingX = locPaddingX записывал nil, а padding/minWidth/spacing
+-- из таба «Макет» никогда не попадали во фреймы).
+local dtPaddingX  = layout.dtPaddingX
+local dtPaddingY  = layout.dtPaddingY
+local dtMinWidth  = layout.dtMinWidth
+local locPaddingX = layout.locPaddingX
+local locPaddingY = layout.locPaddingY
+local locMinWidth = layout.locMinWidth
+local spacing     = layout.spacing or 5
 -- Принудительный пересчёт габаритов на первом проходе (в т.ч. когда holder
 -- ещё скрыт): иначе padding/minWidth из таба "Макет" не применяются до
 -- первого изменения любой другой настройки.
