@@ -47,9 +47,18 @@ function LPS:onLoaded(name)
 			local old = LPS_DB
 			local oldGold = old.gold
 			old.gold = nil
-			LPS_DB = { profiles = { Default = old }, global = {} }
+			-- ВАЖНО: мутируем СУЩЕСТВУЮЩИЙ объект SavedVariables, а не заменяем
+			-- его новым. Глобальная переменная LPS_DB — это тот самый объект,
+			-- который WoW сериализует в файл при выходе/reload; если присвоить
+			-- новый объект, часть ссылок (в т.ч. последующий AceDB и кеш
+			-- profileDB) может остаться на старом — записанные настройки тогда
+			-- «исчезают» после /reload (выглядит как «всё сбрасывается в defaults»).
+			local sv = _G.LPS_DB
+			for k in pairs(sv) do sv[k] = nil end
+			sv.profiles = { Default = old }
+			sv.global = {}
 			if oldGold ~= nil then
-				LPS_DB.global.gold = oldGold
+				sv.global.gold = oldGold
 			end
 		else
 			LPS_DB = LPS_DB or {}
@@ -69,7 +78,22 @@ function LPS:onLoaded(name)
 				end
 			end
 		end
+		-- Валидация profileKeys: если персонаж привязан к профилю, которого нет
+		-- в sv.profiles, AceDB создаст ПУСТЫЙ профиль и ApplyDefaults заполнит
+		-- его дефолтами поверх реально сохранённых настроек в другом профиле
+		-- (симптом: «настройки сохраняются, но после /reload снова defaults»).
+		if type(LPS_DB) == "table" and type(LPS_DB.profileKeys) == "table" and type(LPS_DB.profiles) == "table" then
+			for ck, pk in pairs(LPS_DB.profileKeys) do
+				if type(pk) ~= "string" or LPS_DB.profiles[pk] == nil then
+					LPS_DB.profileKeys[ck] = "Default"
+					if LPS_DB.profiles["Default"] == nil then
+						LPS_DB.profiles["Default"] = {}
+					end
+				end
+			end
+		end
 		LPS.db = AceDB:New("LPS_DB", { profile = LPS.defaults, global = { gold = { realms = {} } } }, "Default")
+		if LPS.InvalidateDBCache then LPS:InvalidateDBCache() end
 		if LPS.db and LPS.db.RegisterCallback then
 			LPS.db.RegisterCallback(LPS, "OnProfileChanged", "OnAceProfileChanged")
 			LPS.db.RegisterCallback(LPS, "OnProfileCopied", "OnAceProfileCopied")

@@ -659,25 +659,85 @@ function LPS:ResetPanelsToDefaults()
 end
 
 function LPS:ResetAllSettingsToDefaults()
+	-- Сначала пробуем штатный сброс AceDB (он корректно снимает дефолты и
+	-- чистит пустые секции). Если он недоступен или падает — вручную
+	-- перезаписываем содержимое SavedVariables.
+	local resetDone = false
 	if LPS.db and LPS.db.ResetProfile then
-		LPS.db:ResetProfile()
-	else
-		local old = LPS_DB
-		local oldGlobal = type(old) == "table" and old.global or nil
-		local oldGold = type(old) == "table" and old.gold or nil
-		LPS_DB = CopyTable(LPS.defaults)
-		LPS_DB.global = LPS_DB.global or {}
-		if oldGlobal then
-			for k, v in pairs(oldGlobal) do
-				if LPS_DB.global[k] == nil then
-					LPS_DB.global[k] = v
+		local ok = pcall(function() LPS.db:ResetProfile() end)
+		resetDone = ok and true or false
+		if resetDone and LPS.InvalidateDBCache then LPS:InvalidateDBCache() end
+	end
+	if not resetDone then
+		-- Сброс без ResetProfile: переписываем СОДЕРЖИМОЕ текущего объекта
+		-- SavedVariables, а не заменяем саму таблицу. WoW при сохранении пишет
+		-- тот объект, на который указывает ГЛОБАЛЬНАЯ переменная LPS_DB; если
+		-- подменить её новым объектом, старые ссылки (в т.ч. внутри AceDB и
+		-- кешей) останутся на прежней таблице и записанные настройки «исчезнут»
+		-- после /reload — ровно симптом «всё возвращается к defaults».
+		local newProf = CopyTable(LPS.defaults)
+		if type(newProf) ~= "table" then newProf = {} end
+		newProf.gold = nil
+		local function resetApply()
+			_G.LPS_DB = _G.LPS_DB or {}
+			if type(_G.LPS_DB) ~= "table" then return end
+			-- Миграция плоской структуры в профилевую, если нужно.
+			if not _G.LPS_DB.profiles then
+				local flat = {}
+				for k, v in pairs(_G.LPS_DB) do
+					if k ~= "global" and k ~= "profiles" and k ~= "profileKeys" and k ~= "char" and k ~= "realm"
+						and k ~= "class" and k ~= "race" and k ~= "faction" and k ~= "factionrealm" and k ~= "gold" then
+						flat[k] = v
+						_G.LPS_DB[k] = nil
+					end
+				end
+				_G.LPS_DB.profiles = { Default = flat }
+			end
+			-- Сохраняем глобальные данные (золото/реалмы): они не относятся к
+			-- настройкам профиля и не должны сбрасываться.
+			_G.LPS_DB.global = _G.LPS_DB.global or {}
+			if type(_G.LPS_DB.gold) == "table" and not _G.LPS_DB.global.gold then
+				_G.LPS_DB.global.gold = _G.LPS_DB.gold
+			end
+			_G.LPS_DB.gold = nil
+			-- Заменяем содержимое ВСЕХ профилей свежими дефолтами (пользователь
+			-- просит полный сброс), но сами таблицы profiles/global/profileKeys
+			-- не трогаем — ссылка на SavedVariables остаётся валидной.
+			for pname in pairs(_G.LPS_DB.profiles) do
+				if pname ~= "Default" then
+					_G.LPS_DB.profiles[pname] = nil
+				else
+					_G.LPS_DB.profiles.Default = newProf
+				end
+			end
+			if _G.LPS_DB.profiles.Default == nil then
+				_G.LPS_DB.profiles.Default = newProf
+			end
+			-- Все привязки персонажей переводим на Default (саму таблицу
+			-- profileKeys не удаляем — её может хранить ссылка старого db.keys).
+			if type(_G.LPS_DB.profileKeys) == "table" then
+				for k in pairs(_G.LPS_DB.profileKeys) do
+					_G.LPS_DB.profileKeys[k] = "Default"
 				end
 			end
 		end
-		if oldGold and not LPS_DB.global.gold then
-			LPS_DB.global.gold = oldGold
+		resetApply()
+		-- Если AcceDB доступен — пересоздаём БД поверх ТОГО ЖЕ объекта sv
+		-- (AceDB:New принимает имя глобала и использует текущий _G.LPS_DB),
+		-- чтобы db.sv совпадал с тем, что сериализует WoW.
+		if LibStub and LibStub:GetLibrary("AceDB-3.0", true) and LPS.defaults then
+			local ok = pcall(function()
+				local AceDB = LibStub("AceDB-3.0")
+				LPS.db = AceDB:New("LPS_DB", { profile = LPS.defaults, global = { gold = { realms = {} } } }, "Default")
+				if LPS.db and LPS.db.RegisterCallback then
+					LPS.db.RegisterCallback(LPS, "OnProfileChanged", "OnAceProfileChanged")
+					LPS.db.RegisterCallback(LPS, "OnProfileCopied", "OnAceProfileCopied")
+					LPS.db.RegisterCallback(LPS, "OnProfileReset", "OnAceProfileReset")
+				end
+			end)
+			if not ok then LPS.db = nil end
 		end
-		LPS_DB.gold = nil
+		if LPS.InvalidateDBCache then LPS:InvalidateDBCache() end
 	end
 	-- Сброс настроек должен вернуть и вид панелей: закрываем созданные фреймы
 	-- инфотекстов (кроме зарезервированных coords/time/gold/system), чтобы они
@@ -709,7 +769,7 @@ function LPS:ResetAllSettingsToDefaults()
 end
 
 function LPS:RefreshAfterProfileChange()
-	self.profileDB = nil
+	if self.InvalidateDBCache then self:InvalidateDBCache() end
 	if self.InvalidateLayoutCache then self:InvalidateLayoutCache() end
 	local db = self:GetProfileDB()
 	if self.ApplyDefaults then
@@ -793,13 +853,23 @@ function LPS:L(key)
 	return key
 end
 
+-- Принудительно инвалидирует кеши ссылок на БД. Вызывается при любой замене
+-- глобала LPS_DB (миграция в onLoaded, сброс настроек), чтобы устаревшие
+-- ссылки не приводили к записи настроек «в никуда» (симптом: значения
+-- применяются, но после /reload исчезают, потому что WoW сериализует
+-- совершенно другой объект SavedVariables).
+function LPS:InvalidateDBCache()
+	self.profileDB = nil
+	self.accountDB = nil
+end
+
 function LPS:GetProfileDB()
-	if self.profileDB then
-		return self.profileDB
-	end
+	-- ВАЖНО: при наличии AceDB НЕ кешируем self.db.profile в self.profileDB.
+	-- Если LPS.db пересоздан или глобал LPS_DB заменён, кешеванная ссылка
+	-- остаётся на старую таблицу: set() из опций пишет в неё, а на логауте
+	-- сериализуется другой объект — настройки «не сохраняются».
 	if self.db and self.db.profile then
-		self.profileDB = self.db.profile
-		return self.profileDB
+		return self.db.profile
 	end
 	if type(LPS_DB) == "table" and LPS_DB.profiles and LPS_DB.profiles.Default then
 		self.profileDB = LPS_DB.profiles.Default
@@ -810,11 +880,10 @@ function LPS:GetProfileDB()
 end
 
 function LPS:GetAccountDB()
-	if self.accountDB then
-		return self.accountDB
-	end
 	if self.db and self.db.global then
-		self.accountDB = self.db.global
+		return self.db.global
+	end
+	if self.accountDB then
 		return self.accountDB
 	end
 	LPS_DB = LPS_DB or {}
