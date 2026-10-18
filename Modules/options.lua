@@ -2246,10 +2246,6 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 		aboutAuthor = "Arpeks"
 	end
 
-	-- Root options table + subcategory tabs are registered later, from
-	-- LPS.Options:FinalizeAce() (called by Game/core.lua once the AceDB
-	-- profile exists), so that get/set functions inside the table can
-	-- safely rely on a fully initialised database.
 	local rootRegistered = false
 	local subCategoriesRegistered = false
 
@@ -2258,36 +2254,6 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 		if not rootRegistered then
 			rootRegistered = true
 			local ok, err = pcall(AceConfig.RegisterOptionsTable, AceConfig, LPS.Options.aceAppName, options)
-			-- if ok then
-			-- 	AceDialog:AddToBlizOptions(LPS.Options.aceAppName, LPS.addon.title)
-			-- else
-				-- The registry validates every value of the table; if a single
-				-- value has an unsupported type (e.g. userdata leaked into the
-				-- table by another addon), fall back to a sanitized deep copy
-				-- that keeps only cleanable values and re-registers it.
-			-- 	local function sanitize(v)
-			-- 		local t = type(v)
-			-- 		if t == "function" or t == "number" or t == "boolean" or t == "string" then
-			-- 			return v
-			-- 		elseif t == "table" then
-			-- 			local out = {}
-			-- 			for k, val in pairs(v) do
-			-- 				if type(k) == "string" or type(k) == "number" then
-			-- 					out[k] = sanitize(val)
-			-- 				end
-			-- 			end
-			-- 			return out
-			-- 		end
-			-- 		return nil
-			-- 	end
-			-- 	local copy = sanitize(options)
-			-- 	local ok2, err2 = pcall(AceConfig.RegisterOptionsTable, AceConfig, LPS.Options.aceAppName, copy)
-			-- 	if ok2 then
-			-- 		AceDialog:AddToBlizOptions(LPS.Options.aceAppName, LPS.addon.title)
-			-- 	elseif LPS.DEBUG then
-			-- 		print("LPS: RegisterOptionsTable failed:", tostring(err), "/", tostring(err2))
-			-- 	end
-			-- end
 		end
 		if not subCategoriesRegistered then
 			subCategoriesRegistered = true
