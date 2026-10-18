@@ -466,6 +466,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 					},
 				},
 			},
+			args_show_PLACEHOLDER = nil, -- (removed placeholder)
+		},
+		args = {
 			show = {
 				type = "group",
 				name = LPS:L("Show"),
@@ -2110,11 +2113,14 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 				order = 90,
 				args = {},
 			},
+			-- NOTE: the AceConfigRegistry validator only allows a fixed set of
+			-- keys on each option entry (type/name/desc/order/args/childGroups...).
+			-- Any extra key (e.g. an accidental "path") makes every dialog open
+			-- fail with "ValidateOptionsTable(): <app>.<key>: unknown parameter".
 			importexport = {
 				type = "group",
 				name = LPS:L("Import/Export"),
 				order = 91,
-				childGroups = "tab",
 				args = {
 					export = {
 						type = "group",
@@ -2250,8 +2256,14 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 				},
 			},
 		},
+	}
 
-	AceConfig:RegisterOptionsTable(LPS.Options.aceAppName, options)
+	-- NOTE: the root table is registered by registerRootAndSubCategories() below,
+	-- which runs at load time and again (idempotently) from LPS.Options:FinalizeAce()
+	-- once the AceDB profile exists (see Game/core.lua onLoaded). This avoids the
+	-- "RegisterOptionsTable(appName, options): 'options' - expected table or function
+	-- reference" error when a get/set function inlined in the table throws during
+	-- the registry's validation pass (e.g. because the database was not ready yet).
 
 	local function deepCopyAce(v)
 		return deepCopy(v)
@@ -2285,6 +2297,61 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 	end
 	if not aboutAuthor or aboutAuthor == "" then
 		aboutAuthor = "Arpeks"
+	end
+
+	-- Root options table + subcategory tabs are registered later, from
+	-- LPS.Options:FinalizeAce() (called by Game/core.lua once the AceDB
+	-- profile exists), so that get/set functions inside the table can
+	-- safely rely on a fully initialised database.
+	local rootRegistered = false
+	local subCategoriesRegistered = false
+
+	local function registerRootAndSubCategories()
+		if type(options) ~= "table" then return end
+		if not rootRegistered then
+			rootRegistered = true
+			local ok, err = pcall(AceConfig.RegisterOptionsTable, AceConfig, LPS.Options.aceAppName, options)
+			if ok then
+				AceDialog:AddToBlizOptions(LPS.Options.aceAppName, LPS.addon.title)
+			else
+				-- The registry validates every value of the table; if a single
+				-- value has an unsupported type (e.g. userdata leaked into the
+				-- table by another addon), fall back to a sanitized deep copy
+				-- that keeps only cleanable values and re-registers it.
+				local function sanitize(v)
+					local t = type(v)
+					if t == "function" or t == "number" or t == "boolean" or t == "string" then
+						return v
+					elseif t == "table" then
+						local out = {}
+						for k, val in pairs(v) do
+							if type(k) == "string" or type(k) == "number" then
+								out[k] = sanitize(val)
+							end
+						end
+						return out
+					end
+					return nil
+				end
+				local copy = sanitize(options)
+				local ok2, err2 = pcall(AceConfig.RegisterOptionsTable, AceConfig, LPS.Options.aceAppName, copy)
+				if ok2 then
+					AceDialog:AddToBlizOptions(LPS.Options.aceAppName, LPS.addon.title)
+				elseif LPS.DEBUG then
+					print("LPS: RegisterOptionsTable failed:", tostring(err), "/", tostring(err2))
+				end
+			end
+		end
+		if not subCategoriesRegistered then
+			subCategoriesRegistered = true
+			registerSubCategory("_General", options.args.general)
+			registerSubCategory("_Show", options.args.show)
+			registerSubCategory("_Tooltip", options.args.tooltip)
+			registerSubCategory("_Layout", options.args.layout)
+			if options.args.importexport then
+				registerSubCategory("_ImportExport", options.args.importexport)
+			end
+		end
 	end
 
 	AceConfig:RegisterOptionsTable(LPS.Options.aceAppName .. "_About", {
@@ -2324,13 +2391,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 })
 	AceDialog:AddToBlizOptions(LPS.Options.aceAppName .. "_About", LPS.addon.title)
 
-	registerSubCategory("_General", options.args.general)
-	registerSubCategory("_Show", options.args.show)
-	registerSubCategory("_Tooltip", options.args.tooltip)
-	registerSubCategory("_Layout", options.args.layout)
-	if options.args.importexport then
-		registerSubCategory("_ImportExport", options.args.importexport)
-	end
+	registerRootAndSubCategories()
 
 	deepCopy = function(v)
 		if type(v) ~= "table" then
@@ -2370,6 +2431,13 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 			self._profilesBlizAdded = true
 		end
 		self._profilesRegistered = true
+	end
+
+	function LPS.Options:FinalizeAce()
+		registerRootAndSubCategories()
+		if AceConfigRegistry and AceConfigRegistry.NotifyChange then
+			AceConfigRegistry:NotifyChange(self.aceAppName)
+		end
 	end
 
 	LPS.Options:EnsureAceProfilesTab()

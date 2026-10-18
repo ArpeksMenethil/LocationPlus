@@ -76,6 +76,9 @@ function LPS:onLoaded(name)
 			LPS.db.RegisterCallback(LPS, "OnProfileReset", "OnAceProfileReset")
 		end
 		if LPS.Options then
+			if LPS.Options.FinalizeAce then
+				LPS.Options:FinalizeAce()
+			end
 			if LPS.Options.EnsureAceProfilesTab then
 				LPS.Options:EnsureAceProfilesTab()
 			end
