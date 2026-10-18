@@ -4,7 +4,7 @@ local DT = LPS._DT
 
 -------------------------------------------------- Strength (attribute)
 do
-	local statDefs = { { key = "strength", label = function() return STRENGTH or "Strength" end, attr = LE_UNIT_ATTRIBUTE_STRENGTH or 1 } }
+	local statDefs = { { key = "strength", label = function() return LPS:L("Strength") end, attr = LE_UNIT_ATTRIBUTE_STRENGTH or 1 } }
 for _, sd in ipairs(statDefs) do
 		LPS:RegisterDatatext({
 			key = sd.key,

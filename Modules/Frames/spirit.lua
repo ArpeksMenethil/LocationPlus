@@ -4,7 +4,7 @@ local DT = LPS._DT
 
 -------------------------------------------------- Spirit (attribute)
 do
-	local statDefs = { { key = "spirit", label = function() return SPIRIT or "Spirit" end, attr = LE_UNIT_ATTRIBUTE_SPIRIT or 5 } }
+	local statDefs = { { key = "spirit", label = function() return LPS:L("Spirit") end, attr = LE_UNIT_ATTRIBUTE_SPIRIT or 5 } }
 for _, sd in ipairs(statDefs) do
 		LPS:RegisterDatatext({
 			key = sd.key,

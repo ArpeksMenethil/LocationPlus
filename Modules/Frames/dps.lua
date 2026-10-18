@@ -79,13 +79,13 @@ do
 
 	LPS:RegisterDatatext({
 		key = "dps",
-		name = STAT_DPS_SHORT,
+		name = LPS:L("DPS"),
 		ticker = 0.5,
 		create = function(f)
 			ensureLog()
 			local fn = function()
 				if f.text and f:IsShown() then
-					f.text:SetText(string.format("%s: %s", STAT_DPS_SHORT, DT.shortValue(combatTime > 0 and (dmgTotal / combatTime) or 0)))
+					f.text:SetText(string.format("%s: %s", LPS:L("DPS"), DT.shortValue(combatTime > 0 and (dmgTotal / combatTime) or 0)))
 				end
 			end
 			updaters[#updaters + 1] = fn
@@ -93,7 +93,7 @@ do
 		end,
 		update = function(f)
 			if f.text then
-				f.text:SetText(string.format("%s: %s", STAT_DPS_SHORT, DT.shortValue(combatTime > 0 and (dmgTotal / combatTime) or 0)))
+				f.text:SetText(string.format("%s: %s", LPS:L("DPS"), DT.shortValue(combatTime > 0 and (dmgTotal / combatTime) or 0)))
 			end
 		end,
 		onClick = function(self)

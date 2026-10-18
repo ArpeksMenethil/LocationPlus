@@ -286,6 +286,7 @@ L["Agility"] = true
 L["Ambience"] = true
 L["Armor"] = true
 L["Attack Power"] = true
+L["Ranged AP"] = true
 L["Average item level"] = true
 L["Bags"] = true
 L["Bonus"] = true

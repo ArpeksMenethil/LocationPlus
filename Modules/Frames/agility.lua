@@ -4,7 +4,7 @@ local DT = LPS._DT
 
 -------------------------------------------------- Agility (attribute)
 do
-	local statDefs = { { key = "agility", label = function() return AGILITY or "Agility" end, attr = LE_UNIT_ATTRIBUTE_AGILITY or 2 } }
+	local statDefs = { { key = "agility", label = function() return LPS:L("Agility") end, attr = LE_UNIT_ATTRIBUTE_AGILITY or 2 } }
 for _, sd in ipairs(statDefs) do
 		LPS:RegisterDatatext({
 			key = sd.key,

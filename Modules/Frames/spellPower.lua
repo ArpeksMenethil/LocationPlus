@@ -8,7 +8,7 @@ do
         local lastSchool = 2
         LPS:RegisterDatatext({
                 key = "spellPower",
-                name = SPELL_POWER or "Spell Power",
+                name = LPS:L("Spell Power"),
                 events = { "PLAYER_ENTERING_WORLD", "SPELLS_CHANGED", "UNIT_STATS" },
                 update = function(f)
                         local minSP, schoolIdx
@@ -26,7 +26,7 @@ do
                                 minSP = 0
                         end
                         if f.text then
-                                f.text:SetText(string.format("%s: %d", SPELL_POWER or "Spell Power", math.floor(minSP)))
+                                f.text:SetText(string.format("%s: %d", LPS:L("Spell Power"), math.floor(minSP)))
                         end
                 end,
         })

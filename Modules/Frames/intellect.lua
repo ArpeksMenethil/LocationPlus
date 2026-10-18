@@ -4,7 +4,7 @@ local DT = LPS._DT
 
 -------------------------------------------------- Intellect (attribute)
 do
-	local statDefs = { { key = "intellect", label = function() return INTELLECT or "Intellect" end, attr = LE_UNIT_ATTRIBUTE_INTELLECT or 4 } }
+	local statDefs = { { key = "intellect", label = function() return LPS:L("Intellect") end, attr = LE_UNIT_ATTRIBUTE_INTELLECT or 4 } }
 for _, sd in ipairs(statDefs) do
 		LPS:RegisterDatatext({
 			key = sd.key,

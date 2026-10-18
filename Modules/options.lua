@@ -1195,6 +1195,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().layout.locMinWidth end,
 								set = function(_, v)
 									getDb().layout.locMinWidth = v
+									if LPS.InvalidateLayoutCache then
+										LPS:InvalidateLayoutCache()
+									end
 									if LPS.ScheduleRefresh then
 										LPS:ScheduleRefresh()
 									end
@@ -1211,6 +1214,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().layout.locPaddingX end,
 								set = function(_, v)
 									getDb().layout.locPaddingX = v
+									if LPS.InvalidateLayoutCache then
+										LPS:InvalidateLayoutCache()
+									end
 									if LPS.ScheduleRefresh then
 										LPS:ScheduleRefresh()
 									end
@@ -1227,6 +1233,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().layout.locPaddingY end,
 								set = function(_, v)
 									getDb().layout.locPaddingY = v
+									if LPS.InvalidateLayoutCache then
+										LPS:InvalidateLayoutCache()
+									end
 									if LPS.ScheduleRefresh then
 										LPS:ScheduleRefresh()
 									end
@@ -1280,6 +1289,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().layout.dtMinWidth end,
 								set = function(_, v)
 									getDb().layout.dtMinWidth = v
+									if LPS.InvalidateLayoutCache then
+										LPS:InvalidateLayoutCache()
+									end
 									if LPS.ScheduleRefresh then
 										LPS:ScheduleRefresh()
 									end
@@ -1297,6 +1309,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().layout.dtPaddingX end,
 								set = function(_, v)
 									getDb().layout.dtPaddingX = v
+									if LPS.InvalidateLayoutCache then
+										LPS:InvalidateLayoutCache()
+									end
 									if LPS.ScheduleRefresh then
 										LPS:ScheduleRefresh()
 									end
@@ -1314,6 +1329,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().layout.dtPaddingY end,
 								set = function(_, v)
 									getDb().layout.dtPaddingY = v
+									if LPS.InvalidateLayoutCache then
+										LPS:InvalidateLayoutCache()
+									end
 									if LPS.ScheduleRefresh then
 										LPS:ScheduleRefresh()
 									end
@@ -1337,8 +1355,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										-- и идут в общем алфавитном порядке
 									if LPS.GetSlotKeyList then
 										for _, k in ipairs(LPS:GetSlotKeyList()) do
-											local def = LPS.datatexts and LPS.datatexts[k]
-											vals[k] = def and def.name or k
+																						-- Название ВСЕГДА локализованное (язык клиента): берём из реестра через GetDatatextName.
+											vals[k] = LPS:GetDatatextName(k)
 										end
 									end
 									return vals
@@ -1422,8 +1440,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										-- и идут в общем алфавитном порядке
 									if LPS.GetSlotKeyList then
 										for _, k in ipairs(LPS:GetSlotKeyList()) do
-											local def = LPS.datatexts and LPS.datatexts[k]
-											vals[k] = def and def.name or k
+																						-- Название ВСЕГДА локализованное (язык клиента): берём из реестра через GetDatatextName.
+											vals[k] = LPS:GetDatatextName(k)
 										end
 									end
 									return vals
@@ -1508,8 +1526,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										-- и идут в общем алфавитном порядке
 									if LPS.GetSlotKeyList then
 										for _, k in ipairs(LPS:GetSlotKeyList()) do
-											local def = LPS.datatexts and LPS.datatexts[k]
-											vals[k] = def and def.name or k
+																						-- Название ВСЕГДА локализованное (язык клиента): берём из реестра через GetDatatextName.
+											vals[k] = LPS:GetDatatextName(k)
 										end
 									end
 									return vals
@@ -1596,8 +1614,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										-- и идут в общем алфавитном порядке
 									if LPS.GetSlotKeyList then
 										for _, k in ipairs(LPS:GetSlotKeyList()) do
-											local def = LPS.datatexts and LPS.datatexts[k]
-											vals[k] = def and def.name or k
+																						-- Название ВСЕГДА локализованное (язык клиента): берём из реестра через GetDatatextName.
+											vals[k] = LPS:GetDatatextName(k)
 										end
 									end
 									return vals
@@ -1684,8 +1702,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										-- и идут в общем алфавитном порядке
 									if LPS.GetSlotKeyList then
 										for _, k in ipairs(LPS:GetSlotKeyList()) do
-											local def = LPS.datatexts and LPS.datatexts[k]
-											vals[k] = def and def.name or k
+																						-- Название ВСЕГДА локализованное (язык клиента): берём из реестра через GetDatatextName.
+											vals[k] = LPS:GetDatatextName(k)
 										end
 									end
 									return vals
@@ -1771,8 +1789,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										-- и идут в общем алфавитном порядке
 									if LPS.GetSlotKeyList then
 										for _, k in ipairs(LPS:GetSlotKeyList()) do
-											local def = LPS.datatexts and LPS.datatexts[k]
-											vals[k] = def and def.name or k
+																						-- Название ВСЕГДА локализованное (язык клиента): берём из реестра через GetDatatextName.
+											vals[k] = LPS:GetDatatextName(k)
 										end
 									end
 									return vals
@@ -1863,6 +1881,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().layout.spacingAuto end,
 								set = function(_, v)
 									getDb().layout.spacingAuto = v
+									if LPS.InvalidateLayoutCache then
+										LPS:InvalidateLayoutCache()
+									end
 									if LPS.ScheduleRefresh then
 										LPS:ScheduleRefresh()
 									end
@@ -1880,6 +1901,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().layout.spacingManual end,
 								set = function(_, v)
 									getDb().layout.spacingManual = v
+									if LPS.InvalidateLayoutCache then
+										LPS:InvalidateLayoutCache()
+									end
 									if LPS.ScheduleRefresh then
 										LPS:ScheduleRefresh()
 									end

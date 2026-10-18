@@ -1,61 +1,66 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
-function LPS:CreateTimeFrame()
-	local db = LPS:GetDB()
-	if not db or not LPS.frame.holder then return end
-	local brokerPlayedTime = LibStub:GetLibrary("LibDataBroker-1.1"):GetDataObjectByName("Time Played")
+-- Панель «Время» переписана на общий реестр LPS:RegisterDatatext():
+-- фрейм создаётся конструктором CreateDatatextFrame (временный якорь у
+-- holder'а; padding/minWidth не фиксируются при создании, а перечитываются
+-- из db.layout в update), как и остальные панели.
 
+local function getDB() return LPS:GetDB() or {} end
 
-	---@type LPSFrameParams
-	local params = {
-		name = "LPS_Time",
-		frameType = "Button",
-		hidden = true,
-		parent = LPS.frame.location,
-		anchor = {"LEFT", LPS.frame.location, "RIGHT", 5, 0},
-		padding = {((db.layout and db.layout.dtPaddingX) or 20), ((db.layout and db.layout.dtPaddingY) or 7)},
-		fontSize = db.settings.fontSize or 12,
-		bgColor = {LPS:GetColor("bg")},
-		borderColor = {LPS:GetColor("border")},
-		updateFunc = function(f)
-			if f.text then
-				local newText = LPS:GetFormattedGameTime()
-				f.text:SetText(newText)
+local function playedTimeBroker()
+	local ok, lib = pcall(function() return LibStub:GetLibrary("LibDataBroker-1.1", true) end)
+	if ok and lib then return lib:GetDataObjectByName("Time Played") end
+	return nil
+end
+
+LPS:RegisterDatatext({
+	key = "time",
+	name = LPS:L("Time"),
+	ticker = 1,
+	clicks = { "LeftButtonUp", "RightButtonUp", "MiddleButtonUp" },
+	update = function(f)
+		if f.text then
+			local newText = LPS:GetFormattedGameTime()
+			f.text:SetText(newText)
+		end
+	end,
+	onClick = function(self, button)
+		local db = getDB()
+		if button == "LeftButton" then
+			if ToggleTimeManager then
+				ToggleTimeManager()
+			elseif TimeManagerClockButton_OnClick and TimeManagerClockButton then
+				TimeManagerClockButton_OnClick(TimeManagerClockButton)
 			end
-		end,
-		updateTicker = {interval = 1},
-		registerClicks = {"LeftButtonUp", "RightButtonUp", "MiddleButtonUp"},
-		onClick = function(self, button)
-			if button == "LeftButton" then
-				if ToggleTimeManager then
-					ToggleTimeManager()
-				elseif TimeManagerClockButton_OnClick and TimeManagerClockButton then
-					TimeManagerClockButton_OnClick(TimeManagerClockButton)
-				end
-			elseif button == "RightButton" and brokerPlayedTime and db.tooltips.time.playedTime then
+		elseif button == "RightButton" then
+			local brokerPlayedTime = playedTimeBroker()
+			if brokerPlayedTime and db.tooltips and db.tooltips.time and db.tooltips.time.playedTime then
 				brokerPlayedTime.OnClick(self, button)
-				if TimeManagerFrame:IsVisible() then
+				if TimeManagerFrame and TimeManagerFrame:IsVisible() then
 					GameTooltip:Hide()
 				end
-			elseif button == "MiddleButton" then
-				if ToggleCalendar then
-					ToggleCalendar()
-				end
 			end
-		end,
-		tooltipFunc = function(self)
-			local db = LPS:GetDB()
-			if not db.tooltips.visibility.enable then return end
-			if db.tooltips.visibility.combat and InCombatLockdown() then return end
-			if not db.tooltips.time.enable then return end
-			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
-			GameTooltip:ClearLines()
-			LPS:BuildTimeTooltip()
-			GameTooltip.isTimeTooltip = true
-			GameTooltip:Show()
-		end,
-	}
-
-	return LPS:CreateFrame(params)
-end
+		elseif button == "MiddleButton" then
+			if ToggleCalendar then
+				ToggleCalendar()
+			end
+		end
+	end,
+	-- Нестандартная подсказка (свои проверки видимости + флаг isTimeTooltip):
+	-- используем customTooltip, чтобы конструктор не подставлял общий tooltipGuard.
+	customTooltip = true,
+	buildTooltip = function(self)
+		local db = getDB()
+		local tt = db.tooltips or {}
+		local vis = tt.visibility or {}
+		if not vis.enable then return end
+		if vis.combat and InCombatLockdown() then return end
+		if tt.time and tt.time.enable == false then return end
+		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:ClearLines()
+		LPS:BuildTimeTooltip()
+		GameTooltip.isTimeTooltip = true
+		GameTooltip:Show()
+	end,
+})

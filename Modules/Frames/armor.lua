@@ -7,7 +7,7 @@ do
 local armorStale
 LPS:RegisterDatatext({
 key = "armor",
-name = ARMOR or "Armor",
+name = LPS:L("Armor"),
 -- UNIT_ARMOR не существует в WoW API. Для отслеживания смены экипировки
 -- используем PLAYER_EQUIPMENT_CHANGED (основное событие надевания/снятия
 -- предметов), EQUIPMENT_SETS_CHANGED и UNIT_INVENTORY_CHANGED как страховку.
@@ -17,7 +17,7 @@ local _, effective = UnitArmor("player")
 if DT.NotSecret(effective) then armorStale = effective end
 local value = DT.NotSecret(effective) and effective or armorStale
 if f.text then
-f.text:SetText(string.format("%s: %d", ARMOR or "Armor", math.floor(value or 0)))
+f.text:SetText(string.format("%s: %d", LPS:L("Armor"), math.floor(value or 0)))
 end
 end,
 })

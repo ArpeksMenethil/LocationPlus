@@ -145,10 +145,12 @@ end
 
 function LPS:CreateAllFrames()
 	LPS.frame.location = LPS:CreateLocationFrame()
-	LPS.frame.coords   = LPS:CreateCoordsFrame()
-	LPS.frame.time     = LPS:CreateTimeFrame()
-	LPS.frame.gold     = LPS:CreateGoldFrame()
-	LPS.frame.system   = LPS:CreateSystemFrame()
+	-- coords/time/gold/system переписаны на LPS:RegisterDatatext(): их фреймы
+	-- больше не создаются здесь отдельными конструкторами — занятые слоты
+	-- создают их через общий GetOrCreatePanelFrame при ApplyLayout (в т.ч.
+	-- дефолтные left1="gold", right1="system"), поэтому отступы/минимальная
+	-- ширина всегда берутся из актуального db.layout, а не фиксируются при
+	-- старте аддона.
 end
 
 SLASH_LPS1 = "/lps"
