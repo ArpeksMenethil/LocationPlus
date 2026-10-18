@@ -308,55 +308,56 @@ if LPS.GetOrCreatePanelFrame then return LPS:GetOrCreatePanelFrame(key) end
 return nil
 end
 
--- По умолчанию цепочки фреймов привязываются к ПРЕДЫДУЩЕЙ ГРУППЕ фреймов
--- со смещением влево/вправо (slot2 -> slot1, slot3 -> slot2 и т.д.).
--- Привязка к локации включается опцией db.layout.chainAnchor = "location".
-local function useLocationAnchor()
+-- Цепочки боковых панелей:
+-- ЛЕВЫЕ панели привязываются к ЛЕВОЙ стороне группы (первая — к левому краю
+-- локации, каждая следующая — к левому краю предыдущей панели).
+-- ПРАВЫЕ панели привязываются к ПРАВОЙ стороне группы (первая — к правому
+-- краю локации, каждая следующая — к правому краю предыдущей панели).
+-- Опция db.layout.chainAnchor = "location" меняет якорь ПЕРВОЙ панели цепочки
+-- с края локации на край holder'а (внешний край всей сборки).
+local function useHolderAnchor()
 	local db = LPS.GetDB and LPS:GetDB()
 	local lay = db and db.layout
-	-- по умолчанию ("chain") — привязка к предыдущей группе фреймов;
-	-- привязка к локации только если пользователь явно выбрал "location"
 	return lay ~= nil and lay.chainAnchor == "location" and true or false
 end
 
 local function positionChain(chain, side)
-local anchorTo, anchorPoint, oppositePoint = frames.location, side, (side == "LEFT" and "RIGHT" or "LEFT")
-local seen = {}
-for idx = 1, #chain do
-	local entry = chain[idx]
-	local key = entry.key
-	if not seen[key] then
-		seen[key] = true
-		local frame = getFrameByKey(key)
-		if frame then
-			local ox = tonumber(entry.cfg.offsetX) or 0
-			local oy = tonumber(entry.cfg.offsetY) or 0
-			frame:ClearAllPoints()
-			if idx > 1 or useLocationAnchor() then
-				-- обычный якорь по цепочке: за предыдущую группу фреймов
-				if side == "LEFT" then
-					frame:SetPoint("RIGHT", anchorTo, anchorPoint, -spacing + ox, oy)
-				else
-					frame:SetPoint("LEFT", anchorTo, anchorPoint, spacing + ox, oy)
+	local isLeft = (side == "LEFT")
+	-- ownPoint: для левых панелей это их RIGHT-край (он прижимается к левой
+	-- стороне группы), для правых — их LEFT-край (прижимается к правой стороне).
+	local ownPoint = isLeft and "RIGHT" or "LEFT"
+	local edgePoint = isLeft and "LEFT" or "RIGHT"
+	local sign = isLeft and -1 or 1
+	-- Первая панель цепляется за левый/правый КРАЙ локации; при chainAnchor =
+	-- "location" — за соответствующий край holder'а (внешний край сборки).
+	local anchorTo, anchorPoint = frames.location, edgePoint
+	local seen = {}
+	for idx = 1, #chain do
+		local entry = chain[idx]
+		local key = entry.key
+		if not seen[key] then
+			seen[key] = true
+			local frame = getFrameByKey(key)
+			if frame then
+				local ox = tonumber(entry.cfg.offsetX) or 0
+				local oy = tonumber(entry.cfg.offsetY) or 0
+				frame:ClearAllPoints()
+				if idx == 1 and useHolderAnchor() then
+					local base = (frames.holder and frames.holder.IsShown and frames.holder:IsShown()) and frames.holder or frames.location
+					anchorTo, anchorPoint = base, edgePoint
 				end
-			else
-				-- первый слот без привязки к локации: позиционируем от holder'а
-				local base = (frames.holder and frames.holder.IsShown and frames.holder:IsShown()) and frames.holder or frames.location
-				if side == "LEFT" then
-					frame:SetPoint("RIGHT", base, "LEFT", -spacing + ox, oy)
-				else
-					frame:SetPoint("LEFT", base, "RIGHT", spacing + ox, oy)
-				end
+				-- Смещение sign*spacing; у первой панели offset не применяется
+				-- (панель стоит вплотную к краю локации), чтобы не было разрывов.
+				local dx = (idx == 1) and 0 or (sign * spacing + ox)
+				frame:SetPoint(ownPoint, anchorTo, anchorPoint, dx, oy)
+				-- Следующая панель цепляется за КРАЙ этой же стороны:
+				-- левые — за левый край предыдущей, правые — за правый.
+				anchorTo, anchorPoint = frame, edgePoint
 			end
-			anchorTo, anchorPoint = frame, oppositePoint
-		elseif idx > 1 then
-			-- пропущенная панель: последующие цепляем обратно к уже размещённой
 		end
 	end
 end
-end
 
-applyPanelVisibility(frames, slotList, showDT)
 positionChain(leftChain, "LEFT")
 positionChain(rightChain, "RIGHT")
 
@@ -548,8 +549,7 @@ function LPS:ResetAllSettingsToDefaults()
 	end
 	if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
 	LPS:ApplyHolderPosition()
-		LPS:ApplyAllSettings()
-	end
+	LPS:ApplyAllSettings()
 	if LPS.UpdateMinimapButton then
 		LPS:UpdateMinimapButton()
 	end

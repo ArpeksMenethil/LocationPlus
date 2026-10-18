@@ -5,16 +5,21 @@ local DT = LPS._DT
 -------------------------------------------------- Bags
 do
 	local function freeTotal()
-		local NUM_BAG_SLOTS = NUM_BAG_SLOTS or 4
+		local NUM_BAG_SLOTS = NUM_BAG_SLOTS or (C_Container and C_Container.NUM_BAG_SLOTS) or 4
 		local free, total = 0, 0
 		for i = 0, NUM_BAG_SLOTS do
-			if GetContainerNumFreeSlots then
-				local f = GetContainerNumFreeSlots(i)
-				local t = GetContainerNumSlots(i)
-				if t and t > 0 then
-					free = free + (f or 0)
-					total = total + t
-				end
+			-- На новых клиентах глобальные GetContainer* перенесены в C_Container
+			local f, t
+			if C_Container and C_Container.GetContainerNumFreeSlots then
+				f = C_Container.GetContainerNumFreeSlots(i)
+				t = C_Container.GetContainerNumSlots(i)
+			elseif GetContainerNumFreeSlots then
+				f = GetContainerNumFreeSlots(i)
+				t = GetContainerNumSlots(i)
+			end
+			if t and t > 0 then
+				free = free + (f or 0)
+				total = total + t
 			end
 		end
 		return free, total
@@ -46,12 +51,18 @@ do
 tooltip = function(tt)
         			tt:AddDoubleLine(LPS:L("Bags"), LPS:L("Used slots") .. " / " .. LPS:L("Total"), 1, 0.82, 0, 1, 1, 1)
         			tt:AddLine(" ")
-        			local NUM_BAG_SLOTS = NUM_BAG_SLOTS or 4
+        			local NUM_BAG_SLOTS = NUM_BAG_SLOTS or (C_Container and C_Container.NUM_BAG_SLOTS) or 4
         			for i = 0, NUM_BAG_SLOTS do
-        				local bagName = (C_Container and C_Container.GetBagName) and C_Container.GetBagName(i) or GetBagName(i)
+        				local bagName = (C_Container and C_Container.GetBagName) and C_Container.GetBagName(i) or (GetBagName and GetBagName(i))
         				if bagName then
-        					local numSlots = GetContainerNumSlots(i) or 0
-        					local freeSlots = (GetContainerNumFreeSlots and GetContainerNumFreeSlots(i)) or 0
+        					local numSlots, freeSlots
+        					if C_Container and C_Container.GetContainerNumSlots then
+        						numSlots = C_Container.GetContainerNumSlots(i) or 0
+        						freeSlots = (C_Container.GetContainerNumFreeSlots and C_Container.GetContainerNumFreeSlots(i)) or 0
+        					else
+        						numSlots = (GetContainerNumSlots and GetContainerNumSlots(i)) or 0
+        						freeSlots = (GetContainerNumFreeSlots and GetContainerNumFreeSlots(i)) or 0
+        					end
         					local used = numSlots - freeSlots
         					local pct = numSlots > 0 and (used / numSlots) or 0
         					local r, g, b = DT.colorGradient(pct, .1, 1, .1, 1, 1, .1, 1, .1, .1)

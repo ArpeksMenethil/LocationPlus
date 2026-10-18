@@ -1100,10 +1100,10 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 						order = 0,
 						type = "select",
 						name = LPS:L("Frame anchor mode"),
-						desc = LPS:L("How side frames are anchored. Default: each frame attaches to the previous group of frames with a left/right offset. Use 'Location' to attach the first frame to the location panel."),
+						desc = LPS:L("Side panels always grow along their edge: left panels attach to the LEFT side of the group, right panels attach to the RIGHT side. This option controls what the FIRST panel of each chain anchors to: the location panel edges (default) or the outer edges of the whole holder frame."),
 						values = {
-							chain = LPS:L("Previous frame group"),
-							location = LPS:L("Location panel"),
+							chain = LPS:L("Location panel edges"),
+							location = LPS:L("Holder outer edges"),
 						},
 						get = function() return getDb().layout.chainAnchor or "chain" end,
 						set = function(_, v)

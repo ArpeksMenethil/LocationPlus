@@ -78,8 +78,15 @@ function LPS:CreateDatatextFrame(key)
 	local params = {
 		name = "LPS_" .. key:gsub("^%l", string.upper),
 		frameType = "Button",
-		parent = LPS.frame.location,
-		anchor = { "LEFT", LPS.frame.location, "RIGHT", 5, 0 },
+		parent = LPS.frame.holder or LPS.frame.location,
+        -- Временный якорь: фактическая позиция назначается в ApplyLayout
+        -- (positionChain). Раньше здесь стоял {"LEFT", location, "RIGHT", 5, 0},
+        -- из-за чего каждая новая панель при создании ставилась ПОВЕРХ группы 1
+        -- ("создаются прямо на месте предыдущей группы") и оставалась там, если
+        -- пересчёт layout'а не запускался. Теперь фрейм создаётся у holder'а,
+        -- скрыт и становится видимым только после позиционирования в цепочке.
+        anchor = { "CENTER", LPS.frame.holder or UIParent, "CENTER", 0, 0 },
+		hidden = true, -- создаём скрытым: ApplyLayout позиционирует и показывает
 		padding = { ((db.layout and db.layout.dtPaddingX) or 10), ((db.layout and db.layout.dtPaddingY) or 6) },
 		fontSize = db.settings.fontSize or 12,
 		bgColor = { LPS:GetColor("bg") },
@@ -138,6 +145,12 @@ function LPS:CreateDatatextFrame(key)
 		end
 		-- первичное заполнение
 		if f._lpsUpdateFunc then f._lpsUpdateFunc(f) end
+		-- Панель создана скрытой (params.hidden): сразу раскладываем layout,
+		-- чтобы positionChain поставил её в цепочку СЛЕДУЮЩЕЙ за предыдущей
+		-- группой и показал. Без этого фреймы 2-й/3-й групп оставались бы на
+		-- временном якоре поверх первой группы.
+		if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+		if LPS.ApplyLayout then LPS:ApplyLayout() end
 	end
 	return f
 end
@@ -210,12 +223,21 @@ function LPS:IsDatatextKey(key)
 end
 
 --- Возвращает фрейм панели по ключу слота (создаёт при необходимости)
+-- Защита от рекурсии: CreateDatatextFrame вызывает ApplyLayout, который через
+-- positionChain/getFrameByKey может снова позвать GetOrCreatePanelFrame с тем
+-- же ключом (фрейм регистрируется в LPS.frame уже ПОСЛЕ создания).
+local _lpsCreatingPanels = {}
+
 function LPS:GetOrCreatePanelFrame(key)
 	if RESERVED_SLOT_KEYS[key] then return nil end
 	local frames = LPS.frame
 	if not frames then return nil end
 	if frames[key] then return frames[key] end
+	local creating = _lpsCreatingPanels
+	if creating[key] then return nil end -- защита от рекурсии ApplyLayout
+	creating[key] = true
 	local f = LPS:CreateDatatextFrame(key)
+	creating[key] = nil
 	if f then
 		frames[key] = f
 		LPS:ScheduleFrameSizeUpdate()
