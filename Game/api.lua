@@ -513,6 +513,51 @@ function LPS:ApplyVisibility()
 	holder:SetAlpha(1)
 end
 
+-- Сброс настроек панелей БЕЗ опоры на LPS.defaults.panels (таблица удалена):
+-- очищаем db.panels (все панели снова включены по умолчанию), вычищаем панели
+-- из слотов layout.sideSlots (кроме зарезервированных) и закрываем созданные
+-- фреймы инфотекстов, чтобы они пересоздались при следующем ApplyLayout.
+function LPS:ResetPanelsToDefaults()
+        local db = self:GetDB()
+        if not db then return end
+
+        db.panels = nil
+
+        -- Зарезервированные панели (coords/time/gold/system) не трогаем:
+        -- они управляются секцией show.*
+        local reserved = { coords = true, time = true, gold = true, system = true }
+
+        if type(db.layout) == "table" and type(db.layout.sideSlots) == "table" then
+                local ss = db.layout.sideSlots
+                for name, s in pairs(ss) do
+                        if name ~= "userTouched" and type(s) == "table"
+                                and s.frame and not reserved[s.frame] then
+                                s.frame = "NONE"
+                                if type(ss.userTouched) == "table" then
+                                        ss.userTouched[name] = true
+                                end
+                        end
+                end
+        end
+
+        -- Закрываем созданные фреймы инфотекстов, чтобы они пересоздались
+        if LPS.frame then
+                for k, f in pairs(LPS.frame) do
+                        if type(f) == "table" and not reserved[k]
+                                and LPS.datatexts and LPS.datatexts[k] then
+                                f:Hide()
+                                if f.UnregisterAllEvents then f:UnregisterAllEvents() end
+                                if f._lpsTicker then f._lpsTicker:Cancel(); f._lpsTicker = nil end
+                                LPS.frame[k] = nil
+                        end
+                end
+        end
+
+        if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+        if LPS.ApplyAllSettings then LPS:ApplyAllSettings() end
+        if LPS.ApplyLayout then LPS:ApplyLayout() end
+end
+
 function LPS:ResetAllSettingsToDefaults()
 	if LPS.db and LPS.db.ResetProfile then
 		LPS.db:ResetProfile()

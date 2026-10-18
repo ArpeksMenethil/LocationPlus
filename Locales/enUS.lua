@@ -63,6 +63,7 @@ L["General"] = true
 L["Actions"] = true
 L["Reset values"] = true
 L["Reset all addon settings to default values."] = true
+L["Panel settings have been reset to defaults."] = true
 L["None"] = true
 
 L["Import/Export"] = true
