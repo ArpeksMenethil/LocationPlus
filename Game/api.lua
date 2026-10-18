@@ -714,7 +714,7 @@ function LPS:ResetAllSettingsToDefaults()
 	-- инфотекстов (кроме зарезервированных coords/time/gold/system), чтобы они
 	-- пересоздались с дефолтовыми значениями при следующем ApplyLayout
 	if LPS.frame then
-		for _, k in ipairs({ "bags", "combatIndicator", "combatTime", "dps", "hps",
+		for _, k in ipairs({ "bags", "combatIndicator",
 			"difficulty", "durability", "experience", "friends", "guild", "itemLevel", "mail",
 			"microBar", "quests", "reputation", "volume" }) do
 			local f = LPS.frame[k]

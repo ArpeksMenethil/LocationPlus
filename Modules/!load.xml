@@ -9,12 +9,10 @@
 	<Include file='.\Tooltips\system_tt.lua'/>
 	<Include file='.\Tooltips\bags_tt.lua'/>
 	<Include file='.\Tooltips\difficulty_tt.lua'/>
-	<Include file='.\Tooltips\dps_tt.lua'/>
 	<Include file='.\Tooltips\durability_tt.lua'/>
 	<Include file='.\Tooltips\experience_tt.lua'/>
 	<Include file='.\Tooltips\friends_tt.lua'/>
 	<Include file='.\Tooltips\guild_tt.lua'/>
-	<Include file='.\Tooltips\hps_tt.lua'/>
 	<Include file='.\Tooltips\mail_tt.lua'/>
 	<Include file='.\Tooltips\quests_tt.lua'/>
 	<Include file='.\Tooltips\reputation_tt.lua'/>
@@ -28,14 +26,11 @@
 	<Include file='.\Frames\system.lua'/>
 	<Include file='.\Frames\bags.lua'/>
 	<Include file='.\Frames\combatIndicator.lua'/>
-	<Include file='.\Frames\combatTime.lua'/>
 	<Include file='.\Frames\difficulty.lua'/>
-	<Include file='.\Frames\dps.lua'/>
 	<Include file='.\Frames\durability.lua'/>
 	<Include file='.\Frames\experience.lua'/>
 	<Include file='.\Frames\friends.lua'/>
 	<Include file='.\Frames\guild.lua'/>
-	<Include file='.\Frames\hps.lua'/>
 	<Include file='.\Frames\itemLevel.lua'/>
 	<Include file='.\Frames\mail.lua'/>
 	<Include file='.\Frames\microBar.lua'/>
