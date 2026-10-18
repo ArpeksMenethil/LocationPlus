@@ -326,7 +326,7 @@ local function positionChain(chain, side)
 				end
 				-- Смещение sign*spacing; у первой панели offset не применяется
 				-- (панель стоит вплотную к краю локации), чтобы не было разрывов.
-				local dx = (idx == 1) and 0 or (sign * spacing + ox)
+				local dx = ((idx == 1) and 0 or (sign * spacing)) + ox
 				frame:SetPoint(ownPoint, anchorTo, anchorPoint, dx, oy)
 				-- Следующая панель цепляется за КРАЙ этой же стороны:
 				-- левые — за левый край предыдущей, правые — за правый.
