@@ -63,6 +63,7 @@ L["General"] = "Основные"
 L["Actions"] = "Действия"
 L["Reset values"] = "Сбросить значения"
 L["Reset all addon settings to default values."] = "Сбросить все настройки аддона к значениям по умолчанию."
+L["Panel settings have been reset to defaults."] = "Настройки панелей сброшены к значениям по умолчанию."
 L["None"] = "Нет"
 
 L["Import/Export"] = "Импорт/Экспорт"

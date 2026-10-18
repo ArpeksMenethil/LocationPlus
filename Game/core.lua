@@ -149,6 +149,21 @@ function LPS:CreateAllFrames()
 end
 
 SLASH_LPS1 = "/lps"
-SlashCmdList["LPS"] = function()
-	 LPS:ToggleOptions()
+SlashCmdList["LPS"] = function(input)
+        local arg = (input or ""):gsub("^%s+", ""):gsub("%s+$", ""):lower()
+        if arg == "reset" then
+                -- Полный сброс всех настроек профиля к значениям по умолчанию
+                if LPS.ResetAllSettingsToDefaults then
+                        LPS:ResetAllSettingsToDefaults()
+                        LPS:Print(LPS:L("Reset all addon settings to default values."))
+                end
+        elseif arg == "resetpanels" then
+                -- Сброс только настроек панелей (без LPS.defaults.panels)
+                if LPS.ResetPanelsToDefaults then
+                        LPS:ResetPanelsToDefaults()
+                        LPS:Print(LPS:L("Panel settings have been reset to defaults."))
+                end
+        else
+                LPS:ToggleOptions()
+        end
 end

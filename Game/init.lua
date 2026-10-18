@@ -253,37 +253,9 @@ LPS.defaults = {
 		}
 	},
 
-	panels = {
-bags = { enable = true },,
-		combatIndicator = { enable = true },
-		combatTime = { enable = true },
-		currencies = { enable = true },
-		dps = { enable = true },
-		hps = { enable = true },
-		difficulty = { enable = true },
-		durability = { enable = true },
-experience = { enable = true },,
-friends = { enable = true },,
-guild = { enable = true },,
-		itemLevel = { enable = true },
-		mail = { enable = true },
-		microBar = { enable = true },
-quests = { enable = true },,
-		reputation = { enable = true },
-		volume = { enable = true },
-		armor = { enable = true },
-		attackPower = { enable = true },
-		spellPower = { enable = true },
-		healPower = { enable = true },
-		crit = { enable = true },
-		haste = { enable = true },
-		mastery = { enable = true },
-		strength = { enable = true },
-		agility = { enable = true },
-		stamina = { enable = true },
-		intellect = { enable = true },
-		spirit = { enable = true },
-	},
+	-- ПАНЕЛИ: значения по умолчанию больше НЕ хранятся в LPS.defaults.panels.
+	-- Панель включена по умолчанию (enable == nil); отключение сохраняется
+	-- точечно в db.panels[key].enable. Сброс панелей просто очищает db.panels.
 
 	settings = {
 		colors = {
