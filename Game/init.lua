@@ -148,6 +148,15 @@ LPS.defaults = {
 		visibility = {
 			combat = false,
 		},
+
+		experience = {
+			display = "PERCENT",
+		},
+		bags = {
+			display = "USED_TOTAL",
+			noLabel = false,
+			label = "",
+		},
 	},
 
 	tooltips = {
@@ -215,13 +224,9 @@ LPS.defaults = {
 		},
 		experience = {
 			enable = true,
-			display = "PERCENT",
 		},
 		bags = {
 			enable = true,
-			display = "USED_TOTAL",
-			noLabel = false,
-			label = "",
 		},
 	},
 
