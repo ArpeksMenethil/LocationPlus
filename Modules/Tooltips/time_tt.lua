@@ -435,16 +435,4 @@ function LPS:BuildTimeTooltip()
 	if ToggleCalendar then
 		GameTooltip:AddDoubleLine(LPS:L("MMB"), LPS:L("Toggle calendar"), rB, gB, bB, rB, gB, bB)
 	end
-	
-
-	if GameTooltipTextLeft1 then
-		local rT, gT, bT = GameTooltipTextLeft1:GetTextColor()
-		GameTooltipTextLeft1:SetFontObject(GameTooltipText)
-		GameTooltipTextLeft1:SetTextColor(rT, gT, bT)
-	end
-	if GameTooltipTextRight1 then
-		local rT, gT, bT = GameTooltipTextRight1:GetTextColor()
-		GameTooltipTextRight1:SetFontObject(GameTooltipText)
-		GameTooltipTextRight1:SetTextColor(rT, gT, bT)
-	end
 end

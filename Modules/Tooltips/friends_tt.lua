@@ -33,17 +33,6 @@ function LPS:BuildFriendsTooltip(GameTooltip)
                                         tt:AddLine(string.format("+%d ...", shown - limit), 0.75, 0.9, 1)
                                 end
 
-    GameTooltip:AddLine(" ")
-        GameTooltip:AddDoubleLine(LPS:L("LMB"), LPS:L("Click"), rB, gB, bB, rB, gB, bB)
-
-        if GameTooltipTextLeft1 then
-                local rT, gT, bT = GameTooltipTextLeft1:GetTextColor()
-                GameTooltipTextLeft1:SetFontObject(GameTooltipText)
-                GameTooltipTextLeft1:SetTextColor(rT, gT, bT)
-        end
-        if GameTooltipTextRight1 then
-                local rT, gT, bT = GameTooltipTextRight1:GetTextColor()
-                GameTooltipTextRight1:SetFontObject(GameTooltipText)
-                GameTooltipTextRight1:SetTextColor(rT, gT, bT)
-        end
+    tt:AddLine(" ")
+    tt:AddLine(LPS:L("LMB") .. ": " .. LPS:L("Open friends list"), 0.65, 0.65, 0.65)
 end

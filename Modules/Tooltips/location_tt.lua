@@ -479,16 +479,4 @@ function LPS:BuildLocationTooltip()
 	GameTooltip:AddDoubleLine(LPS:L("LMB"), LPS:L("Toggle WorldMap"), rB, gB, bB, rB, gB, bB)
 	GameTooltip:AddDoubleLine(LPS:L("RMB"), LPS:L("Toggle Configuration"), rB, gB, bB, rB, gB, bB)
 	GameTooltip:AddDoubleLine(LPS:L("Shift+LMB"), LPS:L("Send the coordinates to the chat"), rB, gB, bB, rB, gB, bB)
-
-
-	if GameTooltipTextLeft1 then
-		local rT, gT, bT = GameTooltipTextLeft1:GetTextColor()
-		GameTooltipTextLeft1:SetFontObject(GameTooltipText)
-		GameTooltipTextLeft1:SetTextColor(rT, gT, bT)
-	end
-	if GameTooltipTextRight1 then
-		local rT, gT, bT = GameTooltipTextRight1:GetTextColor()
-		GameTooltipTextRight1:SetFontObject(GameTooltipText)
-		GameTooltipTextRight1:SetTextColor(rT, gT, bT)
-	end
 end
