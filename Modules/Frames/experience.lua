@@ -21,7 +21,9 @@ do
 				if f.text then f.text:SetText(MAX_LEVEL) end
 				return
 			end
-			local cfg = DT.tooltipCfg("experience") or {}
+			-- Настройка отображения живёт на вкладке Show: db.show.experience
+			local d = LPS:GetDB()
+			local cfg = (d and d.show and d.show.experience) or {}
 			local pct = cur / max * 100
 			local rested = GetXPExhaustion and GetXPExhaustion()
 			local text

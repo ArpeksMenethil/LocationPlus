@@ -30,7 +30,9 @@ do
 		name = LPS:L("Bags"),
 		events = { "BAG_UPDATE_DELAYED", "BAG_CONTAINER_UPDATE" },
 		update = function(f)
-			local cfg = DT.tooltipCfg("bags") or {}
+			-- Настройка отображения живёт на вкладке Show: db.show.bags
+			local d = LPS:GetDB()
+			local cfg = (d and d.show and d.show.bags) or {}
 			local free, total = freeTotal()
 			local used = total - free
 			local label = (cfg.label ~= nil and cfg.label ~= "") and (cfg.label .. ": ") or (LPS:L("Bags") .. ": ")

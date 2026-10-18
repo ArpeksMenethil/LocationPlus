@@ -556,6 +556,69 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 							},
 						},
 					},
+					panelDisplayGroup = {
+						order = 3,
+						type = "group",
+						name = LPS:L("Panels"),
+						inline = true,
+
+						args = {
+							experience = {
+								order = 1,
+								type = "select",
+								name = LPS:L("Experience") .. " " .. LPS:L("Display"),
+								values = {
+									PERCENT = LPS:L("Percent"),
+									CURMAX = LPS:L("Current / Max"),
+									CUR = LPS:L("Current"),
+									REM = LPS:L("Remaining"),
+								},
+								get = function() return getDb().show.experience.display or "PERCENT" end,
+								set = function(_, v)
+									getDb().show.experience.display = v
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							bags = {
+								order = 2,
+								type = "select",
+								name = LPS:L("Bags") .. " " .. LPS:L("Display"),
+								values = {
+									USED_TOTAL = LPS:L("Used / Total"),
+									FREE = LPS:L("Free slots"),
+									USED = LPS:L("Used slots"),
+								},
+								get = function() return getDb().show.bags.display or "USED_TOTAL" end,
+								set = function(_, v)
+									getDb().show.bags.display = v
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							bagsNoLabel = {
+								order = 3,
+								type = "toggle",
+								name = LPS:L("Hide label"),
+								width = "half",
+								get = function() return getDb().show.bags.noLabel or false end,
+								set = function(_, v)
+									getDb().show.bags.noLabel = v and true or false
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							bagsLabel = {
+								order = 4,
+								type = "input",
+								name = LPS:L("Custom label"),
+								width = "half",
+								disabled = function() return getDb().show.bags.noLabel end,
+								get = function() return getDb().show.bags.label or "" end,
+								set = function(_, v)
+									getDb().show.bags.label = v or ""
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+						},
+					},
 				},
 			tooltip = {
 				type = "group",
@@ -573,7 +636,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Show tooltip"),
 								type = "toggle",
 								get = function() return getDb().tooltips.visibility.enable end,
-								set = function(_, v) getDb().tooltips.visibility.enable = v end,
+								set = function(_, v) getDb().tooltips.visibility.enable = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							hide_in_combat = {
 								order = 2,
@@ -582,7 +645,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "toggle",
 								disabled = function() return not getDb().tooltips.visibility.enable end,
 								get = function() return getDb().tooltips.visibility.combat end,
-								set = function(_, v) getDb().tooltips.visibility.combat = v end,
+								set = function(_, v) getDb().tooltips.visibility.combat = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 						},
 					},
@@ -600,7 +663,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								
 								disabled = function() return not getDb().tooltips.visibility.enable end,
 								get = function() return getDb().tooltips.location.status end,
-								set = function(_, v) getDb().tooltips.location.status = v end,
+								set = function(_, v) getDb().tooltips.location.status = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							petlevel = {
 								order = 1.1,
@@ -611,7 +674,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								disabled = function() return not getDb().tooltips.visibility.enable or not (LPS.Retail or LPS.Mists) end,
 								hidden = function() return not (LPS.Retail or LPS.Mists) end,
 								get = function() return getDb().tooltips.location.battlePets end,
-								set = function(_, v) getDb().tooltips.location.battlePets = v end,
+								set = function(_, v) getDb().tooltips.location.battlePets = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							ttlvl = {
 								order = 2,
@@ -621,7 +684,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								
 								disabled = function() return not getDb().tooltips.visibility.enable end,
 								get = function() return getDb().tooltips.location.level end,
-								set = function(_, v) getDb().tooltips.location.level = v end,
+								set = function(_, v) getDb().tooltips.location.level = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							fish = {
 								order = 2.1,
@@ -632,7 +695,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								disabled = function() return not getDb().tooltips.visibility.enable or LPS.Retail or LPS.Mists end,
 								hidden = function() return LPS.Retail or LPS.Mists end,
 								get = function() return getDb().tooltips.location.fish end,
-								set = function(_, v) getDb().tooltips.location.fish = v end,
+								set = function(_, v) getDb().tooltips.location.fish = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							spacer2_prof = {
 								order = 2.2,
@@ -647,7 +710,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								
 								disabled = function() return not getDb().tooltips.visibility.enable end,
 								get = function() return getDb().tooltips.location.profession end,
-								set = function(_, v) getDb().tooltips.location.profession = v end,
+								set = function(_, v) getDb().tooltips.location.profession = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							profcap = {
 								order = 3.1,
@@ -659,7 +722,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									return not getDb().tooltips.visibility.enable or not getDb().tooltips.location.profession
 								end,
 								get = function() return getDb().tooltips.location.professionHideMaxLevel end,
-								set = function(_, v) getDb().tooltips.location.professionHideMaxLevel = v end,
+								set = function(_, v) getDb().tooltips.location.professionHideMaxLevel = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							filters = {
 								order = 50,
@@ -675,7 +738,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										type = "toggle",
 										disabled = function() return not getDb().tooltips.visibility.enable or LPS.Forever end,
 										get = function() return getDb().tooltips.location.hides.raids end,
-										set = function(_, v) getDb().tooltips.location.hides.raids = v end,
+										set = function(_, v) getDb().tooltips.location.hides.raids = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 									},
 									tthidepvp = {
 										order = 2,
@@ -684,7 +747,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										type = "toggle",
 										disabled = function() return not getDb().tooltips.visibility.enable or LPS.Forever end,
 										get = function() return getDb().tooltips.location.hides.pvp end,
-										set = function(_, v) getDb().tooltips.location.hides.pvp = v end,
+										set = function(_, v) getDb().tooltips.location.hides.pvp = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 									},
 								},
 							},
@@ -701,7 +764,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								hidden = function() return LPS.Forever end,
 								disabled = function() return not getDb().tooltips.visibility.enable or LPS.Forever end,
 								get = function() return getDb().tooltips.location.recomZone end,
-								set = function(_, v) getDb().tooltips.location.recomZone = v end,
+								set = function(_, v) getDb().tooltips.location.recomZone = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							ttreczonesmax = {
 								order = 6.1,
@@ -715,7 +778,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								hidden = function() return LPS.Forever end,
 								disabled = function() return not getDb().tooltips.visibility.enable or LPS.Forever or not getDb().tooltips.location.recomZone end,
 								get = function() return tonumber(getDb().tooltips.location.recomZoneMax) or 5 end,
-								set = function(_, v) getDb().tooltips.location.recomZoneMax = v end,
+								set = function(_, v) getDb().tooltips.location.recomZoneMax = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							spacer1_ttinst = {
 								order = 6.2,
@@ -731,7 +794,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								hidden = function() return LPS.Forever end,
 								disabled = function() return not getDb().tooltips.visibility.enable or LPS.Forever end,
 								get = function() return getDb().tooltips.location.zoneDungeon end,
-								set = function(_, v) getDb().tooltips.location.zoneDungeon = v end,
+								set = function(_, v) getDb().tooltips.location.zoneDungeon = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							ttinstmax = {
 								order = 7.1,
@@ -745,7 +808,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								hidden = function() return LPS.Forever end,
 								disabled = function() return not getDb().tooltips.visibility.enable or LPS.Forever or not getDb().tooltips.location.zoneDungeon end,
 								get = function() return tonumber(getDb().tooltips.location.zoneDungeonMax) or 5 end,
-								set = function(_, v) getDb().tooltips.location.zoneDungeonMax = v end,
+								set = function(_, v) getDb().tooltips.location.zoneDungeonMax = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							spacer1_ttrecinst = {
 								order = 7.2,
@@ -761,7 +824,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								hidden = function() return LPS.Forever end,
 								disabled = function() return not getDb().tooltips.visibility.enable or LPS.Forever end,
 								get = function() return getDb().tooltips.location.recomDungeon end,
-								set = function(_, v) getDb().tooltips.location.recomDungeon = v end,
+								set = function(_, v) getDb().tooltips.location.recomDungeon = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							ttcoords = {
 								order = 9,
@@ -772,7 +835,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								hidden = function() return LPS.Forever end,
 								disabled = function() return not getDb().tooltips.visibility.enable or LPS.Forever or not (getDb().tooltips.location.recomDungeon or getDb().tooltips.location.zoneDungeon) end,
 								get = function() return getDb().tooltips.location.recomDungeonCoords end,
-								set = function(_, v) getDb().tooltips.location.recomDungeonCoords = v end,
+								set = function(_, v) getDb().tooltips.location.recomDungeonCoords = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							ttrecinstmax = {
 								order = 8.1,
@@ -786,7 +849,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								hidden = function() return LPS.Forever end,
 								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.location.recomDungeon end,
 								get = function() return tonumber(getDb().tooltips.location.recomDungeonMax) or 5 end,
-								set = function(_, v) getDb().tooltips.location.recomDungeonMax = v end,
+								set = function(_, v) getDb().tooltips.location.recomDungeonMax = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 						},
 					},
@@ -803,7 +866,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "toggle",
 								disabled = function() return not getDb().tooltips.visibility.enable end,
 								get = function() return getDb().tooltips.gold.enable end,
-								set = function(_, v) getDb().tooltips.gold.enable = v end,
+								set = function(_, v) getDb().tooltips.gold.enable = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							session = {
 								order = 2,
@@ -812,7 +875,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "toggle",
 								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable end,
 								get = function() return getDb().tooltips.gold.session end,
-								set = function(_, v) getDb().tooltips.gold.session = v end,
+								set = function(_, v) getDb().tooltips.gold.session = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							spacer1_characters = {
 								order = 2.1,
@@ -826,7 +889,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "toggle",
 								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable end,
 								get = function() return getDb().tooltips.gold.characters end,
-								set = function(_, v) getDb().tooltips.gold.characters = v end,
+								set = function(_, v) getDb().tooltips.gold.characters = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							charactersMax = {
 								order = 3.1,
@@ -838,7 +901,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								step = 1,
 								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable or not getDb().tooltips.gold.characters end,
 								get = function() return tonumber(getDb().tooltips.gold.charactersMax) or 20 end,
-								set = function(_, v) getDb().tooltips.gold.charactersMax = v end,
+								set = function(_, v) getDb().tooltips.gold.charactersMax = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							spacer1_serverTotals = {
 								order = 3.2,
@@ -852,7 +915,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "toggle",
 								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable end,
 								get = function() return getDb().tooltips.gold.serverTotals end,
-								set = function(_, v) getDb().tooltips.gold.serverTotals = v end,
+								set = function(_, v) getDb().tooltips.gold.serverTotals = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							warband = {
 								order = 5,
@@ -862,7 +925,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								hidden = function() return not LPS.Retail end,
 								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable or LPS.Forever end,
 								get = function() return getDb().tooltips.gold.warband end,
-								set = function(_, v) getDb().tooltips.gold.warband = v end,
+								set = function(_, v) getDb().tooltips.gold.warband = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							token = {
 								order = 6,
@@ -872,7 +935,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								hidden = function() return not LPS.Retail end,
 								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable or LPS.Forever end,
 								get = function() return getDb().tooltips.gold.token end,
-								set = function(_, v) getDb().tooltips.gold.token = v end,
+								set = function(_, v) getDb().tooltips.gold.token = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							currency = {
 								order = 7,
@@ -883,7 +946,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								hidden = function() return not LPS.Retail end,
 								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable or not LPS.Retail end,
 								get = function() return getDb().tooltips.gold.currency end,
-								set = function(_, v) getDb().tooltips.gold.currency = v end,
+								set = function(_, v) getDb().tooltips.gold.currency = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							resetHints = {
 								order = 8,
@@ -892,7 +955,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "toggle",
 								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.gold.enable end,
 								get = function() return getDb().tooltips.gold.resetHints end,
-								set = function(_, v) getDb().tooltips.gold.resetHints = v end,
+								set = function(_, v) getDb().tooltips.gold.resetHints = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 						},
 					},
@@ -909,7 +972,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "toggle",
 								disabled = function() return not getDb().tooltips.visibility.enable end,
 								get = function() return getDb().tooltips.system.enable end,
-								set = function(_, v) getDb().tooltips.system.enable = v end,
+								set = function(_, v) getDb().tooltips.system.enable = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							network = {
 								order = 2,
@@ -918,7 +981,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "toggle",
 								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.system.enable end,
 								get = function() return getDb().tooltips.system.network end,
-								set = function(_, v) getDb().tooltips.system.network = v end,
+								set = function(_, v) getDb().tooltips.system.network = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							spacer1_addons = {
 								order = 2.2,
@@ -932,7 +995,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "toggle",
 								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.system.enable end,
 								get = function() return getDb().tooltips.system.addons end,
-								set = function(_, v) getDb().tooltips.system.addons = v end,
+								set = function(_, v) getDb().tooltips.system.addons = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							addonsMax = {
 								order = 3.1,
@@ -944,7 +1007,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								step = 1,
 								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.system.enable or not getDb().tooltips.system.addons end,
 								get = function() return tonumber(getDb().tooltips.system.addonsMax) or 15 end,
-								set = function(_, v) getDb().tooltips.system.addonsMax = v end,
+								set = function(_, v) getDb().tooltips.system.addonsMax = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							spacer1_total = {
 								order = 3.2,
@@ -958,7 +1021,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "toggle",
 								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.system.enable end,
 								get = function() return getDb().tooltips.system.total end,
-								set = function(_, v) getDb().tooltips.system.total = v end,
+								set = function(_, v) getDb().tooltips.system.total = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 						},
 					},
@@ -975,7 +1038,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "toggle",
 								disabled = function() return not getDb().tooltips.visibility.enable end,
 								get = function() return getDb().tooltips.time.enable end,
-								set = function(_, v) getDb().tooltips.time.enable = v end,
+								set = function(_, v) getDb().tooltips.time.enable = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							raids = {
 								order = 2,
@@ -985,7 +1048,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								hidden = function() return LPS.Forever end,
 								disabled = function() return not getDb().tooltips.time.enable or not getDb().tooltips.visibility.enable or LPS.Forever end,
 								get = function() return getDb().tooltips.time.raids end,
-								set = function(_, v) getDb().tooltips.time.raids = v end,
+								set = function(_, v) getDb().tooltips.time.raids = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							dungeons = {
 								order = 3,
@@ -995,7 +1058,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								hidden = function() return LPS.Forever end,
 								disabled = function() return not getDb().tooltips.time.enable or not getDb().tooltips.visibility.enable or LPS.Forever end,
 								get = function() return getDb().tooltips.time.dungeons end,
-								set = function(_, v) getDb().tooltips.time.dungeons = v end,
+								set = function(_, v) getDb().tooltips.time.dungeons = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							playedTime = {
 								order = 4,
@@ -1004,7 +1067,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "toggle",
 								disabled = function() return not getDb().tooltips.time.enable or not getDb().tooltips.visibility.enable end,
 								get = function() return getDb().tooltips.time.playedTime end,
-								set = function(_, v) getDb().tooltips.time.playedTime = v end,
+								set = function(_, v) getDb().tooltips.time.playedTime = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							}
 						},
 					},
@@ -1021,7 +1084,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "toggle",
 								disabled = function() return not getDb().tooltips.visibility.enable end,
 								get = function() return getDb().tooltips.quests.enable end,
-								set = function(_, v) getDb().tooltips.quests.enable = v end,
+								set = function(_, v) getDb().tooltips.quests.enable = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							maxLimit = {
 								order = 2,
@@ -1032,7 +1095,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								step = 1,
 								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.quests.enable end,
 								get = function() return tonumber(getDb().tooltips.quests.maxLimit) or 15 end,
-								set = function(_, v) getDb().tooltips.quests.maxLimit = math.floor(v) end,
+								set = function(_, v) getDb().tooltips.quests.maxLimit = math.floor(v) if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 						},
 					},
@@ -1049,7 +1112,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "toggle",
 								disabled = function() return not getDb().tooltips.visibility.enable end,
 								get = function() return getDb().tooltips.friends.enable end,
-								set = function(_, v) getDb().tooltips.friends.enable = v end,
+								set = function(_, v) getDb().tooltips.friends.enable = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							maxLimit = {
 								order = 2,
@@ -1060,7 +1123,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								step = 1,
 								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.friends.enable end,
 								get = function() return tonumber(getDb().tooltips.friends.maxLimit) or 15 end,
-								set = function(_, v) getDb().tooltips.friends.maxLimit = math.floor(v) end,
+								set = function(_, v) getDb().tooltips.friends.maxLimit = math.floor(v) if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 						},
 					},
@@ -1077,7 +1140,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "toggle",
 								disabled = function() return not getDb().tooltips.visibility.enable end,
 								get = function() return getDb().tooltips.guild.enable end,
-								set = function(_, v) getDb().tooltips.guild.enable = v end,
+								set = function(_, v) getDb().tooltips.guild.enable = v if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 							maxLimit = {
 								order = 2,
@@ -1088,106 +1151,10 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								step = 1,
 								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.guild.enable end,
 								get = function() return tonumber(getDb().tooltips.guild.maxLimit) or 15 end,
-								set = function(_, v) getDb().tooltips.guild.maxLimit = math.floor(v) end,
+								set = function(_, v) getDb().tooltips.guild.maxLimit = math.floor(v) if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end end,
 							},
 						},
 					},
-					experience = {
-						order = 53,
-						type = "group",
-						name = LPS:L("Experience"),
-						inline = true,
-						args = {
-							enable = {
-								order = 1,
-								name = LPS:L("Enable"),
-								desc = LPS:L("Show a tooltip when hovering over this panel."),
-								type = "toggle",
-								disabled = function() return not getDb().tooltips.visibility.enable end,
-								get = function() return getDb().tooltips.experience.enable end,
-								set = function(_, v) getDb().tooltips.experience.enable = v end,
-							},
-							display = {
-								order = 2,
-								type = "select",
-								name = LPS:L("Display"),
-								values = {
-									PERCENT = LPS:L("Percent"),
-									CURMAX = LPS:L("Current / Max"),
-									CUR = LPS:L("Current"),
-									REM = LPS:L("Remaining"),
-								},
-								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.experience.enable end,
-								get = function() return getDb().tooltips.experience.display or "PERCENT" end,
-								set = function(_, v)
-									getDb().tooltips.experience.display = v
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-						},
-					},
-					bags = {
-						order = 54,
-						type = "group",
-						name = LPS:L("Bags"),
-						inline = true,
-						args = {
-							enable = {
-								order = 1,
-								name = LPS:L("Enable"),
-								desc = LPS:L("Show a tooltip when hovering over this panel."),
-								type = "toggle",
-								disabled = function() return not getDb().tooltips.visibility.enable end,
-								get = function() return getDb().tooltips.bags.enable end,
-								set = function(_, v) getDb().tooltips.bags.enable = v end,
-							},
-							display = {
-								order = 2,
-								type = "select",
-								name = LPS:L("Display"),
-								values = {
-									USED_TOTAL = LPS:L("Used / Total"),
-									FREE = LPS:L("Free slots"),
-									USED = LPS:L("Used slots"),
-								},
-								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.bags.enable end,
-								get = function() return getDb().tooltips.bags.display or "USED_TOTAL" end,
-								set = function(_, v)
-									getDb().tooltips.bags.display = v
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							spacer1_noLabel = {
-								order = 2.2,
-								type = "description",
-								name = "",
-							},
-							noLabel = {
-								order = 3,
-								type = "toggle",
-								name = LPS:L("Hide label"),
-								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.bags.enable end,
-								get = function() return getDb().tooltips.bags.noLabel or false end,
-								set = function(_, v)
-									getDb().tooltips.bags.noLabel = v and true or false
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-							label = {
-								order = 4,
-								type = "input",
-								name = LPS:L("Custom label"),
-								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.bags.enable or getDb().tooltips.bags.noLabel end,
-								get = function() return getDb().tooltips.bags.label or "" end,
-								set = function(_, v)
-									getDb().tooltips.bags.label = v or ""
-									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-								end,
-							},
-						},
-					},
-				},
-			},
 			layout = {
 				type = "group",
 				name = LPS:L("Layout"),
@@ -2620,7 +2587,10 @@ function LPS:CreateTooltipOptions(parent)
 		"Enable tooltips",
 		nil,
 		function() return getDb().tooltips.visibility.enable end,
-		function(v) getDb().tooltips.visibility.enable = v end,
+		function(v)
+                        getDb().tooltips.visibility.enable = v
+                        if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+                end,
 		16, y
 	)
 
@@ -2630,7 +2600,10 @@ function LPS:CreateTooltipOptions(parent)
 		"Hide in combat",
 		nil,
 		function() return getDb().tooltips.visibility.combat end,
-		function(v) getDb().tooltips.visibility.combat = v end,
+		function(v)
+                        getDb().tooltips.visibility.combat = v
+                        if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+                end,
 		16, y
 	)
 end

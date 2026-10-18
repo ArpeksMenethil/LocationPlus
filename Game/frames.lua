@@ -123,25 +123,38 @@ function LPS:CreateFrame(params)
 		f._lpsPaddingX = tonumber(params.padding[1]) or 0
 		f._lpsPaddingY = tonumber(params.padding[2]) or 0
 		local oldUpdate = params.updateFunc
-		params.updateFunc = function()
-			oldUpdate(f)
-			if f.text then
-				local px = tonumber(f._lpsPaddingX) or 0
-				local py = tonumber(f._lpsPaddingY) or 0
-				local minW = tonumber(f._lpsMinWidth) or 60
-				f.text:ClearAllPoints()
-				f.text:SetPoint("CENTER")
-				if f.text.SetWidth then
-					f.text:SetWidth(0)
-				end
-				local w = f.text:GetStringWidth() or 0
-				local h = f.text:GetStringHeight() or 0
-				f:SetSize(math.max(minW, w + px * 2), math.max(26, h + py * 2))
-				f.text:ClearAllPoints()
-				f.text:SetPoint("TOPLEFT", f, "TOPLEFT", px, -py)
-				f.text:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -px, py)
-				LPS:ScheduleFrameSizeUpdate()
+		-- Пересчёт габаритов под текст. ВАЖНО: измерять строку нужно ДО
+		-- применения ограничений (SetPoint к краям фрейма): как только у текста
+		-- появляются TOPLEFT/BOTTOMRIGHT-якоря, его ширина ограничивается
+		-- текущим размером фрейма и GetStringWidth() возвращает уже «зажатое»
+		-- значение — фрейм никогда не расширяется под длинный текст.
+		local function resizeToFit()
+			if not f.text then return end
+			local px = tonumber(f._lpsPaddingX) or 0
+			local py = tonumber(f._lpsPaddingY) or 0
+			local minW = tonumber(f._lpsMinWidth) or 60
+			-- Сбрасываем якоря и любые ограничения ширины, чтобы получить
+			-- естественный размер строки без переносов.
+			f.text:ClearAllPoints()
+			if f.text.GetMaxLineWidth then
+				f.text:SetMaxLineWidth(0)
 			end
+			if f.text.SetNonSpaceMaxWidth then
+				f.text:SetNonSpaceMaxWidth(0)
+			end
+			local w = f.text:GetStringWidth() or 0
+			local h = f.text:GetStringHeight() or 0
+			-- Отрицательная ширина означает «нет ограничения»: так текст не
+			-- обрезается при последующем позиционировании внутри фрейма.
+			f.text:SetWidth(-(w + 1))
+			f:SetSize(math.max(minW, w + px * 2), math.max(26, h + py * 2))
+			f.text:SetPoint("CENTER", f, "CENTER", 0, 0)
+			LPS:ScheduleFrameSizeUpdate()
+		end
+		f._lpsResizeToFit = resizeToFit
+		params.updateFunc = function(frame, ev)
+			oldUpdate(frame or f, ev)
+			resizeToFit()
 		end
 	end
 

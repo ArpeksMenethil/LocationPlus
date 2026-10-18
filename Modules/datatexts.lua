@@ -107,16 +107,21 @@ function LPS:CreateDatatextFrame(key)
 		params.onClick = function(self, button) def.onClick(self, button) end
 	end
 
-	if def.tooltip then
+	-- Подсказка панели: tooltipFunc создаём и когда в модуле задан def.tooltip,
+	-- и когда существует отдельный билдер из Modules/Tooltips/<key>_tt.lua
+	-- (Build<Key>Tooltip). Раньше условие было только `def.tooltip`, из-за чего
+	-- у панелей friends/guild/quests/experience/bags (подсказки вынесены в
+	-- *_tt.lua) подсказка вообще не появлялась.
+	local builderName = "Build" .. key:gsub("^%l", string.upper) .. "Tooltip"
+	if def.tooltip or LPS[builderName] then
 		params.tooltipFunc = function(self)
 			if not LPS._DT.tooltipGuard(key) then return end
 			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
 			GameTooltip:ClearLines()
 			-- Приоритет у отдельного билдера из Modules/Tooltips/<key>_tt.lua
-			local builderName = "Build" .. key:gsub("^%l", string.upper) .. "Tooltip"
 			if LPS[builderName] then
 				LPS[builderName](LPS, GameTooltip)
-			else
+			elseif def.tooltip then
 				def.tooltip(GameTooltip)
 			end
 			GameTooltip:Show()
