@@ -246,10 +246,10 @@ LPS.defaults = {
 		userColor = { r = 1, g = 1, b = 1 },
 		slotCount = 3,
 		sideSlots = {
-			left1 = { frame = "gold", offsetX = 0, offsetY = 0 },
+			left1 = { frame = "gold", offsetX = -5, offsetY = 0 },
 			left2 = { frame = "NONE", offsetX = 0, offsetY = 0 },
 			left3 = { frame = "NONE", offsetX = 0, offsetY = 0 },
-			right1 = { frame = "system", offsetX = 0, offsetY = 0 },
+			right1 = { frame = "system", offsetX = 5, offsetY = 0 },
 			right2 = { frame = "NONE", offsetX = 0, offsetY = 0 },
 			right3 = { frame = "NONE", offsetX = 0, offsetY = 0 },
 		}
