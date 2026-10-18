@@ -1096,6 +1096,22 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 				name = LPS:L("Layout"),
 				order = 4,
 				args = {
+					chainAnchor = {
+						order = 0,
+						type = "select",
+						name = LPS:L("Frame anchor mode"),
+						desc = LPS:L("How side frames are anchored. Default: each frame attaches to the previous group of frames with a left/right offset. Use 'Location' to attach the first frame to the location panel."),
+						values = {
+							chain = LPS:L("Previous frame group"),
+							location = LPS:L("Location panel"),
+						},
+						get = function() return getDb().layout.chainAnchor or "chain" end,
+						set = function(_, v)
+							getDb().layout.chainAnchor = v
+							if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+							if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+						end,
+					},
 					locpanel = {
 						order = 1,
 						type = "group",
@@ -1784,7 +1800,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 						type = "group",
 						name = LPS:L("Panel Options"),
 						desc = LPS:L("Individual settings for info panels."),
-						guiInline = false,
+						inline = true,
 						args = buildPanelOptionsArgs(),
 					},
 

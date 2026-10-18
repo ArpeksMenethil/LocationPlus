@@ -308,6 +308,17 @@ if LPS.GetOrCreatePanelFrame then return LPS:GetOrCreatePanelFrame(key) end
 return nil
 end
 
+-- По умолчанию цепочки фреймов привязываются к ПРЕДЫДУЩЕЙ ГРУППЕ фреймов
+-- со смещением влево/вправо (slot2 -> slot1, slot3 -> slot2 и т.д.).
+-- Привязка к локации включается опцией db.layout.chainAnchor = "location".
+local function useLocationAnchor()
+	local db = LPS.GetDB and LPS:GetDB()
+	local lay = db and db.layout
+	-- по умолчанию ("chain") — привязка к предыдущей группе фреймов;
+	-- привязка к локации только если пользователь явно выбрал "location"
+	return lay ~= nil and lay.chainAnchor == "location" and true or false
+end
+
 local function positionChain(chain, side)
 local anchorTo, anchorPoint, oppositePoint = frames.location, side, (side == "LEFT" and "RIGHT" or "LEFT")
 local seen = {}
@@ -321,10 +332,21 @@ for idx = 1, #chain do
 			local ox = tonumber(entry.cfg.offsetX) or 0
 			local oy = tonumber(entry.cfg.offsetY) or 0
 			frame:ClearAllPoints()
-			if side == "LEFT" then
-				frame:SetPoint("RIGHT", anchorTo, anchorPoint, -spacing + ox, oy)
+			if idx > 1 or useLocationAnchor() then
+				-- обычный якорь по цепочке: за предыдущую группу фреймов
+				if side == "LEFT" then
+					frame:SetPoint("RIGHT", anchorTo, anchorPoint, -spacing + ox, oy)
+				else
+					frame:SetPoint("LEFT", anchorTo, anchorPoint, spacing + ox, oy)
+				end
 			else
-				frame:SetPoint("LEFT", anchorTo, anchorPoint, spacing + ox, oy)
+				-- первый слот без привязки к локации: позиционируем от holder'а
+				local base = (frames.holder and frames.holder.IsShown and frames.holder:IsShown()) and frames.holder or frames.location
+				if side == "LEFT" then
+					frame:SetPoint("RIGHT", base, "LEFT", -spacing + ox, oy)
+				else
+					frame:SetPoint("LEFT", base, "RIGHT", spacing + ox, oy)
+				end
 			end
 			anchorTo, anchorPoint = frame, oppositePoint
 		elseif idx > 1 then
@@ -506,8 +528,26 @@ function LPS:ResetAllSettingsToDefaults()
 		end
 		LPS_DB.gold = nil
 	end
+	-- Сброс настроек должен вернуть и вид панелей: закрываем созданные фреймы
+	-- инфотекстов (кроме зарезервированных coords/time/gold/system), чтобы они
+	-- пересоздались с дефолтовыми значениями при следующем ApplyLayout
+	if LPS.frame then
+		for _, k in ipairs({ "bags", "combatIndicator", "combatTime", "currencies", "dps", "hps",
+			"difficulty", "durability", "experience", "friends", "guild", "itemLevel", "mail",
+			"microBar", "quests", "reputation", "volume", "armor", "attackPower", "spellPower",
+			"healPower", "crit", "haste", "mastery", "strength", "agility", "stamina",
+			"intellect", "spirit" }) do
+			local f = LPS.frame[k]
+			if f then
+				f:Hide()
+				if f.UnregisterAllEvents then f:UnregisterAllEvents() end
+				if f._lpsTicker then f._lpsTicker:Cancel(); f._lpsTicker = nil end
+				LPS.frame[k] = nil
+			end
+		end
+	end
+	if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
 	LPS:ApplyHolderPosition()
-	if LPS.ApplyAllSettings then
 		LPS:ApplyAllSettings()
 	end
 	if LPS.UpdateMinimapButton then
@@ -841,19 +881,24 @@ function LPS:ApplyDefaults(db, defaults)
 		if type(db.layout.userColor) ~= "table" then db.layout.userColor = { r = 1, g = 1, b = 1 } end
 		if type(db.layout.sideSlots) ~= "table" then db.layout.sideSlots = {} end
 		local ss = db.layout.sideSlots
+		-- Слоты, которые пользователь назначал/чистил вручную (не перетираем
+		-- дефолтами при миграции). Проставляется в set-функциях опций.
+		if type(ss.userTouched) ~= "table" then ss.userTouched = {} end
+
 		-- Миграция со старой схемы {left, right} на нумерованные слоты {left1..left3, right1..right3}
 		for _, side in ipairs({"left","right"}) do
 			local oldSlot = ss[side]
 			if type(oldSlot) == "table" then
 				if ss[side .. "1"] == nil then
 					ss[side .. "1"] = { frame = oldSlot.frame, offsetX = oldSlot.offsetX, offsetY = oldSlot.offsetY }
+					ss.userTouched[side .. "1"] = true
 				end
 				ss[side] = nil
 			elseif oldSlot ~= nil then
 				ss[side] = nil
 			end
 		end
-		if tonumber(db.layout.slotCount) == nil then db.layout.slotCount = defL.slotCount or 2 end
+		if tonumber(db.layout.slotCount) == nil then db.layout.slotCount = defL.slotCount or 3 end
 		for i = 1, 3 do
 			for _, side in ipairs({"left","right"}) do
 				local name = side .. i
@@ -862,13 +907,14 @@ function LPS:ApplyDefaults(db, defaults)
 					s = {}
 					ss[name] = s
 				end
-				if s.frame == nil or s.frame == "" then
-					local defS = defL.sideSlots and defL.sideSlots[name]
-					if i == 1 and defS then
-						s.frame = defS.frame
-					else
-						s.frame = "NONE"
-					end
+				local defS = defL.sideSlots and defL.sideSlots[name]
+				if not ss.userTouched[name] and defS and (s.frame == nil or s.frame == "" or s.frame:upper() == "NONE") then
+					-- слот ещё никогда не настраивался пользователем -> назначаем
+					-- панель по умолчанию, чтобы первая группа фреймов была видима
+					-- сразу после установки (или после сброса настроек).
+					s.frame = defS.frame
+				elseif s.frame == nil or s.frame == "" then
+					s.frame = "NONE"
 				end
 				if tonumber(s.offsetX) == nil then s.offsetX = 0 end
 				if tonumber(s.offsetY) == nil then s.offsetY = 0 end

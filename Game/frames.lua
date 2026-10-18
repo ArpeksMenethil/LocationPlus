@@ -150,10 +150,51 @@ function LPS:CreateFrame(params)
 				end
 			end)
 		elseif params.updateEvent then
+			-- Белый список событий: не даём зарегистрировать несуществующее событие
+			-- (иначе WoW выдаёт "Attempt to register unknown event").
+			local KNOWN_EVENTS = {
+				-- общие / мира
+				PLAYER_ENTERING_WORLD = true, PLAYER_LOGIN = true, ADDON_LOADED = true,
+				ZONE_CHANGED = true, ZONE_CHANGED_NEW_AREA = true, ZONE_CHANGED_INDOORS = true,
+				PLAYER_REGEN_DISABLED = true, PLAYER_REGEN_ENABLED = true, PLAYER_LEAVE_COMBAT = true,
+				UNIT_PET = true, CVAR_UPDATE = true,
+				-- опыт / уровень
+				PLAYER_XP_UPDATE = true, DISABLE_XP_GAIN = true, ENABLE_XP_GAIN = true,
+				UPDATE_EXHAUSTION = true, LEVEL_UP = true,
+				-- броня / инвентарь / предметы
+				-- (UNIT_ARMOR в WoW API не существует)
+				PLAYER_EQUIPMENT_CHANGED = true, EQUIPMENT_SETS_CHANGED = true,
+				UNIT_INVENTORY_CHANGED = true, UPDATE_INVENTORY_DURABILITY = true,
+				PLAYER_AVG_ITEM_LEVEL_UPDATE = true,
+				-- характеристики / способности
+				UNIT_STATS = true, UNIT_AURA = true, SPELLS_CHANGED = true,
+				UNIT_ATTACK_POWER = true,
+				-- деньги / почта / сумки
+				PLAYER_MONEY = true, BAG_UPDATE_DELAYED = true, BAG_CONTAINER_UPDATE = true,
+				MAIL_INBOX_UPDATE = true, UPDATE_PENDING_MAIL = true, MAIL_CLOSED = true, MAIL_SHOW = true,
+				CURRENCY_DISPLAY_UPDATE = true, CHAT_MSG_CURRENCY = true,
+				-- квесты
+				QUEST_ACCEPTED = true, QUEST_REMOVED = true, QUEST_TURNED_IN = true, QUEST_LOG_UPDATE = true,
+				-- репутация / гильдия / друзья
+				UPDATE_FACTION = true, COMBAT_TEXT_UPDATE = true,
+				GUILD_ROSTER_UPDATE = true, PLAYER_GUILD_UPDATE = true, GUILD_MOTD = true,
+				FRIENDLIST_UPDATE = true, CHAT_MSG_SYSTEM = true,
+				BN_FRIEND_ACCOUNT_ONLINE = true, BN_FRIEND_ACCOUNT_OFFLINE = true, BN_FRIEND_INFO_CHANGED = true,
+				-- бой / подземелья
+				ENCOUNTER_START = true, ENCOUNTER_END = true,
+				PLAYER_DIFFICULTY_CHANGED = true, LOADING_SCREEN_DISABLED = true,
+			}
+			local filtered = {}
 			for _, evt in ipairs(params.updateEvent.events) do
-				f:RegisterEvent(evt)
+				if KNOWN_EVENTS[evt] then
+					filtered[#filtered + 1] = evt
+					f:RegisterEvent(evt)
+				else
+					geterrorhandler()(("LPS: %s: пропущено неизвестное событие \"%s\""):format(tostring(params.name), tostring(evt)))
+				end
 			end
-			f:SetScript("OnEvent", function() params.updateFunc(f) end)
+			params.updateEvent.events = filtered
+			f:SetScript("OnEvent", function(_, ev) params.updateFunc(f, ev) end)
 		else
 			params.updateFunc(f)
 		end

@@ -105,6 +105,11 @@ L["Show/Hide raids on recommended dungeons."] = "Показывать/скрыв
 L["Show/Hide PvP zones, Arenas and BGs on recommended dungeons and zones."] = "Показывать/скрывать PvP зоны, арены и поля боя в рекомендуемых подземельях и зонах."
 L["Layout"] = "Макет"
 L["Location Panel"] = "Панель локации"
+
+L["Frame anchor mode"] = "Режим привязки фреймов"
+L["How side frames are anchored. Default: each frame attaches to the previous group of frames with a left/right offset. Use 'Location' to attach the first frame to the location panel."] = "Как привязываются боковые фреймы. По умолчанию: каждый фрейм цепляется к предыдущей группе фреймов со смещением влево/вправо. Выберите «Локация», чтобы первый фрейм цеплялся к панели локации."
+L["Previous frame group"] = "Предыдущая группа фреймов"
+L["Location panel"] = "Панель локации"
 L["Fonts"] = "Шрифты"
 L["Font"] = "Шрифт"
 L["Font Outline"] = "Обводка шрифта"

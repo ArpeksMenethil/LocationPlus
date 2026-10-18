@@ -36,8 +36,16 @@ do
 					f.text:SetText(string.format("%s: |cFFFFFFFF%02d|cFFFFFFFF:%02d|r", LPS:L("Combat"), m, s))
 				end
 			end
+			-- начальное значение, чтобы панель не была пустой до первого боя
+			if f.text then
+				f.text:SetText(string.format("%s: |cFFFFFFFF00:00|r", LPS:L("Combat")))
+			end
 		end,
 		update = function(f, ev)
+			-- гарантируем непустую панель при первом обновлении вне боя
+			if not ev and timer == nil and f.text and (f.text:GetText() == "" or f.text:GetText() == nil) then
+				f.text:SetText(string.format("%s: |cFFFFFFFF00:00|r", LPS:L("Combat")))
+			end
 			if ev == "PLAYER_REGEN_DISABLED" or ev == "ENCOUNTER_START" then
 				timer, startTime = 0, GetTime()
 			elseif ev == "PLAYER_REGEN_ENABLED" or ev == "ENCOUNTER_END" then

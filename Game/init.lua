@@ -217,13 +217,16 @@ LPS.defaults = {
 		spacingManual = 20,
 		customColor = 3,
 		userColor = { r = 1, g = 1, b = 1 },
-		slotCount = 2,
+		-- По умолчанию видны панели ПЕРВОЙ группы (slot1): слева — координаты,
+		-- справа — время. Если пользователь ещё ничего не менял в настройках,
+		-- именно эти фреймы отображаются сразу после установки аддона.
+		slotCount = 3,
 		sideSlots = {
 			left1 = { frame = "coords", offsetX = 0, offsetY = 0 },
-			left2 = { frame = "gold", offsetX = 0, offsetY = 0 },
+			left2 = { frame = "NONE", offsetX = 0, offsetY = 0 },
 			left3 = { frame = "NONE", offsetX = 0, offsetY = 0 },
 			right1 = { frame = "time", offsetX = 0, offsetY = 0 },
-			right2 = { frame = "system", offsetX = 0, offsetY = 0 },
+			right2 = { frame = "NONE", offsetX = 0, offsetY = 0 },
 			right3 = { frame = "NONE", offsetX = 0, offsetY = 0 },
 		}
 	},
