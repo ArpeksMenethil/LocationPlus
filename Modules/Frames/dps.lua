@@ -20,8 +20,25 @@ do
 		return (C_CombatLog and C_CombatLog.GetCurrentEventInfo) or CombatLogGetCurrentEventInfo
 	end
 
+	local pendingRegenBridge
 	local function ensureLog()
 		if combatLogFrame then return end
+		-- Защита от ADDON_ACTION_FORBIDDEN: Frame:RegisterEvent() защищённый
+		-- метод и не может вызываться во время боя (например при
+		-- ApplyLayout/переходе между форматами времени прямо в бою).
+		-- Откладываем создание до PLAYER_REGEN_ENABLED.
+		if InCombatLockdown and InCombatLockdown() then
+			if not pendingRegenBridge then
+				pendingRegenBridge = CreateFrame("Frame")
+				pendingRegenBridge:RegisterEvent("PLAYER_REGEN_ENABLED")
+				pendingRegenBridge:SetScript("OnEvent", function(self, event)
+					self:UnregisterEvent(event)
+					pendingRegenBridge = nil
+					ensureLog()
+				end)
+			end
+			return
+		end
 		combatLogFrame = CreateFrame("Frame")
 		combatLogFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 		combatLogFrame:RegisterEvent("PLAYER_REGEN_DISABLED")

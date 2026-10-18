@@ -93,35 +93,6 @@ local out = normalizedLayoutCache and normalizedLayoutCache.out or {}
 	return out
 end
 
--- Миграция ключей тултипов location (опечатка proffession -> profession).
-function LPS:MigrateTooltipKeys()
-	local db = self:GetDB()
-	local loc = db and db.tooltips and db.tooltips.location
-	if not loc then return end
-	if loc.profession == nil and loc.proffession ~= nil then
-		loc.profession = loc.proffession
-	end
-	if loc.professionHideMaxLevel == nil and loc.proffessionHideMaxLevel ~= nil then
-		loc.professionHideMaxLevel = loc.proffessionHideMaxLevel
-	end
-end
-
--- Миграция: панель timePlayed удалена (встроено в time_tt) — чистим БД и слоты.
-function LPS:MigrateRemoveTimePlayed()
-        local db = self:GetDB()
-        if not db then return end
-        if db.panels and db.panels.timePlayed ~= nil then
-                db.panels.timePlayed = nil
-        end
-        if db.layout and type(db.layout.sideSlots) == "table" then
-                for _, s in pairs(db.layout.sideSlots) do
-                        if type(s) == "table" and s.frame == "timePlayed" then
-                                s.frame = "NONE"
-                        end
-                end
-        end
-end
-
 function LPS:InvalidateLayoutCache()
 	normalizedLayoutCache = nil
 	local holder = LPS.frame and LPS.frame.holder
@@ -743,11 +714,9 @@ function LPS:ResetAllSettingsToDefaults()
 	-- инфотекстов (кроме зарезервированных coords/time/gold/system), чтобы они
 	-- пересоздались с дефолтовыми значениями при следующем ApplyLayout
 	if LPS.frame then
-		for _, k in ipairs({ "bags", "combatIndicator", "combatTime", "currencies", "dps", "hps",
+		for _, k in ipairs({ "bags", "combatIndicator", "combatTime", "dps", "hps",
 			"difficulty", "durability", "experience", "friends", "guild", "itemLevel", "mail",
-			"microBar", "quests", "reputation", "volume", "armor", "attackPower", "spellPower",
-			"healPower", "crit", "haste", "mastery", "strength", "agility", "stamina",
-			"intellect", "spirit" }) do
+			"microBar", "quests", "reputation", "volume" }) do
 			local f = LPS.frame[k]
 			if f then
 				f:Hide()

@@ -13,7 +13,7 @@ do
 				if f.text then f.text:SetText(LPS:L("No Guild")) end
 				return
 			end
-			local total, _, online = GetNumGuildMembers()
+			local total, online = GetNumGuildMembers()
 			if f.text then
 				f.text:SetText(string.format("%s: %d/%d", GUILD, online or 0, total or 0))
 			end
