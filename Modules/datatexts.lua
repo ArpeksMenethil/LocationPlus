@@ -40,7 +40,7 @@ end
 --- русским названиям, enUS — по английским). Сортировка выполняется
 --- ПОСЛЕ локализации: компаратор каждый раз берёт свежий перевод через
 --- GetDatatextDisplayName. Кэш сбрасывается при каждой новой регистрации
---- панели и при LOCALE_CHANGED.
+--- панели.
 local sortedKeysCache
 local function invalidateSortedKeys()
 	sortedKeysCache = nil
@@ -216,14 +216,7 @@ do
 end
 
 -- После выхода из боя доделываем отложенные create()-инициализации панелей.
-eventBridge:RegisterEvent("LOCALE_CHANGED")
 eventBridge:SetScript("OnEvent", function(self, event)
-	if event == "LOCALE_CHANGED" then
-		-- Смена языка: названия панелей переводятся на лету — список
-		-- слотов должен пересортироваться по локализованным именам.
-		invalidateSortedKeys()
-		return
-	end
 	if event ~= "PLAYER_REGEN_ENABLED" then return end
 	local done = true
 	for _, f in pairs(LPS.frame or {}) do
