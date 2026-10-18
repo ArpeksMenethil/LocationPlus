@@ -36,6 +36,10 @@ do
 		key = "volume",
 		name = LPS:L("Volume"),
 		events = { "CVAR_UPDATE" },
+		-- СКМ (переключение общего звука) не работал: по умолчанию
+		-- панель регистрирует только ЛКМ/ПКМ (datatexts.lua), поэтому
+		-- MiddleButton не доходил до onClick.
+		clicks = { "LeftButtonUp", "RightButtonUp", "MiddleButtonUp" },
 		update = function(f)
 			if f.text then f.text:SetText(streamString(AudioStreams[activeIndex])) end
 		end,

@@ -4,47 +4,48 @@ local DT = LPS._DT
 
 -------------------------------------------------- Quests
 do
-	local function questCounts()
-		local numEntries, numQuests
-		if C_QuestLog and C_QuestLog.GetNumQuestLogEntries then
-			numEntries, numQuests = C_QuestLog.GetNumQuestLogEntries()
+		local function isOnQuest(questID)
+		if not questID then return false end
+		if C_QuestLog and C_QuestLog.IsOnQuest then
+			return C_QuestLog.IsOnQuest(questID)
 		end
-		if not numEntries then
-			numEntries, numQuests = GetNumQuestLogEntries()
-		end
-		numEntries = numEntries or 0
-		-- Второй возврат GetNumQuestLogEntries в некоторых клиентах не является
-		-- числом принятых квестов (showQuestAbandon/nil) -> считаем вручную:
-		-- принятый квест = запись журнала без isHeader и не hidden.
-		if type(numQuests) ~= "number" or numQuests == 0 then
-			local counted = 0
-			for qi = 1, numEntries do
-				local info
-				if C_QuestLog and C_QuestLog.GetInfo then
-					info = C_QuestLog.GetInfo(qi)
-				end
-				if info then
-					if not info.isHeader and not info.hidden then
-						counted = counted + 1
-					end
-				elseif GetQuestLogTitle then
-					local _, _, _, isHeader, _, _, _, _, questHidden = GetQuestLogTitle(qi)
-					if isHeader ~= nil and not isHeader and not questHidden then
-						counted = counted + 1
-					end
-				end
-			end
-			numQuests = counted
-		end
-		return numEntries, numQuests
+		return false
 	end
 
-	LPS:RegisterDatatext({
+	--- Число ПРИНЯТЫХ квестов. Раньше считались все не-скрытые
+	--- записи журнала, куда попадали и доступные (не принятые) задания.
+	local function acceptedQuests()
+		local list = {}
+		local numEntries
+		if C_QuestLog and C_QuestLog.GetNumQuestLogEntries then
+			numEntries = C_QuestLog.GetNumQuestLogEntries()
+		end
+		if not numEntries then
+			numEntries = GetNumQuestLogEntries and GetNumQuestLogEntries()
+		end
+		numEntries = numEntries or 0
+		for qi = 1, numEntries do
+			if C_QuestLog and C_QuestLog.GetInfo then
+				local info = C_QuestLog.GetInfo(qi)
+				if info and not info.isHeader and not info.isTask and isOnQuest(info.questID) then
+					list[#list + 1] = { title = info.title, level = info.level, questID = info.questID, isComplete = info.isComplete }
+				end
+			elseif GetQuestLogTitle then
+				local title, level, suggestedGroup, isHeader, isCollapsed, isComplete, _, _, questHidden, questID = GetQuestLogTitle(qi)
+				if title and not isHeader and not questHidden and isOnQuest(questID) then
+					list[#list + 1] = { title = title, level = level, questID = questID, isComplete = isComplete }
+				end
+			end
+		end
+		return list
+	end
+
+LPS:RegisterDatatext({
 		key = "quests",
 		name = LPS:L("Quest Log"),
 		events = { "QUEST_ACCEPTED", "QUEST_REMOVED", "QUEST_TURNED_IN", "QUEST_LOG_UPDATE" },
 		update = function(f)
-			local _, numQuests = questCounts()
+			local numQuests = #acceptedQuests()
 			local maxQ = 25
 			if C_QuestLog and C_QuestLog.GetMaxNumQuestsCanAccept then
 				maxQ = C_QuestLog.GetMaxNumQuestsCanAccept() or maxQ

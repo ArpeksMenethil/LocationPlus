@@ -10,7 +10,7 @@ function LPS:BuildGuildTooltip(GameTooltip)
 
                                 if not IsInGuild or not IsInGuild() then return end
                                 local guildName, guildRank = GetGuildInfo("player")
-                                local total, _, online = GetNumGuildMembers()
+                                local total, online = GetNumGuildMembers()
                                 tt:AddDoubleLine(guildName or "", string.format("%d/%d", online or 0, total or 0), 0.4, 0.78, 1, 0.4, 0.78, 1)
                                 if guildRank then tt:AddLine(guildRank, 0.4, 0.78, 1) end
                                 local motd = C_GuildInfo and C_GuildInfo.GetMOTD and C_GuildInfo.GetMOTD() or (GetGuildRosterMOTD and GetGuildRosterMOTD())

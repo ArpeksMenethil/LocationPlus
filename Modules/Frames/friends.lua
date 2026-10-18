@@ -11,12 +11,16 @@ do
 		name = LPS:L("Friends"),
 		events = { "FRIENDLIST_UPDATE", "BN_FRIEND_ACCOUNT_ONLINE", "BN_FRIEND_ACCOUNT_OFFLINE", "BN_FRIEND_INFO_CHANGED", "CHAT_MSG_SYSTEM" },
 		update = function(f)
+			-- Считаем онлайн так же, как подсказка (friends_tt.lua): по info.connected,
+			-- чтобы цифры на панели и в тултипе всегда совпадали.
 			local online = 0
-			if C_FriendList and C_FriendList.GetNumOnlineFriends then
+			if C_FriendList and C_FriendList.GetNumFriends and C_FriendList.GetFriendInfoByIndex then
+				for i = 1, C_FriendList.GetNumFriends() or 0 do
+					local info = C_FriendList.GetFriendInfoByIndex(i)
+					if info and info.connected then online = online + 1 end
+				end
+			elseif C_FriendList and C_FriendList.GetNumOnlineFriends then
 				online = C_FriendList.GetNumOnlineFriends() or 0
-			end
-			if BNConnected and BNConnected() and BNGetNumFriends then
-				online = online + (select(2, BNGetNumFriends()) or 0)
 			end
 			if f.text then
 				f.text:SetText(string.format("%s: %d", FRIENDS, online))
