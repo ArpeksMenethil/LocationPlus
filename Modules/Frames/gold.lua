@@ -244,7 +244,7 @@ LPS:RegisterDatatext({
 		-- в ApplyLayout вместо хрупкого сравнения ссылок frames.gold.
 		if f then f._lpsForceWhite = true end
 	end,
-	name = LPS:L("Gold"),
+	nameKey = "Gold",
 	events = { "PLAYER_ENTERING_WORLD", "PLAYER_MONEY" },
 	update = function(f)
 		-- ВАЖНО: здесь НЕ должно быть early-return по f:IsShown().

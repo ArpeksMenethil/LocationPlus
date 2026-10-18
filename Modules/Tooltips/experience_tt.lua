@@ -9,6 +9,11 @@ function LPS:BuildExperienceTooltip(GameTooltip)
     local rY, gY, bY = LPS:GetColor("tooltip")
 
                                 local level = UnitLevel("player")
+                                -- Как в ElvUI: на максимальном уровне подсказка не показывается
+                                local maxPlayer = MAX_PLAYER_LEVEL or (GetMaxLevelForPlayer and GetMaxLevelForPlayer(select(4, GetBuildInfo())))
+                                if level == nil or level <= 0 or (maxPlayer and level >= maxPlayer) then
+                                        return false
+                                end
                                 tt:AddDoubleLine(LPS:L("Experience"), string.format("%s %d", LPS:L("Level"), level), 1, 0.82, 0, 1, 1, 1)
                                 tt:AddLine(" ")
                                 local cur, max = UnitXP("player"), UnitXPMax("player")

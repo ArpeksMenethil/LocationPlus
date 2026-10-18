@@ -18,22 +18,29 @@ LPS.datatexts = registry
 -- инфотекст (перемещает микро-бар Blizzard), отдельного текста не имеет.
 local HIDDEN_SLOT_KEYS = { microBar = true }
 
---- Название панели для списков: ВСЕГДА локализованное (язык клиента).
---- Английские имена в списках больше не используются: панель отображается
---- так же, как она называется на экране. Координаты/время/золото/система
---- теперь тоже регистрируются через RegisterDatatext, поэтому их имена
---- берутся из реестра наравне с остальными панелями.
+--- Название панели для списков: ВСЕГДА актуально локализованное (язык
+--- клиента). Раньше имя замораживалось в момент загрузки файла
+--- (name = LPS:L("Bags")), а панели грузятся ПОСЛЕ datatexts.lua и до
+--- полного построения локали — из-за этого списки сортировались по
+--- АНГЛИЙСКИМ названиям ("Bags", "Mail"...), даже на русском клиенте.
+--- Теперь хранится ключ перевода (def.nameKey), а перевод выполняется
+--- при каждом обращении к имени.
 function LPS:GetDatatextDisplayName(key)
 	if key == "location" then return LPS:L("Location") end
 	local def = registry[key]
-	if def and def.name then return tostring(def.name) end
+	if def then
+		if def.nameKey then return LPS:L(def.nameKey) end
+		if def.name then return tostring(def.name) end
+	end
 	return key
 end
 
 --- Список ключей панелей для слотов: все зарегистрированные панели,
 --- отсортированные по названию на языке клиента (русский клиент — по
---- русскому алфавиту, enUS — по английскому). Кэш пересобирается при
---- каждой новой регистрации панели (панели грузятся после datatexts.lua).
+--- русским названиям, enUS — по английским). Сортировка выполняется
+--- ПОСЛЕ локализации: компаратор каждый раз берёт свежий перевод через
+--- GetDatatextDisplayName. Кэш сбрасывается при каждой новой регистрации
+--- панели и при LOCALE_CHANGED.
 local sortedKeysCache
 local function invalidateSortedKeys()
 	sortedKeysCache = nil
@@ -47,10 +54,9 @@ function LPS:GetSlotKeyList()
 				keys[#keys + 1] = key
 			end
 		end
-		local nameOf = LPS.GetDatatextDisplayName
 		table.sort(keys, function(a, b)
-			local na = tostring(nameOf(a)):lower()
-			local nb = tostring(nameOf(b)):lower()
+			local na = tostring(LPS:GetDatatextDisplayName(a)):lower()
+			local nb = tostring(LPS:GetDatatextDisplayName(b)):lower()
 			if na == nb then return a < b end
 			return na < nb
 		end)
@@ -71,7 +77,7 @@ local datatextCreateQueueRegistered = false
 --- Регистрирует панель инфотекста.
 ---@param def table { key, name, events, ticker, update(f), onClick(self,button), tooltip(tt), create(f) }
 function LPS:RegisterDatatext(def)
-	assert(def and def.key and def.name, "LPS RegisterDatatext: bad definition")
+	assert(def and def.key and (def.name or def.nameKey), "LPS RegisterDatatext: bad definition")
 	registry[def.key] = def
 	invalidateSortedKeys()
 end
@@ -145,11 +151,18 @@ function LPS:CreateDatatextFrame(key)
 			if not LPS._DT.tooltipGuard(key) then return end
 			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
 			GameTooltip:ClearLines()
-			-- Приоритет у отдельного билдера из Modules/Tooltips/<key>_tt.lua
+			-- Приоритет у отдельного билдера из Modules/Tooltips/<key>_tt.lua.
+			-- Билдер может вернуть false, чтобы отменить показ подсказки
+			-- (например, experience_tt.lua на максимальном уровне).
+			local built = true
 			if LPS[builderName] then
-				LPS[builderName](LPS, GameTooltip)
+				built = LPS[builderName](LPS, GameTooltip)
 			elseif def.tooltip then
 				def.tooltip(GameTooltip)
+			end
+			if built == false then
+				GameTooltip:Hide()
+				return
 			end
 			GameTooltip:Show()
 		end
@@ -203,7 +216,14 @@ do
 end
 
 -- После выхода из боя доделываем отложенные create()-инициализации панелей.
+eventBridge:RegisterEvent("LOCALE_CHANGED")
 eventBridge:SetScript("OnEvent", function(self, event)
+	if event == "LOCALE_CHANGED" then
+		-- Смена языка: названия панелей переводятся на лету — список
+		-- слотов должен пересортироваться по локализованным именам.
+		invalidateSortedKeys()
+		return
+	end
 	if event ~= "PLAYER_REGEN_ENABLED" then return end
 	local done = true
 	for _, f in pairs(LPS.frame or {}) do

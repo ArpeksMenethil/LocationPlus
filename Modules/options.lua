@@ -152,7 +152,6 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 		},
 		friends = { maxLimit = true },
 		guild = { maxLimit = true },
-		quests = { maxLimit = true },
 	}
 
 	-- Фабрика группы настроек одной панели (tooltip + display/maxLimit/label)
@@ -258,7 +257,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 			order = order,
 			type = "group",
 			inline = true,
-			name = def.name,
+			name = LPS:GetDatatextDisplayName(key),
 			args = args,
 		}
 	end
@@ -1089,34 +1088,6 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								get = function() return getDb().tooltips.time.playedTime end,
 								set = function(_, v) getDb().tooltips.time.playedTime = v applySettingsRefresh() end,
 							}
-						},
-					},
-					quests = {
-						order = 50,
-						type = "group",
-						name = LPS:L("Quest Log"),
-						inline = true,
-						args = {
-							enable = {
-								order = 1,
-								name = LPS:L("Enable"),
-								desc = LPS:L("Show a tooltip when hovering over this panel."),
-								type = "toggle",
-								disabled = function() return not getDb().tooltips.visibility.enable end,
-								get = function() return getDb().tooltips.quests.enable end,
-								set = function(_, v) getDb().tooltips.quests.enable = v applySettingsRefresh() end,
-							},
-							maxLimit = {
-								order = 2,
-								type = "range",
-								name = LPS:L("Max entries in tooltip"),
-								min = 1,
-								max = 30,
-								step = 1,
-								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.quests.enable end,
-								get = function() return tonumber(getDb().tooltips.quests.maxLimit) or 15 end,
-								set = function(_, v) getDb().tooltips.quests.maxLimit = math.floor(v) applySettingsRefresh() end,
-							},
 						},
 					},
 					friends = {

@@ -6,7 +6,7 @@ local DT = LPS._DT
 do
 	LPS:RegisterDatatext({
 		key = "itemLevel",
-		name = LPS:L("Item Level"),
+		nameKey = "Item Level",
 		events = { "PLAYER_AVG_ITEM_LEVEL_UPDATE", "PLAYER_ENTERING_WORLD", "UNIT_INVENTORY_CHANGED" },
 		update = function(f)
 			if not GetAverageItemLevel then

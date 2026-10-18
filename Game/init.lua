@@ -210,10 +210,6 @@ LPS.defaults = {
 			addonsMax = 15,
 			total = true,
 		},
-		quests = {
-			enable = true,
-			maxLimit = 15,
-		},
 		friends = {
 			enable = true,
 			maxLimit = 15,

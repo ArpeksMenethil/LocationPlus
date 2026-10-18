@@ -23,7 +23,7 @@ do
 
 	LPS:RegisterDatatext({
 		key = "reputation",
-		name = LPS:L("Reputation"),
+		nameKey = "Reputation",
 		events = { "UPDATE_FACTION", "COMBAT_TEXT_UPDATE" },
 		update = function(f)
 			local data = watchedFaction()

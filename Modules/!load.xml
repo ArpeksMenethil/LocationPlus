@@ -14,7 +14,6 @@
 	<Include file='.\Tooltips\friends_tt.lua'/>
 	<Include file='.\Tooltips\guild_tt.lua'/>
 	<Include file='.\Tooltips\mail_tt.lua'/>
-	<Include file='.\Tooltips\quests_tt.lua'/>
 	<Include file='.\Tooltips\reputation_tt.lua'/>
 	<Include file='.\Tooltips\volume_tt.lua'/>
 
@@ -34,7 +33,6 @@
 	<Include file='.\Frames\itemLevel.lua'/>
 	<Include file='.\Frames\mail.lua'/>
 	<Include file='.\Frames\microBar.lua'/>
-	<Include file='.\Frames\quests.lua'/>
 	<Include file='.\Frames\reputation.lua'/>
 	<Include file='.\Frames\volume.lua'/>
 </Ui>
