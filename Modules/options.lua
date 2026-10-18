@@ -1157,11 +1157,15 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
 								end,
 							},
+							spacer1_noLabel = {
+								order = 2.2,
+								type = "description",
+								name = "",
+							},
 							noLabel = {
 								order = 3,
 								type = "toggle",
 								name = LPS:L("Hide label"),
-								width = "half",
 								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.bags.enable end,
 								get = function() return getDb().tooltips.bags.noLabel or false end,
 								set = function(_, v)
@@ -1173,7 +1177,6 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								order = 4,
 								type = "input",
 								name = LPS:L("Custom label"),
-								width = "half",
 								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.bags.enable or getDb().tooltips.bags.noLabel end,
 								get = function() return getDb().tooltips.bags.label or "" end,
 								set = function(_, v)
@@ -1269,7 +1272,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 						inline = true,
 						args = {
 							dtshow = {
-								order = 0,
+								order = 0.3,
 								name = LPS:L("Show panels"),
 								desc = LPS:L("Show/Hide the extra panels (Coords and Time)."),
 								type = "toggle",
@@ -1285,8 +1288,19 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									end
 								end,
 							},
+							
+							spacer1_dtMinWidth = {
+								order = 0.6,
+								type = "description",
+								name = "",
+							},
+							spacer2_dtMinWidth = {
+								order = 0.7,
+								type = "description",
+								name = "",
+							},
 							dtMinWidth = {
-								order = 0.5,
+								order = 1,
 								type = "range",
 								name = LPS:L("Minimum width"),
 								desc = LPS:L("Sets the minimum width of the extra panels."),
@@ -1302,13 +1316,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 									end
 								end,
 							},
-							spacer1_dt = {
-								order = 0.6,
-								type = "description",
-								name = "",
-							},
 							dtPaddingX = {
-								order = 1,
+								order = 2,
 								type = "range",
 								name = LPS:L("Text padding X"),
 								desc = LPS:L("Adjust horizontal text padding inside panels."),
@@ -1325,7 +1334,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								end,
 							},
 							dtPaddingY = {
-								order = 2,
+								order = 3,
 								type = "range",
 								name = LPS:L("Text padding Y"),
 								desc = LPS:L("Adjust vertical text padding inside panels."),
