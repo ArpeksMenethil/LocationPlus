@@ -91,7 +91,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 	-- настроек (виджеты перечитывают get() из БД — иначе слайдеры
 	-- «возвращаются» назад и кажется, что настройки не сохраняются).
 	local function applySettingsRefresh()
-		applySettingsRefresh()
+		if LPS.RefreshAfterProfileChange then
+			LPS:RefreshAfterProfileChange()
+		end
 		notifyOptionsChanged()
 	end
 	-- Каскад слотов: нет панели в слоте N — слоты N+1..3 неактивны.
