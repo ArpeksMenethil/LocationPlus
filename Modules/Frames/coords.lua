@@ -9,6 +9,7 @@ function LPS:CreateCoordsFrame()
 	local params = {
 		name = "LPS_Coords",
 		frameType = "Button",
+		hidden = true,
 		parent = LPS.frame.location,
 		anchor = {"RIGHT", LPS.frame.location, "LEFT", -5, 0},
 		padding = {((db.layout and db.layout.dtPaddingX) or 10), ((db.layout and db.layout.dtPaddingY) or 6)},

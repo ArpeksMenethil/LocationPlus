@@ -10,6 +10,7 @@ function LPS:CreateSystemFrame()
 	local params = {
 		name = "LPS_System",
 		frameType = "Button",
+		hidden = true,
 		parent = LPS.frame.location,
 		anchor = {"LEFT", LPS.frame.location, "RIGHT", 5, 0},
 		padding = {((db.layout and db.layout.dtPaddingX) or 10), ((db.layout and db.layout.dtPaddingY) or 6)},
