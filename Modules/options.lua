@@ -340,10 +340,10 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										
 										get = function() return getDb().general.is24H end,
 										set = function(_, v)
-											getDb().general.is24H = v
-											if LPS.ApplyTimeFormat then
-												LPS:ApplyTimeFormat()
-											end
+										getDb().general.is24H = v
+										if LPS.ApplyTimeFormat then
+										LPS:ApplyTimeFormat()
+										end
 										end,
 									},
 									seconds = {
@@ -354,10 +354,10 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										
 										get = function() return getDb().general.seconds end,
 										set = function(_, v)
-											getDb().general.seconds = v
-											if LPS.ApplyTimeFormat then
-												LPS:ApplyTimeFormat()
-											end
+										getDb().general.seconds = v
+										if LPS.ApplyTimeFormat then
+										LPS:ApplyTimeFormat()
+										end
 										end,
 									},
 								},
@@ -376,18 +376,18 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										order = 1,
 										
 										get = function()
-											local mm = getDb().show and getDb().show.minimap
-											return not (mm and mm.hide)
+										local mm = getDb().show and getDb().show.minimap
+										return not (mm and mm.hide)
 										end,
 										set = function(_, v)
-											getDb().show.minimap = getDb().show.minimap or { hide = false, angle = 220 }
-											getDb().show.minimap.hide = not v
-											if v and LPS.CreateMinimapButton then
-												LPS:CreateMinimapButton()
-											end
-											if LPS.UpdateMinimapButton then
-												LPS:UpdateMinimapButton()
-											end
+										getDb().show.minimap = getDb().show.minimap or { hide = false, angle = 220 }
+										getDb().show.minimap.hide = not v
+										if v and LPS.CreateMinimapButton then
+										LPS:CreateMinimapButton()
+										end
+										if LPS.UpdateMinimapButton then
+										LPS:UpdateMinimapButton()
+										end
 										end,
 									},
 									addonCompartment = {
@@ -400,10 +400,10 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										disabled = function() return not (LPS.Retail or LPS.Forever) end,
 										get = function() return getDb().show.addonCompartment end,
 										set = function(_, v)
-											getDb().show.addonCompartment = v
-											if LPS.ApplyAddonCompartmentRegistration then
-												LPS:ApplyAddonCompartmentRegistration()
-											end
+										getDb().show.addonCompartment = v
+										if LPS.ApplyAddonCompartmentRegistration then
+										LPS:ApplyAddonCompartmentRegistration()
+										end
 										end,
 									},
 									spacer1_combatHide = {
@@ -419,10 +419,10 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 										
 										get = function() return getDb().show.visibility.combat end,
 										set = function(_, v)
-											getDb().show.visibility.combat = v
-											if LPS.ApplyVisibility then
-												LPS:ApplyVisibility()
-											end
+										getDb().show.visibility.combat = v
+										if LPS.ApplyVisibility then
+										LPS:ApplyVisibility()
+										end
 										end,
 									},
 								},
@@ -455,131 +455,131 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								desc = LPS:L("Reset all addon settings to default values."),
 								order = 3,
 								func = function()
-									if LPS.ResetAllSettingsToDefaults then
-										LPS:ResetAllSettingsToDefaults()
-									end
+								if LPS.ResetAllSettingsToDefaults then
+								LPS:ResetAllSettingsToDefaults()
+								end
 								end,
 							},
+						},
+					},
+				}
+			},
+			show = {
+				type = "group",
+				name = LPS:L("Show"),
+				order = 2,
+				args = {
+					locationGroup = {
+						order = 1,
+						type = "group",
+						name = LPS:L("Location"),
+						inline = true,
+						
+						args = {
+							zone = {
+								order = 1,
+								type = "toggle",
+								name = LPS:L("Show zone"),
+								desc = LPS:L("Show zone name on the panel."),
+								
+								get = function() return getDb().show.zone end,
+								set = function(_, v)
+								getDb().show.zone = v
+								local f = LPS.frame and LPS.frame.location
+								if f and f._lpsUpdateFunc then
+								f._lpsUpdateFunc(f)
+								end
+								end,
+							},
+							spacer1_showicon = {
+								order = 1.1,
+								type = "description",
+								name = "",
+							},
+							showicon = {
+								order = 2,
+								name = LPS:L("Crest"),
+								type = "toggle",
+								
+								disabled = function() return getDb().show.displayOther == "NONE" end,
+								get = function() return getDb().show.showicon end,
+								set = function(_, v)
+								getDb().show.showicon = v
+								local f = LPS.frame and LPS.frame.location
+								if f and f._lpsUpdateFunc then
+								f._lpsUpdateFunc(f)
+								end
+								end,
+							},
+							displayOther = {
+								order = 3,
+								name = LPS:L("Other"),
+								desc = LPS:L("Show additional info in the Location Panel"),
+								type = "select",
+								
+								values = getDisplayOtherValues,
+								get = function() return getDb().show.displayOther end,
+								set = function(_, v)
+								local values = getDisplayOtherValues()
+								if values[v] == nil then
+								v = "RLEVEL"
+								end
+								getDb().show.displayOther = v
+								local f = LPS.frame and LPS.frame.location
+								if f and f._lpsUpdateFunc then
+								f._lpsUpdateFunc(f)
+								end
+								end,
 							},
 						},
-					}
-				},
-				show = {
-					type = "group",
-					name = LPS:L("Show"),
-					order = 2,
-					args = {
-						locationGroup = {
-							order = 1,
-							type = "group",
-							name = LPS:L("Location"),
-							inline = true,
-							
-							args = {
-								zone = {
-									order = 1,
-									type = "toggle",
-									name = LPS:L("Show zone"),
-									desc = LPS:L("Show zone name on the panel."),
-									
-									get = function() return getDb().show.zone end,
-									set = function(_, v)
-										getDb().show.zone = v
-										local f = LPS.frame and LPS.frame.location
-										if f and f._lpsUpdateFunc then
-											f._lpsUpdateFunc(f)
-										end
-									end,
-								},
-								spacer1_showicon = {
-									order = 1.1,
-									type = "description",
-									name = "",
-								},
-								showicon = {
-									order = 2,
-									name = LPS:L("Crest"),
-									type = "toggle",
-									
-									disabled = function() return getDb().show.displayOther == "NONE" end,
-									get = function() return getDb().show.showicon end,
-									set = function(_, v)
-										getDb().show.showicon = v
-										local f = LPS.frame and LPS.frame.location
-										if f and f._lpsUpdateFunc then
-											f._lpsUpdateFunc(f)
-										end
-									end,
-								},
-								displayOther = {
-									order = 3,
-									name = LPS:L("Other"),
-									desc = LPS:L("Show additional info in the Location Panel"),
-									type = "select",
-									
-									values = getDisplayOtherValues,
-									get = function() return getDb().show.displayOther end,
-									set = function(_, v)
-										local values = getDisplayOtherValues()
-										if values[v] == nil then
-											v = "RLEVEL"
-										end
-										getDb().show.displayOther = v
-										local f = LPS.frame and LPS.frame.location
-										if f and f._lpsUpdateFunc then
-											f._lpsUpdateFunc(f)
-										end
-									end,
-								},
+					},
+					coordsGroup = {
+						order = 2,
+						type = "group",
+						name = LPS:L("Coords"),
+						inline = true,
+						
+						args = {
+							dig = {
+								order = 1,
+								name = LPS:L("Detailed Coords"),
+								desc = LPS:L("Adds 2 digits in the coords"),
+								type = "toggle",
+								
+								get = function() return getDb().show.dig end,
+								set = function(_, v)
+								getDb().show.dig = v
+								local f = LPS.frame and LPS.frame.coords
+								if f and f._lpsUpdateFunc then
+								f._lpsUpdateFunc(f)
+								end
+								end,
+							},
+							coordsTimeUpdate = {
+								order = 2,
+								name = LPS:L("Update Timer"),
+								desc = LPS:L("Adjust coords updates (in seconds) to avoid cpu load."),
+								type = "range",
+								
+								min = 0.05,
+								max = 1,
+								step = 0.05,
+								get = function() return getDb().general.coordsTimeUpdate end,
+								set = function(_, v)
+								getDb().general.coordsTimeUpdate = v
+								if LPS.ApplyCoordsUpdateInterval then
+								LPS:ApplyCoordsUpdateInterval()
+								end
+								end,
 							},
 						},
-						coordsGroup = {
-							order = 2,
-							type = "group",
-							name = LPS:L("Coords"),
-							inline = true,
-							
-							args = {
-								dig = {
-									order = 1,
-									name = LPS:L("Detailed Coords"),
-									desc = LPS:L("Adds 2 digits in the coords"),
-									type = "toggle",
-									
-									get = function() return getDb().show.dig end,
-									set = function(_, v)
-										getDb().show.dig = v
-										local f = LPS.frame and LPS.frame.coords
-										if f and f._lpsUpdateFunc then
-											f._lpsUpdateFunc(f)
-										end
-									end,
-								},
-								coordsTimeUpdate = {
-									order = 2,
-									name = LPS:L("Update Timer"),
-									desc = LPS:L("Adjust coords updates (in seconds) to avoid cpu load."),
-									type = "range",
-									
-									min = 0.05,
-									max = 1,
-									step = 0.05,
-									get = function() return getDb().general.coordsTimeUpdate end,
-									set = function(_, v)
-										getDb().general.coordsTimeUpdate = v
-										if LPS.ApplyCoordsUpdateInterval then
-											LPS:ApplyCoordsUpdateInterval()
-										end
-									end,
-								},
-							},
-						},
-					panelDisplayGroup = {
+					},
+					experienceGroup = {
 						order = 3,
 						type = "group",
-						name = LPS:L("Panels"),
+						name = LPS:L("Experience"),
 						inline = true,
-
+						
 						args = {
 							experience = {
 								order = 1,
@@ -593,47 +593,56 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								},
 								get = function() return getDb().show.experience.display or "PERCENT" end,
 								set = function(_, v)
-									getDb().show.experience.display = v
-									applySettingsRefresh()
+								getDb().show.experience.display = v
+								applySettingsRefresh()
 								end,
 							},
-							bags = {
-								order = 2,
-								type = "select",
-								name = LPS:L("Bags") .. " " .. LPS:L("Display"),
-								values = {
-									USED_TOTAL = LPS:L("Used / Total"),
-									FREE = LPS:L("Free slots"),
-									USED = LPS:L("Used slots"),
-								},
-								get = function() return getDb().show.bags.display or "USED_TOTAL" end,
-								set = function(_, v)
+						},
+						bagsGroup = {
+							order = 4,
+							type = "group",
+							name = LPS:L("Bags"),
+							inline = true,
+							
+							args = {
+								bags = {
+									order = 1,
+									type = "select",
+									name = LPS:L("Bags") .. " " .. LPS:L("Display"),
+									values = {
+										USED_TOTAL = LPS:L("Used / Total"),
+										FREE = LPS:L("Free slots"),
+										USED = LPS:L("Used slots"),
+									},
+									get = function() return getDb().show.bags.display or "USED_TOTAL" end,
+									set = function(_, v)
 									getDb().show.bags.display = v
 									applySettingsRefresh()
-								end,
-							},
-							bagsNoLabel = {
-								order = 3,
-								type = "toggle",
-								name = LPS:L("Hide label"),
-								width = "half",
-								get = function() return getDb().show.bags.noLabel or false end,
-								set = function(_, v)
+									end,
+								},
+								bagsNoLabel = {
+									order = 2,
+									type = "toggle",
+									name = LPS:L("Hide label"),
+									width = "half",
+									get = function() return getDb().show.bags.noLabel or false end,
+									set = function(_, v)
 									getDb().show.bags.noLabel = v and true or false
 									applySettingsRefresh()
-								end,
-							},
-							bagsLabel = {
-								order = 4,
-								type = "input",
-								name = LPS:L("Custom label"),
-								width = "half",
-								disabled = function() return getDb().show.bags.noLabel end,
-								get = function() return getDb().show.bags.label or "" end,
-								set = function(_, v)
+									end,
+								},
+								bagsLabel = {
+									order = 3,
+									type = "input",
+									name = LPS:L("Custom label"),
+									width = "half",
+									disabled = function() return getDb().show.bags.noLabel end,
+									get = function() return getDb().show.bags.label or "" end,
+									set = function(_, v)
 									getDb().show.bags.label = v or ""
 									applySettingsRefresh()
-								end,
+									end,
+								},
 							},
 						},
 					},
@@ -738,7 +747,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "toggle",
 								
 								disabled = function()
-									return not getDb().tooltips.visibility.enable or not getDb().tooltips.location.profession
+								return not getDb().tooltips.visibility.enable or not getDb().tooltips.location.profession
 								end,
 								get = function() return getDb().tooltips.location.professionHideMaxLevel end,
 								set = function(_, v) getDb().tooltips.location.professionHideMaxLevel = v applySettingsRefresh() end,
@@ -1164,8 +1173,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 						},
 						get = function() return getDb().layout.chainAnchor or "chain" end,
 						set = function(_, v)
-							getDb().layout.chainAnchor = v
-							applySettingsRefresh()
+						getDb().layout.chainAnchor = v
+						applySettingsRefresh()
 						end,
 					},
 					locpanel = {
@@ -1184,8 +1193,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								step = 1,
 								get = function() return getDb().layout.locMinWidth end,
 								set = function(_, v)
-									getDb().layout.locMinWidth = v
-									applySettingsRefresh()
+								getDb().layout.locMinWidth = v
+								applySettingsRefresh()
 								end,
 							},
 							locPaddingX = {
@@ -1198,8 +1207,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								step = 1,
 								get = function() return getDb().layout.locPaddingX end,
 								set = function(_, v)
-									getDb().layout.locPaddingX = v
-									applySettingsRefresh()
+								getDb().layout.locPaddingX = v
+								applySettingsRefresh()
 								end,
 							},
 							locPaddingY = {
@@ -1212,8 +1221,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								step = 1,
 								get = function() return getDb().layout.locPaddingY end,
 								set = function(_, v)
-									getDb().layout.locPaddingY = v
-									applySettingsRefresh()
+								getDb().layout.locPaddingY = v
+								applySettingsRefresh()
 								end,
 							},
 						},
@@ -1232,11 +1241,11 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								
 								get = function() return getDb().layout.dtshow end,
 								set = function(_, v)
-									getDb().layout.dtshow = v
-									if LPS.ApplyDTVisibility then
-										LPS:ApplyDTVisibility()
-									end
-									applySettingsRefresh()
+								getDb().layout.dtshow = v
+								if LPS.ApplyDTVisibility then
+								LPS:ApplyDTVisibility()
+								end
+								applySettingsRefresh()
 								end,
 							},
 							
@@ -1261,8 +1270,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								disabled = function() return getDb().layout.dtshow == false end,
 								get = function() return getDb().layout.dtMinWidth end,
 								set = function(_, v)
-									getDb().layout.dtMinWidth = v
-									applySettingsRefresh()
+								getDb().layout.dtMinWidth = v
+								applySettingsRefresh()
 								end,
 							},
 							dtPaddingX = {
@@ -1276,8 +1285,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								disabled = function() return getDb().layout.dtshow == false end,
 								get = function() return getDb().layout.dtPaddingX end,
 								set = function(_, v)
-									getDb().layout.dtPaddingX = v
-									applySettingsRefresh()
+								getDb().layout.dtPaddingX = v
+								applySettingsRefresh()
 								end,
 							},
 							dtPaddingY = {
@@ -1291,8 +1300,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								disabled = function() return getDb().layout.dtshow == false end,
 								get = function() return getDb().layout.dtPaddingY end,
 								set = function(_, v)
-									getDb().layout.dtPaddingY = v
-									applySettingsRefresh()
+								getDb().layout.dtPaddingY = v
+								applySettingsRefresh()
 								end,
 							},
 						},
@@ -1308,47 +1317,47 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Left Slot 1"),
 								type = "select",
 								values = function()
-									local vals = { none = LPS:L("None") }
-										-- coords/time/gold/system включены в GetSlotKeyList()
-										-- и идут в общем алфавитном порядке
-									if LPS.GetSlotKeyList then
-										for _, k in ipairs(LPS:GetSlotKeyList()) do
-																						-- Название ВСЕГДА локализованное (язык клиента): берём из реестра через GetDatatextName.
-											vals[k] = LPS:GetDatatextName(k)
-										end
-									end
-									return vals
+								local vals = { none = LPS:L("None") }
+								-- coords/time/gold/system включены в GetSlotKeyList()
+								-- и идут в общем алфавитном порядке
+								if LPS.GetSlotKeyList then
+								for _, k in ipairs(LPS:GetSlotKeyList()) do
+								-- Название ВСЕГДА локализованное (язык клиента): берём из реестра через GetDatatextName.
+								vals[k] = LPS:GetDatatextName(k)
+								end
+								end
+								return vals
 								end,
 								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left1"]
-									local v = (s and s.frame) or "NONE"
-									if v == "NONE" or v == "None" or v == "" or v == nil then
-										return "none"
-									end
-									return v
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["left1"]
+								local v = (s and s.frame) or "NONE"
+								if v == "NONE" or v == "None" or v == "" or v == nil then
+								return "none"
+								end
+								return v
 								end,
 								set = function(_, v)
-									local db = getDb()
-									db.layout.sideSlots = db.layout.sideSlots or {}
-									local ss = db.layout.sideSlots
-									ss.left1 = ss.left1 or { offsetX = 0, offsetY = 0 }
-									local cur = ss.left1
-									v = v or "none"
-									if v ~= "none" then
-										for _, other in pairs(ss) do
-											if type(other) == "table" and other ~= cur and other.frame == v then
-												other.frame = "NONE"
-											end
-										end
-									end
-									cur.frame = (v == "none") and "NONE" or v
-									if v == "none" then cascadeClearSlots(ss, "left", 1) end
-									-- Помечаем слот «тронутым», иначе следующий ApplyDefaults вернёт в
-									-- нетронутый слот панель по умолчанию и выбор пользователя сотрётся.
-									ss.userTouched = ss.userTouched or {}
-									ss.userTouched["left1"] = true
-									applySettingsRefresh()
+								local db = getDb()
+								db.layout.sideSlots = db.layout.sideSlots or {}
+								local ss = db.layout.sideSlots
+								ss.left1 = ss.left1 or { offsetX = 0, offsetY = 0 }
+								local cur = ss.left1
+								v = v or "none"
+								if v ~= "none" then
+								for _, other in pairs(ss) do
+								if type(other) == "table" and other ~= cur and other.frame == v then
+								other.frame = "NONE"
+								end
+								end
+								end
+								cur.frame = (v == "none") and "NONE" or v
+								if v == "none" then cascadeClearSlots(ss, "left", 1) end
+								-- Помечаем слот «тронутым», иначе следующий ApplyDefaults вернёт в
+								-- нетронутый слот панель по умолчанию и выбор пользователя сотрётся.
+								ss.userTouched = ss.userTouched or {}
+								ss.userTouched["left1"] = true
+								applySettingsRefresh()
 								end,
 							},
 							leftOffsetX1 = {
@@ -1359,15 +1368,15 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								max = 200,
 								step = 1,
 								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left1"]
-									return tonumber(s and s.offsetX) or 0
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["left1"]
+								return tonumber(s and s.offsetX) or 0
 								end,
 								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left1"]
-									if s then s.offsetX = v end
-									applySettingsRefresh()
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["left1"]
+								if s then s.offsetX = v end
+								applySettingsRefresh()
 								end,
 							},
 							leftOffsetY1 = {
@@ -1378,15 +1387,15 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								max = 200,
 								step = 1,
 								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left1"]
-									return tonumber(s and s.offsetY) or 0
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["left1"]
+								return tonumber(s and s.offsetY) or 0
 								end,
 								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left1"]
-									if s then s.offsetY = v end
-									applySettingsRefresh()
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["left1"]
+								if s then s.offsetY = v end
+								applySettingsRefresh()
 								end,
 							},
 							rightSlot1 = {
@@ -1394,47 +1403,47 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Right Slot 1"),
 								type = "select",
 								values = function()
-									local vals = { none = LPS:L("None") }
-										-- coords/time/gold/system включены в GetSlotKeyList()
-										-- и идут в общем алфавитном порядке
-									if LPS.GetSlotKeyList then
-										for _, k in ipairs(LPS:GetSlotKeyList()) do
-																						-- Название ВСЕГДА локализованное (язык клиента): берём из реестра через GetDatatextName.
-											vals[k] = LPS:GetDatatextName(k)
-										end
-									end
-									return vals
+								local vals = { none = LPS:L("None") }
+								-- coords/time/gold/system включены в GetSlotKeyList()
+								-- и идут в общем алфавитном порядке
+								if LPS.GetSlotKeyList then
+								for _, k in ipairs(LPS:GetSlotKeyList()) do
+								-- Название ВСЕГДА локализованное (язык клиента): берём из реестра через GetDatatextName.
+								vals[k] = LPS:GetDatatextName(k)
+								end
+								end
+								return vals
 								end,
 								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right1"]
-									local v = (s and s.frame) or "NONE"
-									if v == "NONE" or v == "None" or v == "" or v == nil then
-										return "none"
-									end
-									return v
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["right1"]
+								local v = (s and s.frame) or "NONE"
+								if v == "NONE" or v == "None" or v == "" or v == nil then
+								return "none"
+								end
+								return v
 								end,
 								set = function(_, v)
-									local db = getDb()
-									db.layout.sideSlots = db.layout.sideSlots or {}
-									local ss = db.layout.sideSlots
-									ss.right1 = ss.right1 or { offsetX = 0, offsetY = 0 }
-									local cur = ss.right1
-									v = v or "none"
-									if v ~= "none" then
-										for _, other in pairs(ss) do
-											if type(other) == "table" and other ~= cur and other.frame == v then
-												other.frame = "NONE"
-											end
-										end
-									end
-									cur.frame = (v == "none") and "NONE" or v
-									if v == "none" then cascadeClearSlots(ss, "right", 1) end
-									-- Помечаем слот «тронутым», иначе следующий ApplyDefaults вернёт в
-									-- нетронутый слот панель по умолчанию и выбор пользователя сотрётся.
-									ss.userTouched = ss.userTouched or {}
-									ss.userTouched["right1"] = true
-									applySettingsRefresh()
+								local db = getDb()
+								db.layout.sideSlots = db.layout.sideSlots or {}
+								local ss = db.layout.sideSlots
+								ss.right1 = ss.right1 or { offsetX = 0, offsetY = 0 }
+								local cur = ss.right1
+								v = v or "none"
+								if v ~= "none" then
+								for _, other in pairs(ss) do
+								if type(other) == "table" and other ~= cur and other.frame == v then
+								other.frame = "NONE"
+								end
+								end
+								end
+								cur.frame = (v == "none") and "NONE" or v
+								if v == "none" then cascadeClearSlots(ss, "right", 1) end
+								-- Помечаем слот «тронутым», иначе следующий ApplyDefaults вернёт в
+								-- нетронутый слот панель по умолчанию и выбор пользователя сотрётся.
+								ss.userTouched = ss.userTouched or {}
+								ss.userTouched["right1"] = true
+								applySettingsRefresh()
 								end,
 							},
 							rightOffsetX1 = {
@@ -1445,15 +1454,15 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								max = 200,
 								step = 1,
 								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right1"]
-									return tonumber(s and s.offsetX) or 0
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["right1"]
+								return tonumber(s and s.offsetX) or 0
 								end,
 								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right1"]
-									if s then s.offsetX = v end
-									applySettingsRefresh()
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["right1"]
+								if s then s.offsetX = v end
+								applySettingsRefresh()
 								end,
 							},
 							rightOffsetY1 = {
@@ -1464,68 +1473,68 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								max = 200,
 								step = 1,
 								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right1"]
-									return tonumber(s and s.offsetY) or 0
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["right1"]
+								return tonumber(s and s.offsetY) or 0
 								end,
 								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right1"]
-									if s then s.offsetY = v end
-									applySettingsRefresh()
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["right1"]
+								if s then s.offsetY = v end
+								applySettingsRefresh()
 								end,
 							},
 							leftSlot2 = {
-							disabled = makeSlotDisabledFunc("left", 2),
+								disabled = makeSlotDisabledFunc("left", 2),
 								order = 2.1,
 								name = LPS:L("Left Slot 2"),
 								type = "select",
 								values = function()
-									local vals = { none = LPS:L("None") }
-										-- coords/time/gold/system включены в GetSlotKeyList()
-										-- и идут в общем алфавитном порядке
-									if LPS.GetSlotKeyList then
-										for _, k in ipairs(LPS:GetSlotKeyList()) do
-																						-- Название ВСЕГДА локализованное (язык клиента): берём из реестра через GetDatatextName.
-											vals[k] = LPS:GetDatatextName(k)
-										end
-									end
-									return vals
+								local vals = { none = LPS:L("None") }
+								-- coords/time/gold/system включены в GetSlotKeyList()
+								-- и идут в общем алфавитном порядке
+								if LPS.GetSlotKeyList then
+								for _, k in ipairs(LPS:GetSlotKeyList()) do
+								-- Название ВСЕГДА локализованное (язык клиента): берём из реестра через GetDatatextName.
+								vals[k] = LPS:GetDatatextName(k)
+								end
+								end
+								return vals
 								end,
 								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left2"]
-									local v = (s and s.frame) or "NONE"
-									if v == "NONE" or v == "None" or v == "" or v == nil then
-										return "none"
-									end
-									return v
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["left2"]
+								local v = (s and s.frame) or "NONE"
+								if v == "NONE" or v == "None" or v == "" or v == nil then
+								return "none"
+								end
+								return v
 								end,
 								set = function(_, v)
-									local db = getDb()
-									db.layout.sideSlots = db.layout.sideSlots or {}
-									local ss = db.layout.sideSlots
-									ss.left2 = ss.left2 or { offsetX = 0, offsetY = 0 }
-									local cur = ss.left2
-									v = v or "none"
-									if v ~= "none" then
-										for _, other in pairs(ss) do
-											if type(other) == "table" and other ~= cur and other.frame == v then
-												other.frame = "NONE"
-											end
-										end
-									end
-									cur.frame = (v == "none") and "NONE" or v
-									if v == "none" then cascadeClearSlots(ss, "left", 2) end
-									-- Помечаем слот «тронутым», иначе следующий ApplyDefaults вернёт в
-									-- нетронутый слот панель по умолчанию и выбор пользователя сотрётся.
-									ss.userTouched = ss.userTouched or {}
-									ss.userTouched["left2"] = true
-									applySettingsRefresh()
+								local db = getDb()
+								db.layout.sideSlots = db.layout.sideSlots or {}
+								local ss = db.layout.sideSlots
+								ss.left2 = ss.left2 or { offsetX = 0, offsetY = 0 }
+								local cur = ss.left2
+								v = v or "none"
+								if v ~= "none" then
+								for _, other in pairs(ss) do
+								if type(other) == "table" and other ~= cur and other.frame == v then
+								other.frame = "NONE"
+								end
+								end
+								end
+								cur.frame = (v == "none") and "NONE" or v
+								if v == "none" then cascadeClearSlots(ss, "left", 2) end
+								-- Помечаем слот «тронутым», иначе следующий ApplyDefaults вернёт в
+								-- нетронутый слот панель по умолчанию и выбор пользователя сотрётся.
+								ss.userTouched = ss.userTouched or {}
+								ss.userTouched["left2"] = true
+								applySettingsRefresh()
 								end,
 							},
 							leftOffsetX2 = {
-							disabled = makeSlotDisabledFunc("left", 2),
+								disabled = makeSlotDisabledFunc("left", 2),
 								order = 2.11,
 								name = LPS:L("Left Offset X 2"),
 								type = "range",
@@ -1533,19 +1542,19 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								max = 200,
 								step = 1,
 								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left2"]
-									return tonumber(s and s.offsetX) or 0
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["left2"]
+								return tonumber(s and s.offsetX) or 0
 								end,
 								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left2"]
-									if s then s.offsetX = v end
-									applySettingsRefresh()
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["left2"]
+								if s then s.offsetX = v end
+								applySettingsRefresh()
 								end,
 							},
 							leftOffsetY2 = {
-							disabled = makeSlotDisabledFunc("left", 2),
+								disabled = makeSlotDisabledFunc("left", 2),
 								order = 2.12,
 								name = LPS:L("Left Offset Y 2"),
 								type = "range",
@@ -1553,68 +1562,68 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								max = 200,
 								step = 1,
 								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left2"]
-									return tonumber(s and s.offsetY) or 0
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["left2"]
+								return tonumber(s and s.offsetY) or 0
 								end,
 								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left2"]
-									if s then s.offsetY = v end
-									applySettingsRefresh()
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["left2"]
+								if s then s.offsetY = v end
+								applySettingsRefresh()
 								end,
 							},
 							rightSlot2 = {
-							disabled = makeSlotDisabledFunc("right", 2),
+								disabled = makeSlotDisabledFunc("right", 2),
 								order = 2.2,
 								name = LPS:L("Right Slot 2"),
 								type = "select",
 								values = function()
-									local vals = { none = LPS:L("None") }
-										-- coords/time/gold/system включены в GetSlotKeyList()
-										-- и идут в общем алфавитном порядке
-									if LPS.GetSlotKeyList then
-										for _, k in ipairs(LPS:GetSlotKeyList()) do
-																						-- Название ВСЕГДА локализованное (язык клиента): берём из реестра через GetDatatextName.
-											vals[k] = LPS:GetDatatextName(k)
-										end
-									end
-									return vals
+								local vals = { none = LPS:L("None") }
+								-- coords/time/gold/system включены в GetSlotKeyList()
+								-- и идут в общем алфавитном порядке
+								if LPS.GetSlotKeyList then
+								for _, k in ipairs(LPS:GetSlotKeyList()) do
+								-- Название ВСЕГДА локализованное (язык клиента): берём из реестра через GetDatatextName.
+								vals[k] = LPS:GetDatatextName(k)
+								end
+								end
+								return vals
 								end,
 								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right2"]
-									local v = (s and s.frame) or "NONE"
-									if v == "NONE" or v == "None" or v == "" or v == nil then
-										return "none"
-									end
-									return v
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["right2"]
+								local v = (s and s.frame) or "NONE"
+								if v == "NONE" or v == "None" or v == "" or v == nil then
+								return "none"
+								end
+								return v
 								end,
 								set = function(_, v)
-									local db = getDb()
-									db.layout.sideSlots = db.layout.sideSlots or {}
-									local ss = db.layout.sideSlots
-									ss.right2 = ss.right2 or { offsetX = 0, offsetY = 0 }
-									local cur = ss.right2
-									v = v or "none"
-									if v ~= "none" then
-										for _, other in pairs(ss) do
-											if type(other) == "table" and other ~= cur and other.frame == v then
-												other.frame = "NONE"
-											end
-										end
-									end
-									cur.frame = (v == "none") and "NONE" or v
-									if v == "none" then cascadeClearSlots(ss, "right", 2) end
-									-- Помечаем слот «тронутым», иначе следующий ApplyDefaults вернёт в
-									-- нетронутый слот панель по умолчанию и выбор пользователя сотрётся.
-									ss.userTouched = ss.userTouched or {}
-									ss.userTouched["right2"] = true
-									applySettingsRefresh()
+								local db = getDb()
+								db.layout.sideSlots = db.layout.sideSlots or {}
+								local ss = db.layout.sideSlots
+								ss.right2 = ss.right2 or { offsetX = 0, offsetY = 0 }
+								local cur = ss.right2
+								v = v or "none"
+								if v ~= "none" then
+								for _, other in pairs(ss) do
+								if type(other) == "table" and other ~= cur and other.frame == v then
+								other.frame = "NONE"
+								end
+								end
+								end
+								cur.frame = (v == "none") and "NONE" or v
+								if v == "none" then cascadeClearSlots(ss, "right", 2) end
+								-- Помечаем слот «тронутым», иначе следующий ApplyDefaults вернёт в
+								-- нетронутый слот панель по умолчанию и выбор пользователя сотрётся.
+								ss.userTouched = ss.userTouched or {}
+								ss.userTouched["right2"] = true
+								applySettingsRefresh()
 								end,
 							},
 							rightOffsetX2 = {
-							disabled = makeSlotDisabledFunc("right", 2),
+								disabled = makeSlotDisabledFunc("right", 2),
 								order = 2.21,
 								name = LPS:L("Right Offset X 2"),
 								type = "range",
@@ -1622,19 +1631,19 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								max = 200,
 								step = 1,
 								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right2"]
-									return tonumber(s and s.offsetX) or 0
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["right2"]
+								return tonumber(s and s.offsetX) or 0
 								end,
 								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right2"]
-									if s then s.offsetX = v end
-									applySettingsRefresh()
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["right2"]
+								if s then s.offsetX = v end
+								applySettingsRefresh()
 								end,
 							},
 							rightOffsetY2 = {
-							disabled = makeSlotDisabledFunc("right", 2),
+								disabled = makeSlotDisabledFunc("right", 2),
 								order = 2.22,
 								name = LPS:L("Right Offset Y 2"),
 								type = "range",
@@ -1642,68 +1651,68 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								max = 200,
 								step = 1,
 								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right2"]
-									return tonumber(s and s.offsetY) or 0
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["right2"]
+								return tonumber(s and s.offsetY) or 0
 								end,
 								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right2"]
-									if s then s.offsetY = v end
-									applySettingsRefresh()
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["right2"]
+								if s then s.offsetY = v end
+								applySettingsRefresh()
 								end,
 							},
 							leftSlot3 = {
-							disabled = makeSlotDisabledFunc("left", 3),
+								disabled = makeSlotDisabledFunc("left", 3),
 								order = 3.1,
 								name = LPS:L("Left Slot 3"),
 								type = "select",
 								values = function()
-									local vals = { none = LPS:L("None") }
-										-- coords/time/gold/system включены в GetSlotKeyList()
-										-- и идут в общем алфавитном порядке
-									if LPS.GetSlotKeyList then
-										for _, k in ipairs(LPS:GetSlotKeyList()) do
-																						-- Название ВСЕГДА локализованное (язык клиента): берём из реестра через GetDatatextName.
-											vals[k] = LPS:GetDatatextName(k)
-										end
-									end
-									return vals
+								local vals = { none = LPS:L("None") }
+								-- coords/time/gold/system включены в GetSlotKeyList()
+								-- и идут в общем алфавитном порядке
+								if LPS.GetSlotKeyList then
+								for _, k in ipairs(LPS:GetSlotKeyList()) do
+								-- Название ВСЕГДА локализованное (язык клиента): берём из реестра через GetDatatextName.
+								vals[k] = LPS:GetDatatextName(k)
+								end
+								end
+								return vals
 								end,
 								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left3"]
-									local v = (s and s.frame) or "NONE"
-									if v == "NONE" or v == "None" or v == "" or v == nil then
-										return "none"
-									end
-									return v
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["left3"]
+								local v = (s and s.frame) or "NONE"
+								if v == "NONE" or v == "None" or v == "" or v == nil then
+								return "none"
+								end
+								return v
 								end,
 								set = function(_, v)
-									local db = getDb()
-									db.layout.sideSlots = db.layout.sideSlots or {}
-									local ss = db.layout.sideSlots
-									ss.left3 = ss.left3 or { offsetX = 0, offsetY = 0 }
-									local cur = ss.left3
-									v = v or "none"
-									if v ~= "none" then
-										for _, other in pairs(ss) do
-											if type(other) == "table" and other ~= cur and other.frame == v then
-												other.frame = "NONE"
-											end
-										end
-									end
-									cur.frame = (v == "none") and "NONE" or v
-									-- Помечаем слот «тронутым» (см. комментарий выше): иначе ApplyDefaults
-									-- вернёт в него панель по умолчанию и сотрёт выбор пользователя.
-									local _ss = getDb().layout.sideSlots
-									_ss.userTouched = _ss.userTouched or {}
-									_ss.userTouched["left3"] = true
-									applySettingsRefresh()
+								local db = getDb()
+								db.layout.sideSlots = db.layout.sideSlots or {}
+								local ss = db.layout.sideSlots
+								ss.left3 = ss.left3 or { offsetX = 0, offsetY = 0 }
+								local cur = ss.left3
+								v = v or "none"
+								if v ~= "none" then
+								for _, other in pairs(ss) do
+								if type(other) == "table" and other ~= cur and other.frame == v then
+								other.frame = "NONE"
+								end
+								end
+								end
+								cur.frame = (v == "none") and "NONE" or v
+								-- Помечаем слот «тронутым» (см. комментарий выше): иначе ApplyDefaults
+								-- вернёт в него панель по умолчанию и сотрёт выбор пользователя.
+								local _ss = getDb().layout.sideSlots
+								_ss.userTouched = _ss.userTouched or {}
+								_ss.userTouched["left3"] = true
+								applySettingsRefresh()
 								end,
 							},
 							leftOffsetX3 = {
-							disabled = makeSlotDisabledFunc("left", 3),
+								disabled = makeSlotDisabledFunc("left", 3),
 								order = 3.11,
 								name = LPS:L("Left Offset X 3"),
 								type = "range",
@@ -1711,19 +1720,19 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								max = 200,
 								step = 1,
 								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left3"]
-									return tonumber(s and s.offsetX) or 0
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["left3"]
+								return tonumber(s and s.offsetX) or 0
 								end,
 								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left3"]
-									if s then s.offsetX = v end
-									applySettingsRefresh()
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["left3"]
+								if s then s.offsetX = v end
+								applySettingsRefresh()
 								end,
 							},
 							leftOffsetY3 = {
-							disabled = makeSlotDisabledFunc("left", 3),
+								disabled = makeSlotDisabledFunc("left", 3),
 								order = 3.12,
 								name = LPS:L("Left Offset Y 3"),
 								type = "range",
@@ -1731,68 +1740,68 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								max = 200,
 								step = 1,
 								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left3"]
-									return tonumber(s and s.offsetY) or 0
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["left3"]
+								return tonumber(s and s.offsetY) or 0
 								end,
 								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["left3"]
-									if s then s.offsetY = v end
-									applySettingsRefresh()
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["left3"]
+								if s then s.offsetY = v end
+								applySettingsRefresh()
 								end,
 							},
 							rightSlot3 = {
-							disabled = makeSlotDisabledFunc("right", 3),
+								disabled = makeSlotDisabledFunc("right", 3),
 								order = 3.2,
 								name = LPS:L("Right Slot 3"),
 								type = "select",
 								values = function()
-									local vals = { none = LPS:L("None") }
-										-- coords/time/gold/system включены в GetSlotKeyList()
-										-- и идут в общем алфавитном порядке
-									if LPS.GetSlotKeyList then
-										for _, k in ipairs(LPS:GetSlotKeyList()) do
-																						-- Название ВСЕГДА локализованное (язык клиента): берём из реестра через GetDatatextName.
-											vals[k] = LPS:GetDatatextName(k)
-										end
-									end
-									return vals
+								local vals = { none = LPS:L("None") }
+								-- coords/time/gold/system включены в GetSlotKeyList()
+								-- и идут в общем алфавитном порядке
+								if LPS.GetSlotKeyList then
+								for _, k in ipairs(LPS:GetSlotKeyList()) do
+								-- Название ВСЕГДА локализованное (язык клиента): берём из реестра через GetDatatextName.
+								vals[k] = LPS:GetDatatextName(k)
+								end
+								end
+								return vals
 								end,
 								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right3"]
-									local v = (s and s.frame) or "NONE"
-									if v == "NONE" or v == "None" or v == "" or v == nil then
-										return "none"
-									end
-									return v
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["right3"]
+								local v = (s and s.frame) or "NONE"
+								if v == "NONE" or v == "None" or v == "" or v == nil then
+								return "none"
+								end
+								return v
 								end,
 								set = function(_, v)
-									local db = getDb()
-									db.layout.sideSlots = db.layout.sideSlots or {}
-									local ss = db.layout.sideSlots
-									ss.right3 = ss.right3 or { offsetX = 0, offsetY = 0 }
-									local cur = ss.right3
-									v = v or "none"
-									if v ~= "none" then
-										for _, other in pairs(ss) do
-											if type(other) == "table" and other ~= cur and other.frame == v then
-												other.frame = "NONE"
-											end
-										end
-									end
-									cur.frame = (v == "none") and "NONE" or v
-									-- Помечаем слот «тронутым» (см. комментарий выше): иначе ApplyDefaults
-									-- вернёт в него панель по умолчанию и сотрёт выбор пользователя.
-									local _ss = getDb().layout.sideSlots
-									_ss.userTouched = _ss.userTouched or {}
-									_ss.userTouched["right3"] = true
-									applySettingsRefresh()
+								local db = getDb()
+								db.layout.sideSlots = db.layout.sideSlots or {}
+								local ss = db.layout.sideSlots
+								ss.right3 = ss.right3 or { offsetX = 0, offsetY = 0 }
+								local cur = ss.right3
+								v = v or "none"
+								if v ~= "none" then
+								for _, other in pairs(ss) do
+								if type(other) == "table" and other ~= cur and other.frame == v then
+								other.frame = "NONE"
+								end
+								end
+								end
+								cur.frame = (v == "none") and "NONE" or v
+								-- Помечаем слот «тронутым» (см. комментарий выше): иначе ApplyDefaults
+								-- вернёт в него панель по умолчанию и сотрёт выбор пользователя.
+								local _ss = getDb().layout.sideSlots
+								_ss.userTouched = _ss.userTouched or {}
+								_ss.userTouched["right3"] = true
+								applySettingsRefresh()
 								end,
 							},
 							rightOffsetX3 = {
-							disabled = makeSlotDisabledFunc("right", 3),
+								disabled = makeSlotDisabledFunc("right", 3),
 								order = 3.21,
 								name = LPS:L("Right Offset X 3"),
 								type = "range",
@@ -1800,19 +1809,19 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								max = 200,
 								step = 1,
 								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right3"]
-									return tonumber(s and s.offsetX) or 0
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["right3"]
+								return tonumber(s and s.offsetX) or 0
 								end,
 								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right3"]
-									if s then s.offsetX = v end
-									applySettingsRefresh()
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["right3"]
+								if s then s.offsetX = v end
+								applySettingsRefresh()
 								end,
 							},
 							rightOffsetY3 = {
-							disabled = makeSlotDisabledFunc("right", 3),
+								disabled = makeSlotDisabledFunc("right", 3),
 								order = 3.22,
 								name = LPS:L("Right Offset Y 3"),
 								type = "range",
@@ -1820,15 +1829,15 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								max = 200,
 								step = 1,
 								get = function()
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right3"]
-									return tonumber(s and s.offsetY) or 0
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["right3"]
+								return tonumber(s and s.offsetY) or 0
 								end,
 								set = function(_, v)
-									local ss = getDb().layout.sideSlots
-									local s = ss and ss["right3"]
-									if s then s.offsetY = v end
-									applySettingsRefresh()
+								local ss = getDb().layout.sideSlots
+								local s = ss and ss["right3"]
+								if s then s.offsetY = v end
+								applySettingsRefresh()
 								end,
 							},
 						},
@@ -1846,8 +1855,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								desc = LPS:L("Automatically manage spacing between panels."),
 								get = function() return getDb().layout.spacingAuto end,
 								set = function(_, v)
-									getDb().layout.spacingAuto = v
-									applySettingsRefresh()
+								getDb().layout.spacingAuto = v
+								applySettingsRefresh()
 								end,
 							},
 							spacingManual = {
@@ -1861,8 +1870,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								disabled = function() return getDb().layout.spacingAuto end,
 								get = function() return getDb().layout.spacingManual end,
 								set = function(_, v)
-									getDb().layout.spacingManual = v
-									applySettingsRefresh()
+								getDb().layout.spacingManual = v
+								applySettingsRefresh()
 								end,
 							},
 						},
@@ -1881,8 +1890,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								values = strataValues,
 								get = function() return getDb().layout.frameStrata end,
 								set = function(_, v)
-									getDb().layout.frameStrata = v
-									applySettingsRefresh()
+								getDb().layout.frameStrata = v
+								applySettingsRefresh()
 								end,
 							},
 							frameLevel = {
@@ -1895,8 +1904,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								step = 1,
 								get = function() return tonumber(getDb().layout.frameLevel) or 1 end,
 								set = function(_, v)
-									getDb().layout.frameLevel = v
-									applySettingsRefresh()
+								getDb().layout.frameLevel = v
+								applySettingsRefresh()
 								end,
 							},
 							spacer1_fontSize = {
@@ -1914,10 +1923,10 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								step = 1,
 								get = function() return getDb().settings.fontSize end,
 								set = function(_, v)
-									getDb().settings.fontSize = v
-									if LPS.ApplyStyle then
-										LPS:ApplyStyle()
-									end
+								getDb().settings.fontSize = v
+								if LPS.ApplyStyle then
+								LPS:ApplyStyle()
+								end
 								end,
 							},
 							borderSize = {
@@ -1930,10 +1939,10 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								step = 1,
 								get = function() return getDb().settings.borderSize end,
 								set = function(_, v)
-									getDb().settings.borderSize = v
-									if LPS.ApplyStyle then
-										LPS:ApplyStyle()
-									end
+								getDb().settings.borderSize = v
+								if LPS.ApplyStyle then
+								LPS:ApplyStyle()
+								end
 								end,
 							},
 							spacer1_bgEnable = {
@@ -1948,10 +1957,10 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								order = 2.1,
 								get = function() return getDb().settings.colors.bgEnable end,
 								set = function(_, v)
-									getDb().settings.colors.bgEnable = v
-									if LPS.ApplyStyle then
-										LPS:ApplyStyle()
-									end
+								getDb().settings.colors.bgEnable = v
+								if LPS.ApplyStyle then
+								LPS:ApplyStyle()
+								end
 								end,
 							},
 							bgColor = {
@@ -1961,15 +1970,15 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								order = 2.2,
 								hasAlpha = true,
 								get = function()
-									local c = getDb().settings.colors.bg
-									return c[1], c[2], c[3], c[4]
+								local c = getDb().settings.colors.bg
+								return c[1], c[2], c[3], c[4]
 								end,
 								set = function(_, r, g, b, a)
-									local c = getDb().settings.colors.bg
-									c[1], c[2], c[3], c[4] = r, g, b, a
-									if LPS.ApplyStyle then
-										LPS:ApplyStyle()
-									end
+								local c = getDb().settings.colors.bg
+								c[1], c[2], c[3], c[4] = r, g, b, a
+								if LPS.ApplyStyle then
+								LPS:ApplyStyle()
+								end
 								end,
 							},
 							borderColor = {
@@ -1979,15 +1988,15 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								order = 3.3,
 								hasAlpha = true,
 								get = function()
-									local c = getDb().settings.colors.border
-									return c[1], c[2], c[3], c[4]
+								local c = getDb().settings.colors.border
+								return c[1], c[2], c[3], c[4]
 								end,
 								set = function(_, r, g, b, a)
-									local c = getDb().settings.colors.border
-									c[1], c[2], c[3], c[4] = r, g, b, a
-									if LPS.ApplyStyle then
-										LPS:ApplyStyle()
-									end
+								local c = getDb().settings.colors.border
+								c[1], c[2], c[3], c[4] = r, g, b, a
+								if LPS.ApplyStyle then
+								LPS:ApplyStyle()
+								end
 								end,
 							},
 						},
@@ -2009,8 +2018,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								},
 								get = function() return getDb().layout.customColor end,
 								set = function(_, v)
-									getDb().layout.customColor = v
-									applySettingsRefresh()
+								getDb().layout.customColor = v
+								applySettingsRefresh()
 								end,
 							},
 							userColor = {
@@ -2020,17 +2029,17 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								type = "color",
 								disabled = function() return getDb().layout.customColor ~= 1 end,
 								get = function()
-									local c = getDb().layout.userColor
-									return (c and c.r) or 1, (c and c.g) or 1, (c and c.b) or 1
+								local c = getDb().layout.userColor
+								return (c and c.r) or 1, (c and c.g) or 1, (c and c.b) or 1
 								end,
 								set = function(_, r, g, b)
-									local c = getDb().layout.userColor
-									if not c then
-										c = { r = 1, g = 1, b = 1 }
-										getDb().layout.userColor = c
-									end
-									c.r, c.g, c.b = r, g, b
-									applySettingsRefresh()
+								local c = getDb().layout.userColor
+								if not c then
+								c = { r = 1, g = 1, b = 1 }
+								getDb().layout.userColor = c
+								end
+								c.r, c.g, c.b = r, g, b
+								applySettingsRefresh()
 								end,
 							},
 						},
@@ -2068,19 +2077,19 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Generate export string"),
 								desc = LPS:L("Generate an export string for the current profile."),
 								disabled = function()
-									return not (AceSerializer and LPS.db and LPS.db.profile)
+								return not (AceSerializer and LPS.db and LPS.db.profile)
 								end,
 								func = function()
-									local serialString = AceSerializer:Serialize(LPS.db.profile or {})
-									if LibDeflate and LibDeflate.CompressDeflate and LibDeflate.EncodeForPrint then
-										local compressedData = LibDeflate:CompressDeflate(serialString, { level = 5 })
-										local printableString = compressedData and LibDeflate:EncodeForPrint(compressedData)
-										if printableString then
-											LPS.Options._profileExportText = PROFILE_EXPORT_PREFIX .. printableString
-											return
-										end
-									end
-									LPS.Options._profileExportText = serialString
+								local serialString = AceSerializer:Serialize(LPS.db.profile or {})
+								if LibDeflate and LibDeflate.CompressDeflate and LibDeflate.EncodeForPrint then
+								local compressedData = LibDeflate:CompressDeflate(serialString, { level = 5 })
+								local printableString = compressedData and LibDeflate:EncodeForPrint(compressedData)
+								if printableString then
+								LPS.Options._profileExportText = PROFILE_EXPORT_PREFIX .. printableString
+								return
+								end
+								end
+								LPS.Options._profileExportText = serialString
 								end,
 							},
 							text = {
@@ -2092,7 +2101,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								multiline = 12,
 								dialogControl = "LPSMultiLineEditBoxNoButton",
 								disabled = function()
-									return not (AceSerializer and LPS.db and LPS.db.profile)
+								return not (AceSerializer and LPS.db and LPS.db.profile)
 								end,
 								get = function() return tostring(LPS.Options._profileExportText or "") end,
 								set = function(_, v) LPS.Options._profileExportText = v end,
@@ -2116,7 +2125,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								desc = LPS:L("Name of the profile to import into."),
 								dialogControl = "LPSEditBoxNoButton",
 								disabled = function()
-									return not (AceSerializer and LPS.db and LPS.db.SetProfile and LPS.db.profile)
+								return not (AceSerializer and LPS.db and LPS.db.SetProfile and LPS.db.profile)
 								end,
 								get = function() return tostring(LPS.Options._profileImportAsName or "") end,
 								set = function(_, v) LPS.Options._profileImportAsName = v end,
@@ -2130,7 +2139,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								multiline = 12,
 								dialogControl = "LPSMultiLineEditBoxNoButton",
 								disabled = function()
-									return not (AceSerializer and LPS.db and LPS.db.profile)
+								return not (AceSerializer and LPS.db and LPS.db.profile)
 								end,
 								get = function() return tostring(LPS.Options._profileImportText or "") end,
 								set = function(_, v) LPS.Options._profileImportText = v end,
@@ -2141,44 +2150,44 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Import"),
 								desc = LPS:L("Import the string into the selected profile name."),
 								disabled = function()
-									return not (AceSerializer and LPS.db and LPS.db.profile and LPS.db.SetProfile)
+								return not (AceSerializer and LPS.db and LPS.db.profile and LPS.db.SetProfile)
 								end,
 								func = function()
-									local s = tostring(LPS.Options._profileImportText or "")
-									if s == "" then return end
-									local importName = tostring(LPS.Options._profileImportAsName or "")
-									local currentProfile = LPS.db and LPS.db.GetCurrentProfile and LPS.db:GetCurrentProfile()
-									if importName == "" then
-										importName = tostring(currentProfile or "")
-									end
-									if importName == "" then return end
-									local decodeString = s
-									if LibDeflate and LibDeflate.DecodeForPrint and LibDeflate.DecompressDeflate and s:sub(1, #PROFILE_EXPORT_PREFIX) == PROFILE_EXPORT_PREFIX then
-										local encoded = s:sub(#PROFILE_EXPORT_PREFIX + 1)
-										encoded = encoded:gsub("%s+", "")
-										local compressed = LibDeflate:DecodeForPrint(encoded)
-										if not compressed then return end
-										local decompressed = LibDeflate:DecompressDeflate(compressed)
-										if not decompressed then return end
-										decodeString = decompressed
-									end
-									local ok, t = AceSerializer:Deserialize(decodeString)
-									if not ok or type(t) ~= "table" then
-										return
-									end
-									if currentProfile and importName ~= currentProfile then
-										LPS.db:SetProfile(importName)
-									end
-									local p2 = LPS.db.profile
-									for k in pairs(p2) do
-										p2[k] = nil
-									end
-									for k, v in pairs(t) do
-										p2[k] = deepCopy(v)
-									end
-									if LPS.RefreshAfterProfileChange then
-										LPS:RefreshAfterProfileChange()
-									end
+								local s = tostring(LPS.Options._profileImportText or "")
+								if s == "" then return end
+								local importName = tostring(LPS.Options._profileImportAsName or "")
+								local currentProfile = LPS.db and LPS.db.GetCurrentProfile and LPS.db:GetCurrentProfile()
+								if importName == "" then
+								importName = tostring(currentProfile or "")
+								end
+								if importName == "" then return end
+								local decodeString = s
+								if LibDeflate and LibDeflate.DecodeForPrint and LibDeflate.DecompressDeflate and s:sub(1, #PROFILE_EXPORT_PREFIX) == PROFILE_EXPORT_PREFIX then
+								local encoded = s:sub(#PROFILE_EXPORT_PREFIX + 1)
+								encoded = encoded:gsub("%s+", "")
+								local compressed = LibDeflate:DecodeForPrint(encoded)
+								if not compressed then return end
+								local decompressed = LibDeflate:DecompressDeflate(compressed)
+								if not decompressed then return end
+								decodeString = decompressed
+								end
+								local ok, t = AceSerializer:Deserialize(decodeString)
+								if not ok or type(t) ~= "table" then
+								return
+								end
+								if currentProfile and importName ~= currentProfile then
+								LPS.db:SetProfile(importName)
+								end
+								local p2 = LPS.db.profile
+								for k in pairs(p2) do
+								p2[k] = nil
+								end
+								for k, v in pairs(t) do
+								p2[k] = deepCopy(v)
+								end
+								if LPS.RefreshAfterProfileChange then
+								LPS:RefreshAfterProfileChange()
+								end
 								end,
 							},
 						},
