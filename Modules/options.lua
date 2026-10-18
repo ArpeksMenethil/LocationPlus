@@ -1980,179 +1980,179 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								set = function(_, v) getDb().tooltips.time.playedTime = v end,
 							}
 						},
-						quests = {
-							order = 50,
-							type = "group",
-							name = LPS:L("Quest Log"),
-							inline = true,
-							args = {
-								enable = {
-									order = 1,
-									name = LPS:L("Enable"),
-									desc = LPS:L("Show a tooltip when hovering over this panel."),
-									type = "toggle",
-									disabled = function() return not getDb().tooltips.visibility.enable end,
-									get = function() return getDb().tooltips.quests.enable end,
-									set = function(_, v) getDb().tooltips.quests.enable = v end,
-								},
-								maxLimit = {
-									order = 2,
-									type = "range",
-									name = LPS:L("Max entries in tooltip"),
-									min = 1,
-									max = 30,
-									step = 1,
-									disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.quests.enable end,
-									get = function() return tonumber(getDb().tooltips.quests.maxLimit) or 15 end,
-									set = function(_, v) getDb().tooltips.quests.maxLimit = math.floor(v) end,
-								},
+					},
+					quests = {
+						order = 50,
+						type = "group",
+						name = LPS:L("Quest Log"),
+						inline = true,
+						args = {
+							enable = {
+								order = 1,
+								name = LPS:L("Enable"),
+								desc = LPS:L("Show a tooltip when hovering over this panel."),
+								type = "toggle",
+								disabled = function() return not getDb().tooltips.visibility.enable end,
+								get = function() return getDb().tooltips.quests.enable end,
+								set = function(_, v) getDb().tooltips.quests.enable = v end,
+							},
+							maxLimit = {
+								order = 2,
+								type = "range",
+								name = LPS:L("Max entries in tooltip"),
+								min = 1,
+								max = 30,
+								step = 1,
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.quests.enable end,
+								get = function() return tonumber(getDb().tooltips.quests.maxLimit) or 15 end,
+								set = function(_, v) getDb().tooltips.quests.maxLimit = math.floor(v) end,
 							},
 						},
-						friends = {
-							order = 51,
-							type = "group",
-							name = LPS:L("Friends"),
-							inline = true,
-							args = {
-								enable = {
-									order = 1,
-									name = LPS:L("Enable"),
-									desc = LPS:L("Show a tooltip when hovering over this panel."),
-									type = "toggle",
-									disabled = function() return not getDb().tooltips.visibility.enable end,
-									get = function() return getDb().tooltips.friends.enable end,
-									set = function(_, v) getDb().tooltips.friends.enable = v end,
-								},
-								maxLimit = {
-									order = 2,
-									type = "range",
-									name = LPS:L("Max entries in tooltip"),
-									min = 1,
-									max = 30,
-									step = 1,
-									disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.friends.enable end,
-									get = function() return tonumber(getDb().tooltips.friends.maxLimit) or 15 end,
-									set = function(_, v) getDb().tooltips.friends.maxLimit = math.floor(v) end,
-								},
+					},
+					friends = {
+						order = 51,
+						type = "group",
+						name = LPS:L("Friends"),
+						inline = true,
+						args = {
+							enable = {
+								order = 1,
+								name = LPS:L("Enable"),
+								desc = LPS:L("Show a tooltip when hovering over this panel."),
+								type = "toggle",
+								disabled = function() return not getDb().tooltips.visibility.enable end,
+								get = function() return getDb().tooltips.friends.enable end,
+								set = function(_, v) getDb().tooltips.friends.enable = v end,
+							},
+							maxLimit = {
+								order = 2,
+								type = "range",
+								name = LPS:L("Max entries in tooltip"),
+								min = 1,
+								max = 30,
+								step = 1,
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.friends.enable end,
+								get = function() return tonumber(getDb().tooltips.friends.maxLimit) or 15 end,
+								set = function(_, v) getDb().tooltips.friends.maxLimit = math.floor(v) end,
 							},
 						},
-						guild = {
-							order = 52,
-							type = "group",
-							name = LPS:L("Guild"),
-							inline = true,
-							args = {
-								enable = {
-									order = 1,
-									name = LPS:L("Enable"),
-									desc = LPS:L("Show a tooltip when hovering over this panel."),
-									type = "toggle",
-									disabled = function() return not getDb().tooltips.visibility.enable end,
-									get = function() return getDb().tooltips.guild.enable end,
-									set = function(_, v) getDb().tooltips.guild.enable = v end,
-								},
-								maxLimit = {
-									order = 2,
-									type = "range",
-									name = LPS:L("Max entries in tooltip"),
-									min = 1,
-									max = 30,
-									step = 1,
-									disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.guild.enable end,
-									get = function() return tonumber(getDb().tooltips.guild.maxLimit) or 15 end,
-									set = function(_, v) getDb().tooltips.guild.maxLimit = math.floor(v) end,
-								},
+					},
+					guild = {
+						order = 52,
+						type = "group",
+						name = LPS:L("Guild"),
+						inline = true,
+						args = {
+							enable = {
+								order = 1,
+								name = LPS:L("Enable"),
+								desc = LPS:L("Show a tooltip when hovering over this panel."),
+								type = "toggle",
+								disabled = function() return not getDb().tooltips.visibility.enable end,
+								get = function() return getDb().tooltips.guild.enable end,
+								set = function(_, v) getDb().tooltips.guild.enable = v end,
+							},
+							maxLimit = {
+								order = 2,
+								type = "range",
+								name = LPS:L("Max entries in tooltip"),
+								min = 1,
+								max = 30,
+								step = 1,
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.guild.enable end,
+								get = function() return tonumber(getDb().tooltips.guild.maxLimit) or 15 end,
+								set = function(_, v) getDb().tooltips.guild.maxLimit = math.floor(v) end,
 							},
 						},
-						experience = {
-							order = 53,
-							type = "group",
-							name = LPS:L("Experience"),
-							inline = true,
-							args = {
-								enable = {
-									order = 1,
-									name = LPS:L("Enable"),
-									desc = LPS:L("Show a tooltip when hovering over this panel."),
-									type = "toggle",
-									disabled = function() return not getDb().tooltips.visibility.enable end,
-									get = function() return getDb().tooltips.experience.enable end,
-									set = function(_, v) getDb().tooltips.experience.enable = v end,
+					},
+					experience = {
+						order = 53,
+						type = "group",
+						name = LPS:L("Experience"),
+						inline = true,
+						args = {
+							enable = {
+								order = 1,
+								name = LPS:L("Enable"),
+								desc = LPS:L("Show a tooltip when hovering over this panel."),
+								type = "toggle",
+								disabled = function() return not getDb().tooltips.visibility.enable end,
+								get = function() return getDb().tooltips.experience.enable end,
+								set = function(_, v) getDb().tooltips.experience.enable = v end,
+							},
+							display = {
+								order = 2,
+								type = "select",
+								name = LPS:L("Display"),
+								values = {
+									PERCENT = LPS:L("Percent"),
+									CURMAX = LPS:L("Current / Max"),
+									CUR = LPS:L("Current"),
+									REM = LPS:L("Remaining"),
 								},
-								display = {
-									order = 2,
-									type = "select",
-									name = LPS:L("Display"),
-									values = {
-										PERCENT = LPS:L("Percent"),
-										CURMAX = LPS:L("Current / Max"),
-										CUR = LPS:L("Current"),
-										REM = LPS:L("Remaining"),
-									},
-									disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.experience.enable end,
-									get = function() return getDb().tooltips.experience.display or "PERCENT" end,
-									set = function(_, v)
-										getDb().tooltips.experience.display = v
-										if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end,
-								},
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.experience.enable end,
+								get = function() return getDb().tooltips.experience.display or "PERCENT" end,
+								set = function(_, v)
+									getDb().tooltips.experience.display = v
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
 							},
 						},
-						bags = {
-							order = 54,
-							type = "group",
-							name = LPS:L("Bags"),
-							inline = true,
-							args = {
-								enable = {
-									order = 1,
-									name = LPS:L("Enable"),
-									desc = LPS:L("Show a tooltip when hovering over this panel."),
-									type = "toggle",
-									disabled = function() return not getDb().tooltips.visibility.enable end,
-									get = function() return getDb().tooltips.bags.enable end,
-									set = function(_, v) getDb().tooltips.bags.enable = v end,
+					},
+					bags = {
+						order = 54,
+						type = "group",
+						name = LPS:L("Bags"),
+						inline = true,
+						args = {
+							enable = {
+								order = 1,
+								name = LPS:L("Enable"),
+								desc = LPS:L("Show a tooltip when hovering over this panel."),
+								type = "toggle",
+								disabled = function() return not getDb().tooltips.visibility.enable end,
+								get = function() return getDb().tooltips.bags.enable end,
+								set = function(_, v) getDb().tooltips.bags.enable = v end,
+							},
+							display = {
+								order = 2,
+								type = "select",
+								name = LPS:L("Display"),
+								values = {
+									USED_TOTAL = LPS:L("Used / Total"),
+									FREE = LPS:L("Free slots"),
+									USED = LPS:L("Used slots"),
 								},
-								display = {
-									order = 2,
-									type = "select",
-									name = LPS:L("Display"),
-									values = {
-										USED_TOTAL = LPS:L("Used / Total"),
-										FREE = LPS:L("Free slots"),
-										USED = LPS:L("Used slots"),
-									},
-									disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.bags.enable end,
-									get = function() return getDb().tooltips.bags.display or "USED_TOTAL" end,
-									set = function(_, v)
-										getDb().tooltips.bags.display = v
-										if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end,
-								},
-								noLabel = {
-									order = 3,
-									type = "toggle",
-									name = LPS:L("Hide label"),
-									width = "half",
-									disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.bags.enable end,
-									get = function() return getDb().tooltips.bags.noLabel or false end,
-									set = function(_, v)
-										getDb().tooltips.bags.noLabel = v and true or false
-										if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end,
-								},
-								label = {
-									order = 4,
-									type = "input",
-									name = LPS:L("Custom label"),
-									width = "half",
-									disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.bags.enable or getDb().tooltips.bags.noLabel end,
-									get = function() return getDb().tooltips.bags.label or "" end,
-									set = function(_, v)
-										getDb().tooltips.bags.label = v or ""
-										if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
-									end,
-								},
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.bags.enable end,
+								get = function() return getDb().tooltips.bags.display or "USED_TOTAL" end,
+								set = function(_, v)
+									getDb().tooltips.bags.display = v
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							noLabel = {
+								order = 3,
+								type = "toggle",
+								name = LPS:L("Hide label"),
+								width = "half",
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.bags.enable end,
+								get = function() return getDb().tooltips.bags.noLabel or false end,
+								set = function(_, v)
+									getDb().tooltips.bags.noLabel = v and true or false
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
+							},
+							label = {
+								order = 4,
+								type = "input",
+								name = LPS:L("Custom label"),
+								width = "half",
+								disabled = function() return not getDb().tooltips.visibility.enable or not getDb().tooltips.bags.enable or getDb().tooltips.bags.noLabel end,
+								get = function() return getDb().tooltips.bags.label or "" end,
+								set = function(_, v)
+									getDb().tooltips.bags.label = v or ""
+									if LPS.ScheduleRefresh then LPS:ScheduleRefresh() end
+								end,
 							},
 						},
 					},
