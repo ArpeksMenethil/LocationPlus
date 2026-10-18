@@ -12,7 +12,7 @@ function LPS:CreateCoordsFrame()
 		hidden = true,
 		parent = LPS.frame.location,
 		anchor = {"RIGHT", LPS.frame.location, "LEFT", -5, 0},
-		padding = {((db.layout and db.layout.dtPaddingX) or 10), ((db.layout and db.layout.dtPaddingY) or 6)},
+		padding = {((db.layout and db.layout.dtPaddingX) or 20), ((db.layout and db.layout.dtPaddingY) or 7)},
 		fontSize = db.settings.fontSize or 12,
 		bgColor = {LPS:GetColor("bg")},
 		borderColor = {LPS:GetColor("border")},
