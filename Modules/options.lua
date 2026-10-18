@@ -555,7 +555,6 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								},
 							},
 						},
-					},
 					panelDisplayGroup = {
 						order = 3,
 						type = "group",
@@ -620,6 +619,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 						},
 					},
 				},
+			},
 			tooltip = {
 				type = "group",
 				name = LPS:L("Tooltip"),
@@ -1155,6 +1155,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 							},
 						},
 					},
+				},
+			},
 			layout = {
 				type = "group",
 				name = LPS:L("Layout"),
