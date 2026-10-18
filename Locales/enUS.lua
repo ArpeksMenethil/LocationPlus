@@ -384,6 +384,7 @@ L["ilvl"] = true
 L["Frame anchor mode"] = true
 L["Side panels always grow along their edge: left panels attach to the LEFT side of the group, right panels attach to the RIGHT side. This option controls what the FIRST panel of each chain anchors to: the location panel edges (default) or the outer edges of the whole holder frame."] = true
 L["Location panel edges"] = true
+L["Location tooltip"] = true
 L["Holder outer edges"] = true
 
 -- Panel options (enable/tooltip/display/label)
@@ -403,3 +404,14 @@ L["Reset counters"] = true
 L["Damage:"] = true
 L["Healing:"] = true
 L["Time:"] = true
+
+-- Panel click tooltips (Modules/Tooltips)
+L["Open"] = true
+L["Toggle all bags"] = true
+L["Open Token frame"] = true
+L["Open character panel"] = true
+L["Open friends list"] = true
+L["Open guild frame"] = true
+L["Open mailbox"] = true
+L["Open quest log"] = true
+L["Open reputation panel"] = true
