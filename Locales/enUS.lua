@@ -379,6 +379,7 @@ L["Volume Streams"] = true
 L["XP value"] = true
 L["XP:"] = true
 L["ilvl"] = true
+L["Mobile"] = true
 
 -- Frame anchor mode (Layout -> Show tab)
 L["Frame anchor mode"] = true

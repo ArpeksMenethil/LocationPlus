@@ -283,7 +283,7 @@ L["Played Time"] = "Время игры"
 L["Show played time across all your characters (Required 'Broker: Played Time')"] = "Показать время игры для всех ваших персонажей (Required 'Broker: Played Time')"
 
 -- Info panels (DataTexts)
-L["AFK"] = "Отсутствую"
+L["AFK"] = "АФК"
 L["Agility"] = "Ловкость"
 L["Ambience"] = "Атмосфера"
 L["Armor"] = "Броня"
@@ -381,6 +381,7 @@ L["Volume Streams"] = "Аудиоканалы"
 L["XP value"] = "Значение опыта"
 L["XP:"] = "Опыт:"
 L["ilvl"] = "ilvl"
+L["Mobile"] = "Мобильный"
 
 -- Frame anchor mode (вкладка Отображение)
 L["Frame anchor mode"] = "Режим привязки фреймов"
