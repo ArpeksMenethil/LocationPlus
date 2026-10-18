@@ -14,7 +14,7 @@ do
 
 	LPS:RegisterDatatext({
 		key = "difficulty",
-		name = LPS:L("Difficulty"),
+		nameKey = "Difficulty",
 		events = { "PLAYER_DIFFICULTY_CHANGED", "LOADING_SCREEN_DISABLED", "ZONE_CHANGED_NEW_AREA" },
 		update = function(f)
 			if not GetInstanceInfo then return end

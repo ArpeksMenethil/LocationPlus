@@ -6,7 +6,7 @@ local DT = LPS._DT
 do
 	LPS:RegisterDatatext({
 		key = "guild",
-		name = LPS:L("Guild"),
+		nameKey = "Guild",
 		events = { "GUILD_ROSTER_UPDATE", "PLAYER_GUILD_UPDATE", "GUILD_MOTD", "CHAT_MSG_SYSTEM" },
 		update = function(f)
 			if not IsInGuild or not IsInGuild() then

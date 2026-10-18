@@ -6,7 +6,7 @@ local DT = LPS._DT
 do
 	LPS:RegisterDatatext({
 		key = "mail",
-		name = LPS:L("Mail"),
+		nameKey = "Mail",
 		events = { "MAIL_INBOX_UPDATE", "UPDATE_PENDING_MAIL", "MAIL_CLOSED", "MAIL_SHOW" },
 		update = function(f)
 			local has = HasNewMail and HasNewMail()

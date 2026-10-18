@@ -7,7 +7,7 @@ if not LPS then return end
 
 LPS:RegisterDatatext({
 	key = "system",
-	name = LPS:L("System"),
+	nameKey = "System",
 	ticker = 1,
 	update = function(f)
 		local fps = math.floor(GetFramerate() or 0)

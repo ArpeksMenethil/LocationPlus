@@ -716,7 +716,7 @@ function LPS:ResetAllSettingsToDefaults()
 	if LPS.frame then
 		for _, k in ipairs({ "bags", "combatIndicator",
 			"difficulty", "durability", "experience", "friends", "guild", "itemLevel", "mail",
-			"microBar", "quests", "reputation", "volume" }) do
+			"microBar", "reputation", "volume" }) do
 			local f = LPS.frame[k]
 			if f then
 				f:Hide()
@@ -1150,6 +1150,14 @@ function LPS:ApplyDefaults(db, defaults)
 				ss[side] = nil
 			elseif oldSlot ~= nil then
 				ss[side] = nil
+			end
+		end
+		-- Удалённый фрейм «Задания» (quests): панель больше не регистрируется,
+		-- поэтому чистим слоты с ней при каждой загрузке профиля — иначе
+		-- ApplyLayout молча пропустит несуществующую панель.
+		for _, slot in pairs(ss) do
+			if type(slot) == "table" and slot.frame == "quests" then
+				slot.frame = "NONE"
 			end
 		end
 		if tonumber(db.layout.slotCount) == nil then db.layout.slotCount = defL.slotCount or 3 end

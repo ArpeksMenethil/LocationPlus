@@ -34,7 +34,7 @@ do
 
 	LPS:RegisterDatatext({
 		key = "volume",
-		name = LPS:L("Volume"),
+		nameKey = "Volume",
 		events = { "CVAR_UPDATE" },
 		-- СКМ (переключение общего звука) не работал: по умолчанию
 		-- панель регистрирует только ЛКМ/ПКМ (datatexts.lua), поэтому

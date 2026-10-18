@@ -11,7 +11,7 @@ local function getDB() return LPS:GetDB() or {} end
 
 LPS:RegisterDatatext({
 key = "coords",
-name = LPS:L("Coords"),
+nameKey = "Coords",
 events = { "PLAYER_ENTERING_WORLD", "ZONE_CHANGED", "ZONE_CHANGED_NEW_AREA", "ZONE_CHANGED_INDOORS" },
 ticker = math.max(tonumber(getDB().general and getDB().general.coordsTimeUpdate) or 0.2, 0.05),
 update = function(f)

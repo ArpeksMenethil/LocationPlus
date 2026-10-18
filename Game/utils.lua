@@ -62,11 +62,11 @@ end
 
 -- Тултип-хелпер: стандартная проверка видимости подсказок
 -- Панели с отдельным конфигом в db.tooltips.<key> (location/gold/system/time
--- и перенесённые на вкладку «Подсказка» quests/friends/guild/experience/bags)
+-- и перенесённые на вкладку «Подсказка» friends/guild/experience/bags)
 -- управляются этим конфигом; для остальных панелей — настройка panels[key].tooltip.
 local PANEL_TT_KEYS = {
 	location = true, gold = true, system = true, time = true,
-	quests = true, friends = true, guild = true, experience = true, bags = true,
+	friends = true, guild = true, experience = true, bags = true,
 }
 
 -- Конфиг подсказки панели: для панелей с отдельным конфигом на вкладке

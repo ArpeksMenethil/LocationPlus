@@ -6,19 +6,22 @@ local DT = LPS._DT
 do
 	LPS:RegisterDatatext({
 		key = "experience",
-		name = LPS:L("Experience"),
+		nameKey = "Experience",
 		events = { "PLAYER_XP_UPDATE", "DISABLE_XP_GAIN", "ENABLE_XP_GAIN", "UPDATE_EXHAUSTION", "PLAYER_LEVEL_UP" },
 		update = function(f)
 			if not UnitXP or not UnitXPMax then return end
 			local level = UnitLevel("player")
 			local maxPlayer = MAX_PLAYER_LEVEL or (GetMaxLevelForPlayer and GetMaxLevelForPlayer(select(4, GetBuildInfo())))
 			if level == nil or level <= 0 or (maxPlayer and level >= maxPlayer) then
-				if f.text then f.text:SetText(MAX_LEVEL) end
+				-- На максимальном уровне — локализованное «Макс. уровень» вместо
+				-- глобального MAX_LEVEL; подсказка на этом уровне не показывается
+				-- (см. experience_tt.lua).
+				if f.text then f.text:SetText(LPS:L("Max Level")) end
 				return
 			end
 			local cur, max = UnitXP("player"), UnitXPMax("player")
 			if not max or max == 0 then
-				if f.text then f.text:SetText(MAX_LEVEL) end
+				if f.text then f.text:SetText(LPS:L("Max Level")) end
 				return
 			end
 			-- Настройка отображения живёт на вкладке Show: db.show.experience
