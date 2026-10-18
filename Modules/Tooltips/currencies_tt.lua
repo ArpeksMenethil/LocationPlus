@@ -38,5 +38,5 @@ function LPS:BuildCurrenciesTooltip(GameTooltip)
                                 tt:AddDoubleLine(LPS:L("Gold")..":", LPS:FormatMoneySmart(GetMoney() or 0), nil, nil, nil, 1, 1, 1)
 
     tt:AddLine(" ")
-    tt:AddLine(LPS:L("LMB") .. ": " .. LPS:L("Open Token frame"), 0.65, 0.65, 0.65)
+    tt:AddDoubleLine(LPS:L("LMB"), LPS:L("Open Token frame"), rB, gB, bB, rB, gB, bB)
 end

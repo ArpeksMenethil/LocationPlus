@@ -38,5 +38,5 @@ function LPS:BuildReputationTooltip(GameTooltip)
                                 end
 
     tt:AddLine(" ")
-    tt:AddLine(LPS:L("LMB") .. ": " .. LPS:L("Open reputation panel"), 0.65, 0.65, 0.65)
+    tt:AddDoubleLine(LPS:L("LMB"), LPS:L("Open reputation panel"), rB, gB, bB, rB, gB, bB)
 end

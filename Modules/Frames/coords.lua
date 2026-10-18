@@ -17,8 +17,9 @@ function LPS:CreateCoordsFrame()
 		bgColor = {LPS:GetColor("bg")},
 		borderColor = {LPS:GetColor("border")},
 		updateFunc = function(f)
-			if not f:IsShown() then return end
-
+			-- Без early-return по f:IsShown(): панель создаётся скрытой, и
+			-- проверка видимости блокировала первичное заполнение текста при
+			-- выборе панели в настройках (фрейм оставался пустым до тикера).
 			local db2 = LPS:GetDB()
 
 			local x, y = LPS:GetPlayerCoords()

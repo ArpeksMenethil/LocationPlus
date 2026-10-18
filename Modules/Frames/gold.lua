@@ -247,7 +247,12 @@ function LPS:CreateGoldFrame()
 		bgColor = {LPS:GetColor("bg")},
 		borderColor = {LPS:GetColor("border")},
 		updateFunc = function(f)
-			if not f:IsShown() then return end
+			-- ВАЖНО: здесь НЕ должно быть early-return по f:IsShown().
+			-- Панель создаётся скрытой (hidden = true) и показывается в
+			-- applyPanelVisibility; если выходить по видимости, первичные
+			-- вызовы updateFunc из ApplyLayout игнорируются и панель
+			-- остаётся пустой («выбрал Золото — оно пустое»), пока не
+			-- придёт PLAYER_MONEY или панель не обновят вручную.
 			local oldData = f.text and f.text:GetText()
 			LPS:OnPlayerMoney()
 			local data = LPS:GetGoldSessionData()

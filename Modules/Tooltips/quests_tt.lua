@@ -70,5 +70,5 @@ function LPS:BuildQuestsTooltip(GameTooltip)
                                 end
 
     tt:AddLine(" ")
-    tt:AddLine(LPS:L("LMB") .. ": " .. LPS:L("Open quest log"), 0.65, 0.65, 0.65)
+    tt:AddDoubleLine(LPS:L("LMB"), LPS:L("Open quest log"), rB, gB, bB, rB, gB, bB)
 end
