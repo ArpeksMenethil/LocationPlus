@@ -243,26 +243,6 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 		}
 	end
 
-	-- Автогенерация группы Panel Options из реестра зарегистрированных панелей
-	local MOVED_TT_PANELS = { quests = true, friends = true, guild = true, experience = true, bags = true }
-	local function buildPanelOptionsArgs()
-		local out = {}
-		local i = 1
-		local added = {}
-		local list = (LPS.GetSlotKeyList and LPS:GetSlotKeyList()) or {}
-		for _, k in ipairs(list) do
-			local def = LPS.datatexts and LPS.datatexts[k]
-			-- quests/friends/guild/experience/bags: настройки подсказок вынесены
-			-- на вкладку «Подсказка», в автогенерации не участвуют.
-			if def and not added[k] and not MOVED_TT_PANELS[k] then
-				added[k] = true
-				out[k] = makePanelOptionGroup(k, def, i)
-				i = i + 1
-			end
-		end
-		return out
-	end
-
 
 	local function getDisplayOtherValues()
 		local t = {
@@ -463,124 +443,120 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 							},
 							},
 						},
-					},
+					}
 				},
-			},
-			args_show_PLACEHOLDER = nil, -- (removed placeholder)
-		},
-		args = {
-			show = {
-				type = "group",
-				name = LPS:L("Show"),
-				order = 2,
-				args = {
-					locationGroup = {
-						order = 1,
-						type = "group",
-						name = LPS:L("Location"),
-						inline = true,
-						
-						args = {
-							zone = {
-								order = 1,
-								type = "toggle",
-								name = LPS:L("Show zone"),
-								desc = LPS:L("Show zone name on the panel."),
-								
-								get = function() return getDb().show.zone end,
-								set = function(_, v)
-									getDb().show.zone = v
-									local f = LPS.frame and LPS.frame.location
-									if f and f._lpsUpdateFunc then
-										f._lpsUpdateFunc(f)
-									end
-								end,
-							},
-							spacer1_showicon = {
-								order = 1.1,
-								type = "description",
-								name = "",
-							},
-							showicon = {
-								order = 2,
-								name = LPS:L("Crest"),
-								type = "toggle",
-								
-								disabled = function() return getDb().show.displayOther == "NONE" end,
-								get = function() return getDb().show.showicon end,
-								set = function(_, v)
-									getDb().show.showicon = v
-									local f = LPS.frame and LPS.frame.location
-									if f and f._lpsUpdateFunc then
-										f._lpsUpdateFunc(f)
-									end
-								end,
-							},
-							displayOther = {
-								order = 3,
-								name = LPS:L("Other"),
-								desc = LPS:L("Show additional info in the Location Panel"),
-								type = "select",
-								
-								values = getDisplayOtherValues,
-								get = function() return getDb().show.displayOther end,
-								set = function(_, v)
-									local values = getDisplayOtherValues()
-									if values[v] == nil then
-										v = "RLEVEL"
-									end
-									getDb().show.displayOther = v
-									local f = LPS.frame and LPS.frame.location
-									if f and f._lpsUpdateFunc then
-										f._lpsUpdateFunc(f)
-									end
-								end,
+				show = {
+					type = "group",
+					name = LPS:L("Show"),
+					order = 2,
+					args = {
+						locationGroup = {
+							order = 1,
+							type = "group",
+							name = LPS:L("Location"),
+							inline = true,
+							
+							args = {
+								zone = {
+									order = 1,
+									type = "toggle",
+									name = LPS:L("Show zone"),
+									desc = LPS:L("Show zone name on the panel."),
+									
+									get = function() return getDb().show.zone end,
+									set = function(_, v)
+										getDb().show.zone = v
+										local f = LPS.frame and LPS.frame.location
+										if f and f._lpsUpdateFunc then
+											f._lpsUpdateFunc(f)
+										end
+									end,
+								},
+								spacer1_showicon = {
+									order = 1.1,
+									type = "description",
+									name = "",
+								},
+								showicon = {
+									order = 2,
+									name = LPS:L("Crest"),
+									type = "toggle",
+									
+									disabled = function() return getDb().show.displayOther == "NONE" end,
+									get = function() return getDb().show.showicon end,
+									set = function(_, v)
+										getDb().show.showicon = v
+										local f = LPS.frame and LPS.frame.location
+										if f and f._lpsUpdateFunc then
+											f._lpsUpdateFunc(f)
+										end
+									end,
+								},
+								displayOther = {
+									order = 3,
+									name = LPS:L("Other"),
+									desc = LPS:L("Show additional info in the Location Panel"),
+									type = "select",
+									
+									values = getDisplayOtherValues,
+									get = function() return getDb().show.displayOther end,
+									set = function(_, v)
+										local values = getDisplayOtherValues()
+										if values[v] == nil then
+											v = "RLEVEL"
+										end
+										getDb().show.displayOther = v
+										local f = LPS.frame and LPS.frame.location
+										if f and f._lpsUpdateFunc then
+											f._lpsUpdateFunc(f)
+										end
+									end,
+								},
 							},
 						},
-					},
-					coordsGroup = {
-						order = 2,
-						type = "group",
-						name = LPS:L("Coords"),
-						inline = true,
-						
-						args = {
-							dig = {
-								order = 1,
-								name = LPS:L("Detailed Coords"),
-								desc = LPS:L("Adds 2 digits in the coords"),
-								type = "toggle",
-								
-								get = function() return getDb().show.dig end,
-								set = function(_, v)
-									getDb().show.dig = v
-									local f = LPS.frame and LPS.frame.coords
-									if f and f._lpsUpdateFunc then
-										f._lpsUpdateFunc(f)
-									end
-								end,
-							},
-							coordsTimeUpdate = {
-								order = 2,
-								name = LPS:L("Update Timer"),
-								desc = LPS:L("Adjust coords updates (in seconds) to avoid cpu load."),
-								type = "range",
-								
-								min = 0.05,
-								max = 1,
-								step = 0.05,
-								get = function() return getDb().general.coordsTimeUpdate end,
-								set = function(_, v)
-									getDb().general.coordsTimeUpdate = v
-									if LPS.ApplyCoordsUpdateInterval then
-										LPS:ApplyCoordsUpdateInterval()
-									end
-								end,
+						coordsGroup = {
+							order = 2,
+							type = "group",
+							name = LPS:L("Coords"),
+							inline = true,
+							
+							args = {
+								dig = {
+									order = 1,
+									name = LPS:L("Detailed Coords"),
+									desc = LPS:L("Adds 2 digits in the coords"),
+									type = "toggle",
+									
+									get = function() return getDb().show.dig end,
+									set = function(_, v)
+										getDb().show.dig = v
+										local f = LPS.frame and LPS.frame.coords
+										if f and f._lpsUpdateFunc then
+											f._lpsUpdateFunc(f)
+										end
+									end,
+								},
+								coordsTimeUpdate = {
+									order = 2,
+									name = LPS:L("Update Timer"),
+									desc = LPS:L("Adjust coords updates (in seconds) to avoid cpu load."),
+									type = "range",
+									
+									min = 0.05,
+									max = 1,
+									step = 0.05,
+									get = function() return getDb().general.coordsTimeUpdate end,
+									set = function(_, v)
+										getDb().general.coordsTimeUpdate = v
+										if LPS.ApplyCoordsUpdateInterval then
+											LPS:ApplyCoordsUpdateInterval()
+										end
+									end,
+								},
 							},
 						},
 					},
 				},
-			},
 			tooltip = {
 				type = "group",
 				name = LPS:L("Tooltip"),
@@ -1214,14 +1190,6 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 				name = LPS:L("Layout"),
 				order = 4,
 				args = {
-					panelOptions = {
-						order = 4,
-						type = "group",
-						name = LPS:L("Panel Options"),
-						desc = LPS:L("Individual settings for info panels."),
-						inline = true,
-						args = buildPanelOptionsArgs(),
-					},
 					chainAnchor = {
 						order = 3,
 						type = "select",
@@ -2311,36 +2279,36 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 		if not rootRegistered then
 			rootRegistered = true
 			local ok, err = pcall(AceConfig.RegisterOptionsTable, AceConfig, LPS.Options.aceAppName, options)
-			if ok then
-				AceDialog:AddToBlizOptions(LPS.Options.aceAppName, LPS.addon.title)
-			else
+			-- if ok then
+			-- 	AceDialog:AddToBlizOptions(LPS.Options.aceAppName, LPS.addon.title)
+			-- else
 				-- The registry validates every value of the table; if a single
 				-- value has an unsupported type (e.g. userdata leaked into the
 				-- table by another addon), fall back to a sanitized deep copy
 				-- that keeps only cleanable values and re-registers it.
-				local function sanitize(v)
-					local t = type(v)
-					if t == "function" or t == "number" or t == "boolean" or t == "string" then
-						return v
-					elseif t == "table" then
-						local out = {}
-						for k, val in pairs(v) do
-							if type(k) == "string" or type(k) == "number" then
-								out[k] = sanitize(val)
-							end
-						end
-						return out
-					end
-					return nil
-				end
-				local copy = sanitize(options)
-				local ok2, err2 = pcall(AceConfig.RegisterOptionsTable, AceConfig, LPS.Options.aceAppName, copy)
-				if ok2 then
-					AceDialog:AddToBlizOptions(LPS.Options.aceAppName, LPS.addon.title)
-				elseif LPS.DEBUG then
-					print("LPS: RegisterOptionsTable failed:", tostring(err), "/", tostring(err2))
-				end
-			end
+			-- 	local function sanitize(v)
+			-- 		local t = type(v)
+			-- 		if t == "function" or t == "number" or t == "boolean" or t == "string" then
+			-- 			return v
+			-- 		elseif t == "table" then
+			-- 			local out = {}
+			-- 			for k, val in pairs(v) do
+			-- 				if type(k) == "string" or type(k) == "number" then
+			-- 					out[k] = sanitize(val)
+			-- 				end
+			-- 			end
+			-- 			return out
+			-- 		end
+			-- 		return nil
+			-- 	end
+			-- 	local copy = sanitize(options)
+			-- 	local ok2, err2 = pcall(AceConfig.RegisterOptionsTable, AceConfig, LPS.Options.aceAppName, copy)
+			-- 	if ok2 then
+			-- 		AceDialog:AddToBlizOptions(LPS.Options.aceAppName, LPS.addon.title)
+			-- 	elseif LPS.DEBUG then
+			-- 		print("LPS: RegisterOptionsTable failed:", tostring(err), "/", tostring(err2))
+			-- 	end
+			-- end
 		end
 		if not subCategoriesRegistered then
 			subCategoriesRegistered = true
