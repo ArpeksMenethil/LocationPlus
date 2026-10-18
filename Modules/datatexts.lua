@@ -14,39 +14,55 @@ local RESERVED_SLOT_KEYS = { coords = true, time = true, gold = true, system = t
 local registry = {}
 LPS.datatexts = registry
 
--- Порядок панелей в списках выбора и в настройках
-local orderList = {
-	"coords",          -- существующая
-	"bags",            -- Bags
-	"combatIndicator", -- Combat Indicator
-	"combatTime",      -- Combat/Arena Time
-	"currencies",      -- Currencies
-	"dps",             -- DPS
-	"difficulty",      -- Difficulty
-	"durability",      -- Durability
-	"experience",      -- Experience
-	"friends",         -- Friends
-	"guild",           -- Guild
-	"hps",             -- HPS
-	"itemLevel",       -- Item Level
-	"mail",            -- Mail
-	"microBar",        -- Micro Bar
-	"quests",          -- Quests
-	"reputation",      -- Reputation
-	"volume",          -- Volume
-	"armor",           -- Armor
-	"attackPower",     -- Attack Power
-	"spellPower",      -- Spell Power
-	"healPower",       -- Heal Power
-	"crit",            -- Crit Chance
-	"haste",           -- Haste
-	"mastery",         -- Mastery
-	"strength",        -- Strength
-	"agility",         -- Agility
-	"stamina",         -- Stamina
-	"intellect",       -- Intellect
-	"spirit",          -- Spirit
+-- Встроенные панели (координаты/время/золото/система): их названия всегда
+-- английские, поэтому сортировка по алфавиту возможна напрямую.
+local BUILTIN_SLOT_NAMES = {
+	coords = "Coords",
+	time   = "Time",
+	gold   = "Gold",
+	system = "System",
 }
+
+-- Панели, которые нельзя показывать в списках слотов: microBar — это не
+-- инфотекст (перемещает микро-бар Blizzard), отдельного текста не имеет.
+local HIDDEN_SLOT_KEYS = { microBar = true }
+
+-- Реестр «ключ -> английское название» для сортировки списков по алфавиту.
+-- Заполняется при регистрации панелей; игровые названия статов (AGILITY и
+-- т.п.) приводятся к нижнему регистру, чтобы порядок не зависел от локали.
+local englishNames = {}
+LPS._DatatextEnglishNames = englishNames
+for k, v in pairs(BUILTIN_SLOT_NAMES) do englishNames[k] = v end
+
+--- Список ключей панелей для слотов: встроенные + зарегистрированные,
+--- отсортированные по алфавиту английских названий. Кэш пересобирается при
+--- каждой новой регистрации панели (панели грузятся после datatexts.lua).
+local sortedKeysCache
+local function invalidateSortedKeys()
+	sortedKeysCache = nil
+end
+
+function LPS:GetSlotKeyList()
+	if not sortedKeysCache then
+		local keys = {}
+		for key in pairs(BUILTIN_SLOT_NAMES) do
+			keys[#keys + 1] = key
+		end
+		for key in pairs(registry) do
+			if not HIDDEN_SLOT_KEYS[key] then
+				keys[#keys + 1] = key
+			end
+		end
+		table.sort(keys, function(a, b)
+			local na = (englishNames[a] or a):lower()
+			local nb = (englishNames[b] or b):lower()
+			if na == nb then return a < b end
+			return na < nb
+		end)
+		sortedKeysCache = keys
+	end
+	return sortedKeysCache
+end
 
 --------------------------------------------------------------------
 -- Конструктор панели
@@ -62,6 +78,10 @@ local datatextCreateQueueRegistered = false
 function LPS:RegisterDatatext(def)
 	assert(def and def.key and def.name, "LPS RegisterDatatext: bad definition")
 	registry[def.key] = def
+	-- Английское имя панели используется для сортировки списков по алфавиту
+	-- (независимо от текущей локали клиента).
+	englishNames[def.key] = tostring(def.name)
+	invalidateSortedKeys()
 end
 
 --- Создаёт фрейм панели по её конфигу (вызывается из ApplyLayout при первом использовании слота)
@@ -87,7 +107,7 @@ function LPS:CreateDatatextFrame(key)
         -- скрыт и становится видимым только после позиционирования в цепочке.
         anchor = { "CENTER", LPS.frame.holder or UIParent, "CENTER", 0, 0 },
 		hidden = true, -- создаём скрытым: ApplyLayout позиционирует и показывает
-		padding = { ((db.layout and db.layout.dtPaddingX) or 10), ((db.layout and db.layout.dtPaddingY) or 6) },
+		padding = { ((db.layout and db.layout.dtPaddingX) or 20), ((db.layout and db.layout.dtPaddingY) or 7) },
 		fontSize = db.settings.fontSize or 12,
 		bgColor = { LPS:GetColor("bg") },
 		borderColor = { LPS:GetColor("border") },
@@ -204,24 +224,8 @@ function LPS:GetDatatextName(key)
 	return def and def.name or key
 end
 
---- Список ключей панелей для слотов (существующие + новые)
-LPS._DatatextOrderList = orderList
-
---- Список ключей панелей для слотов: порядок из orderList + все зарегистрированные вне его
-function LPS:GetSlotKeyList()
-	local keys = {}
-	local seen = {}
-	for _, k in ipairs(orderList) do
-		if registry[k] and not seen[k] then
-			seen[k] = true
-			keys[#keys + 1] = k
-		end
-	end
-	for k in pairs(registry) do
-		if not seen[k] then keys[#keys + 1] = k end
-	end
-	return keys
-end
+--- Публичный доступ к отсортированному по алфавиту списку ключей панелей
+--- реализован выше через LPS:GetSlotKeyList().
 
 function LPS:IsDatatextKey(key)
 	return key ~= nil and registry[key] ~= nil and not RESERVED_SLOT_KEYS[key]

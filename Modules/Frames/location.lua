@@ -11,7 +11,7 @@ function LPS:CreateLocationFrame()
 		frameType = "Button",
 		parent = LPS.frame.holder,
 		anchor = {"CENTER", LPS.frame.holder, "CENTER", 0, 0},
-		padding = {((db.layout and db.layout.locPaddingX) or 10), ((db.layout and db.layout.locPaddingY) or 6)},
+		padding = {((db.layout and db.layout.locPaddingX) or 20), ((db.layout and db.layout.locPaddingY) or 9)},
 		fontSize = db.settings.fontSize or 12,
 		bgColor = {LPS:GetColor("bg")},
 		borderColor = {LPS:GetColor("border")},

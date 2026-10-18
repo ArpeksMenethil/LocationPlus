@@ -1332,7 +1332,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Left Slot 1"),
 								type = "select",
 								values = function()
-									local vals = { none = LPS:L("None"), coords = LPS:L("Coords"), time = LPS:L("Time"), gold = LPS:L("Gold"), system = LPS:L("System") }
+									local vals = { none = LPS:L("None") }
+										-- coords/time/gold/system включены в GetSlotKeyList()
+										-- и идут в общем алфавитном порядке
 									if LPS.GetSlotKeyList then
 										for _, k in ipairs(LPS:GetSlotKeyList()) do
 											local def = LPS.datatexts and LPS.datatexts[k]
@@ -1415,7 +1417,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Right Slot 1"),
 								type = "select",
 								values = function()
-									local vals = { none = LPS:L("None"), coords = LPS:L("Coords"), time = LPS:L("Time"), gold = LPS:L("Gold"), system = LPS:L("System") }
+									local vals = { none = LPS:L("None") }
+										-- coords/time/gold/system включены в GetSlotKeyList()
+										-- и идут в общем алфавитном порядке
 									if LPS.GetSlotKeyList then
 										for _, k in ipairs(LPS:GetSlotKeyList()) do
 											local def = LPS.datatexts and LPS.datatexts[k]
@@ -1499,7 +1503,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Left Slot 2"),
 								type = "select",
 								values = function()
-									local vals = { none = LPS:L("None"), coords = LPS:L("Coords"), time = LPS:L("Time"), gold = LPS:L("Gold"), system = LPS:L("System") }
+									local vals = { none = LPS:L("None") }
+										-- coords/time/gold/system включены в GetSlotKeyList()
+										-- и идут в общем алфавитном порядке
 									if LPS.GetSlotKeyList then
 										for _, k in ipairs(LPS:GetSlotKeyList()) do
 											local def = LPS.datatexts and LPS.datatexts[k]
@@ -1585,7 +1591,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Right Slot 2"),
 								type = "select",
 								values = function()
-									local vals = { none = LPS:L("None"), coords = LPS:L("Coords"), time = LPS:L("Time"), gold = LPS:L("Gold"), system = LPS:L("System") }
+									local vals = { none = LPS:L("None") }
+										-- coords/time/gold/system включены в GetSlotKeyList()
+										-- и идут в общем алфавитном порядке
 									if LPS.GetSlotKeyList then
 										for _, k in ipairs(LPS:GetSlotKeyList()) do
 											local def = LPS.datatexts and LPS.datatexts[k]
@@ -1671,7 +1679,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Left Slot 3"),
 								type = "select",
 								values = function()
-									local vals = { none = LPS:L("None"), coords = LPS:L("Coords"), time = LPS:L("Time"), gold = LPS:L("Gold"), system = LPS:L("System") }
+									local vals = { none = LPS:L("None") }
+										-- coords/time/gold/system включены в GetSlotKeyList()
+										-- и идут в общем алфавитном порядке
 									if LPS.GetSlotKeyList then
 										for _, k in ipairs(LPS:GetSlotKeyList()) do
 											local def = LPS.datatexts and LPS.datatexts[k]
@@ -1756,7 +1766,9 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								name = LPS:L("Right Slot 3"),
 								type = "select",
 								values = function()
-									local vals = { none = LPS:L("None"), coords = LPS:L("Coords"), time = LPS:L("Time"), gold = LPS:L("Gold"), system = LPS:L("System") }
+									local vals = { none = LPS:L("None") }
+										-- coords/time/gold/system включены в GetSlotKeyList()
+										-- и идут в общем алфавитном порядке
 									if LPS.GetSlotKeyList then
 										for _, k in ipairs(LPS:GetSlotKeyList()) do
 											local def = LPS.datatexts and LPS.datatexts[k]
