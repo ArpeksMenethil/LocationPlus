@@ -43,7 +43,7 @@ function LPS.Options.BuildTree.tabs.about()
                     linksLabel = {
                         order = 2,
                         type = "description",
-                        name = L.ABOUT_CURSEFORGE .. ": |cff4aa3ffhttps://www.curseforge.com/wow/addons/location-plus|r",
+                        name = "CurseForge: |cff4aa3ffhttps://www.curseforge.com/wow/addons/location-plus|r",
                     },
                 },
             },
