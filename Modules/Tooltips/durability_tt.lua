@@ -8,20 +8,12 @@ local inventorySlots = {
         INVTYPE_WEAPONMAINHAND = 16, INVTYPE_WEAPONOFFHAND = 17, INVTYPE_RANGED = 18,
 }
 
--- См. Modules/Frames/durability.lua: GetInventoryItemDurability() в актуальных
--- клиентах возвращает secret-числа — берём прочность через C_Item.
-local function slotDurability(index)
-        if C_Item and C_Item.Create then
-                local item = C_Item:Create("player", index)
-                if item and item.IsValid and item:IsValid()
-                        and item.HasDurability and item:HasDurability() then
-                        local cur, max = item:GetDurability()
-                        if cur and max and max > 0 then return cur, max end
-                end
-                return nil
-        end
-        return GetInventoryItemDurability(index)
-end
+-- См. Modules/Frames/durability_util.lua: GetInventoryItemDurability() в
+-- актуальных клиентах возвращает secret-числа — берём прочность через
+-- DurabilityUtil (Item:RunFor по доверенному Blizzard-фрейму слота).
+local DU = _G.LPS_DurabilityUtil
+if not DU then return end
+local slotDurability = DU.slotDurability
 
 function LPS:BuildDurabilityTooltip(GameTooltip)
     local tt = GameTooltip

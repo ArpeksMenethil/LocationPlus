@@ -10,26 +10,16 @@ do
 		INVTYPE_WEAPONMAINHAND = 16, INVTYPE_WEAPONOFFHAND = 17, INVTYPE_RANGED = 18,
 	}
 
-	-- Прочность берётся через C_Item (как это делает Blizzard InventoryUnitFrames):
-	-- Item:GetDurability() возвращает НЕ secret-значения и не тинтит код аддона.
-	-- Раньше использовался глобальный GetInventoryItemDurability() — в актуальных
-	-- клиентах WoW он отдаёт secret-числа; они «просачивались» в текст панели, а
-	-- затем в Blizzard_TextStatusBar (полоска прочности в окне персонажа), где
-	-- сравнение secret-числа вызывало ошибку:
+	-- Прочность берётся через DurabilityUtil (Item:RunFor по доверенному
+	-- Blizzard-фрейму слота экипировки) — см. Modules/Frames/durability_util.lua.
+	-- Раньше здесь использовался GetInventoryItemDurability(), который в
+	-- актуальных клиентах WoW отдаёт secret-числа; они «просачивались» в текст
+	-- панели, а затем в Blizzard_TextStatusBar (окно персонажа), где сравнение
+	-- secret-значения вызывало ошибку:
 	-- "attempt to compare a secret number value (execution tainted by 'LocationPlus')".
-	local function slotDurability(index)
-		if C_Item and C_Item.Create then
-			local item = C_Item:Create("player", index)
-			if item and item.IsValid and item:IsValid()
-				and item.HasDurability and item:HasDurability() then
-				local cur, max = item:GetDurability()
-				if cur and max and max > 0 then return cur, max end
-			end
-			return nil
-		end
-		-- Фолбэк для старых клиентов без C_Item.
-		return GetInventoryItemDurability(index)
-	end
+	local DU = _G.LPS_DurabilityUtil
+	if not DU then return end
+	local slotDurability = DU.slotDurability
 
 	LPS:RegisterDatatext({
 		key = "durability",
