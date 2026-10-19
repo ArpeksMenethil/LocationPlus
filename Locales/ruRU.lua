@@ -102,9 +102,9 @@ LPS.RegisterLocale("ruRU", {
     DEFAULT = "По умолчанию",
     TEXT_CUSTOM_COLOR = "Свой цвет текста",
     PICK_A_CUSTOM_COLOR_FOR_PANEL_TEXT = "Выберите свой цвет для текста панели.",
-    PROFILES = "Профили",
+    PROFILES = "Профиль",
     -- Вкладка Profiles (порт PageProfiles из CharacterStats)
-    HEADER_PROFILES = "Профили",
+    HEADER_PROFILES = "Профиль",
     LABEL_ACTIVE_PROFILE = "Активный профиль",
     BTN_NEW = "Новый",
     BTN_COPY = "Копировать",

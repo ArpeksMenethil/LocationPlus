@@ -97,13 +97,18 @@ local function ClassExists(classToken)
 end
 --- Золотой запасается только если класс-цвета недоступны.
 local DEFAULT_ACCENT = { 0.78, 0.66, 0.22 }
---- Акцент «По умолчанию» = цвет текущего класса игрока (если класс определён).
+--- Акцент по умолчанию = цвет текущего класса игрока (если класс определён).
 local function GetDefaultAccent()
     local _, classFile = UnitClass("player")
     local r, g, b = GetClassColor(classFile)
     if r then return r, g, b end
     return DEFAULT_ACCENT[1], DEFAULT_ACCENT[2], DEFAULT_ACCENT[3]
 end
+--- Устаревшие настройки окна, удалённые из UI; чистим их из БД при загрузке.
+local OBSOLETE_UI_KEYS = {
+    "themeUseClassColor", "accentColor",
+    "windowColorMode", "windowColor", "windowColorKeepHeader",
+}
 local function MuteColor(r, g, b, amount)
     amount = amount or 0.15
     return r + (0.5 - r) * amount, g + (0.5 - g) * amount, b + (0.5 - b) * amount
@@ -119,18 +124,12 @@ local function GetClassColor(classToken)
     if fallback then return fallback.r, fallback.g, fallback.b end
     return nil
 end
---- Цвет выбранной цветовой темы (db.uiOptions.themeColor / themeUseClassColor).
+--- Цвет выбранной цветовой темы акцента (db.uiOptions.themeColor).
 --- "default" = цвет текущего класса игрока (не золото).
 function Theme.GetAccentColor()
     local db = LPS:GetDB()
     local ui = db and db.uiOptions
     if not ui then return nil end
-    if ui.themeUseClassColor then
-        local _, classFile = UnitClass("player")
-        local r, g, b = GetClassColor(classFile)
-        if r then return MuteColor(r, g, b, 0.2) end
-        return nil
-    end
     local id = ui.themeColor
     if not id or id == "default" then
         local r, g, b = GetDefaultAccent()
@@ -149,7 +148,7 @@ end
 --- Список значений dropdown'а цветовых тем: только классы, доступные в игре;
 --- значение "default" = текущий класс игрока.
 function Theme.GetAccentItems()
-    local items = { { value = "default", text = L.THEME_COLOR_DEFAULT or "Default (my class)" } }
+    local items = { { value = "default", text = L.THEME_COLOR_DEFAULT } }
     for _, cls in ipairs(CLASS_ACCENTS_ALL) do
         if ClassExists(cls) then
             local name = (LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[cls]) or cls
@@ -161,29 +160,19 @@ end
 function Theme.Load()
     local db = LPS:GetDB()
     local ui = db and db.uiOptions
+    -- Чистим устаревшие настройки, удалённые из UI (галка «цвет класса»,
+    -- свой цвет акцента, группа «Цвет окна»).
+    if ui then
+        for _, k in ipairs(OBSOLETE_UI_KEYS) do ui[k] = nil end
+    end
     local key = ui and ui.theme
     if not Theme.THEMES[key] then key = "classic" end
     Theme.key = key
     Theme.T = Theme.THEMES[key]
     local C = {}
     for k, v in pairs(Theme.T.colors) do C[k] = v end
-    -- пользовательский цвет окна настроек (mode: theme = по теме, custom = свой цвет)
-    if ui and ui.windowColorMode == "custom"
-        and type(ui.windowColor) == "table" and tonumber(ui.windowColor.r) then
-        local w = ui.windowColor
-        C.window = { w.r, w.g, w.b, tonumber(w.a) or 1 }
-        if not ui.windowColorKeepHeader then
-            C.header = { w.r, w.g, w.b, 1 }
-            C.nav = { math.min(1, w.r * 0.75), math.min(1, w.g * 0.75), math.min(1, w.b * 0.75), 1 }
-        end
-    end
-    -- акцент: цветовая тема (класс/свой цвет) или custom
-    local r, g, b
-    if ui and ui.accentColor and tonumber(ui.accentColor.r) then
-        r, g, b = ui.accentColor.r, ui.accentColor.g, ui.accentColor.b
-    else
-        r, g, b = Theme.GetAccentColor()
-    end
+    -- акцент: цветовая тема (класс)
+    local r, g, b = Theme.GetAccentColor()
     if r then
         C.accent = { r, g, b, 1 }
         C.primaryBorder = C.accent

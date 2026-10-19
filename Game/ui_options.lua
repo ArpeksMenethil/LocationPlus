@@ -108,7 +108,9 @@ end
 --- Плоский список строк страницы: группы (узлы с args) схлопываются в заголовки.
 --- Ace3 больше не используется, поэтому поля type = "group" / inline в дереве
 --- настроек не нужны: группа определяется наличием args, по умолчанию.
-local function collectRows(group, out)
+--- additionalSortKeys — необязательный список доп. ключей сортировки
+--- (стабильный порядок при одинаковом order; см. actionsGroup в general.lua).
+local function collectRows(group, out, additionalSortKeys)
     local args = group.args
     if type(args) == "function" then
         local ok, t = pcall(args, false)
@@ -125,6 +127,14 @@ local function collectRows(group, out)
     table.sort(rows, function(a, b)
         local oa, ob = tonumber(a.order) or 999, tonumber(b.order) or 999
         if oa ~= ob then return oa < ob end
+        for _, k in ipairs(additionalSortKeys or {}) do
+            local ka, kb = a[k], b[k]
+            if ka ~= kb then
+                if ka == nil then return false end
+                if kb == nil then return true end
+                return tostring(ka) < tostring(kb)
+            end
+        end
         return tostring(a._key) < tostring(b._key)
     end)
     for _, node in ipairs(rows) do
@@ -144,7 +154,7 @@ local function collectRows(group, out)
                 if not isSpacer then
                     out[#out + 1] = { kind = "header", label = groupName }
                 end
-                collectRows(node, out)
+                collectRows(node, out, node.sortKeys)
             elseif kind == "label" then
                 if node.name and node.name ~= " " and node.name ~= "" then
                     out[#out + 1] = {

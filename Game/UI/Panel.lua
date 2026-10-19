@@ -113,14 +113,10 @@ local function BuildWindowEntries(L)
             LPS.Options:ApplyRefresh()
         end
     end
-    local function IsCustomMode()
-        local ui = LPS:GetDB() and LPS:GetDB().uiOptions
-        return (ui and ui.windowColorMode) == "custom"
-    end
     return {
-        { kind = "header", label = L.SECTION_UI_THEME or "Window Theme" },
+        { kind = "header", label = L.THEME },
         {
-            kind = "dropdown", key = "uiTheme", label = L.LABEL_UI_THEME or "Theme",
+            kind = "dropdown", key = "uiTheme", label = L.THEME_STYLE,
             tooltip = L.THEME_STYLE_DESC,
             items = function()
                 local items = {}
@@ -135,89 +131,18 @@ local function BuildWindowEntries(L)
                 Theme.Set(value)
             end,
         },
-        { kind = "header", label = L.SECTION_THEME or "Accent Color" },
+        { kind = "header", label = L.THEME_COLOR },
         {
-            kind = "dropdown", key = "themeColor", label = L.THEME_COLOR or "Accent color",
+            kind = "dropdown", key = "themeColor", label = L.THEME_COLOR,
             tooltip = L.THEME_COLOR_DESC,
             items = function() return Theme.GetAccentItems() end,
-            disabled = function()
-                local db = LPS:GetDB()
-                local ui = db and db.uiOptions
-                return (ui and ui.themeUseClassColor) == true
-            end,
             get = GetValidAccentValue,
             set = function(v) UIOpts().themeColor = v end,
             onChange = ApplyTheme,
         },
+        { kind = "header", label = L.SIZE_AND_SCALE },
         {
-            kind = "toggle", key = "themeUseClassColor", fullRow = true,
-            label = L.USE_CLASS_COLOR or "Use my class color",
-            tooltip = L.USE_CLASS_COLOR_DESC,
-            onChange = ApplyTheme,
-            get = function()
-                local db = LPS:GetDB()
-                local ui = db and db.uiOptions
-                return (ui and ui.themeUseClassColor) == true
-            end,
-            set = function(v) UIOpts().themeUseClassColor = v and true or false end,
-        },
-        {
-            kind = "color", key = "accentColor", label = L.ACCENT_COLOR or "Custom accent color",
-            tooltip = L.ACCENT_COLOR_DESC,
-            get = function()
-                local ui = LPS:GetDB() and LPS:GetDB().uiOptions
-                local c = ui and ui.accentColor
-                if c and tonumber(c.r) then return c end
-                local r, g, b = Theme.GetAccentColor()
-                if r then return { r = r, g = g, b = b } end
-                return { r = 0.78, g = 0.66, b = 0.22 }
-            end,
-            set = function(c) UIOpts().accentColor = { r = c.r, g = c.g, b = c.b } end,
-            onChange = ApplyTheme,
-        },
-        { kind = "header", label = L.WINDOW_COLOR_MODE or "Window background" },
-        {
-            kind = "dropdown", key = "windowColorMode", label = L.WINDOW_COLOR_MODE or "Window color mode",
-            tooltip = L.WINDOW_COLOR_MODE_DESC,
-            items = {
-                { value = "theme", text = L.WINDOW_COLOR_BY_THEME or "By theme" },
-                { value = "custom", text = L.WINDOW_COLOR_CUSTOM or "Custom color" },
-            },
-            get = function()
-                local ui = LPS:GetDB() and LPS:GetDB().uiOptions
-                return (ui and ui.windowColorMode) or "theme"
-            end,
-            set = function(v) UIOpts().windowColorMode = v end,
-            onChange = ApplyTheme,
-        },
-        {
-            kind = "color", key = "windowColor", label = L.WINDOW_COLOR or "Window color",
-            tooltip = L.WINDOW_COLOR_DESC,
-            disabled = function() return not IsCustomMode() end,
-            get = function()
-                local ui = LPS:GetDB() and LPS:GetDB().uiOptions
-                local c = ui and ui.windowColor
-                if c and tonumber(c.r) then return c end
-                return { r = 0.09, g = 0.10, b = 0.12 }
-            end,
-            set = function(c) UIOpts().windowColor = { r = c.r, g = c.g, b = c.b } end,
-            onChange = ApplyTheme,
-        },
-        {
-            kind = "toggle", key = "windowColorKeepHeader", fullRow = true,
-            label = L.WINDOW_COLOR_KEEP_HEADER or "Keep themed header",
-            tooltip = L.WINDOW_COLOR_KEEP_HEADER_DESC,
-            disabled = function() return not IsCustomMode() end,
-            get = function()
-                local ui = LPS:GetDB() and LPS:GetDB().uiOptions
-                return (ui and ui.windowColorKeepHeader) and true or false
-            end,
-            set = function(v) UIOpts().windowColorKeepHeader = v and true or false end,
-            onChange = ApplyTheme,
-        },
-        { kind = "header", label = L.SECTION_WINDOW or "Options Window" },
-        {
-            kind = "slider", key = "uiScale", label = L.WINDOW_SCALE or "Options Window Scale",
+            kind = "slider", key = "uiScale", label = L.WINDOW_SCALE,
             tooltip = L.WINDOW_SCALE_DESC,
             min = 0.5, max = 1.5, step = 0.05, format = "%.2f",
             commitOnRelease = true,
@@ -232,17 +157,12 @@ local function BuildWindowEntries(L)
             end,
         },
         {
-            kind = "button", key = "resetAppearance", label = L.RESET_APPEARANCE or "Reset appearance",
+            kind = "button", key = "resetAppearance", label = L.RESET_APPEARANCE,
             tooltip = L.RESET_APPEARANCE_DESC,
             func = function()
                 local ui = UIOpts()
                 ui.theme = nil
                 ui.themeColor = nil
-                ui.themeUseClassColor = nil
-                ui.accentColor = nil
-                ui.windowColorMode = nil
-                ui.windowColor = nil
-                ui.windowColorKeepHeader = nil
                 ui.scale = 1.0
                 if Theme.Set then Theme.Set("classic") else Theme.Load() end
                 Panel.SetWindowScale(1.0)

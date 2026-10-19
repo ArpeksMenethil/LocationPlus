@@ -31,32 +31,27 @@ function LPS.Options.BuildTree.tabs.about()
         name = L.ABOUT,
         order = 92,
         args = {
-            infoGroup = {
-                order = 1,
-                name = L.ABOUT_THIS_ADDON,
-                args = {
-                    aboutLabel = {
-                        order = 1,
-                        type = "description",
-                        name = aboutText,
-                    },
-                    linksLabel = {
-                        order = 2,
-                        type = "description",
-                        name = "CurseForge: |cff4aa3ffhttps://www.curseforge.com/wow/addons/location-plus|r",
-                    },
-                },
+            -- порядок + 0.01/0.02 — «воздух» под заголовком группы, чтобы
+            -- текст не слипался с ним (нативный рендерер строит строки подряд)
+            aboutLabel = {
+                order = 1.01,
+                type = "description",
+                name = aboutText,
             },
-            commandsGroup = {
-                order = 2,
-                name = L.COMMANDS,
-                args = {
-                    commandsLabel = {
-                        order = 1,
-                        type = "description",
-                        name = commandsText,
-                    },
-                },
+            linksLabel = {
+                order = 1.02,
+                type = "description",
+                name = "CurseForge: |cff4aa3ffhttps://www.curseforge.com/wow/addons/location-plus|r",
+            },
+            spacerCommands = {
+                order = 1.5,
+                type = "description",
+                name = "",
+            },
+            commandsLabel = {
+                order = 2.01,
+                type = "description",
+                name = commandsText,
             },
         },
     }
