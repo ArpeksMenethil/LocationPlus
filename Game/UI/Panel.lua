@@ -162,11 +162,8 @@ local function CreateMainFrame()
     frame.closeBtn:SetScript("OnClick", function()
         Panel.Hide()
     end)
-    if CS.Theme.key == "classic" then
-        frame.minBtn = CreateCircleButton(frame.titleBar, "icon_minus")
-    else
-        frame.minBtn = CS.Theme.IconButton(frame.titleBar, 22, "icon_minus")
-    end
+    
+    frame.minBtn = CS.Theme.IconButton(frame.titleBar, 22, "icon_minus")
     frame.minBtn:SetPoint("RIGHT", frame.closeBtn, "LEFT", -6, 0)
     frame.minBtn:SetScript("OnClick", function()
         Panel.SetMinimized(not frame._minimized)
