@@ -23,7 +23,7 @@ Libs/!load.xml
 Locales/enUS.lua
 Locales/ruRU.lua
 
-Modules/!load.xml
 Game/!load.xml
+Modules/!load.xml
 
 Game/compartment.lua
