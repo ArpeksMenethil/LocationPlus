@@ -1,3 +1,4 @@
+local L = LPS.L
 local MyAddon = _G.ArpeksLPS
 local LPS = MyAddon.LPS
 
@@ -31,13 +32,13 @@ function LPS:BuildVolumeTooltip(GameTooltip)
     local rB, gB, bB = LPS:GetColor("tooltipSetting")
     local rY, gY, bY = LPS:GetColor("tooltip")
 
-                                tt:AddLine(LPS:L("Volume Streams"), 1, 0.82, 0)
+                                tt:AddLine(L.VOLUME_STREAMS, 1, 0.82, 0)
                                 tt:AddLine(" ")
                                 for _, s in ipairs(AudioStreams) do
                                         tt:AddDoubleLine(s.Name, streamString(s), 1, 1, 1, 1, 1, 1)
                                 end
                                 tt:AddLine(" ")
-                                tt:AddDoubleLine(LPS:L("LMB"), LPS:L("Select Volume Stream"), rB, gB, bB, rB, gB, bB)
-                                tt:AddDoubleLine(LPS:L("MMB"), LPS:L("Mute"), rB, gB, bB, rB, gB, bB)
-                                tt:AddDoubleLine(LPS:L("RMB"), LPS:L("Toggle Volume Stream"), rB, gB, bB, rB, gB, bB)
+                                tt:AddDoubleLine(L.LMB, L.SELECT_VOLUME_STREAM, rB, gB, bB, rB, gB, bB)
+                                tt:AddDoubleLine(L.MMB, L.MUTE, rB, gB, bB, rB, gB, bB)
+                                tt:AddDoubleLine(L.RMB, L.TOGGLE_VOLUME_STREAM, rB, gB, bB, rB, gB, bB)
 end

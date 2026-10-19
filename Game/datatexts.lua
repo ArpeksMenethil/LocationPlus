@@ -1,5 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
+local L = LPS.L
 
 --------------------------------------------------------------------
 -- Панели-инфотексты (по мотивам DataTexts из ElvUI)
@@ -20,13 +21,13 @@ local HIDDEN_SLOT_KEYS = { microBar = true }
 
 --- Название панели для списков: ВСЕГДА актуально локализованное (язык
 --- клиента). Раньше имя замораживалось в момент загрузки файла
---- (name = LPS:L("Bags")), а панели грузятся ПОСЛЕ datatexts.lua и до
+--- (name = L.BAGS), а панели грузятся ПОСЛЕ datatexts.lua и до
 --- полного построения локали — из-за этого списки сортировались по
 --- АНГЛИЙСКИМ названиям ("Bags", "Mail"...), даже на русском клиенте.
 --- Теперь хранится ключ перевода (def.nameKey), а перевод выполняется
 --- при каждом обращении к имени.
 function LPS:GetDatatextDisplayName(key)
-	if key == "location" then return LPS:L("Location") end
+	if key == "location" then return L.LOCATION end
 	local def = registry[key]
 	if def then
 		if def.nameKey then return LPS:L(def.nameKey) end

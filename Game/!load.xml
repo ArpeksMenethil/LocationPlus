@@ -13,7 +13,7 @@
 
         <Include file='.\\datatexts.lua'/>
 
-        <!-- Дерево настроек: реестр, помощники, фабрики вкладок, сборка и Ace-регистрация -->
+        <!-- Дерево настроек: реестр, помощники, фабрики вкладок, сборка -->
         <Include file='.\\options.lua'/>
         <Include file='.\\options_helper.lua'/>
         <Include file='.\\Options\\general.lua'/>
@@ -23,7 +23,6 @@
         <Include file='.\\Options\\profiles.lua'/>
         <Include file='.\\Options\\importexport.lua'/>
         <Include file='.\\options_init.lua'/>
-        <Include file='.\\options_ace.lua'/>
 
         <Include file='.\\ui_options.lua'/>
 </Ui>

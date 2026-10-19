@@ -1,27 +1,28 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
+local L = LPS.L
 
 local OH = LPS.OptionsHelper
 
---- Возвращает вкладку "Show" дерева настроек (формат AceConfig-3.0).
+--- Возвращает вкладку "Show" дерева настроек (внутренний формат дерева настроек).
 function LPS.Options.BuildTree.tabs.show()
 	return {
 			type = "group",
-			name = LPS:L("Display"),
+			name = L.DISPLAY,
 			order = 2,
 			args = {
 				locationGroup = {
 					order = 1,
 					type = "group",
-					name = LPS:L("Location"),
+					name = L.LOCATION,
 					inline = true,
 					
 					args = {
 						zone = {
 							order = 1,
 							type = "toggle",
-							name = LPS:L("Show zone"),
-							desc = LPS:L("Show zone name on the panel."),
+							name = L.SHOW_ZONE,
+							desc = L.SHOW_ZONE_NAME_ON_THE_PANEL,
 							
 							get = function() return OH:getDb().show.zone end,
 							set = function(_, v)
@@ -39,8 +40,8 @@ function LPS.Options.BuildTree.tabs.show()
 						},
 						showicon = {
 							order = 2,
-							name = LPS:L("Crest"),
-							desc = LPS:L("Show an icon next to the additional info."),
+							name = L.CREST,
+							desc = L.SHOW_AN_ICON_NEXT_TO_THE_ADDITIONAL_INFO,
 							type = "toggle",
 							
 							disabled = function() return OH:getDb().show.displayOther == "NONE" end,
@@ -55,8 +56,8 @@ function LPS.Options.BuildTree.tabs.show()
 						},
 						displayOther = {
 							order = 3,
-							name = LPS:L("Other"),
-							desc = LPS:L("Show additional info in the Location Panel"),
+							name = L.OTHER,
+							desc = L.SHOW_ADDITIONAL_INFO_IN_THE_LOCATION_PANEL,
 							type = "select",
 							
 							values = OH:getDisplayOtherValues(),
@@ -78,14 +79,14 @@ function LPS.Options.BuildTree.tabs.show()
 				coordsGroup = {
 					order = 2,
 					type = "group",
-					name = LPS:L("Coords"),
+					name = L.COORDS,
 					inline = true,
 					
 					args = {
 						dig = {
 							order = 1,
-							name = LPS:L("Detailed Coords"),
-							desc = LPS:L("Adds 2 digits in the coords"),
+							name = L.DETAILED_COORDS,
+							desc = L.ADDS_2_DIGITS_IN_THE_COORDS,
 							type = "toggle",
 							
 							get = function() return OH:getDb().show.dig end,
@@ -99,8 +100,8 @@ function LPS.Options.BuildTree.tabs.show()
 						},
 						coordsTimeUpdate = {
 							order = 2,
-							name = LPS:L("Update Timer"),
-							desc = LPS:L("Adjust coords updates (in seconds) to avoid cpu load."),
+							name = L.UPDATE_TIMER,
+							desc = L.ADJUST_COORDS_UPDATES_IN_SECONDS_TO_AVOID_CPU_LOAD,
 							type = "range",
 							
 							min = 0.05,
@@ -119,20 +120,20 @@ function LPS.Options.BuildTree.tabs.show()
 				experienceGroup = {
 					order = 3,
 					type = "group",
-					name = LPS:L("Experience"),
+					name = L.EXPERIENCE,
 					inline = true,
 					
 					args = {
 						experience = {
 							order = 1,
 							type = "select",
-							name = LPS:L("Value format"),
-							desc = LPS:L("Choose how the value is shown on the panel."),
+							name = L.VALUE_FORMAT,
+							desc = L.CHOOSE_HOW_THE_VALUE_IS_SHOWN_ON_THE_PANEL,
 							values = {
-								PERCENT = LPS:L("Percent"),
-								CURMAX = LPS:L("Current / Max"),
-								CUR = LPS:L("Current"),
-								REM = LPS:L("Remaining"),
+								PERCENT = L.PERCENT,
+								CURMAX = L.CURRENT_MAX,
+								CUR = L.CURRENT,
+								REM = L.REMAINING,
 							},
 							get = function() return OH:getDb().show.experience.display or "PERCENT" end,
 							set = function(_, v)
@@ -145,19 +146,19 @@ function LPS.Options.BuildTree.tabs.show()
 				bagsGroup = {
 					order = 4,
 					type = "group",
-					name = LPS:L("Bags"),
+					name = L.BAGS,
 					inline = true,
 					
 					args = {
 						bags = {
 							order = 1,
 							type = "select",
-							name = LPS:L("Value format"),
-							desc = LPS:L("Choose how the value is shown on the panel."),
+							name = L.VALUE_FORMAT,
+							desc = L.CHOOSE_HOW_THE_VALUE_IS_SHOWN_ON_THE_PANEL,
 							values = {
-								USED_TOTAL = LPS:L("Used / Total"),
-								FREE = LPS:L("Free slots"),
-								USED = LPS:L("Used slots"),
+								USED_TOTAL = L.USED_TOTAL,
+								FREE = L.FREE_SLOTS,
+								USED = L.USED_SLOTS,
 							},
 							get = function() return OH:getDb().show.bags.display or "USED_TOTAL" end,
 							set = function(_, v)
@@ -178,7 +179,7 @@ function LPS.Options.BuildTree.tabs.show()
 						bagsLabel = {
 							order = 2,
 							type = "input",
-							name = LPS:L("Custom label"),
+							name = L.CUSTOM_LABEL,
 							disabled = function() return OH:getDb().show.bags.noLabel end,
 							get = function() return OH:getDb().show.bags.label or "" end,
 							set = function(_, v)
@@ -189,7 +190,7 @@ function LPS.Options.BuildTree.tabs.show()
 						bagsNoLabel = {
 							order = 3,
 							type = "toggle",
-							name = LPS:L("Hide label"),
+							name = L.HIDE_LABEL,
 							get = function() return OH:getDb().show.bags.noLabel or false end,
 							set = function(_, v)
 								OH:getDb().show.bags.noLabel = v and true or false

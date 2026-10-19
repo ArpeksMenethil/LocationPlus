@@ -1,5 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
+local L = LPS.L
 local DT = LPS._DT
 
 -------------------------------------------------- Difficulty
@@ -21,13 +22,13 @@ do
 			local _, instanceType, difficultyID = GetInstanceInfo()
 			local text
 			if instanceType and instanceType ~= "none" and difficultyID then
-				text = string.format("%s: %s", instanceType == "raid" and LPS:L("Raid") or LPS:L("Dungeon"), diffLabel(difficultyID))
+				text = string.format("%s: %s", instanceType == "raid" and L.RAID or L.DUNGEON, diffLabel(difficultyID))
 			else
 				local dd = GetDungeonDifficultyID and GetDungeonDifficultyID()
 				local rd = GetRaidDifficultyID and GetRaidDifficultyID()
 				text = string.format("%s: %s  |  %s: %s",
-					LPS:L("Dungeon"), dd and diffLabel(dd) or "?",
-					LPS:L("Raid"), rd and diffLabel(rd) or "?")
+					L.DUNGEON, dd and diffLabel(dd) or "?",
+					L.RAID, rd and diffLabel(rd) or "?")
 			end
 			if f.text then f.text:SetText(text) end
 		end,

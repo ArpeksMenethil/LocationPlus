@@ -1,5 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
+local L = LPS.L
 local DT = LPS._DT
 
 -------------------------------------------------- Micro Bar
@@ -8,7 +9,7 @@ do
 		key = "microBar",
 		nameKey = "Micro Bar",
 		update = function(f)
-			if f.text then f.text:SetText(LPS:L("Game Menu")) end
+			if f.text then f.text:SetText(L.GAME_MENU) end
 		end,
 		onClick = function(self, button)
 			if button == "LeftButton" then

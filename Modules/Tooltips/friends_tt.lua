@@ -1,3 +1,4 @@
+local L = LPS.L
 local MyAddon = _G.ArpeksLPS
 local LPS = MyAddon.LPS
 local DT = LPS._DT
@@ -42,8 +43,8 @@ do
 	local EXPANSION0 = EXPANSION_NAME0
 
 	local statusTable = {
-		AFK = ' |cffFFFFFF[|r|cffFF9900' .. (LPS:L("AFK")) .. '|r|cffFFFFFF]|r',
-		DND = ' |cffFFFFFF[|r|cffFF3333' .. (LPS:L("DND")) .. '|r|cffFFFFFF]|r',
+		AFK = ' |cffFFFFFF[|r|cffFF9900' .. (L.AFK) .. '|r|cffFFFFFF]|r',
+		DND = ' |cffFFFFFF[|r|cffFF3333' .. (L.DND) .. '|r|cffFFFFFF]|r',
 	}
 	local levelNameString = '|cff%02x%02x%02x%d|r |cff%02x%02x%02x%s|r'
 	local levelNameClassString = '|cff%02x%02x%02x%d|r %s%s%s'
@@ -157,7 +158,7 @@ do
 		FORE = { index = 19, tag = 'VG',   name = 'COD: Vanguard' },
 		GRY =  { index = 20, tag = 'AR',   name = 'Warcraft Arclight Rumble' },
 		App =  { index = 21, tag = 'App',  name = 'App' },
-		BSAp = { index = 22, tag = LPS:L("Mobile"), name = LPS:L("Mobile") },
+		BSAp = { index = 22, tag = L.MOBILE, name = L.MOBILE },
 	}
 
 	local function ClientSort(a, b)
@@ -379,7 +380,7 @@ do
 		local zonec, classc, levelc, realmc
 		local shiftDown = IsShiftKeyDown()
 
-		tt:AddDoubleLine(LPS:L("Friends List"), format(totalOnlineString, totalonline, totalfriends), tthead.r, tthead.g, tthead.b, tthead.r, tthead.g, tthead.b)
+		tt:AddDoubleLine(L.FRIENDS_LIST, format(totalOnlineString, totalonline, totalfriends), tthead.r, tthead.g, tthead.b, tthead.r, tthead.g, tthead.b)
 
 		-- wow-друзья в игре
 		if (onlineFriends > 0) then
@@ -447,11 +448,11 @@ do
 
 		if totalonline == 0 then
 			tt:AddLine(' ')
-			tt:AddLine(LPS:L("No friends online"), 0.65, 0.65, 0.65)
+			tt:AddLine(L.NO_FRIENDS_ONLINE, 0.65, 0.65, 0.65)
 		end
 
 		tt:AddLine(' ')
 		local rB, gB, bB = LPS:GetColor("tooltipSetting")
-		tt:AddDoubleLine(LPS:L("LMB"), LPS:L("Open friends list"), rB, gB, bB, rB, gB, bB)
+		tt:AddDoubleLine(L.LMB, L.OPEN_FRIENDS_LIST, rB, gB, bB, rB, gB, bB)
 	end
 end

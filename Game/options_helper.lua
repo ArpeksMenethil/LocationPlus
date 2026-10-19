@@ -1,29 +1,162 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
+local L = LPS.L
 
 --- Вспомогательные функции и значения для дерева настроек (Game/options.lua).
 LPS.OptionsHelper = {}
 local OH = LPS.OptionsHelper
 
-local AceConfig, AceDialog, AceConfigRegistry, AceSerializer, LibDeflate, AceGUI
-if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary("AceConfigDialog-3.0", true) then
-    AceConfig = LibStub("AceConfig-3.0")
-    AceDialog = LibStub("AceConfigDialog-3.0")
-    AceConfigRegistry = LibStub:GetLibrary("AceConfigRegistry-3.0", true)
-    AceSerializer = LibStub:GetLibrary("AceSerializer-3.0", true)
-    LibDeflate = LibStub:GetLibrary("LibDeflate", true)
-    AceGUI = LibStub:GetLibrary("AceGUI-3.0", true)
-end
+-- Ace3 больше не используется: ни опции, ни профили, ни сериализация.
+-- Единственная внешняя библиотека — LibDeflate из Libs/ (встроена в аддон),
+-- она даёт сжатие строк экспорта профилей.
+local LibDeflate = LibStub and LibStub:GetLibrary("LibDeflate", true)
 
 OH.Ace = {
-    Config = AceConfig,
-    Dialog = AceDialog,
-    Registry = AceConfigRegistry,
-    Serializer = AceSerializer,
     Deflate = LibDeflate,
-    GUI = AceGUI,
 }
 OH.PROFILE_EXPORT_PREFIX = "!LPS1!"
+
+---------------------------------------------------------------------------
+-- Собственная сериализация профилей (замена AceSerializer-3.0).
+-- Формат: "key=value" построчно; значения кодируются как
+--   s|<string>  n|<number>  b|<0|1>  t|<json-подобное вложенное значение>
+-- Ключи/значения экранируются (\n -> \\n и т.п.), decode проверяется строго.
+---------------------------------------------------------------------------
+local function escStr(s)
+    s = tostring(s)
+    s = s:gsub("\\", "\\\\"):gsub("\n", "\\n"):gsub("\r", "\\r"):gsub("|", "\\p"):gsub("=", "\\e")
+    return s
+end
+
+local function unescStr(s)
+    -- обратная замена к escStr (порядок важен: \1 — временный плейсхолдер для \\)
+    local res = s:gsub("\\\\", "\1"):gsub("\\n", "\n"):gsub("\\r", "\r"):gsub("\\p", "|"):gsub("\\e", "=")
+    res = res:gsub("\1", "\\")
+    return res
+end
+
+local encodeValue, decodeValue
+
+local function encodeTable(t)
+    local parts = {}
+    for k, v in pairs(t) do
+        if type(k) == "number" or type(k) == "string" then
+            parts[#parts + 1] = (type(k) == "number") and ("n" .. k) or ("s" .. escStr(k))
+            parts[#parts] = parts[#parts] .. ":" .. encodeValue(v)
+        end
+    end
+    table.sort(parts)
+    return "{" .. table.concat(parts, ",") .. "}"
+end
+
+encodeValue = function(v)
+    local tv = type(v)
+    if tv == "string" then return "s|" .. escStr(v)
+    elseif tv == "number" then return "n|" .. string.format("%.14g", v)
+    elseif tv == "boolean" then return "b|" .. (v and "1" or "0")
+    elseif tv == "table" then return "t" .. encodeTable(v)
+    end
+    return "s|" -- nil/функции не сериализуются
+end
+
+local function decodeTable(s, pos)
+    -- s[pos] == "{"; возвращает (tbl, newPos)
+    local t = {}
+    pos = pos + 1
+    if s:sub(pos, pos) == "}" then return t, pos + 1 end
+    while pos <= #s do
+        local c = s:sub(pos, pos)
+        if c == "n" then
+            local numEnd = pos + 1
+            while numEnd <= #s and s:sub(numEnd, numEnd):match("[%d%.%-]") do numEnd = numEnd + 1 end
+            local key = tonumber(s:sub(pos + 1, numEnd - 1))
+            pos = numEnd
+        elseif c == "s" then
+            local e = pos + 1
+            while e <= #s do
+                local ch = s:sub(e, e)
+                if ch == "\\" then e = e + 2
+                elseif ch == ":" then break
+                else e = e + 1 end
+            end
+            local rawKey = s:sub(pos + 1, e - 1)
+            local decoded = unescStr(rawKey)
+            key = tonumber(decoded) or decoded
+            pos = e + 1
+        else
+            return nil, nil
+        end
+        if not key then return nil, nil end
+        local val, np = decodeValue(s, pos)
+        if val == nil and not (s:sub(pos, pos + 1) == "s|") then return nil, nil end
+        t[key] = val
+        pos = np
+        local delim = s:sub(pos, pos)
+        if delim == "," then pos = pos + 1
+        elseif delim == "}" then return t, pos + 1
+        else return nil, nil end
+    end
+    return nil, nil
+end
+
+decodeValue = function(s, pos)
+    local c = s:sub(pos, pos)
+    if c == "s" then
+        local e = pos + 2
+        while e <= #s do
+            local ch = s:sub(e, e)
+            if ch == "\\" then e = e + 2
+            elseif ch == "," or ch == "}" or e > #s then break
+            else e = e + 1 end
+        end
+        -- строка заканчивается на верхнеуровневом разделителе; для "key=value"
+        -- строковых значений конец — это конец строки
+        return unescStr(s:sub(pos + 2, e - 1)), e
+    elseif c == "n" then
+        local e = pos + 1
+        while e <= #s and s:sub(e, e):match("[%d%.%-]") do e = e + 1 end
+        return tonumber(s:sub(pos + 1, e - 1)), e
+    elseif c == "b" then
+        return s:sub(pos + 2, pos + 2) == "1", pos + 3
+    elseif c == "t" then
+        return decodeTable(s, pos + 1)
+    end
+    return nil, nil
+end
+
+--- Сериализует таблицу профиля в многострочную строку.
+function OH:SerializeProfile(tbl)
+    if type(tbl) ~= "table" then return "" end
+    local lines = {}
+    local keys = {}
+    for k in pairs(tbl) do
+        if type(k) == "string" or type(k) == "number" then keys[#keys + 1] = tostring(k) end
+    end
+    table.sort(keys)
+    for _, k in ipairs(keys) do
+        local v = tbl[k] or tbl[tonumber(k)]
+        if v ~= nil and type(v) ~= "function" then
+            lines[#lines + 1] = k .. "=" .. (select(1, encodeValue(v)))
+        end
+    end
+    return table.concat(lines, "\n")
+end
+
+--- Обратная операция к SerializeProfile; nil при битой строке.
+function OH:DeserializeProfile(str)
+    if type(str) ~= "string" or str == "" then return nil end
+    local out = {}
+    for line in str:gmatch("[^\n]+") do
+        local eq = line:find("=", 1, true)
+        if not eq then return nil end
+        local key = line:sub(1, eq - 1)
+        local val, epos = decodeValue(line, eq + 1)
+        if val == nil then return nil end
+        local numKey = tonumber(key)
+        out[numKey or key] = val
+    end
+    return next(out) and out or nil
+end
 
 --- Глубокая копия таблицы.
 function OH:deepCopy(v)
@@ -75,25 +208,25 @@ local PANEL_EXTRA = {
     bags = {
         display = {
             order = 3,
-            name = LPS:L("Value format"),
-            desc = LPS:L("Choose how the value is shown on the panel."),
+            name = L.VALUE_FORMAT,
+            desc = L.CHOOSE_HOW_THE_VALUE_IS_SHOWN_ON_THE_PANEL,
             values = {
-                USED_TOTAL = LPS:L("Used / Total"),
-                FREE = LPS:L("Free slots"),
-                USED = LPS:L("Used slots"),
+                USED_TOTAL = L.USED_TOTAL,
+                FREE = L.FREE_SLOTS,
+                USED = L.USED_SLOTS,
             },
         },
     },
     experience = {
         display = {
             order = 3,
-            name = LPS:L("Value format"),
-            desc = LPS:L("Choose how the value is shown on the panel."),
+            name = L.VALUE_FORMAT,
+            desc = L.CHOOSE_HOW_THE_VALUE_IS_SHOWN_ON_THE_PANEL,
             values = {
-                PERCENT = LPS:L("Percent"),
-                CURMAX = LPS:L("Current / Max"),
-                CUR = LPS:L("Current"),
-                REM = LPS:L("Remaining"),
+                PERCENT = L.PERCENT,
+                CURMAX = L.CURRENT_MAX,
+                CUR = L.CURRENT,
+                REM = L.REMAINING,
             },
         },
     },
@@ -136,8 +269,8 @@ function OH:makePanelOptionGroup(key, def, order)
             args.maxLimit = {
                 order = 2,
                 type = "range",
-                name = LPS:L("Max entries in tooltip"),
-                desc = LPS:L("Limit how many entries are shown in this list."),
+                name = L.MAX_ENTRIES_IN_TOOLTIP,
+                desc = L.LIMIT_HOW_MANY_ENTRIES_ARE_SHOWN_IN_THIS_LIST,
                 min = 1,
                 max = 30,
                 step = 1,
@@ -163,7 +296,7 @@ function OH:makePanelOptionGroup(key, def, order)
         args.noLabel = {
             order = 5,
             type = "toggle",
-            name = LPS:L("Hide label"),
+            name = L.HIDE_LABEL,
             width = "half",
             get = function()
                 local p = self:getDb().panels and self:getDb().panels.bags
@@ -181,7 +314,7 @@ function OH:makePanelOptionGroup(key, def, order)
         args.label = {
             order = 6,
             type = "input",
-            name = LPS:L("Custom label"),
+            name = L.CUSTOM_LABEL,
             width = "half",
             disabled = function()
                 local p = self:getDb().panels and self:getDb().panels.bags
@@ -213,14 +346,14 @@ end
 --- Значения выпадающего списка Display Other Values.
 function OH:getDisplayOtherValues()
     local t = {
-        ["NONE"] = LPS:L("None"),
-        ["RLEVEL"] = LPS.icons.Level .. " " .. LPS:L("Level range"),
+        ["NONE"] = L.NONE,
+        ["RLEVEL"] = LPS.icons.Level .. " " .. L.LEVEL_RANGE,
     }
     if not LPS.Retail and not LPS.Mists then
-        t["PFISH"] = LPS.icons.Fish .. " " .. LPS:L("Fishing")
+        t["PFISH"] = LPS.icons.Fish .. " " .. L.FISHING
     end
     if LPS.Retail or LPS.Mists then
-        t["PET"] = LPS.icons.Pet .. " " .. LPS:L("Battle pets")
+        t["PET"] = LPS.icons.Pet .. " " .. L.BATTLE_PETS
     end
     return t
 end
@@ -240,96 +373,9 @@ end
 --- Список значений флага шрифта.
 function OH:fontFlagValues()
     return {
-        ["NONE"] = LPS:L("None"),
+        ["NONE"] = L.NONE,
         ["OUTLINE"] = "OUTLINE",
         ["MONOCHROMEOUTLINE"] = "MONOCHROMEOUTLINE",
         ["THICKOUTLINE"] = "THICKOUTLINE",
     }
-end
-
---- Регистрация кастомных EditBox/MultiLineEditBox без кнопки ОК в AceGUI.
-function OH:RegisterNoButtonWidgets()
-    local GUI = self.Ace.GUI
-    if not GUI then return end
-    if (GUI:GetWidgetVersion("LPSEditBoxNoButton") or 0) < 2 then
-        local baseCtor = GUI.WidgetRegistry and GUI.WidgetRegistry["EditBox"]
-        if baseCtor then
-            GUI:RegisterWidgetType("LPSEditBoxNoButton", function()
-                local widget = baseCtor()
-                widget.type = "LPSEditBoxNoButton"
-                local baseOnAcquire = widget.OnAcquire
-                widget.OnAcquire = function(self)
-                    if baseOnAcquire then baseOnAcquire(self) end
-                    if self.DisableButton then
-                        self:DisableButton(true)
-                    end
-                end
-                if widget.editbox and widget.GetUserData then
-                    widget.editbox:HookScript("OnTextChanged", function(frame, userInput)
-                        if not userInput then return end
-                        local option = widget:GetUserData("option")
-                        if option and type(option.set) == "function" then
-                            option.set(nil, frame:GetText())
-                        end
-                    end)
-                end
-                return widget
-            end, 2)
-        end
-    end
-    if (GUI:GetWidgetVersion("LPSMultiLineEditBoxNoButton") or 0) < 2 then
-        local baseCtor = GUI.WidgetRegistry and GUI.WidgetRegistry["MultiLineEditBox"]
-        if baseCtor then
-            GUI:RegisterWidgetType("LPSMultiLineEditBoxNoButton", function()
-                local widget = baseCtor()
-                widget.type = "LPSMultiLineEditBoxNoButton"
-                local baseOnAcquire = widget.OnAcquire
-                widget.OnAcquire = function(self)
-                    if baseOnAcquire then baseOnAcquire(self) end
-                    if self.DisableButton then
-                        self:DisableButton(true)
-                    end
-                end
-                if widget.editBox and widget.GetUserData then
-                    widget.editBox:HookScript("OnTextChanged", function(frame, userInput)
-                        if not userInput then return end
-                        local option = widget:GetUserData("option")
-                        if option and type(option.set) == "function" then
-                            option.set(nil, frame:GetText())
-                        end
-                    end)
-                end
-                return widget
-            end, 2)
-        end
-    end
-end
-
---- Разрешает имя опции AceConfig (значение или функция).
-function OH:resolveAceName(v)
-    if type(v) == "function" then
-        local ok, r = pcall(v)
-        if ok and r ~= nil then
-            return tostring(r)
-        end
-        return ""
-    end
-    return tostring(v or "")
-end
-
---- Регистрирует группу как отдельную подкатегорию Blizzard-меню.
-function OH:registerSubCategory(appName, suffix, group)
-    if type(group) ~= "table" then return end
-    if not (self.Ace.Config and self.Ace.Dialog) then return end
-    local displayName = self:resolveAceName(group.name)
-    if displayName == "" then
-        displayName = suffix
-    end
-    -- pcall: ошибка валидации одной подкатегории не должна обрывать загрузку чанка
-    local ok, err = pcall(self.Ace.Config.RegisterOptionsTable, self.Ace.Config, appName .. suffix, group)
-    if not ok then
-        LPS:Print("AceConfig: options table validation failed (" .. tostring(suffix) .. "): " .. tostring(err))
-        return
-    end
-    pcall(self.Ace.Dialog.AddToBlizOptions, self.Ace.Dialog, appName .. suffix, displayName, LPS.addon.title)
 end

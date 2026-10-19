@@ -1,33 +1,34 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
+local L = LPS.L
 
 local OH = LPS.OptionsHelper
 
---- Возвращает вкладку "Tooltip" дерева настроек (формат AceConfig-3.0).
+--- Возвращает вкладку "Tooltip" дерева настроек (внутренний формат дерева настроек).
 function LPS.Options.BuildTree.tabs.tooltip()
 	return {
 			type = "group",
-			name = LPS:L("Tooltip"),
+			name = L.TOOLTIP,
 			order = 3,
 			args = {
 				tt_grp = {
 					order = 1,
 					type = "group",
-					name = LPS:L("Visibility"),
+					name = L.VISIBILITY,
 					inline = true,
 					args = {
 						tt = {
 							order = 1,
-							name = LPS:L("Show tooltip"),
-							desc = LPS:L("Show tooltips when hovering over panels."),
+							name = L.SHOW_TOOLTIP,
+							desc = L.SHOW_TOOLTIPS_WHEN_HOVERING_OVER_PANELS,
 							type = "toggle",
 							get = function() return OH:getDb().tooltips.visibility.enable end,
 							set = function(_, v) OH:getDb().tooltips.visibility.enable = v LPS.Options:ApplyRefresh() end,
 						},
 						hide_in_combat = {
 							order = 2,
-							name = LPS:L("Hide in combat"),
-							desc = LPS:L("Hide tooltips while in combat."),
+							name = L.HIDE_IN_COMBAT,
+							desc = L.HIDE_TOOLTIPS_WHILE_IN_COMBAT,
 							type = "toggle",
 							disabled = function() return not OH:getDb().tooltips.visibility.enable end,
 							get = function() return OH:getDb().tooltips.visibility.combat end,
@@ -38,13 +39,13 @@ function LPS.Options.BuildTree.tabs.tooltip()
 				tt_options = {
 					order = 2,
 					type = "group",
-					name = LPS:L("Location"),
+					name = L.LOCATION,
 					inline = true,
 					args = {
 						ttst = {
 							order = 1,
-							name = LPS:L("Status"),
-							desc = LPS:L("Enable/Disable status on Tooltip."),
+							name = L.STATUS,
+							desc = L.ENABLE_DISABLE_STATUS_ON_TOOLTIP,
 							type = "toggle",
 							
 							disabled = function() return not OH:getDb().tooltips.visibility.enable end,
@@ -53,8 +54,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						petlevel = {
 							order = 1.1,
-							name = LPS.icons.Pet.." "..LPS:L("Battle Pet level"),
-							desc = LPS:L("Enable/Disable battle pet level on the area."),
+							name = LPS.icons.Pet.." "..L.BATTLE_PET_LEVEL,
+							desc = L.ENABLE_DISABLE_BATTLE_PET_LEVEL_ON_THE_AREA,
 							type = "toggle",
 							
 							disabled = function() return not OH:getDb().tooltips.visibility.enable or not (LPS.Retail or LPS.Mists) end,
@@ -64,8 +65,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						ttlvl = {
 							order = 2,
-							name = LPS.icons.Level.." "..LPS:L("Level range"),
-							desc = LPS:L("Enable/Disable level range on Tooltip."),
+							name = LPS.icons.Level.." "..L.LEVEL_RANGE,
+							desc = L.ENABLE_DISABLE_LEVEL_RANGE_ON_TOOLTIP,
 							type = "toggle",
 							
 							disabled = function() return not OH:getDb().tooltips.visibility.enable end,
@@ -74,8 +75,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						fish = {
 							order = 2.1,
-							name = LPS.icons.Fish.." "..LPS:L("Area Fishing level"),
-							desc = LPS:L("Enable/Disable fishing level on the area."),
+							name = LPS.icons.Fish.." "..L.AREA_FISHING_LEVEL,
+							desc = L.ENABLE_DISABLE_FISHING_LEVEL_ON_THE_AREA,
 							type = "toggle",
 							
 							disabled = function() return not OH:getDb().tooltips.visibility.enable or LPS.Retail or LPS.Mists end,
@@ -90,8 +91,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						prof = {
 							order = 3,
-							name = LPS:L("Professions"),
-							desc = LPS:L("Enable/Disable the professions, on Tooltip."),
+							name = L.PROFESSIONS,
+							desc = L.ENABLE_DISABLE_THE_PROFESSIONS_ON_TOOLTIP,
 							type = "toggle",
 							
 							disabled = function() return not OH:getDb().tooltips.visibility.enable end,
@@ -100,8 +101,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						profcap = {
 							order = 3.1,
-							name = LPS:L("Hide capped"),
-							desc = LPS:L("Hides a profession when the player reaches its highest level."),
+							name = L.HIDE_CAPPED,
+							desc = L.HIDES_A_PROFESSION_WHEN_THE_PLAYER_REACHES_ITS_HIGHEST_LEVEL,
 							type = "toggle",
 							
 							disabled = function()
@@ -113,14 +114,14 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						filters = {
 							order = 50,
 							type = "group",
-							name = LPS:L("Filters"),
+							name = L.FILTERS,
 							inline = true,
 							hidden = function() return LPS.Forever end,
 							args = {
 								tthideraid = {
 									order = 1,
-									name = LPS:L("Hide Raid"),
-									desc = LPS:L("Show/Hide raids on recommended dungeons."),
+									name = L.HIDE_RAID,
+									desc = L.SHOW_HIDE_RAIDS_ON_RECOMMENDED_DUNGEONS,
 									type = "toggle",
 									disabled = function() return not OH:getDb().tooltips.visibility.enable or LPS.Forever end,
 									get = function() return OH:getDb().tooltips.location.hides.raids end,
@@ -128,8 +129,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 								},
 								tthidepvp = {
 									order = 2,
-									name = LPS:L("Hide PvP"),
-									desc = LPS:L("Show/Hide PvP zones, Arenas and BGs on recommended dungeons and zones."),
+									name = L.HIDE_PVP,
+									desc = L.SHOW_HIDE_PVP_ZONES_ARENAS_AND_BGS_ON_RECOMMENDED_DUNGEONS_AND_ZONES,
 									type = "toggle",
 									disabled = function() return not OH:getDb().tooltips.visibility.enable or LPS.Forever end,
 									get = function() return OH:getDb().tooltips.location.hides.pvp end,
@@ -144,8 +145,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						ttreczones = {
 							order = 6,
-							name = LPS:L("Recommended Zones"),
-							desc = LPS:L("Enable/Disable recommended zones on Tooltip."),
+							name = L.RECOMMENDED_ZONES,
+							desc = L.ENABLE_DISABLE_RECOMMENDED_ZONES_ON_TOOLTIP,
 							type = "toggle",
 							hidden = function() return LPS.Forever end,
 							disabled = function() return not OH:getDb().tooltips.visibility.enable or LPS.Forever end,
@@ -154,8 +155,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						ttreczonesmax = {
 							order = 6.1,
-							name = LPS:L("Max entries"),
-							desc = LPS:L("Limit how many entries are shown in this list."),
+							name = L.MAX_ENTRIES,
+							desc = L.LIMIT_HOW_MANY_ENTRIES_ARE_SHOWN_IN_THIS_LIST,
 							type = "range",
 							
 							min = 3,
@@ -173,8 +174,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						ttinst = {
 							order = 7,
-							name = LPS:L("Zone Dungeons"),
-							desc = LPS:L("Enable/Disable dungeons in the zone, on Tooltip."),
+							name = L.ZONE_DUNGEONS,
+							desc = L.ENABLE_DISABLE_DUNGEONS_IN_THE_ZONE_ON_TOOLTIP,
 							type = "toggle",
 							
 							hidden = function() return LPS.Forever end,
@@ -184,8 +185,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						ttinstmax = {
 							order = 7.1,
-							name = LPS:L("Max entries"),
-							desc = LPS:L("Limit how many entries are shown in this list."),
+							name = L.MAX_ENTRIES,
+							desc = L.LIMIT_HOW_MANY_ENTRIES_ARE_SHOWN_IN_THIS_LIST,
 							type = "range",
 							
 							min = 3,
@@ -203,8 +204,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						ttrecinst = {
 							order = 8,
-							name = LPS:L("Recommended Dungeons"),
-							desc = LPS:L("Enable/Disable recommended dungeons on Tooltip."),
+							name = L.RECOMMENDED_DUNGEONS,
+							desc = L.ENABLE_DISABLE_RECOMMENDED_DUNGEONS_ON_TOOLTIP,
 							type = "toggle",
 							
 							hidden = function() return LPS.Forever end,
@@ -214,8 +215,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						ttcoords = {
 							order = 9,
-							name = LPS:L("with Entrance Coords"),
-							desc = LPS:L("Enable/Disable the coords for area dungeons and recommended dungeon entrances, on Tooltip."),
+							name = L.WITH_ENTRANCE_COORDS,
+							desc = L.ENABLE_DISABLE_THE_COORDS_FOR_AREA_DUNGEONS_AND_RECOMMENDED_DUNGEON_ENTRANCES_ON_TOOLTIP,
 							type = "toggle",
 							
 							hidden = function() return LPS.Forever end,
@@ -225,8 +226,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						ttrecinstmax = {
 							order = 8.1,
-							name = LPS:L("Max entries"),
-							desc = LPS:L("Limit how many entries are shown in this list."),
+							name = L.MAX_ENTRIES,
+							desc = L.LIMIT_HOW_MANY_ENTRIES_ARE_SHOWN_IN_THIS_LIST,
 							type = "range",
 							
 							min = 3,
@@ -242,13 +243,13 @@ function LPS.Options.BuildTree.tabs.tooltip()
 				gold = {
 					order = 30,
 					type = "group",
-					name = LPS:L("Gold"),
+					name = L.GOLD,
 					inline = true,
 					args = {
 						enable = {
 							order = 1,
-							name = LPS:L("Enable"),
-							desc = LPS:L("Enable tooltip on the gold panel."),
+							name = L.ENABLE,
+							desc = L.ENABLE_TOOLTIP_ON_THE_GOLD_PANEL,
 							type = "toggle",
 							disabled = function() return not OH:getDb().tooltips.visibility.enable end,
 							get = function() return OH:getDb().tooltips.gold.enable end,
@@ -256,8 +257,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						session = {
 							order = 2,
-							name = LPS:L("Session"),
-							desc = LPS:L("Show session information in the tooltip."),
+							name = L.SESSION,
+							desc = L.SHOW_SESSION_INFORMATION_IN_THE_TOOLTIP,
 							type = "toggle",
 							disabled = function() return not OH:getDb().tooltips.visibility.enable or not OH:getDb().tooltips.gold.enable end,
 							get = function() return OH:getDb().tooltips.gold.session end,
@@ -270,8 +271,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						characters = {
 							order = 3,
-							name = LPS:L("Characters"),
-							desc = LPS:L("Show character gold list in the tooltip."),
+							name = L.CHARACTERS,
+							desc = L.SHOW_CHARACTER_GOLD_LIST_IN_THE_TOOLTIP,
 							type = "toggle",
 							disabled = function() return not OH:getDb().tooltips.visibility.enable or not OH:getDb().tooltips.gold.enable end,
 							get = function() return OH:getDb().tooltips.gold.characters end,
@@ -279,8 +280,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						charactersMax = {
 							order = 3.1,
-							name = LPS:L("Max entries"),
-							desc = LPS:L("Limit how many entries are shown in this list."),
+							name = L.MAX_ENTRIES,
+							desc = L.LIMIT_HOW_MANY_ENTRIES_ARE_SHOWN_IN_THIS_LIST,
 							type = "range",
 							min = 3,
 							max = 40,
@@ -296,8 +297,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						serverTotals = {
 							order = 4,
-							name = LPS:L("On server"),
-							desc = LPS:L("Show faction/server totals in the tooltip."),
+							name = L.ON_SERVER,
+							desc = L.SHOW_FACTION_SERVER_TOTALS_IN_THE_TOOLTIP,
 							type = "toggle",
 							disabled = function() return not OH:getDb().tooltips.visibility.enable or not OH:getDb().tooltips.gold.enable end,
 							get = function() return OH:getDb().tooltips.gold.serverTotals end,
@@ -305,8 +306,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						warband = {
 							order = 5,
-							name = LPS:L("Warband"),
-							desc = LPS:L("Show Warband money in the tooltip (Retail)."),
+							name = L.WARBAND,
+							desc = L.SHOW_WARBAND_MONEY_IN_THE_TOOLTIP_RETAIL,
 							type = "toggle",
 							hidden = function() return not LPS.Retail end,
 							disabled = function() return not OH:getDb().tooltips.visibility.enable or not OH:getDb().tooltips.gold.enable or LPS.Forever end,
@@ -315,8 +316,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						token = {
 							order = 6,
-							name = LPS:L("WoW Token"),
-							desc = LPS:L("Show WoW Token price in the tooltip (Retail)."),
+							name = L.WOW_TOKEN,
+							desc = L.SHOW_WOW_TOKEN_PRICE_IN_THE_TOOLTIP_RETAIL,
 							type = "toggle",
 							hidden = function() return not LPS.Retail end,
 							disabled = function() return not OH:getDb().tooltips.visibility.enable or not OH:getDb().tooltips.gold.enable or LPS.Forever end,
@@ -325,8 +326,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						currency = {
 							order = 7,
-							name = LPS:L("Currency"),
-							desc = LPS:L("Enable/Disable the currencies, on Tooltip."),
+							name = L.CURRENCY,
+							desc = L.ENABLE_DISABLE_THE_CURRENCIES_ON_TOOLTIP,
 							type = "toggle",
 							
 							hidden = function() return not LPS.Retail end,
@@ -336,8 +337,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						resetHints = {
 							order = 8,
-							name = LPS:L("Show Hints"),
-							desc = LPS:L("Show reset keybind hints at the bottom of the tooltip."),
+							name = L.SHOW_HINTS,
+							desc = L.SHOW_RESET_KEYBIND_HINTS_AT_THE_BOTTOM_OF_THE_TOOLTIP,
 							type = "toggle",
 							disabled = function() return not OH:getDb().tooltips.visibility.enable or not OH:getDb().tooltips.gold.enable end,
 							get = function() return OH:getDb().tooltips.gold.resetHints end,
@@ -348,13 +349,13 @@ function LPS.Options.BuildTree.tabs.tooltip()
 				system = {
 					order = 40,
 					type = "group",
-					name = LPS:L("System"),
+					name = L.SYSTEM,
 					inline = true,
 					args = {
 						enable = {
 							order = 1,
-							name = LPS:L("Enable"),
-							desc = LPS:L("Enable tooltip on the system panel."),
+							name = L.ENABLE,
+							desc = L.ENABLE_TOOLTIP_ON_THE_SYSTEM_PANEL,
 							type = "toggle",
 							disabled = function() return not OH:getDb().tooltips.visibility.enable end,
 							get = function() return OH:getDb().tooltips.system.enable end,
@@ -362,8 +363,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						network = {
 							order = 2,
-							name = LPS:L("Bandwidth"),
-							desc = LPS:L("Show FPS and network information in the tooltip."),
+							name = L.BANDWIDTH,
+							desc = L.SHOW_FPS_AND_NETWORK_INFORMATION_IN_THE_TOOLTIP,
 							type = "toggle",
 							disabled = function() return not OH:getDb().tooltips.visibility.enable or not OH:getDb().tooltips.system.enable end,
 							get = function() return OH:getDb().tooltips.system.network end,
@@ -376,8 +377,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						addons = {
 							order = 3,
-							name = LPS:L("AddOns"),
-							desc = LPS:L("Show addon memory usage list in the tooltip."),
+							name = L.ADDONS,
+							desc = L.SHOW_ADDON_MEMORY_USAGE_LIST_IN_THE_TOOLTIP,
 							type = "toggle",
 							disabled = function() return not OH:getDb().tooltips.visibility.enable or not OH:getDb().tooltips.system.enable end,
 							get = function() return OH:getDb().tooltips.system.addons end,
@@ -385,8 +386,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						addonsMax = {
 							order = 3.1,
-							name = LPS:L("Max entries"),
-							desc = LPS:L("Limit how many entries are shown in this list."),
+							name = L.MAX_ENTRIES,
+							desc = L.LIMIT_HOW_MANY_ENTRIES_ARE_SHOWN_IN_THIS_LIST,
 							type = "range",
 							min = 3,
 							max = 40,
@@ -402,8 +403,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						total = {
 							order = 4,
-							name = LPS:L("Total"),
-							desc = LPS:L("Show total addon memory usage line in the tooltip."),
+							name = L.TOTAL,
+							desc = L.SHOW_TOTAL_ADDON_MEMORY_USAGE_LINE_IN_THE_TOOLTIP,
 							type = "toggle",
 							disabled = function() return not OH:getDb().tooltips.visibility.enable or not OH:getDb().tooltips.system.enable end,
 							get = function() return OH:getDb().tooltips.system.total end,
@@ -414,13 +415,13 @@ function LPS.Options.BuildTree.tabs.tooltip()
 				time = {
 					order = 20,
 					type = "group",
-					name = LPS:L("Time"),
+					name = L.TIME,
 					inline = true,
 					args = {
 						enable = {
 							order = 1,
-							name = LPS:L("Enable"),
-							desc = LPS:L("Enable tooltip on the time panel."),
+							name = L.ENABLE,
+							desc = L.ENABLE_TOOLTIP_ON_THE_TIME_PANEL,
 							type = "toggle",
 							disabled = function() return not OH:getDb().tooltips.visibility.enable end,
 							get = function() return OH:getDb().tooltips.time.enable end,
@@ -428,8 +429,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						raids = {
 							order = 2,
-							name = LPS:L("Cooldown raids"),
-							desc = LPS:L("Show saved raids list."),
+							name = L.COOLDOWN_RAIDS,
+							desc = L.SHOW_SAVED_RAIDS_LIST,
 							type = "toggle",
 							hidden = function() return LPS.Forever end,
 							disabled = function() return not OH:getDb().tooltips.time.enable or not OH:getDb().tooltips.visibility.enable or LPS.Forever end,
@@ -438,8 +439,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						dungeons = {
 							order = 3,
-							name = LPS:L("Cooldown dungeons"),
-							desc = LPS:L("Show saved dungeons list."),
+							name = L.COOLDOWN_DUNGEONS,
+							desc = L.SHOW_SAVED_DUNGEONS_LIST,
 							type = "toggle",
 							hidden = function() return LPS.Forever end,
 							disabled = function() return not OH:getDb().tooltips.time.enable or not OH:getDb().tooltips.visibility.enable or LPS.Forever end,
@@ -448,8 +449,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						},
 						playedTime = {
 							order = 4,
-							name = LPS:L("Played Time"),
-							desc = LPS:L("Show played time across all your characters (Required 'Broker: Played Time')"),
+							name = L.PLAYED_TIME,
+							desc = L.SHOW_PLAYED_TIME_ACROSS_ALL_YOUR_CHARACTERS_REQUIRED_BROKER_PLAYED_TIME,
 							type = "toggle",
 							disabled = function() return not OH:getDb().tooltips.time.enable or not OH:getDb().tooltips.visibility.enable end,
 							get = function() return OH:getDb().tooltips.time.playedTime end,
@@ -460,13 +461,13 @@ function LPS.Options.BuildTree.tabs.tooltip()
 				friends = {
 					order = 51,
 					type = "group",
-					name = LPS:L("Friends"),
+					name = L.FRIENDS,
 					inline = true,
 					args = {
 						enable = {
 							order = 1,
-							name = LPS:L("Enable"),
-							desc = LPS:L("Show a tooltip when hovering over this panel."),
+							name = L.ENABLE,
+							desc = L.SHOW_A_TOOLTIP_WHEN_HOVERING_OVER_THIS_PANEL,
 							type = "toggle",
 							disabled = function() return not OH:getDb().tooltips.visibility.enable end,
 							get = function() return OH:getDb().tooltips.friends.enable end,
@@ -475,8 +476,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						maxLimit = {
 							order = 2,
 							type = "range",
-							name = LPS:L("Max entries in tooltip"),
-							desc = LPS:L("Limit how many entries are shown in this list."),
+							name = L.MAX_ENTRIES_IN_TOOLTIP,
+							desc = L.LIMIT_HOW_MANY_ENTRIES_ARE_SHOWN_IN_THIS_LIST,
 							min = 1,
 							max = 30,
 							step = 1,
@@ -489,13 +490,13 @@ function LPS.Options.BuildTree.tabs.tooltip()
 				guild = {
 					order = 52,
 					type = "group",
-					name = LPS:L("Guild"),
+					name = L.GUILD,
 					inline = true,
 					args = {
 						enable = {
 							order = 1,
-							name = LPS:L("Enable"),
-							desc = LPS:L("Show a tooltip when hovering over this panel."),
+							name = L.ENABLE,
+							desc = L.SHOW_A_TOOLTIP_WHEN_HOVERING_OVER_THIS_PANEL,
 							type = "toggle",
 							disabled = function() return not OH:getDb().tooltips.visibility.enable end,
 							get = function() return OH:getDb().tooltips.guild.enable end,
@@ -504,8 +505,8 @@ function LPS.Options.BuildTree.tabs.tooltip()
 						maxLimit = {
 							order = 2,
 							type = "range",
-							name = LPS:L("Max entries in tooltip"),
-							desc = LPS:L("Limit how many entries are shown in this list."),
+							name = L.MAX_ENTRIES_IN_TOOLTIP,
+							desc = L.LIMIT_HOW_MANY_ENTRIES_ARE_SHOWN_IN_THIS_LIST,
 							min = 1,
 							max = 30,
 							step = 1,

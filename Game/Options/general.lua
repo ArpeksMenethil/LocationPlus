@@ -1,19 +1,20 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
+local L = LPS.L
 
 local OH = LPS.OptionsHelper
 
---- Возвращает вкладку "General" дерева настроек (формат AceConfig-3.0).
+--- Возвращает вкладку "General" дерева настроек (внутренний формат дерева настроек).
 function LPS.Options.BuildTree.tabs.general()
 	return {
 			type = "group",
-			name = LPS:L("General"),
+			name = L.GENERAL,
 			order = 1,
 			args = {
 				generalGroup = {
 					order = 4,
 					type = "group",
-					name = LPS:L("General"),
+					name = L.GENERAL,
 					inline = true,
 					args = {
 						left = {
@@ -25,8 +26,8 @@ function LPS.Options.BuildTree.tabs.general()
 							args = {
 								loginMessage = {
 									order = 1,
-									name = LPS:L("Login message"),
-									desc = LPS:L("Show a message in chat on login."),
+									name = L.LOGIN_MESSAGE,
+									desc = L.SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN,
 									type = "toggle",
 									
 									get = function() return OH:getDb().general.loginMessage end,
@@ -39,8 +40,8 @@ function LPS.Options.BuildTree.tabs.general()
 								},
 								is24H = {
 									type = "toggle",
-									name = LPS:L("24H time format"),
-									desc = LPS:L("Use 24-hour time format."),
+									name = L._24H_TIME_FORMAT,
+									desc = L.USE_24_HOUR_TIME_FORMAT,
 									order = 3,
 									
 									get = function() return OH:getDb().general.is24H end,
@@ -53,8 +54,8 @@ function LPS.Options.BuildTree.tabs.general()
 								},
 								seconds = {
 									type = "toggle",
-									name = LPS:L("Show seconds"),
-									desc = LPS:L("Show seconds when using local time."),
+									name = L.SHOW_SECONDS,
+									desc = L.SHOW_SECONDS_WHEN_USING_LOCAL_TIME,
 									order = 4,
 									
 									get = function() return OH:getDb().general.seconds end,
@@ -76,8 +77,8 @@ function LPS.Options.BuildTree.tabs.general()
 							args = {
 								minimapIcon = {
 									type = "toggle",
-									name = LPS:L("Minimap icon"),
-									desc = LPS:L("Show/Hide minimap icon."),
+									name = L.MINIMAP_ICON,
+									desc = L.SHOW_HIDE_MINIMAP_ICON,
 									order = 1,
 									
 									get = function()
@@ -97,8 +98,8 @@ function LPS.Options.BuildTree.tabs.general()
 								},
 								addonCompartment = {
 									type = "toggle",
-									name = LPS:L("Addon Compartment"),
-									desc = LPS:L("Show/Hide addon in the Addon Compartment."),
+									name = L.ADDON_COMPARTMENT,
+									desc = L.SHOW_HIDE_ADDON_IN_THE_ADDON_COMPARTMENT,
 									order = 2,
 									
 									hidden = function() return not (LPS.Retail or LPS.Forever) end,
@@ -118,8 +119,8 @@ function LPS.Options.BuildTree.tabs.general()
 								},
 								combatHide = {
 									order = 4,
-									name = LPS:L("Combat Hide"),
-									desc = LPS:L("Show/Hide all panels when in combat"),
+									name = L.COMBAT_HIDE,
+									desc = L.SHOW_HIDE_ALL_PANELS_WHEN_IN_COMBAT,
 									type = "toggle",
 									
 									get = function() return OH:getDb().show.visibility.combat end,
@@ -137,27 +138,27 @@ function LPS.Options.BuildTree.tabs.general()
 				actionsGroup = {
 					order = 99,
 					type = "group",
-					name = LPS:L("Actions"),
+					name = L.ACTIONS,
 					inline = true,
 					args = {
 						moveFrame = {
 							type = "execute",
-							name = LPS:L("Move frame"),
-							desc = LPS:L("Toggle move mode for the frame."),
+							name = L.MOVE_FRAME,
+							desc = L.TOGGLE_MOVE_MODE_FOR_THE_FRAME,
 							order = 1,
 							func = function() LPS:ToggleMoveMode() end,
 						},
 						resetPosition = {
 							type = "execute",
-							name = LPS:L("Reset holder position"),
-							desc = LPS:L("Reset the holder frame position."),
+							name = L.RESET_HOLDER_POSITION,
+							desc = L.RESET_THE_HOLDER_FRAME_POSITION,
 							order = 2,
 							func = function() LPS:ResetFramePosition() end,
 						},
 						resetValues = {
 							type = "execute",
-							name = LPS:L("Reset values"),
-							desc = LPS:L("Reset all addon settings to default values."),
+							name = L.RESET_VALUES,
+							desc = L.RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES,
 							order = 3,
 							func = function()
 							if LPS.ResetAllSettingsToDefaults then
