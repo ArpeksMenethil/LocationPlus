@@ -185,6 +185,9 @@ SlashCmdList["LPS"] = function(input)
                         LPS:ResetPanelsToDefaults()
                         LPS:Print(LPS:L("Panel settings have been reset to defaults."))
                 end
+        elseif arg == "legacymenu" then
+                -- Всегда нативное меню (без Ace3), даже если Ace3 установлен
+                LPS:ToggleNativeOptions()
         else
                 LPS:ToggleOptions()
         end

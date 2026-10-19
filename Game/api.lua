@@ -1350,12 +1350,30 @@ function LPS:EnsureOptionsCloseHooks()
 	hookOnHide(_G.InterfaceOptionsFrame, "InterfaceOptionsFrame")
 end
 
-function LPS:ToggleOptions()
+--- Переключить нативное окно настроек (дизайн CharacterStats, без Ace3).
+function LPS:ToggleNativeOptions()
+	if LPS.UI_Options and LPS.UI_Options.Toggle then
+		-- Если открыто окно Ace — закрыть его, чтобы не было двух меню сразу
+		local aceDialog = LibStub and LibStub:GetLibrary("AceConfigDialog-3.0", true)
+		if aceDialog and LPS.Options and LPS.Options.aceAppName
+			and aceDialog.OpenFrames and aceDialog.OpenFrames[LPS.Options.aceAppName] then
+			aceDialog:Close(LPS.Options.aceAppName)
+		end
+		LPS.UI_Options:Toggle()
+		return true
+	end
+	return false
+end
+
+--- Открыть/закрыть прежнее меню на AceConfigDialog (если Ace3 доступен).
+-- @return true, если окно Ace было открыто/закрыто; false — Ace недоступен.
+function LPS:ToggleLegacyMenu()
 	local aceDialog = LibStub and LibStub:GetLibrary("AceConfigDialog-3.0", true) and LibStub("AceConfigDialog-3.0")
+	if not (aceDialog and LPS.Options and LPS.Options.aceAppName) then return false end
 	if LPS.EnsureOptionsCloseHooks then
 		LPS:EnsureOptionsCloseHooks()
 	end
-	if aceDialog and LPS.Options and LPS.Options.aceAppName then
+	do
 		local appName = LPS.Options.aceAppName
 		if aceDialog.OpenFrames and aceDialog.OpenFrames[appName] then
 			if LPS.DisableMoveModeIfActive then
@@ -1386,8 +1404,15 @@ function LPS:ToggleOptions()
 				end
 			end
 		end
-		return
+		return true
 	end
+end
+
+--- Главное переключение меню: есть Ace3 — legacy-окно AceConfigDialog,
+--- иначе нативное окно (Game/UI/*). Fallback — стандартные панели Blizzard.
+function LPS:ToggleOptions()
+	if self:ToggleLegacyMenu() then return end
+	if self:ToggleNativeOptions() then return end
 
 	if _G.SettingsPanel and _G.SettingsPanel.IsShown and _G.SettingsPanel:IsShown() then
 		if LPS.DisableMoveModeIfActive then

@@ -1,5 +1,9 @@
 <Ui xmlns='http://www.blizzard.com/wow/ui/'>
 	<Include file='.\init.lua'/>
+	<Include file='.\UI\Theme.lua'/>
+	<Include file='.\UI\Widgets.lua'/>
+	<Include file='.\UI\Builder.lua'/>
+	<Include file='.\UI\Panel.lua'/>
 	<Include file='.\frames.lua'/>
 	<Include file='.\layout.lua'/>
 	<Include file='.\core.lua'/>
@@ -8,5 +12,6 @@
 	<Include file='.\ui.lua'/>
 
 	<Include file='.\datatexts.lua'/>
-    <Include file='.\options.lua'/>
+	<Include file='.\options.lua'/>
+	<Include file='.\ui_options.lua'/>
 </Ui>
