@@ -3,24 +3,21 @@ local LPS = MyAddon.LPS
 local DT = LPS._DT
 
 local inventorySlots = {
-        INVTYPE_HEAD = 1, INVTYPE_SHOULDER = 3, INVTYPE_CHEST = 5, INVTYPE_WAIST = 6,
-        INVTYPE_LEGS = 7, INVTYPE_FEET = 8, INVTYPE_WRIST = 9, INVTYPE_HAND = 10,
-        INVTYPE_WEAPONMAINHAND = 16, INVTYPE_WEAPONOFFHAND = 17, INVTYPE_RANGED = 18,
+	INVTYPE_HEAD = 1, INVTYPE_SHOULDER = 3, INVTYPE_CHEST = 5, INVTYPE_WAIST = 6,
+	INVTYPE_LEGS = 7, INVTYPE_FEET = 8, INVTYPE_WRIST = 9, INVTYPE_HAND = 10,
+	INVTYPE_WEAPONMAINHAND = 16, INVTYPE_WEAPONOFFHAND = 17, INVTYPE_RANGED = 18,
 }
 
--- См. Modules/Frames/durability.lua: GetInventoryItemDurability() в актуальных
--- клиентах возвращает secret-числа — берём прочность через C_Item.
 local function slotDurability(index)
-        if C_Item and C_Item.Create then
-                local item = C_Item:Create("player", index)
-                if item and item.IsValid and item:IsValid()
-                        and item.HasDurability and item:HasDurability() then
-                        local cur, max = item:GetDurability()
-                        if cur and max and max > 0 then return cur, max end
-                end
-                return nil
-        end
-        return GetInventoryItemDurability(index)
+	if C_Item and C_Item.Create then
+		local item = C_Item:Create("player", index)
+		if item and item.IsValid and item:IsValid() and item.HasDurability and item:HasDurability() then
+			local cur, max = item:GetDurability()
+			if cur and max and max > 0 then return cur, max end
+		end
+		return nil
+	end
+	return GetInventoryItemDurability(index)
 end
 
 function LPS:BuildDurabilityTooltip(GameTooltip)
@@ -29,20 +26,17 @@ function LPS:BuildDurabilityTooltip(GameTooltip)
     local rB, gB, bB = LPS:GetColor("tooltipSetting")
     local rY, gY, bY = LPS:GetColor("tooltip")
 
-                                tt:AddLine(DURABILITY, 1, 0.82, 0)
-                                tt:AddLine(" ")
-                                for slotName, index in pairs(inventorySlots) do
-                                        local cur, max = slotDurability(index)
-                                        if cur and max and max > 0 then
-                                                local perc = math.floor(cur / max * 100 + 0.5)
-                                                local link = GetInventoryItemLink("player", index) or _G[slotName] or slotName
-                                                local icon = GetInventoryItemTexture("player", index)
-                                                local r, g, b = DT.colorGradient(perc * 0.01, 1, .1, .1, 1, 1, .1, .1, 1, .1)
-                                                tt:AddDoubleLine(icon and string.format("|T%s:14:14:0:0:64:64:4:60:4:60|t %s", icon, link) or link,
-                                                        string.format("%d%%", perc), 1, 1, 1, r, g, b)
-                                        end
-                                end
-
-    tt:AddLine(" ")
-    tt:AddDoubleLine(LPS:L("LMB"), LPS:L("Open character panel"), rB, gB, bB, rB, gB, bB)
+	tt:AddLine(DURABILITY, 1, 0.82, 0)
+	tt:AddLine(" ")
+	for slotName, index in pairs(inventorySlots) do
+		local cur, max = slotDurability(index)
+		if cur and max and max > 0 then
+			local perc = math.floor(cur / max * 100 + 0.5)
+			local link = GetInventoryItemLink("player", index) or _G[slotName] or slotName
+			local icon = GetInventoryItemTexture("player", index)
+			local r, g, b = DT.colorGradient(perc * 0.01, 1, .1, .1, 1, 1, .1, .1, 1, .1)
+			tt:AddDoubleLine(icon and string.format("|T%s:14:14:0:0:64:64:4:60:4:60|t %s", icon, link) or link,
+				string.format("%d%%", perc), 1, 1, 1, r, g, b)
+		end
+	end
 end
