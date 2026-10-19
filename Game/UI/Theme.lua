@@ -1,5 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
+local L = LPS.L
 --- Тема оформления нативного окна настроек (порт design-системы CharacterStats).
 local Theme = {}
 LPS.UI = LPS.UI or {}
@@ -72,12 +73,12 @@ Theme.THEMES = {
 function Theme.GetName(key)
     local def = Theme.THEMES[key]
     if not def then return key end
-    return (LPS:L(def.nameKey) ~= def.nameKey and LPS:L(def.nameKey)) or def.fallbackName
+    return L[def.nameKey] or def.fallbackName
 end
 function Theme.GetDescription(key)
     local def = Theme.THEMES[key]
     if not def then return "" end
-    return (LPS:L(def.descKey) ~= def.descKey and LPS:L(def.descKey)) or def.fallbackDesc
+    return L[def.descKey] or def.fallbackDesc
 end
 function Theme.Load()
     local db = LPS:GetDB()

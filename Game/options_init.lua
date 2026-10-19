@@ -39,7 +39,6 @@ end
 function LPS.Options:GetTree()
 local tabs = self.BuildTree.tabs
 return {
-type = "group",
 name = LPS.addon.title .. " v" .. LPS.addon.version,
 childGroups = "tab",
 args = {

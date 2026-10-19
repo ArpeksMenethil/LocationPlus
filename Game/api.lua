@@ -3,15 +3,15 @@ if not LPS then return end
 
 local cachedPlayerClass
 local function getClassColor()
-	if not cachedPlayerClass then
-		local _, class = UnitClass("player")
-		cachedPlayerClass = class
-	end
-	local c = cachedPlayerClass and RAID_CLASS_COLORS and RAID_CLASS_COLORS[cachedPlayerClass]
-	if c then
-		return c.r, c.g, c.b
-	end
-	return 1, 1, 1
+    if not cachedPlayerClass then
+        local _, class = UnitClass("player")
+        cachedPlayerClass = class
+    end
+    local c = cachedPlayerClass and RAID_CLASS_COLORS and RAID_CLASS_COLORS[cachedPlayerClass]
+    if c then
+        return c.r, c.g, c.b
+    end
+    return 1, 1, 1
 end
 
 local unpackFn = table.unpack or unpack
@@ -20,11 +20,11 @@ local unpackFn = table.unpack or unpack
 local normalizedLayoutCache
 
 function LPS:_NormalizeLayoutDB(raw)
-	if not raw then
-		raw = {}
-		local db = LPS:GetDB()
-		if db then db.layout = raw end
-	end
+    if not raw then
+        raw = {}
+        local db = LPS:GetDB()
+        if db then db.layout = raw end
+    end
 -- ВАЖНО: кэш нормализации не должен «съедать» изменения настроек.
 -- AceDB может мутировать профиль in-place (та же таблица), поэтому
 -- проверка «изменились ли значения» здесь ненадёжна и раньше приводила
@@ -32,127 +32,127 @@ function LPS:_NormalizeLayoutDB(raw)
 -- применялись. Нормализация дешёвая — выполняем её всегда; настоящая
 -- защита от лишних перекладок — ключ ApplyLayout + InvalidateLayoutCache.
 local out = normalizedLayoutCache and normalizedLayoutCache.out or {}
-	out.dtPaddingX  = tonumber(raw.dtPaddingX)
-	out.dtPaddingY  = tonumber(raw.dtPaddingY)
-	out.dtMinWidth  = tonumber(raw.dtMinWidth)
-	out.locPaddingX = tonumber(raw.locPaddingX)
-	out.locPaddingY = tonumber(raw.locPaddingY)
-	out.locMinWidth = tonumber(raw.locMinWidth)
-	-- spacingAuto == true — авторасстояние (жёстко 5, как в эталонной версии);
-	-- spacingAuto == false — ручное значение из spacingManual (дефолт из LPS.defaults).
-	local defLayout = LPS.defaults and LPS.defaults.layout or {}
-	if raw.spacingAuto == false then
-		out.spacing = tonumber(raw.spacingManual) or tonumber(defLayout.spacingManual) or 20
-	else
-		out.spacing = 5
-	end
-	if raw.dtshow == nil and LPS.defaults and LPS.defaults.layout then
-		raw.dtshow = LPS.defaults.layout.dtshow
-	end
-	if raw.sideSlots == nil and LPS.defaults and LPS.defaults.layout then
-		-- КОПИЯ дефолтов, а не ссылка: при AceDB-наследовании запись в общую
-		-- таблицу дефолтов ломала бы все профили и сам источник дефолтов.
-		local copy = {}
-		for k, v in pairs(LPS.defaults.layout.sideSlots) do
-			if type(v) == "table" then
-				local t = {}
-				for kk, vv in pairs(v) do t[kk] = vv end
-				copy[k] = t
-			else
-				copy[k] = v
-			end
-		end
-		copy.userTouched = {}
-		raw.sideSlots = copy
-	end
-	out.dtshow      = raw.dtshow ~= false
-	out.slotCount   = tonumber(raw.slotCount) or 2
-	out.frameStrata = raw.frameStrata
-	out.frameLevel  = tonumber(raw.frameLevel)
-	out.customColor = raw.customColor
-	out.userColor   = raw.userColor
-	-- режим якоря цепочки ("chain" | "location") — входит в layoutKey ApplyLayout
-	out.chainAnchor = raw.chainAnchor
-	local function copySlots(slots)
-		if type(slots) ~= "table" then return nil end
-		local res = {}
-		for side, s in pairs(slots) do
-			if side == "userTouched" then
-				-- служебная таблица (не слот): сохраняем ссылку как есть
-				res[side] = s
-			elseif type(s) == "table" then
-				res[side] = { frame = s.frame, offsetX = s.offsetX, offsetY = s.offsetY }
-			else
-				res[side] = {}
-			end
-		end
-		return res
-	end
-	out.sideSlots   = copySlots(raw.sideSlots)
-	normalizedLayoutCache = { raw = raw, out = out }
-	return out
+    out.dtPaddingX  = tonumber(raw.dtPaddingX)
+    out.dtPaddingY  = tonumber(raw.dtPaddingY)
+    out.dtMinWidth  = tonumber(raw.dtMinWidth)
+    out.locPaddingX = tonumber(raw.locPaddingX)
+    out.locPaddingY = tonumber(raw.locPaddingY)
+    out.locMinWidth = tonumber(raw.locMinWidth)
+    -- spacingAuto == true — авторасстояние (жёстко 5, как в эталонной версии);
+    -- spacingAuto == false — ручное значение из spacingManual (дефолт из LPS.defaults).
+    local defLayout = LPS.defaults and LPS.defaults.layout or {}
+    if raw.spacingAuto == false then
+        out.spacing = tonumber(raw.spacingManual) or tonumber(defLayout.spacingManual) or 20
+    else
+        out.spacing = 5
+    end
+    if raw.dtshow == nil and LPS.defaults and LPS.defaults.layout then
+        raw.dtshow = LPS.defaults.layout.dtshow
+    end
+    if raw.sideSlots == nil and LPS.defaults and LPS.defaults.layout then
+        -- КОПИЯ дефолтов, а не ссылка: при AceDB-наследовании запись в общую
+        -- таблицу дефолтов ломала бы все профили и сам источник дефолтов.
+        local copy = {}
+        for k, v in pairs(LPS.defaults.layout.sideSlots) do
+            if type(v) == "table" then
+                local t = {}
+                for kk, vv in pairs(v) do t[kk] = vv end
+                copy[k] = t
+            else
+                copy[k] = v
+            end
+        end
+        copy.userTouched = {}
+        raw.sideSlots = copy
+    end
+    out.dtshow      = raw.dtshow ~= false
+    out.slotCount   = tonumber(raw.slotCount) or 2
+    out.frameStrata = raw.frameStrata
+    out.frameLevel  = tonumber(raw.frameLevel)
+    out.customColor = raw.customColor
+    out.userColor   = raw.userColor
+    -- режим якоря цепочки ("chain" | "location") — входит в layoutKey ApplyLayout
+    out.chainAnchor = raw.chainAnchor
+    local function copySlots(slots)
+        if type(slots) ~= "table" then return nil end
+        local res = {}
+        for side, s in pairs(slots) do
+            if side == "userTouched" then
+                -- служебная таблица (не слот): сохраняем ссылку как есть
+                res[side] = s
+            elseif type(s) == "table" then
+                res[side] = { frame = s.frame, offsetX = s.offsetX, offsetY = s.offsetY }
+            else
+                res[side] = {}
+            end
+        end
+        return res
+    end
+    out.sideSlots   = copySlots(raw.sideSlots)
+    normalizedLayoutCache = { raw = raw, out = out }
+    return out
 end
 
 function LPS:InvalidateLayoutCache()
-	normalizedLayoutCache = nil
-	local holder = LPS.frame and LPS.frame.holder
-	if holder then holder._lpsLastLayoutKey = nil end
+    normalizedLayoutCache = nil
+    local holder = LPS.frame and LPS.frame.holder
+    if holder then holder._lpsLastLayoutKey = nil end
 end
 
 local function applyPanelVisibility(frames, slotList, showDT)
-	if not frames then return end
-	local function normalizeSlotFrameKey(key)
-		if not key or key == "" or key == "none" or key == "None" then return "NONE" end
-		return key
-	end
-	local function isSelectedInSlots(frameKey)
-		for _, slot in ipairs(slotList or {}) do
-			if normalizeSlotFrameKey(slot.cfg and slot.cfg.frame) == frameKey then return true end
-		end
-		return false
-	end
-	local shownNow = {}
-	-- ЕДИНЫЙ цикл по ВСЕМ панелям. Раньше coords/time/gold/system обрабатывались
-	-- отдельными строками ДО этого цикла и исключались из него: после перевода
-	-- этих четырёх панелей на общий реестр RegisterDatatext их фреймы создаются
-	-- общим GetOrCreatePanelFrame (предпроход в ApplyLayout) и появляются в
-	-- frames[] уже ПОСЛЕ старых отдельных строк — SetShown для них не вызывался
-	-- вовсе, и gold/coords/system/time «вообще не отображались». Теперь здесь
-	-- показываются все панели одним кодом (служебные holder/location/minimapButton
-	-- пропускаются).
-	for key, f in pairs(frames) do
-		if key ~= "holder" and key ~= "location" and key ~= "minimapButton"
-			and type(f) == "table" and f.SetShown and f.IsShown then
-			f:SetShown(showDT and isSelectedInSlots(key))
-			if f:IsShown() then shownNow[#shownNow + 1] = f end
-		end
-	end
-	-- Принудительное первичное заполнение ТОЛЬКО что показанных панелей:
-	-- без этого скрытая при создании панель (hidden = true), показанная в этом
-	-- же проходе, оставалась пустой до первого события/тикера («выбрал Золото
-	-- — оно пустое, пока не обновлю»). Скрытые панели не трогаем.
-	LPS._pendingPanelPrimes = shownNow
+    if not frames then return end
+    local function normalizeSlotFrameKey(key)
+        if not key or key == "" or key == "none" or key == "None" then return "NONE" end
+        return key
+    end
+    local function isSelectedInSlots(frameKey)
+        for _, slot in ipairs(slotList or {}) do
+            if normalizeSlotFrameKey(slot.cfg and slot.cfg.frame) == frameKey then return true end
+        end
+        return false
+    end
+    local shownNow = {}
+    -- ЕДИНЫЙ цикл по ВСЕМ панелям. Раньше coords/time/gold/system обрабатывались
+    -- отдельными строками ДО этого цикла и исключались из него: после перевода
+    -- этих четырёх панелей на общий реестр RegisterDatatext их фреймы создаются
+    -- общим GetOrCreatePanelFrame (предпроход в ApplyLayout) и появляются в
+    -- frames[] уже ПОСЛЕ старых отдельных строк — SetShown для них не вызывался
+    -- вовсе, и gold/coords/system/time «вообще не отображались». Теперь здесь
+    -- показываются все панели одним кодом (служебные holder/location/minimapButton
+    -- пропускаются).
+    for key, f in pairs(frames) do
+        if key ~= "holder" and key ~= "location" and key ~= "minimapButton"
+            and type(f) == "table" and f.SetShown and f.IsShown then
+            f:SetShown(showDT and isSelectedInSlots(key))
+            if f:IsShown() then shownNow[#shownNow + 1] = f end
+        end
+    end
+    -- Принудительное первичное заполнение ТОЛЬКО что показанных панелей:
+    -- без этого скрытая при создании панель (hidden = true), показанная в этом
+    -- же проходе, оставалась пустой до первого события/тикера («выбрал Золото
+    -- — оно пустое, пока не обновлю»). Скрытые панели не трогаем.
+    LPS._pendingPanelPrimes = shownNow
 end
 LPS._ApplyPanelVisibility = applyPanelVisibility -- общий для ApplyLayout и Apply*Visibility
 
 -- Собирает строковое описание всех слотов (для кэш-ключа ApplyLayout)
 function LPS._CollectSlotKeys(sideSlots)
-	local res = {}
-	if type(sideSlots) ~= "table" then return res end
-	local names = {}
-	for name in pairs(sideSlots) do
-		if name ~= "userTouched" then names[#names + 1] = tostring(name) end
-	end
-	table.sort(names)
-	for _, name in ipairs(names) do
-		local s = sideSlots[name]
-		if type(s) == "table" then
-			res[#res + 1] = name .. "=" .. tostring(s.frame) .. "," .. tostring(s.offsetX) .. "," .. tostring(s.offsetY)
-		else
-			res[#res + 1] = name .. "=nil"
-		end
-	end
-	return res
+    local res = {}
+    if type(sideSlots) ~= "table" then return res end
+    local names = {}
+    for name in pairs(sideSlots) do
+        if name ~= "userTouched" then names[#names + 1] = tostring(name) end
+    end
+    table.sort(names)
+    for _, name in ipairs(names) do
+        local s = sideSlots[name]
+        if type(s) == "table" then
+            res[#res + 1] = name .. "=" .. tostring(s.frame) .. "," .. tostring(s.offsetX) .. "," .. tostring(s.offsetY)
+        else
+            res[#res + 1] = name .. "=nil"
+        end
+    end
+    return res
 end
 
 function LPS:ApplyLayout()
@@ -245,8 +245,8 @@ end
 -- «прыгала»/перекрывала соседей; кроме того скрытые панели обновлялись
 -- зря.
 local function forceResize(f)
-	if not f then return end
-	if f._lpsResizeToFit then f._lpsResizeToFit() end
+    if not f then return end
+    if f._lpsResizeToFit then f._lpsResizeToFit() end
 end
 
 if frames.location then
@@ -278,18 +278,18 @@ end
 -- Собираем активные слоты в цепочки left[] / right[] (slotN1 — ближайший к локации)
 local leftChain, rightChain = {}, {}
 for _, side in ipairs({ "left", "right" }) do
-	-- сначала слот 1 (ближе к локации), затем 2, 3 — привязка идёт по цепочке
-	for i = 1, math.max(tonumber(layout.slotCount) or 2, 2) do
-		local cfg = sideSlots[side .. i]
-		if cfg then
-			local key = normalizeSlotFrameKey(cfg.frame)
-			if key ~= "NONE" then
-				local entry = { key = key, cfg = cfg, side = side }
-				if side == "left" then leftChain[#leftChain + 1] = entry
-				else rightChain[#rightChain + 1] = entry end
-			end
-		end
-	end
+    -- сначала слот 1 (ближе к локации), затем 2, 3 — привязка идёт по цепочке
+    for i = 1, math.max(tonumber(layout.slotCount) or 2, 2) do
+        local cfg = sideSlots[side .. i]
+        if cfg then
+            local key = normalizeSlotFrameKey(cfg.frame)
+            if key ~= "NONE" then
+                local entry = { key = key, cfg = cfg, side = side }
+                if side == "left" then leftChain[#leftChain + 1] = entry
+                else rightChain[#rightChain + 1] = entry end
+            end
+        end
+    end
 end
 local slotList = {}
 for _, e in ipairs(leftChain) do slotList[#slotList + 1] = e end
@@ -303,16 +303,16 @@ for _, e in ipairs(rightChain) do slotList[#slotList + 1] = e end
 -- панели в цепочку, applyPanelVisibility скрывал несуществующие фреймы, и
 -- gold/coords/system/time «вообще не отображались».
 local function getFrameByKey(key)
-	if LPS.GetOrCreatePanelFrame then return LPS:GetOrCreatePanelFrame(key) end
-	return nil
+    if LPS.GetOrCreatePanelFrame then return LPS:GetOrCreatePanelFrame(key) end
+    return nil
 end
 
 -- Гарантированно создаём фреймы всех занятых слотов ДО позиционирования и
 -- до applyPanelVisibility (иначе SetShown вызывается для ещё не созданных
 -- панелей и они остаются скрытыми до следующего прохода layout'а).
 for _, e in ipairs(slotList) do
-	local f = getFrameByKey(e.key)
-	if f then frames[e.key] = f end
+    local f = getFrameByKey(e.key)
+    if f then frames[e.key] = f end
 end
 
 -- Цепочки боковых панелей:
@@ -323,46 +323,46 @@ end
 -- Опция db.layout.chainAnchor = "location" меняет якорь ПЕРВОЙ панели цепочки
 -- с края локации на край holder'а (внешний край всей сборки).
 local function useHolderAnchor()
-	local db = LPS.GetDB and LPS:GetDB()
-	local lay = db and db.layout
-	return lay ~= nil and lay.chainAnchor == "location" and true or false
+    local db = LPS.GetDB and LPS:GetDB()
+    local lay = db and db.layout
+    return lay ~= nil and lay.chainAnchor == "location" and true or false
 end
 
 local function positionChain(chain, side)
-	local isLeft = (side == "LEFT")
-	-- ownPoint: для левых панелей это их RIGHT-край (он прижимается к левой
-	-- стороне группы), для правых — их LEFT-край (прижимается к правой стороне).
-	local ownPoint = isLeft and "RIGHT" or "LEFT"
-	local edgePoint = isLeft and "LEFT" or "RIGHT"
-	local sign = isLeft and -1 or 1
-	-- Первая панель цепляется за левый/правый КРАЙ локации; при chainAnchor =
-	-- "location" — за соответствующий край holder'а (внешний край сборки).
-	local anchorTo, anchorPoint = frames.location, edgePoint
-	local seen = {}
-	for idx = 1, #chain do
-		local entry = chain[idx]
-		local key = entry.key
-		if not seen[key] then
-			seen[key] = true
-			local frame = getFrameByKey(key)
-			if frame then
-				local ox = tonumber(entry.cfg.offsetX) or 0
-				local oy = tonumber(entry.cfg.offsetY) or 0
-				frame:ClearAllPoints()
-				if idx == 1 and useHolderAnchor() then
-					local base = (frames.holder and frames.holder.IsShown and frames.holder:IsShown()) and frames.holder or frames.location
-					anchorTo, anchorPoint = base, edgePoint
-				end
-				-- Смещение sign*spacing; у первой панели offset не применяется
-				-- (панель стоит вплотную к краю локации), чтобы не было разрывов.
-				local dx = ((idx == 1) and 0 or (sign * spacing)) + ox
-				frame:SetPoint(ownPoint, anchorTo, anchorPoint, dx, oy)
-				-- Следующая панель цепляется за КРАЙ этой же стороны:
-				-- левые — за левый край предыдущей, правые — за правый.
-				anchorTo, anchorPoint = frame, edgePoint
-			end
-		end
-	end
+    local isLeft = (side == "LEFT")
+    -- ownPoint: для левых панелей это их RIGHT-край (он прижимается к левой
+    -- стороне группы), для правых — их LEFT-край (прижимается к правой стороне).
+    local ownPoint = isLeft and "RIGHT" or "LEFT"
+    local edgePoint = isLeft and "LEFT" or "RIGHT"
+    local sign = isLeft and -1 or 1
+    -- Первая панель цепляется за левый/правый КРАЙ локации; при chainAnchor =
+    -- "location" — за соответствующий край holder'а (внешний край сборки).
+    local anchorTo, anchorPoint = frames.location, edgePoint
+    local seen = {}
+    for idx = 1, #chain do
+        local entry = chain[idx]
+        local key = entry.key
+        if not seen[key] then
+            seen[key] = true
+            local frame = getFrameByKey(key)
+            if frame then
+                local ox = tonumber(entry.cfg.offsetX) or 0
+                local oy = tonumber(entry.cfg.offsetY) or 0
+                frame:ClearAllPoints()
+                if idx == 1 and useHolderAnchor() then
+                    local base = (frames.holder and frames.holder.IsShown and frames.holder:IsShown()) and frames.holder or frames.location
+                    anchorTo, anchorPoint = base, edgePoint
+                end
+                -- Смещение sign*spacing; у первой панели offset не применяется
+                -- (панель стоит вплотную к краю локации), чтобы не было разрывов.
+                local dx = ((idx == 1) and 0 or (sign * spacing)) + ox
+                frame:SetPoint(ownPoint, anchorTo, anchorPoint, dx, oy)
+                -- Следующая панель цепляется за КРАЙ этой же стороны:
+                -- левые — за левый край предыдущей, правые — за правый.
+                anchorTo, anchorPoint = frame, edgePoint
+            end
+        end
+    end
 end
 
 positionChain(leftChain, "LEFT")
@@ -376,13 +376,13 @@ applyPanelVisibility(frames, slotList, showDT)
 -- Первичное заполнение панелей, показанных в этом же проходе:
 -- текст ставится сразу, без ожидания события/тикера.
 if LPS._pendingPanelPrimes then
-	for _, f in ipairs(LPS._pendingPanelPrimes) do
-		if f and f:IsShown() and f._lpsUpdateFunc then
-			f._lpsUpdateFunc(f)
-			if f._lpsResizeToFit then f._lpsResizeToFit() end
-		end
-	end
-	LPS._pendingPanelPrimes = nil
+    for _, f in ipairs(LPS._pendingPanelPrimes) do
+        if f and f:IsShown() and f._lpsUpdateFunc then
+            f._lpsUpdateFunc(f)
+            if f._lpsResizeToFit then f._lpsResizeToFit() end
+        end
+    end
+    LPS._pendingPanelPrimes = nil
 end
 
 if frames.holder and not frames.holder.isMoving then
@@ -491,15 +491,15 @@ end
 end
 
 function LPS:ConvertRGBtoColorString(color)
-	if not color then color = { r = 1, g = 1, b = 1 } end
+    if not color then color = { r = 1, g = 1, b = 1 } end
 
-	local colorString = "|cff";
-	local r = color.r * 255;
-	local g = color.g * 255;
-	local b = color.b * 255;
-	colorString = colorString..string.format("%02x%02x%02x", r, g, b);
-	
-	return colorString;
+    local colorString = "|cff";
+    local r = color.r * 255;
+    local g = color.g * 255;
+    local b = color.b * 255;
+    colorString = colorString..string.format("%02x%02x%02x", r, g, b);
+    
+    return colorString;
 end
 
 function LPS:ApplyDTVisibility()
@@ -518,46 +518,46 @@ LPS:ApplyLayout()
 end
 
 function LPS:ApplyVisibility()
-	local db = LPS:GetDB()
-	local holder = LPS.frame and LPS.frame.holder
-	if not db or not holder or not db.show or not db.show.visibility then return end
+    local db = LPS:GetDB()
+    local holder = LPS.frame and LPS.frame.holder
+    if not db or not holder or not db.show or not db.show.visibility then return end
 
-	local vis = db.show.visibility
+    local vis = db.show.visibility
 
-	if vis.combat then
-		if not holder._lpsCombatVisEvents then
-			holder._lpsCombatVisEvents = true
-			holder:RegisterEvent("PLAYER_REGEN_DISABLED")
-			holder:RegisterEvent("PLAYER_REGEN_ENABLED")
-			holder:HookScript("OnEvent", function()
-				local d = LPS:GetDB()
-				local h = LPS.frame and LPS.frame.holder
-				if not d or not h or not d.show or not d.show.visibility then return end
-				if d.show.visibility.combat and InCombatLockdown() then
-					h:Hide()
-				else
-					h:Show()
-				end
-			end)
-		end
-		if InCombatLockdown() then
-			holder:Hide()
-		else
-			holder:Show()
-		end
-	else
-		if holder._lpsCombatVisEvents then
-			holder._lpsCombatVisEvents = nil
-			holder:UnregisterEvent("PLAYER_REGEN_DISABLED")
-			holder:UnregisterEvent("PLAYER_REGEN_ENABLED")
-		end
-		holder:Show()
-	end
+    if vis.combat then
+        if not holder._lpsCombatVisEvents then
+            holder._lpsCombatVisEvents = true
+            holder:RegisterEvent("PLAYER_REGEN_DISABLED")
+            holder:RegisterEvent("PLAYER_REGEN_ENABLED")
+            holder:HookScript("OnEvent", function()
+                local d = LPS:GetDB()
+                local h = LPS.frame and LPS.frame.holder
+                if not d or not h or not d.show or not d.show.visibility then return end
+                if d.show.visibility.combat and InCombatLockdown() then
+                    h:Hide()
+                else
+                    h:Show()
+                end
+            end)
+        end
+        if InCombatLockdown() then
+            holder:Hide()
+        else
+            holder:Show()
+        end
+    else
+        if holder._lpsCombatVisEvents then
+            holder._lpsCombatVisEvents = nil
+            holder:UnregisterEvent("PLAYER_REGEN_DISABLED")
+            holder:UnregisterEvent("PLAYER_REGEN_ENABLED")
+        end
+        holder:Show()
+    end
 
-	if not holder.isMoving then
-		holder:EnableMouse(false)
-	end
-	holder:SetAlpha(1)
+    if not holder.isMoving then
+        holder:EnableMouse(false)
+    end
+    holder:SetAlpha(1)
 end
 
 -- Сброс настроек панелей БЕЗ опоры на LPS.defaults.panels (таблица удалена):
@@ -622,100 +622,102 @@ function LPS:ResetPanelsToDefaults()
 end
 
 function LPS:ResetAllSettingsToDefaults()
-	-- Сброс без внешних библиотек: ResetProfile собственной БД (core.lua)
-	-- перезаписывает содержимое текущего профиля копией LPS.defaults. Объект
-	-- глобала LPS_DB не подменяется — WoW сериализует именно его, поэтому
-	-- настройки гарантированно сохраняются после /reload.
-	if LPS.db and LPS.db.ResetProfile then
-		pcall(function() LPS.db:ResetProfile() end)
-	end
-	if LPS.InvalidateDBCache then LPS:InvalidateDBCache() end
+    -- Сброс без внешних библиотек: ResetProfile собственной БД (core.lua)
+    -- перезаписывает содержимое текущего профиля копией LPS.defaults. Объект
+    -- глобала LPS_DB не подменяется — WoW сериализует именно его, поэтому
+    -- настройки гарантированно сохраняются после /reload.
+    if LPS.db and LPS.db.ResetProfile then
+        pcall(function() LPS.db:ResetProfile() end)
+    end
+    if LPS.InvalidateDBCache then LPS:InvalidateDBCache() end
 
-	-- Сброс настроек должен вернуть и вид панелей: закрываем созданные фреймы
-	-- инфотекстов (кроме зарезервированных coords/time/gold/system), чтобы они
-	-- пересоздались с дефолтовыми значениями при следующем ApplyLayout
-	if LPS.frame then
-		for _, k in ipairs({ "bags", "combatIndicator",
-			"difficulty", "durability", "experience", "friends", "guild", "itemLevel", "mail",
-			"microBar", "volume" }) do
-			local f = LPS.frame[k]
-			if f then
-				f:Hide()
-				if f.UnregisterAllEvents then f:UnregisterAllEvents() end
-				if f._lpsTicker then f._lpsTicker:Cancel(); f._lpsTicker = nil end
-				LPS.frame[k] = nil
-			end
-		end
-	end
-	if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-	LPS:ApplyHolderPosition()
-	LPS:ApplyAllSettings()
-	if LPS.UpdateMinimapButton then
-		LPS:UpdateMinimapButton()
-	end
-	if LPS.CreateMinimapButton then
-		LPS:CreateMinimapButton()
-	end
+    -- Сброс настроек должен вернуть и вид панелей: закрываем созданные фреймы
+    -- инфотекстов (кроме зарезервированных coords/time/gold/system), чтобы они
+    -- пересоздались с дефолтовыми значениями при следующем ApplyLayout
+    if LPS.frame then
+        for _, k in ipairs({ "bags", "combatIndicator",
+            "difficulty", "durability", "experience", "friends", "guild", "itemLevel", "mail",
+            "microBar", "volume" }) do
+            local f = LPS.frame[k]
+            if f then
+                f:Hide()
+                if f.UnregisterAllEvents then f:UnregisterAllEvents() end
+                if f._lpsTicker then f._lpsTicker:Cancel(); f._lpsTicker = nil end
+                LPS.frame[k] = nil
+            end
+        end
+    end
+    if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+    LPS:ApplyHolderPosition()
+    LPS:ApplyAllSettings()
+    if LPS.UpdateMinimapButton then
+        LPS:UpdateMinimapButton()
+    end
+    if LPS.CreateMinimapButton then
+        LPS:CreateMinimapButton()
+    end
 end
 
 function LPS:RefreshAfterProfileChange()
-	if self.InvalidateDBCache then self:InvalidateDBCache() end
-	if self.InvalidateLayoutCache then self:InvalidateLayoutCache() end
-	local db = self:GetProfileDB()
-	if self.ApplyDefaults then
-		self:ApplyDefaults(db or {}, self.defaults)
-	end
-	if self.ApplyHolderPosition then
-		self:ApplyHolderPosition()
-	end
-	if self.ApplyAllSettings then
-		self:ApplyAllSettings()
-	end
-	if self.UpdateMinimapButton then
-		self:UpdateMinimapButton()
-	end
-	if self.CreateMinimapButton then
-		self:CreateMinimapButton()
-	end
-	if self.ApplyLayout then
-		self:ApplyLayout()
-	end
+    if self.InvalidateDBCache then self:InvalidateDBCache() end
+    if self.InvalidateLayoutCache then self:InvalidateLayoutCache() end
+    local db = self:GetProfileDB()
+    if self.ApplyDefaults then
+        self:ApplyDefaults(db or {}, self.defaults)
+    end
+    if self.ApplyHolderPosition then
+        self:ApplyHolderPosition()
+    end
+    if self.ApplyAllSettings then
+        self:ApplyAllSettings()
+    end
+    if self.UpdateMinimapButton then
+        self:UpdateMinimapButton()
+    end
+    if self.CreateMinimapButton then
+        self:CreateMinimapButton()
+    end
+    if self.ApplyLayout then
+        self:ApplyLayout()
+    end
 end
 
 function LPS:OnAceProfileChanged()
-	self:RefreshAfterProfileChange()
+    self:RefreshAfterProfileChange()
 end
 
 function LPS:OnAceProfileCopied()
-	self:RefreshAfterProfileChange()
+    self:RefreshAfterProfileChange()
 end
 
 function LPS:OnAceProfileReset()
-	self:RefreshAfterProfileChange()
+    self:RefreshAfterProfileChange()
 end
 
 local Tourist
 if LibStub then
-	if LPS.Retail and LibStub:GetLibrary("LibTourist-3.0", true) then
-		Tourist = LibStub("LibTourist-3.0")
-	elseif LPS.TBC and LibStub:GetLibrary("LibTouristClassicBCA", true) then
-		Tourist = LibStub("LibTouristClassicBCA")
-	elseif LPS.Mists and LibStub:GetLibrary("LibTouristClassic-1.0", true) then
-		Tourist = LibStub("LibTouristClassic-1.0")
-	elseif LPS.Classic and LibStub:GetLibrary("LibTouristClassicEra", true) then
-		Tourist = LibStub("LibTouristClassicEra")
-	end
+    if LPS.Retail and LibStub:GetLibrary("LibTourist-3.0", true) then
+        Tourist = LibStub("LibTourist-3.0")
+    elseif LPS.TBC and LibStub:GetLibrary("LibTouristClassicBCA", true) then
+        Tourist = LibStub("LibTouristClassicBCA")
+    elseif LPS.Mists and LibStub:GetLibrary("LibTouristClassic-1.0", true) then
+        Tourist = LibStub("LibTouristClassic-1.0")
+    elseif LPS.Classic and LibStub:GetLibrary("LibTouristClassicEra", true) then
+        Tourist = LibStub("LibTouristClassicEra")
+    end
 end
 LPS.Tourist = Tourist
 
 -- Локализация: таблица переводов создаётся файлами Locales/*.lua
 -- (система перевода CharacterStats: таблица L = LPS.L + LPS.RegisterLocale /
 -- LPS.ApplyLocaleOverride; namespace-таблица локалей — глобальная LPS).
--- Здесь LPS.L — только поле-данные (таблица), метод перевода — LPS:L(key).
+-- Здесь LPS.L — только поле-данные (таблица). Перевод выполняется напрямую
+-- через константы локали: local L = LPS.L; L.BATTLE_PET_LEVEL и т.п.
+-- Метод LPS:L() удалён.
 -- Если файл локалей не загрузился — пустая таблица с fallback на имя ключа
 -- (то же поведение, что и __index у LPS.L в Locales/enUS.lua).
 if not LPS.L then
-	LPS.L = setmetatable({}, { __index = function(_, k) return k end })
+    LPS.L = setmetatable({}, { __index = function(_, k) return k end })
 end
 local Locale = LPS.L
 
@@ -723,26 +725,13 @@ local Locale = LPS.L
 --- @param msg string Сообщение
 --- @param isTranslate boolean Флаг перевода msg
 function LPS:Print(msg, isTranslate)
-	if isTranslate ~= false then
-		msg = LPS:L(msg)
-	end
-	print("|c"..LPS.addon.textColor..LPS.addon.name.."|r: " .. tostring(msg))
+    if isTranslate ~= false then
+        msg = Locale[msg] or msg
+    end
+    print("|c"..LPS.addon.textColor..LPS.addon.name.."|r: " .. tostring(msg))
 end
 
 -- Возвращает локализованную строку по ключу или сам ключ, если перевода нет
-function LPS:L(key)
-	-- обычный доступ, а не rawget: переводы лежат в LPS.L за __index = L
-	local val = Locale[key]
-	if val ~= nil then
-		return val
-	end
-
-	if LPS.DEBUG then
-		LPS:Print("Missing locale: |cFFE24444"..tostring(key).."|r", false)
-	end
-
-	return key
-end
 
 -- Принудительно инвалидирует кеши ссылок на БД. Вызывается при любой замене
 -- глобала LPS_DB (миграция в onLoaded, сброс настроек), чтобы устаревшие
@@ -750,380 +739,380 @@ end
 -- применяются, но после /reload исчезают, потому что WoW сериализует
 -- совершенно другой объект SavedVariables).
 function LPS:InvalidateDBCache()
-	self.profileDB = nil
-	self.accountDB = nil
+    self.profileDB = nil
+    self.accountDB = nil
 end
 
 function LPS:GetProfileDB()
-	-- ВАЖНО: при наличии AceDB НЕ кешируем self.db.profile в self.profileDB.
-	-- Если LPS.db пересоздан или глобал LPS_DB заменён, кешеванная ссылка
-	-- остаётся на старую таблицу: set() из опций пишет в неё, а на логауте
-	-- сериализуется другой объект — настройки «не сохраняются».
-	if self.db and self.db.profile then
-		return self.db.profile
-	end
-	if type(LPS_DB) == "table" and LPS_DB.profiles and LPS_DB.profiles.Default then
-		self.profileDB = LPS_DB.profiles.Default
-		return self.profileDB
-	end
-	self.profileDB = LPS_DB
-	return self.profileDB
+    -- ВАЖНО: при наличии AceDB НЕ кешируем self.db.profile в self.profileDB.
+    -- Если LPS.db пересоздан или глобал LPS_DB заменён, кешеванная ссылка
+    -- остаётся на старую таблицу: set() из опций пишет в неё, а на логауте
+    -- сериализуется другой объект — настройки «не сохраняются».
+    if self.db and self.db.profile then
+        return self.db.profile
+    end
+    if type(LPS_DB) == "table" and LPS_DB.profiles and LPS_DB.profiles.Default then
+        self.profileDB = LPS_DB.profiles.Default
+        return self.profileDB
+    end
+    self.profileDB = LPS_DB
+    return self.profileDB
 end
 
 function LPS:GetAccountDB()
-	if self.db and self.db.global then
-		return self.db.global
-	end
-	if self.accountDB then
-		return self.accountDB
-	end
-	LPS_DB = LPS_DB or {}
-	LPS_DB.global = LPS_DB.global or {}
-	self.accountDB = LPS_DB.global
-	return self.accountDB
+    if self.db and self.db.global then
+        return self.db.global
+    end
+    if self.accountDB then
+        return self.accountDB
+    end
+    LPS_DB = LPS_DB or {}
+    LPS_DB.global = LPS_DB.global or {}
+    self.accountDB = LPS_DB.global
+    return self.accountDB
 end
 
 function LPS:GetDB()
-	return self:GetProfileDB()
+    return self:GetProfileDB()
 end
 
 function LPS:GetGoldRealmKey()
-	if GetNormalizedRealmName then
-		return GetNormalizedRealmName() or GetRealmName() or ""
-	end
-	return GetRealmName() or ""
+    if GetNormalizedRealmName then
+        return GetNormalizedRealmName() or GetRealmName() or ""
+    end
+    return GetRealmName() or ""
 end
 
 function LPS:GetGoldRoot()
-	local a = self:GetAccountDB()
-	if a then
-		a.gold = a.gold or {}
-		return a.gold
-	end
-	LPS_DB = LPS_DB or {}
-	LPS_DB.global = LPS_DB.global or {}
-	LPS_DB.global.gold = LPS_DB.global.gold or {}
-	return LPS_DB.global.gold
+    local a = self:GetAccountDB()
+    if a then
+        a.gold = a.gold or {}
+        return a.gold
+    end
+    LPS_DB = LPS_DB or {}
+    LPS_DB.global = LPS_DB.global or {}
+    LPS_DB.global.gold = LPS_DB.global.gold or {}
+    return LPS_DB.global.gold
 end
 
 -- Сбрасывает позицию основного фрейма к значениям по умолчанию
 function LPS:ResetFramePosition()
-	local db = LPS:GetDB()
-	db.position = { point = "TOP", relativePoint = "TOP", x = 0, y = -10 }
-	db.layout = db.layout or {}
-	db.layout.sideSlots = db.layout.sideSlots or {}
-	for _, s in pairs(db.layout.sideSlots) do
-		if type(s) == "table" then
-			s.offsetX = 0
-			s.offsetY = 0
-		end
-	end
-	local holder = LPS.frame and LPS.frame.holder
-	if holder and holder.isMoving then
-		if LPS.SetMoveMode then
-			LPS:SetMoveMode(false)
-		end
-		holder.isMoving = false
-	end
-	LPS:ApplyHolderPosition()
-	if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-	if LPS.ApplyLayout then
-		LPS:ApplyLayout()
-	end
-	LPS:Print("The frame position is reset")
+    local db = LPS:GetDB()
+    db.position = { point = "TOP", relativePoint = "TOP", x = 0, y = -10 }
+    db.layout = db.layout or {}
+    db.layout.sideSlots = db.layout.sideSlots or {}
+    for _, s in pairs(db.layout.sideSlots) do
+        if type(s) == "table" then
+            s.offsetX = 0
+            s.offsetY = 0
+        end
+    end
+    local holder = LPS.frame and LPS.frame.holder
+    if holder and holder.isMoving then
+        if LPS.SetMoveMode then
+            LPS:SetMoveMode(false)
+        end
+        holder.isMoving = false
+    end
+    LPS:ApplyHolderPosition()
+    if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+    if LPS.ApplyLayout then
+        LPS:ApplyLayout()
+    end
+    LPS:Print("The frame position is reset")
 end
 
 -- Включает или выключает режим перемещения фрейма
 function LPS:ToggleMoveMode()
-	local holder = LPS.frame and LPS.frame.holder
-	if not holder then return end
-	local moving = holder.isMoving or false
-	LPS:SetMoveMode(not moving)
-	holder.isMoving = not moving
+    local holder = LPS.frame and LPS.frame.holder
+    if not holder then return end
+    local moving = holder.isMoving or false
+    LPS:SetMoveMode(not moving)
+    holder.isMoving = not moving
 end
 
 -- Возвращает ID континента, на котором находится игрок
 function LPS:GetContinentID()
-	local mapID = C_Map.GetBestMapForUnit("player")
-	if not mapID then return end
-	local mapInfo = C_Map.GetMapInfo(mapID)
-	return mapInfo and mapInfo.parentMapID or nil
+    local mapID = C_Map.GetBestMapForUnit("player")
+    if not mapID then return end
+    local mapInfo = C_Map.GetMapInfo(mapID)
+    return mapInfo and mapInfo.parentMapID or nil
 end
 
 
 -- Единственная реализация имени континента: подъём по иерархии карт до
 -- Continent/World (корректно и для зон, и для городов-анклавов).
 function LPS:GetContinentName()
-	local currentMapID = C_Map.GetBestMapForUnit("player")
-	if not currentMapID then
-		return UNKNOWN
-	end
+    local currentMapID = C_Map.GetBestMapForUnit("player")
+    if not currentMapID then
+        return UNKNOWN
+    end
 
-	local mapID = currentMapID
-	local continentName
-	for _ = 1, 10 do
-		local mapInfo = C_Map.GetMapInfo(mapID)
-		if not mapInfo then break end
-		if mapInfo.mapType == Enum.UIMapType.Continent or mapInfo.mapType == Enum.UIMapType.World then
-			continentName = mapInfo.name
-			break
-		end
-		if mapInfo.parentMapID and mapInfo.parentMapID ~= 0 then
-			mapID = mapInfo.parentMapID
-		else
-			if not continentName then continentName = mapInfo.name end
-			break
-		end
-	end
+    local mapID = currentMapID
+    local continentName
+    for _ = 1, 10 do
+        local mapInfo = C_Map.GetMapInfo(mapID)
+        if not mapInfo then break end
+        if mapInfo.mapType == Enum.UIMapType.Continent or mapInfo.mapType == Enum.UIMapType.World then
+            continentName = mapInfo.name
+            break
+        end
+        if mapInfo.parentMapID and mapInfo.parentMapID ~= 0 then
+            mapID = mapInfo.parentMapID
+        else
+            if not continentName then continentName = mapInfo.name end
+            break
+        end
+    end
 
-	return continentName or UNKNOWN
+    return continentName or UNKNOWN
 end
 
 -- Возвращает статус зоны (PVP/мирная и т.п.), опционально цвет или цветной текст
 function LPS:GetZoneStatus(color)
-	local status = ""
-	local r, g, b = 1, 1, 0
-	local pvpType = C_PvP.GetZonePVPInfo()
-	local inInstance = IsInInstance()
+    local status = ""
+    local r, g, b = 1, 1, 0
+    local pvpType = C_PvP.GetZonePVPInfo()
+    local inInstance = IsInInstance()
 
-	if pvpType == "sanctuary" then
-		status = SANCTUARY_TERRITORY; r, g, b = 0.41, 0.8, 0.94
-	elseif pvpType == "arena" then
-		status = ARENA; r, g, b = 1, 0.1, 0.1
-	elseif pvpType == "friendly" then
-		status = FRIENDLY; r, g, b = 0.1, 1, 0.1
-	elseif pvpType == "hostile" then
-		status = HOSTILE; r, g, b = 1, 0.1, 0.1
-	elseif pvpType == "contested" then
-		status = CONTESTED_TERRITORY; r, g, b = 1, 0.7, 0.1
-	elseif pvpType == "combat" or inInstance then
-		status = COMBAT; r, g, b = 1, 0.1, 0.1
-	else
-		status = CONTESTED_TERRITORY
-	end
+    if pvpType == "sanctuary" then
+        status = SANCTUARY_TERRITORY; r, g, b = 0.41, 0.8, 0.94
+    elseif pvpType == "arena" then
+        status = ARENA; r, g, b = 1, 0.1, 0.1
+    elseif pvpType == "friendly" then
+        status = FRIENDLY; r, g, b = 0.1, 1, 0.1
+    elseif pvpType == "hostile" then
+        status = HOSTILE; r, g, b = 1, 0.1, 0.1
+    elseif pvpType == "contested" then
+        status = CONTESTED_TERRITORY; r, g, b = 1, 0.7, 0.1
+    elseif pvpType == "combat" or inInstance then
+        status = COMBAT; r, g, b = 1, 0.1, 0.1
+    else
+        status = CONTESTED_TERRITORY
+    end
 
-	if color then
-		return r, g, b
-	end
-	return format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, status)
+    if color then
+        return r, g, b
+    end
+    return format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, status)
 end
 
 -- Возвращает отформатированное игровое время с учетом CVar (12/24ч, локальное/серверное)
 local function rgbToHex(r, g, b)
-	r = tonumber(r) or 1
-	g = tonumber(g) or 1
-	b = tonumber(b) or 1
-	local rr = math.floor(r * 255 + 0.5)
-	local gg = math.floor(g * 255 + 0.5)
-	local bb = math.floor(b * 255 + 0.5)
-	return string.format("%02x%02x%02x", rr, gg, bb)
+    r = tonumber(r) or 1
+    g = tonumber(g) or 1
+    b = tonumber(b) or 1
+    local rr = math.floor(r * 255 + 0.5)
+    local gg = math.floor(g * 255 + 0.5)
+    local bb = math.floor(b * 255 + 0.5)
+    return string.format("%02x%02x%02x", rr, gg, bb)
 end
 
 function LPS:GetFormattedGameTime()
-	local db = LPS:GetDB()
-	local layout = db and db.layout or {}
-	local is24h = db and db.general and db.general.is24H
-	local useLocal = GetCVarBool("timeMgrUseLocalTime")
+    local db = LPS:GetDB()
+    local layout = db and db.layout or {}
+    local is24h = db and db.general and db.general.is24H
+    local useLocal = GetCVarBool("timeMgrUseLocalTime")
 
-	local mode = layout.customColor
-	if mode == nil then
-		mode = 3
-	end
-	local r, g, b
-	if mode == 1 then
-		local user = layout.userColor
-		r, g, b = (user and user.r) or 1, (user and user.g) or 1, (user and user.b) or 1
-	elseif mode == 2 then
-		r, g, b = getClassColor()
-	else
-		r, g, b = 1, 1, 1
-	end
-	local colon = "|cff" .. rgbToHex(r, g, b) .. ":|r"
+    local mode = layout.customColor
+    if mode == nil then
+        mode = 3
+    end
+    local r, g, b
+    if mode == 1 then
+        local user = layout.userColor
+        r, g, b = (user and user.r) or 1, (user and user.g) or 1, (user and user.b) or 1
+    elseif mode == 2 then
+        r, g, b = getClassColor()
+    else
+        r, g, b = 1, 1, 1
+    end
+    local colon = "|cff" .. rgbToHex(r, g, b) .. ":|r"
 
-	local h, m, s
-	if useLocal then
-		local t = date("*t")
-		h, m, s = t.hour, t.min, t.sec
-	else
-		h, m = GetGameTime()
-	end
+    local h, m, s
+    if useLocal then
+        local t = date("*t")
+        h, m, s = t.hour, t.min, t.sec
+    else
+        h, m = GetGameTime()
+    end
 
-	local showSeconds = db.general.seconds and useLocal
-	if not is24h then
-		local suffix = (h >= 12) and "PM" or "AM"
-		h = h % 12
-		if h == 0 then h = 12 end
-		if showSeconds then
-			return string.format("%02d%s%02d%s%02d %s", h, colon, m, colon, s, suffix)
-		else
-			return string.format("%02d%s%02d %s", h, colon, m, suffix)
-		end
-	end
+    local showSeconds = db.general.seconds and useLocal
+    if not is24h then
+        local suffix = (h >= 12) and "PM" or "AM"
+        h = h % 12
+        if h == 0 then h = 12 end
+        if showSeconds then
+            return string.format("%02d%s%02d%s%02d %s", h, colon, m, colon, s, suffix)
+        else
+            return string.format("%02d%s%02d %s", h, colon, m, suffix)
+        end
+    end
 
-	if showSeconds then
-		return string.format("%02d%s%02d%s%02d", h, colon, m, colon, s)
-	else
-		return string.format("%02d%s%02d", h, colon, m)
-	end
+    if showSeconds then
+        return string.format("%02d%s%02d%s%02d", h, colon, m, colon, s)
+    else
+        return string.format("%02d%s%02d", h, colon, m)
+    end
 end
 
 -- Применяет значения по умолчанию к таблице базы данных рекурсивно
 function LPS:ApplyDefaults(db, defaults)
-	if type(db) ~= "table" then db = {} end
-	-- Защита от записи в источник дефолтов: если профиль ещё не содержит
-	-- ключа, AceDB-наследование может отдать В ТОЧНОСТИ таблицу из
-	-- LPS.defaults. Рекурсия ниже дописывала бы недостающие поля прямо в
-	-- defaults — после этого «дефолты» портились на весь аккаунт, а любые
-	-- последующие сбросы/смены профилей давали бы мусор («настройки не
-	-- сохраняются, всегда применяются default»). Заменяем ссылку копией.
-	if rawequal(db, defaults) then
-		local copy = {}
-		for k, v in pairs(db) do copy[k] = v end
-		return copy
-	end
+    if type(db) ~= "table" then db = {} end
+    -- Защита от записи в источник дефолтов: если профиль ещё не содержит
+    -- ключа, AceDB-наследование может отдать В ТОЧНОСТИ таблицу из
+    -- LPS.defaults. Рекурсия ниже дописывала бы недостающие поля прямо в
+    -- defaults — после этого «дефолты» портились на весь аккаунт, а любые
+    -- последующие сбросы/смены профилей давали бы мусор («настройки не
+    -- сохраняются, всегда применяются default»). Заменяем ссылку копией.
+    if rawequal(db, defaults) then
+        local copy = {}
+        for k, v in pairs(db) do copy[k] = v end
+        return copy
+    end
 
-	for k, v in pairs(defaults) do
-		if type(v) == "table" then
-			db[k] = LPS:ApplyDefaults(db[k], v)
-		elseif db[k] == nil and k ~= "addonTextColor" then
-			db[k] = v
-		end
-	end
+    for k, v in pairs(defaults) do
+        if type(v) == "table" then
+            db[k] = LPS:ApplyDefaults(db[k], v)
+        elseif db[k] == nil and k ~= "addonTextColor" then
+            db[k] = v
+        end
+    end
 
-	if defaults.layout and db.layout and type(db.layout) == "table" then
-		local defL = defaults.layout
-		-- Guard: db.layout может быть ТО на таблице дефолтов (AceDB-
-		-- наследование). Записи ниже (dtshow/sideSlots/offsetX...) иначе
-		-- портили бы сам источник дефолтов — из-за этого gold/system
-		-- «исчезали навсегда».
-		if rawequal(db.layout, defaults.layout) then
-			local copy = {}
-			for k, v in pairs(db.layout) do copy[k] = v end
-			if type(copy.sideSlots) == "table" then
-				local ssCopy = {}
-				for k, v in pairs(copy.sideSlots) do
-					if type(v) == "table" then
-						local t = {}
-						for kk, vv in pairs(v) do t[kk] = vv end
-						ssCopy[k] = t
-					else
-						ssCopy[k] = v
-					end
-				end
-				copy.sideSlots = ssCopy
-			end
-			db.layout = copy
-		end
-		if defL.sideSlots ~= nil and rawequal(db.layout.sideSlots, defL.sideSlots) then
-			local ssCopy = {}
-			for k, v in pairs(defL.sideSlots) do
-				if type(v) == "table" then
-					local t = {}
-					for kk, vv in pairs(v) do t[kk] = vv end
-					ssCopy[k] = t
-				else
-					ssCopy[k] = v
-				end
-			end
-			ssCopy.userTouched = {}
-			db.layout.sideSlots = ssCopy
-		end
-		for _, key in ipairs({"dtPaddingX","dtPaddingY","dtMinWidth","locPaddingX","locPaddingY","locMinWidth","frameLevel","spacingManual"}) do
-			if tonumber(db.layout[key]) == nil then db.layout[key] = defL[key] end
-		end
-		if db.layout.dtshow == nil then db.layout.dtshow = defL.dtshow end
-		if db.layout.spacingAuto == nil then db.layout.spacingAuto = defL.spacingAuto end
-		if db.layout.customColor == nil then db.layout.customColor = defL.customColor end
-		if db.layout.frameStrata == nil or db.layout.frameStrata == "" then db.layout.frameStrata = defL.frameStrata end
-		if type(db.layout.userColor) ~= "table" then db.layout.userColor = { r = 1, g = 1, b = 1 } end
-		if type(db.layout.sideSlots) ~= "table" then db.layout.sideSlots = {} end
-		local ss = db.layout.sideSlots
-		-- Защита от общей таблицы: если профиль по наследованию AceDB
-		-- указывает ТО на LPS.defaults.layout.sideSlots, делаем копию —
-		-- иначе миграция/дефолты записывались бы прямо в таблицу дефолтов
-		-- и «сжигали» left1/right1 для всех будущих профилей.
-		if defL.sideSlots ~= nil and rawequal(ss, defL.sideSlots) then
-			local copy = {}
-			for k, v in pairs(ss) do
-				if type(v) == "table" then
-					local t = {}
-					for kk, vv in pairs(v) do t[kk] = vv end
-					copy[k] = t
-				else
-					copy[k] = v
-				end
-			end
-			copy.userTouched = {}
-			db.layout.sideSlots = copy
-			ss = db.layout.sideSlots
-		end
-		-- Слоты, которые пользователь назначал/чистил вручную (не перетираем
-		-- дефолтами при миграции). Проставляется в set-функциях опций.
-		if type(ss.userTouched) ~= "table" then ss.userTouched = {} end
+    if defaults.layout and db.layout and type(db.layout) == "table" then
+        local defL = defaults.layout
+        -- Guard: db.layout может быть ТО на таблице дефолтов (AceDB-
+        -- наследование). Записи ниже (dtshow/sideSlots/offsetX...) иначе
+        -- портили бы сам источник дефолтов — из-за этого gold/system
+        -- «исчезали навсегда».
+        if rawequal(db.layout, defaults.layout) then
+            local copy = {}
+            for k, v in pairs(db.layout) do copy[k] = v end
+            if type(copy.sideSlots) == "table" then
+                local ssCopy = {}
+                for k, v in pairs(copy.sideSlots) do
+                    if type(v) == "table" then
+                        local t = {}
+                        for kk, vv in pairs(v) do t[kk] = vv end
+                        ssCopy[k] = t
+                    else
+                        ssCopy[k] = v
+                    end
+                end
+                copy.sideSlots = ssCopy
+            end
+            db.layout = copy
+        end
+        if defL.sideSlots ~= nil and rawequal(db.layout.sideSlots, defL.sideSlots) then
+            local ssCopy = {}
+            for k, v in pairs(defL.sideSlots) do
+                if type(v) == "table" then
+                    local t = {}
+                    for kk, vv in pairs(v) do t[kk] = vv end
+                    ssCopy[k] = t
+                else
+                    ssCopy[k] = v
+                end
+            end
+            ssCopy.userTouched = {}
+            db.layout.sideSlots = ssCopy
+        end
+        for _, key in ipairs({"dtPaddingX","dtPaddingY","dtMinWidth","locPaddingX","locPaddingY","locMinWidth","frameLevel","spacingManual"}) do
+            if tonumber(db.layout[key]) == nil then db.layout[key] = defL[key] end
+        end
+        if db.layout.dtshow == nil then db.layout.dtshow = defL.dtshow end
+        if db.layout.spacingAuto == nil then db.layout.spacingAuto = defL.spacingAuto end
+        if db.layout.customColor == nil then db.layout.customColor = defL.customColor end
+        if db.layout.frameStrata == nil or db.layout.frameStrata == "" then db.layout.frameStrata = defL.frameStrata end
+        if type(db.layout.userColor) ~= "table" then db.layout.userColor = { r = 1, g = 1, b = 1 } end
+        if type(db.layout.sideSlots) ~= "table" then db.layout.sideSlots = {} end
+        local ss = db.layout.sideSlots
+        -- Защита от общей таблицы: если профиль по наследованию AceDB
+        -- указывает ТО на LPS.defaults.layout.sideSlots, делаем копию —
+        -- иначе миграция/дефолты записывались бы прямо в таблицу дефолтов
+        -- и «сжигали» left1/right1 для всех будущих профилей.
+        if defL.sideSlots ~= nil and rawequal(ss, defL.sideSlots) then
+            local copy = {}
+            for k, v in pairs(ss) do
+                if type(v) == "table" then
+                    local t = {}
+                    for kk, vv in pairs(v) do t[kk] = vv end
+                    copy[k] = t
+                else
+                    copy[k] = v
+                end
+            end
+            copy.userTouched = {}
+            db.layout.sideSlots = copy
+            ss = db.layout.sideSlots
+        end
+        -- Слоты, которые пользователь назначал/чистил вручную (не перетираем
+        -- дефолтами при миграции). Проставляется в set-функциях опций.
+        if type(ss.userTouched) ~= "table" then ss.userTouched = {} end
 
-		-- Миграция со старой схемы {left, right} на нумерованные слоты {left1..left3, right1..right3}
-		for _, side in ipairs({"left","right"}) do
-			local oldSlot = ss[side]
-			if type(oldSlot) == "table" then
-				if ss[side .. "1"] == nil then
-					ss[side .. "1"] = { frame = oldSlot.frame, offsetX = oldSlot.offsetX, offsetY = oldSlot.offsetY }
-					ss.userTouched[side .. "1"] = true
-				end
-				ss[side] = nil
-			elseif oldSlot ~= nil then
-				ss[side] = nil
-			end
-		end
-		-- Удалённый фрейм «Задания» (quests): панель больше не регистрируется,
-		-- поэтому чистим слоты с ней при каждой загрузке профиля — иначе
-		-- ApplyLayout молча пропустит несуществующую панель.
-		for _, slot in pairs(ss) do
-			if type(slot) == "table" and slot.frame == "quests" then
-				slot.frame = "NONE"
-			end
-		end
-		if tonumber(db.layout.slotCount) == nil then db.layout.slotCount = defL.slotCount or 3 end
-		for i = 1, 3 do
-			for _, side in ipairs({"left","right"}) do
-				local name = side .. i
-				local s = ss[name]
-				if type(s) ~= "table" then
-					s = {}
-					ss[name] = s
-				end
-				local defS = defL.sideSlots and defL.sideSlots[name]
-				-- ВАЖНО: условие включает и "NONE": при AceDB-наследовании пустой профиль
-				-- может отдать в db.layout.sideSlots саму таблицу дефолтов (та же ссылка),
-				-- и предыдущие прогоды ApplyDefaults записывали в неё "NONE" — из-за этого
-				-- gold/system терялись навсегда («панели вообще не отображаются»).
-				if not ss.userTouched[name] and defS and (s.frame == nil or s.frame == "" or s.frame == "NONE") then
-					-- слот ещё никогда не настраивался пользователем -> назначаем
-					-- панель по умолчанию, чтобы первая группа фреймов была видима
-					-- сразу после установки (или после сброса настроек).
-					s.frame = defS.frame
-				elseif s.frame == nil or s.frame == "" then
-					s.frame = "NONE"
-				end
-				if tonumber(s.offsetX) == nil then s.offsetX = 0 end
-				if tonumber(s.offsetY) == nil then s.offsetY = 0 end
-			end
-		end
-	end
+        -- Миграция со старой схемы {left, right} на нумерованные слоты {left1..left3, right1..right3}
+        for _, side in ipairs({"left","right"}) do
+            local oldSlot = ss[side]
+            if type(oldSlot) == "table" then
+                if ss[side .. "1"] == nil then
+                    ss[side .. "1"] = { frame = oldSlot.frame, offsetX = oldSlot.offsetX, offsetY = oldSlot.offsetY }
+                    ss.userTouched[side .. "1"] = true
+                end
+                ss[side] = nil
+            elseif oldSlot ~= nil then
+                ss[side] = nil
+            end
+        end
+        -- Удалённый фрейм «Задания» (quests): панель больше не регистрируется,
+        -- поэтому чистим слоты с ней при каждой загрузке профиля — иначе
+        -- ApplyLayout молча пропустит несуществующую панель.
+        for _, slot in pairs(ss) do
+            if type(slot) == "table" and slot.frame == "quests" then
+                slot.frame = "NONE"
+            end
+        end
+        if tonumber(db.layout.slotCount) == nil then db.layout.slotCount = defL.slotCount or 3 end
+        for i = 1, 3 do
+            for _, side in ipairs({"left","right"}) do
+                local name = side .. i
+                local s = ss[name]
+                if type(s) ~= "table" then
+                    s = {}
+                    ss[name] = s
+                end
+                local defS = defL.sideSlots and defL.sideSlots[name]
+                -- ВАЖНО: условие включает и "NONE": при AceDB-наследовании пустой профиль
+                -- может отдать в db.layout.sideSlots саму таблицу дефолтов (та же ссылка),
+                -- и предыдущие прогоды ApplyDefaults записывали в неё "NONE" — из-за этого
+                -- gold/system терялись навсегда («панели вообще не отображаются»).
+                if not ss.userTouched[name] and defS and (s.frame == nil or s.frame == "" or s.frame == "NONE") then
+                    -- слот ещё никогда не настраивался пользователем -> назначаем
+                    -- панель по умолчанию, чтобы первая группа фреймов была видима
+                    -- сразу после установки (или после сброса настроек).
+                    s.frame = defS.frame
+                elseif s.frame == nil or s.frame == "" then
+                    s.frame = "NONE"
+                end
+                if tonumber(s.offsetX) == nil then s.offsetX = 0 end
+                if tonumber(s.offsetY) == nil then s.offsetY = 0 end
+            end
+        end
+    end
 
-	return db
+    return db
 end
 
 -- Возвращает цвет из настроек аддона по ключу
 -- (unpackFn — единый upvalue в начале файла: table.unpack or unpack)
 function LPS:GetColor(key)
-	local db = LPS:GetDB()
-	local colors = db.settings and db.settings.colors
-	local c = colors and colors[key]
-	if key == "bg" and colors and colors.bgEnable == false then
-		local r, g, b = unpackFn(c or {0, 0, 0, 0})
-		return r, g, b, 0
-	end
-	return unpackFn(c or {1, 1, 1, 1})
+    local db = LPS:GetDB()
+    local colors = db.settings and db.settings.colors
+    local c = colors and colors[key]
+    if key == "bg" and colors and colors.bgEnable == false then
+        local r, g, b = unpackFn(c or {0, 0, 0, 0})
+        return r, g, b, 0
+    end
+    return unpackFn(c or {1, 1, 1, 1})
 end
 
 local refreshPending = false
@@ -1145,168 +1134,168 @@ end
 return false
 end
 function LPS:ScheduleRefresh()
-	pendingRefresh = true
-	if refreshPending then return end
-	refreshPending = true
-	C_Timer.After(0.05, function()
-		refreshPending = false
-		if not pendingRefresh then return end
-		pendingRefresh = false
-		if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-		if LPS.ApplyLayout then
-			LPS:ApplyLayout()
-		end
-		LPS:UpdateFrameSize()
-	end)
+    pendingRefresh = true
+    if refreshPending then return end
+    refreshPending = true
+    C_Timer.After(0.05, function()
+        refreshPending = false
+        if not pendingRefresh then return end
+        pendingRefresh = false
+        if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+        if LPS.ApplyLayout then
+            LPS:ApplyLayout()
+        end
+        LPS:UpdateFrameSize()
+    end)
 end
 
 function LPS:ApplyCoordsUpdateInterval()
-	local db = LPS:GetDB()
-	local f = LPS.frame and LPS.frame.coords
-	if not f or not f._lpsUpdateFunc then return end
-	local interval = tonumber(db.general and db.general.coordsTimeUpdate) or 0.2
-	interval = math.max(interval, 0.05)
-	if f._lpsTicker then
-		f._lpsTicker:Cancel()
-		f._lpsTicker = nil
-	end
-	f._lpsTicker = C_Timer.NewTicker(interval, function()
-		if f._lpsUpdateFunc and f:IsShown() and (not f:GetParent() or f:GetParent():IsShown()) then
-			f._lpsUpdateFunc(f)
-		end
-	end)
+    local db = LPS:GetDB()
+    local f = LPS.frame and LPS.frame.coords
+    if not f or not f._lpsUpdateFunc then return end
+    local interval = tonumber(db.general and db.general.coordsTimeUpdate) or 0.2
+    interval = math.max(interval, 0.05)
+    if f._lpsTicker then
+        f._lpsTicker:Cancel()
+        f._lpsTicker = nil
+    end
+    f._lpsTicker = C_Timer.NewTicker(interval, function()
+        if f._lpsUpdateFunc and f:IsShown() and (not f:GetParent() or f:GetParent():IsShown()) then
+            f._lpsUpdateFunc(f)
+        end
+    end)
 end
 
 function LPS:ApplyStyle()
-	local db = LPS:GetDB()
-	local frames = LPS.frame
-	if not frames then return end
-	for _, f in pairs({frames.location, frames.coords, frames.time, frames.gold, frames.system}) do
-		if f then
-			local bs = tonumber(db.settings.borderSize)
-			if not bs then bs = 2 end
-			bs = math.max(0, math.min(bs, 6))
-			f:SetBackdrop({
-				bgFile   = "Interface\\Buttons\\WHITE8x8",
-				edgeFile = (bs > 0 and "Interface\\Buttons\\WHITE8x8") or nil,
-				tile     = false,
-				edgeSize = bs,
-				insets   = {left=1,right=1,top=1,bottom=1},
-			})
-			if f._lpsUpdateFunc then
-				f._lpsUpdateFunc(f)
-			end
-			f:SetBackdropColor(LPS:GetColor("bg"))
-			f:SetBackdropBorderColor(LPS:GetColor("border"))
-		end
-	end
-	if LPS.ApplyLayout then
-		LPS:ApplyLayout()
-	end
-	if LPS.ScheduleFrameSizeUpdate then
-		LPS:ScheduleFrameSizeUpdate()
-	end
+    local db = LPS:GetDB()
+    local frames = LPS.frame
+    if not frames then return end
+    for _, f in pairs({frames.location, frames.coords, frames.time, frames.gold, frames.system}) do
+        if f then
+            local bs = tonumber(db.settings.borderSize)
+            if not bs then bs = 2 end
+            bs = math.max(0, math.min(bs, 6))
+            f:SetBackdrop({
+                bgFile   = "Interface\\Buttons\\WHITE8x8",
+                edgeFile = (bs > 0 and "Interface\\Buttons\\WHITE8x8") or nil,
+                tile     = false,
+                edgeSize = bs,
+                insets   = {left=1,right=1,top=1,bottom=1},
+            })
+            if f._lpsUpdateFunc then
+                f._lpsUpdateFunc(f)
+            end
+            f:SetBackdropColor(LPS:GetColor("bg"))
+            f:SetBackdropBorderColor(LPS:GetColor("border"))
+        end
+    end
+    if LPS.ApplyLayout then
+        LPS:ApplyLayout()
+    end
+    if LPS.ScheduleFrameSizeUpdate then
+        LPS:ScheduleFrameSizeUpdate()
+    end
 end
 
 function LPS:ApplyTimeFormat()
-	local db = LPS:GetDB()
+    local db = LPS:GetDB()
 
-	local f = LPS.frame and LPS.frame.time
-	if f and f._lpsUpdateFunc then
-		f._lpsUpdateFunc(f)
-	end
-	if LPS.ApplyLayout then
-		LPS:ApplyLayout()
-	end
-	if LPS.ScheduleFrameSizeUpdate then
-		LPS:ScheduleFrameSizeUpdate()
-	end
+    local f = LPS.frame and LPS.frame.time
+    if f and f._lpsUpdateFunc then
+        f._lpsUpdateFunc(f)
+    end
+    if LPS.ApplyLayout then
+        LPS:ApplyLayout()
+    end
+    if LPS.ScheduleFrameSizeUpdate then
+        LPS:ScheduleFrameSizeUpdate()
+    end
 end
 
 function LPS:ApplyAllSettings()
-	if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-	LPS:ApplyTimeFormat()
-	LPS:ApplyCoordsUpdateInterval()
-	LPS:ApplyLayout()
-	LPS:ApplyStyle()
-	LPS:ApplyVisibility()
+    if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+    LPS:ApplyTimeFormat()
+    LPS:ApplyCoordsUpdateInterval()
+    LPS:ApplyLayout()
+    LPS:ApplyStyle()
+    LPS:ApplyVisibility()
 end
 
 -- Возвращает координаты игрока на текущей карте
 function LPS:GetPlayerCoords()
-	local mapID = C_Map.GetBestMapForUnit("player")
-	if not mapID then return end
-	local pos = C_Map.GetPlayerMapPosition(mapID, "player")
-	if pos then
-		return pos.x, pos.y
-	else
-		return
-	end
+    local mapID = C_Map.GetBestMapForUnit("player")
+    if not mapID then return end
+    local pos = C_Map.GetPlayerMapPosition(mapID, "player")
+    if pos then
+        return pos.x, pos.y
+    else
+        return
+    end
 end
 
 -- Обертка для Tourist:GetMapNameByIDAlt(mapID)
 function LPS:GetMapNameByIDAlt(mapID)
-	if not Tourist then return end
-	return Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN
+    if not Tourist then return end
+    return Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN
 end
 
 function LPS:DisableMoveModeIfActive()
-	local holder = LPS.frame and LPS.frame.holder
-	if holder and holder.isMoving then
-		if LPS.SetMoveMode then
-			LPS:SetMoveMode(false)
-		end
-		holder.isMoving = false
-	end
+    local holder = LPS.frame and LPS.frame.holder
+    if holder and holder.isMoving then
+        if LPS.SetMoveMode then
+            LPS:SetMoveMode(false)
+        end
+        holder.isMoving = false
+    end
 end
 
 function LPS:EnsureOptionsCloseHooks()
-	if not LPS._optionsCloseHooks then
-		LPS._optionsCloseHooks = {}
-	end
+    if not LPS._optionsCloseHooks then
+        LPS._optionsCloseHooks = {}
+    end
 
-	local function hookOnHide(frame, key)
-		if not (frame and frame.HookScript) then return end
-		if LPS._optionsCloseHooks[key] then return end
-		LPS._optionsCloseHooks[key] = true
-		frame:HookScript("OnHide", function()
-			if LPS.DisableMoveModeIfActive then
-				LPS:DisableMoveModeIfActive()
-			end
-		end)
-	end
+    local function hookOnHide(frame, key)
+        if not (frame and frame.HookScript) then return end
+        if LPS._optionsCloseHooks[key] then return end
+        LPS._optionsCloseHooks[key] = true
+        frame:HookScript("OnHide", function()
+            if LPS.DisableMoveModeIfActive then
+                LPS:DisableMoveModeIfActive()
+            end
+        end)
+    end
 
-	hookOnHide(_G.SettingsPanel, "SettingsPanel")
-	hookOnHide(_G.InterfaceOptionsFrame, "InterfaceOptionsFrame")
+    hookOnHide(_G.SettingsPanel, "SettingsPanel")
+    hookOnHide(_G.InterfaceOptionsFrame, "InterfaceOptionsFrame")
 end
 
 --- Переключить нативное окно настроек (дизайн CharacterStats, без Ace3).
 function LPS:ToggleNativeOptions()
-	if LPS.UI_Options and LPS.UI_Options.Toggle then
-		LPS.UI_Options:Toggle()
-		return true
-	end
-	return false
+    if LPS.UI_Options and LPS.UI_Options.Toggle then
+        LPS.UI_Options:Toggle()
+        return true
+    end
+    return false
 end
 
 --- Главное переключение меню: всегда нативное окно (Game/UI/*), без Ace3.
 --- Fallback — стандартные панели Blizzard.
 function LPS:ToggleOptions()
-	if self:ToggleNativeOptions() then return end
+    if self:ToggleNativeOptions() then return end
 
-	if _G.SettingsPanel and _G.SettingsPanel.IsShown and _G.SettingsPanel:IsShown() then
-		if LPS.DisableMoveModeIfActive then
-			LPS:DisableMoveModeIfActive()
-		end
-		_G.SettingsPanel:Hide()
-		return
-	end
-	if _G.InterfaceOptionsFrame and _G.InterfaceOptionsFrame.IsShown and _G.InterfaceOptionsFrame:IsShown() then
-		if LPS.DisableMoveModeIfActive then
-			LPS:DisableMoveModeIfActive()
-		end
-		_G.InterfaceOptionsFrame:Hide()
-		return
-	end
+    if _G.SettingsPanel and _G.SettingsPanel.IsShown and _G.SettingsPanel:IsShown() then
+        if LPS.DisableMoveModeIfActive then
+            LPS:DisableMoveModeIfActive()
+        end
+        _G.SettingsPanel:Hide()
+        return
+    end
+    if _G.InterfaceOptionsFrame and _G.InterfaceOptionsFrame.IsShown and _G.InterfaceOptionsFrame:IsShown() then
+        if LPS.DisableMoveModeIfActive then
+            LPS:DisableMoveModeIfActive()
+        end
+        _G.InterfaceOptionsFrame:Hide()
+        return
+    end
 
 end

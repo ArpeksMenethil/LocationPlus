@@ -10,268 +10,270 @@ local UI = {}
 LPS.UI_Options = UI
 
 local WIDGET_TYPE = {
-	toggle = "toggle",
-	range = "slider",
-	select = "dropdown",
-	multiselect = "dropdown",
-	input = "input",
-	color = "color",
-	description = "label",
-	header = "header",
-	execute = "button",
+    toggle = "toggle",
+    range = "slider",
+    select = "dropdown",
+    multiselect = "dropdown",
+    input = "input",
+    color = "color",
+    description = "label",
+    header = "header",
+    execute = "button",
 }
 
 --- Вызов get-функции пункта (нативный рендерер передаёт uiInfo — аргумент сохранён для совместимости).
 local function callGet(entry)
-	if type(entry.get) == "function" then
-		local ok, v = pcall(entry.get, false)
-		if ok then return v end
-	elseif entry.get ~= nil then
-		return entry.get
-	end
+    if type(entry.get) == "function" then
+        local ok, v = pcall(entry.get, false)
+        if ok then return v end
+    elseif entry.get ~= nil then
+        return entry.get
+    end
 end
 
 --- Вызов set-функции пункта. Для color передаётся таблица {r,g,b,a}
 --- (разворачивается в r, g, b — сигнатура get/set одинакова в обоих UI).
 local function callSet(entry, value)
-	if type(entry.set) == "function" then
-		if type(value) == "table" and tonumber(value.r) then
-			pcall(entry.set, false, value.r, value.g, value.b, value.a or 1)
-		else
-			pcall(entry.set, false, value)
-		end
-	end
+    if type(entry.set) == "function" then
+        if type(value) == "table" and tonumber(value.r) then
+            pcall(entry.set, false, value.r, value.g, value.b, value.a or 1)
+        else
+            pcall(entry.set, false, value)
+        end
+    end
 end
 
 --- Значение для color-строки билдера: {r,g,b} из get().
 local function readColor(entry)
-	local v = callGet(entry)
-	if type(v) == "table" and tonumber(v.r) then
-		return { r = v.r, g = v.g, b = v.b, a = tonumber(v.a) or 1 }
-	end
-	if type(v) == "table" and tonumber(v[1]) then
-		return { r = v[1], g = v[2], b = v[3], a = tonumber(v[4]) or 1 }
-	end
-	return { r = 1, g = 1, b = 1 }
+    local v = callGet(entry)
+    if type(v) == "table" and tonumber(v.r) then
+        return { r = v.r, g = v.g, b = v.b, a = tonumber(v.a) or 1 }
+    end
+    if type(v) == "table" and tonumber(v[1]) then
+        return { r = v[1], g = v[2], b = v[3], a = tonumber(v[4]) or 1 }
+    end
+    return { r = 1, g = 1, b = 1 }
 end
 
 --- Обёртка над disabled-функцией пункта (для серых строк в нативном UI).
 local function makeDisabled(node)
-	if not node.disabled then return nil end
-	return function()
-		local d = node.disabled
-		if type(d) == "function" then
-			local ok, v = pcall(d, false)
-			return ok and v or false
-		end
-		return d and true or false
-	end
+    if not node.disabled then return nil end
+    return function()
+        local d = node.disabled
+        if type(d) == "function" then
+            local ok, v = pcall(d, false)
+            return ok and v or false
+        end
+        return d and true or false
+    end
 end
 
 --- Список items для dropdown из поля values (таблица или функция).
 local function resolveItems(entry)
-	local values = entry.values
-	if type(values) == "function" then
-		local ok, v = pcall(values, false)
-		values = ok and v or nil
-	end
-	if type(values) ~= "table" then return {} end
-	local items, seen = {}, {}
-	local function add(value, text)
-		if seen[value] then return end
-		seen[value] = true
-		items[#items + 1] = { value = value, text = tostring(text or value) }
-	end
-	if #values > 0 then
-		for _, v in ipairs(values) do
-			if type(v) == "table" then add(v.value, v.text or v.label) else add(v, v) end
-		end
-	else
-		for k, name in pairs(values) do add(k, name) end
-	end
-	table.sort(items, function(a, b)
-		return tostring(a.text):lower() < tostring(b.text):lower()
-	end)
-	return items
+    local values = entry.values
+    if type(values) == "function" then
+        local ok, v = pcall(values, false)
+        values = ok and v or nil
+    end
+    if type(values) ~= "table" then return {} end
+    local items, seen = {}, {}
+    local function add(value, text)
+        if seen[value] then return end
+        seen[value] = true
+        items[#items + 1] = { value = value, text = tostring(text or value) }
+    end
+    if #values > 0 then
+        for _, v in ipairs(values) do
+            if type(v) == "table" then add(v.value, v.text or v.label) else add(v, v) end
+        end
+    else
+        for k, name in pairs(values) do add(k, name) end
+    end
+    table.sort(items, function(a, b)
+        return tostring(a.text):lower() < tostring(b.text):lower()
+    end)
+    return items
 end
 
---- Плоский список строк страницы: inline-группы схлопываются в заголовки.
+--- Плоский список строк страницы: группы (узлы с args) схлопываются в заголовки.
+--- Ace3 больше не используется, поэтому поля type = "group" / inline в дереве
+--- настроек не нужны: группа определяется наличием args, по умолчанию.
 local function collectRows(group, out)
-	local args = group.args
-	if type(args) == "function" then
-		local ok, t = pcall(args, false)
-		args = ok and t or nil
-	end
-	if type(args) ~= "table" then return out end
-	local rows = {}
-	for _, node in pairs(args) do
-		rows[#rows + 1] = node
-	end
-	table.sort(rows, function(a, b)
-		return (tonumber(a.order) or 999) < (tonumber(b.order) or 999)
-	end)
-	for _, node in ipairs(rows) do
-		local hidden = node.hidden
-		if type(hidden) == "function" then
-			local ok, v = pcall(hidden, false)
-			hidden = ok and v
-		end
-		if not hidden then
-			local kind = WIDGET_TYPE[node.type]
-			if node.type == "group" and node.inline then
-				out[#out + 1] = { kind = "header", label = tostring(node.name or "") }
-				collectRows(node, out)
-			elseif kind == "label" then
-				if node.name and node.name ~= " " and node.name ~= "" then
-					out[#out + 1] = { kind = "label", label = tostring(node.name) }
-				end
-			elseif kind == "header" then
-				out[#out + 1] = { kind = "header", label = tostring(node.name or "") }
-			elseif kind == "toggle" and node.get then
-				out[#out + 1] = {
-					kind = "toggle", fullRow = true,
-					label = tostring(node.name or ""),
-					disabled = makeDisabled(node),
-					get = function() return callGet(node) == true end,
-					set = function(v) callSet(node, v and true or false) end,
-				}
-			elseif kind == "slider" and node.get then
-				out[#out + 1] = {
-					kind = "slider",
-					label = tostring(node.name or ""),
-					min = tonumber(node.min) or 0,
-					max = tonumber(node.max) or 100,
-					step = tonumber(node.bigStep) or tonumber(node.step) or 1,
-					format = (tonumber(node.step) or 1) % 1 == 0 and "%.0f" or "%.2f",
-					disabled = makeDisabled(node),
-					get = function() return tonumber(callGet(node)) or (tonumber(node.min) or 0) end,
-					set = function(v) callSet(node, v) end,
-				}
-			elseif kind == "dropdown" and node.get then
-				out[#out + 1] = {
-					kind = "dropdown", dynamicItems = true,
-					label = tostring(node.name or ""),
-					disabled = makeDisabled(node),
-					items = function() return resolveItems(node) end,
-					get = function() return callGet(node) end,
-					set = function(v) callSet(node, v) end,
-				}
-			elseif kind == "input" and node.get then
-				out[#out + 1] = {
-					kind = "input",
-					label = tostring(node.name or ""),
-					disabled = makeDisabled(node),
-					multiline = tonumber(node.multiline),
-					get = function() return tostring(callGet(node) or "") end,
-					set = function(v) callSet(node, v) end,
-				}
-			elseif kind == "color" and node.get then
-				out[#out + 1] = {
-					kind = "color",
-					label = tostring(node.name or ""),
-					disabled = makeDisabled(node),
-					get = function() return readColor(node) end,
-					set = function(c) callSet(node, c) end,
-				}
-			elseif kind == "button" and node.func then
-				out[#out + 1] = {
-					kind = "button",
-					label = tostring(node.name or ""),
-					disabled = makeDisabled(node),
-					func = function()
-						local ok = pcall(node.func, false)
-						if not ok and LPS.DEBUG then print("LPS options execute error: " .. tostring(node.name)) end
-					end,
-				}
-			end
-		end
-	end
-	return out
+    local args = group.args
+    if type(args) == "function" then
+        local ok, t = pcall(args, false)
+        args = ok and t or nil
+    end
+    if type(args) ~= "table" then return out end
+    local rows = {}
+    for _, node in pairs(args) do
+        rows[#rows + 1] = node
+    end
+    table.sort(rows, function(a, b)
+        return (tonumber(a.order) or 999) < (tonumber(b.order) or 999)
+    end)
+    for _, node in ipairs(rows) do
+        local hidden = node.hidden
+        if type(hidden) == "function" then
+            local ok, v = pcall(hidden, false)
+            hidden = ok and v
+        end
+        if not hidden then
+            local kind = WIDGET_TYPE[node.type]
+            if type(node.args) == "table" or type(node.args) == "function" then
+                out[#out + 1] = { kind = "header", label = tostring(node.name or "") }
+                collectRows(node, out)
+            elseif kind == "label" then
+                if node.name and node.name ~= " " and node.name ~= "" then
+                    out[#out + 1] = { kind = "label", label = tostring(node.name) }
+                end
+            elseif kind == "header" then
+                out[#out + 1] = { kind = "header", label = tostring(node.name or "") }
+            elseif kind == "toggle" and node.get then
+                out[#out + 1] = {
+                    kind = "toggle", fullRow = true,
+                    label = tostring(node.name or ""),
+                    disabled = makeDisabled(node),
+                    get = function() return callGet(node) == true end,
+                    set = function(v) callSet(node, v and true or false) end,
+                }
+            elseif kind == "slider" and node.get then
+                out[#out + 1] = {
+                    kind = "slider",
+                    label = tostring(node.name or ""),
+                    min = tonumber(node.min) or 0,
+                    max = tonumber(node.max) or 100,
+                    step = tonumber(node.bigStep) or tonumber(node.step) or 1,
+                    format = (tonumber(node.step) or 1) % 1 == 0 and "%.0f" or "%.2f",
+                    disabled = makeDisabled(node),
+                    get = function() return tonumber(callGet(node)) or (tonumber(node.min) or 0) end,
+                    set = function(v) callSet(node, v) end,
+                }
+            elseif kind == "dropdown" and node.get then
+                out[#out + 1] = {
+                    kind = "dropdown", dynamicItems = true,
+                    label = tostring(node.name or ""),
+                    disabled = makeDisabled(node),
+                    items = function() return resolveItems(node) end,
+                    get = function() return callGet(node) end,
+                    set = function(v) callSet(node, v) end,
+                }
+            elseif kind == "input" and node.get then
+                out[#out + 1] = {
+                    kind = "input",
+                    label = tostring(node.name or ""),
+                    disabled = makeDisabled(node),
+                    multiline = tonumber(node.multiline),
+                    get = function() return tostring(callGet(node) or "") end,
+                    set = function(v) callSet(node, v) end,
+                }
+            elseif kind == "color" and node.get then
+                out[#out + 1] = {
+                    kind = "color",
+                    label = tostring(node.name or ""),
+                    disabled = makeDisabled(node),
+                    get = function() return readColor(node) end,
+                    set = function(c) callSet(node, c) end,
+                }
+            elseif kind == "button" and node.func then
+                out[#out + 1] = {
+                    kind = "button",
+                    label = tostring(node.name or ""),
+                    disabled = makeDisabled(node),
+                    func = function()
+                        local ok = pcall(node.func, false)
+                        if not ok and LPS.DEBUG then print("LPS options execute error: " .. tostring(node.name)) end
+                    end,
+                }
+            end
+        end
+    end
+    return out
 end
 
 --- Создание контейнера страницы: скролл-фрейм + строки из Builder.
 local function createTreePage(group)
-	local Panel, Builder = LPS.UI.Panel, LPS.UI.Builder
-	return function(container)
-		local scroll, content = Panel.CreateScrollPage(container)
-		local entries = collectRows(group, {})
-		local built = Builder.Build(content, entries, {
-			onChange = function() Panel.OnSettingChanged() end,
-		})
-		built.scroll = scroll
-		return built
-	end
+    local Panel, Builder = LPS.UI.Panel, LPS.UI.Builder
+    return function(container)
+        local scroll, content = Panel.CreateScrollPage(container)
+        local entries = collectRows(group, {})
+        local built = Builder.Build(content, entries, {
+            onChange = function() Panel.OnSettingChanged() end,
+        })
+        built.scroll = scroll
+        return built
+    end
 end
 
 --- Ключ страницы в Panel для узла дерева (стабилен между пересборками).
 local function pageKeyFor(node)
-	-- ключ — имя таба в дереве (стабилен между пересборками и сменами локали)
-	return "tree_" .. tostring(node._pageId or node.name or "")
+    -- ключ — имя таба в дереве (стабилен между пересборками и сменами локали)
+    return "tree_" .. tostring(node._pageId or node.name or "")
 end
 
 --- Построение/обновление списка страниц по текущему дереву опций.
 --- Идемпотентно: вызывается каждый раз при открытии окна, чтобы подтянуть
 --- свежие переводы/вкладки после смены языка или профиля.
 function UI.BuildPages()
-	-- дерево пересобирается при каждом построении страниц: фабрики вкладок
-	-- читают переводы L в момент вызова, поэтому смена языка (ApplyLocaleOverride)
-	-- автоматически попадает в заголовки страниц.
-	if LPS.Options.GetTree then
-		LPS.Options.tree = LPS.Options:GetTree()
-	end
-	local tree = LPS.Options.tree
-	if not tree or type(tree.args) ~= "table" then return end
-	local Panel = LPS.UI and LPS.UI.Panel
-	if not Panel then return end
-	local nodes = {}
-	for key, node in pairs(tree.args) do
-		if type(node) == "table" then
-			node._pageId = tostring(key)
-			nodes[#nodes + 1] = node
-		end
-	end
-	table.sort(nodes, function(a, b)
-		return (tonumber(a.order) or 999) < (tonumber(b.order) or 999)
-	end)
-	for _, node in ipairs(nodes) do
-		if node.type == "group" and node.args then
-			local key = pageKeyFor(node)
-			if not UI._pageKeys[key] then
-				UI._pageKeys[key] = true
-				Panel.RegisterPage(key, {
-					label = tostring(node.name or ""),
-					order = tonumber(node.order) or 99,
-					create = createTreePage(node),
-				})
-			end
-		end
-	end
+    -- дерево пересобирается при каждом построении страниц: фабрики вкладок
+    -- читают переводы L в момент вызова, поэтому смена языка (ApplyLocaleOverride)
+    -- автоматически попадает в заголовки страниц.
+    if LPS.Options.GetTree then
+        LPS.Options.tree = LPS.Options:GetTree()
+    end
+    local tree = LPS.Options.tree
+    if not tree or type(tree.args) ~= "table" then return end
+    local Panel = LPS.UI and LPS.UI.Panel
+    if not Panel then return end
+    local nodes = {}
+    for key, node in pairs(tree.args) do
+        if type(node) == "table" then
+            node._pageId = tostring(key)
+            nodes[#nodes + 1] = node
+        end
+    end
+    table.sort(nodes, function(a, b)
+        return (tonumber(a.order) or 999) < (tonumber(b.order) or 999)
+    end)
+    for _, node in ipairs(nodes) do
+        if node.args then
+            local key = pageKeyFor(node)
+            if not UI._pageKeys[key] then
+                UI._pageKeys[key] = true
+                Panel.RegisterPage(key, {
+                    label = tostring(node.name or ""),
+                    order = tonumber(node.order) or 99,
+                    create = createTreePage(node),
+                })
+            end
+        end
+    end
 end
 
 UI._pageKeys = {}
 
 --- Открыть/закрыть нативное окно (используется при отсутствии Ace3).
 function UI.Toggle()
-	local Panel = LPS.UI and LPS.UI.Panel
-	if not Panel then return end
-	UI.BuildPages()
-	Panel.Toggle()
+    local Panel = LPS.UI and LPS.UI.Panel
+    if not Panel then return end
+    UI.BuildPages()
+    Panel.Toggle()
 end
 
 function UI.IsShown()
-	local Panel = LPS.UI and LPS.UI.Panel
-	return Panel and Panel.IsShown and Panel.IsShown()
+    local Panel = LPS.UI and LPS.UI.Panel
+    return Panel and Panel.IsShown and Panel.IsShown()
 end
 
 function UI.Close()
-	local Panel = LPS.UI and LPS.UI.Panel
-	if Panel and Panel.Hide then Panel.Hide() end
+    local Panel = LPS.UI and LPS.UI.Panel
+    if Panel and Panel.Hide then Panel.Hide() end
 end
 
 --- Обновить активную страницу (вызывается из LPS.Options:ApplyRefresh).
 function UI.RefreshActivePage()
-	local Panel = LPS.UI and LPS.UI.Panel
-	if Panel and Panel.RefreshActivePage and Panel.IsShown and Panel.IsShown() then
-		Panel.RefreshActivePage()
-	end
+    local Panel = LPS.UI and LPS.UI.Panel
+    if Panel and Panel.RefreshActivePage and Panel.IsShown and Panel.IsShown() then
+        Panel.RefreshActivePage()
+    end
 end

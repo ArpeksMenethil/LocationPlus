@@ -1,5 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
+local L = LPS.L
 LPS_DB = LPS_DB or {}
 
 LPS.addon.version = (
@@ -164,20 +165,20 @@ function LPS:onLoaded(name)
         if self._loaded then return end
         self._loaded = true
 
-        -- Язык аддона: переопределение из SavedVariables (система CharacterStats:
-        -- Locales/enUS.lua определяет LPS.RegisterLocale / LPS.ApplyLocaleOverride).
-        if _G.ArpeksLPS and _G.ArpeksLPS.ApplyLocaleOverride then
-                _G.ArpeksLPS.ApplyLocaleOverride(_G.LPS_DB and _G.LPS_DB.localeOverride)
-        end
+    -- Язык аддона: переопределение из SavedVariables (система CharacterStats:
+    -- Locales/enUS.lua определяет LPS.RegisterLocale / LPS.ApplyLocaleOverride).
+    if LPS.ApplyLocaleOverride then
+        LPS.ApplyLocaleOverride(_G.LPS_DB and _G.LPS_DB.localeOverride)
+    end
 
         InitDB()
 
         if LPS.DEBUG then
-			LPS:Print("WOW PATCH: "..LPS.wow.patch, false)
-			LPS:Print("WOW BUILD: "..LPS.wow.build, false)
-			LPS:Print("WOW DATE: "..LPS.wow.date, false)
-			LPS:Print("WOW TOC: "..LPS.wow.toc, false)
-			LPS:Print("WOW PROJECT: "..LPS.wow.project, false)
+            LPS:Print("WOW PATCH: "..LPS.wow.patch, false)
+            LPS:Print("WOW BUILD: "..LPS.wow.build, false)
+            LPS:Print("WOW DATE: "..LPS.wow.date, false)
+            LPS:Print("WOW TOC: "..LPS.wow.toc, false)
+            LPS:Print("WOW PROJECT: "..LPS.wow.project, false)
         end
 
         local db = LPS:GetDB()
@@ -185,8 +186,16 @@ function LPS:onLoaded(name)
         LPS:ApplyTimeFormat()
         LPS:ApplyHolderPosition()
 
+        -- Фрейм локации — главный, к нему якорятся остальные панели, поэтому
+        -- молча пропускать его нельзя: аддон без него не работает. Если модуль
+        -- Modules/Frames/location.lua по какой-то причине не загрузился и
+        -- конструктор не определился, грузим файл напрямую и создаём фрейм.
+        if type(LPS.CreateLocationFrame) ~= "function" then
+            local chunk = LoadAddOnFile and LoadAddOnFile("Interface\\AddOns\\" .. LPS.addon.name .. "\\Modules\\Frames\\location.lua")
+            if chunk then pcall(chunk) end
+        end
         LPS.frame.location = LPS:CreateLocationFrame()
-		
+
         LPS:ApplyAllSettings()
         if LPS.ApplyAddonCompartmentRegistration then
                 LPS:ApplyAddonCompartmentRegistration()
@@ -217,7 +226,7 @@ function LPS:onLoaded(name)
         end
 
         if db and db.general and db.general.loginMessage then
-                LPS:Print(format(LPS:L("LOADED_CURRENT_VERSION")..": |c%sv%s|r", LPS.addon.textColor, LPS.addon.version), false)
+                LPS:Print(format(L.LOADED_CURRENT_VERSION..": |c%sv%s|r", LPS.addon.textColor, LPS.addon.version), false)
         end
 end
 
@@ -228,13 +237,13 @@ SlashCmdList["LPS"] = function(input)
                 -- Полный сброс всех настроек профиля к значениям по умолчанию
                 if LPS.ResetAllSettingsToDefaults then
                         LPS:ResetAllSettingsToDefaults()
-                        LPS:Print(LPS:L("RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES"))
+                        LPS:Print(L.RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES)
                 end
         elseif arg == "resetpanels" then
                 -- Сброс только настроек панелей (без LPS.defaults.panels)
                 if LPS.ResetPanelsToDefaults then
                         LPS:ResetPanelsToDefaults()
-                        LPS:Print(LPS:L("PANEL_SETTINGS_HAVE_BEEN_RESET_TO_DEFAULTS"))
+                        LPS:Print(L.PANEL_SETTINGS_HAVE_BEEN_RESET_TO_DEFAULTS)
                 end
         else
                 -- Меню всегда нативное (без Ace3)
