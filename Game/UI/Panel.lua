@@ -50,6 +50,27 @@ function Panel.CreateScrollPage(container)
     end
     return scroll, scroll.content
 end
+--- Пересинхронизация геометрии скролл-контента всех созданных страниц.
+--- Вызывается при изменении размера окна и при его показе: если страница
+--- была построена, когда фрейм имел нулевой/единичный размер, строки
+--- остались бы невидимыми (пустые вкладки).
+function Panel.SyncPagesGeometry()
+    if not frame or not frame.pageFrames then return end
+    for _, container in pairs(frame.pageFrames) do
+        local page = container.page
+        local scroll = page and page.scroll
+        if scroll and scroll.content then
+            local w = scroll:GetWidth()
+            if w and w > 1 then
+                scroll.content:SetWidth(w)
+            end
+            local h = tonumber(page.height)
+            if h and h > 0 and scroll.SetContentHeight then
+                scroll:SetContentHeight(h)
+            end
+        end
+    end
+end
 local function SaveFrameSize()
     local db = LPS:GetDB()
     if not db then return end
@@ -183,6 +204,12 @@ local function CreateMainFrame()
     frame.content = CreateFrame("Frame", nil, frame)
     frame.content:SetPoint("TOPLEFT", frame.nav, "TOPRIGHT", CONTENT_PAD, -CONTENT_PAD)
     frame.content:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -CONTENT_PAD, CONTENT_PAD)
+    -- при смене размера/показа окна пересинхронизируем ширину и высоту
+    -- скролл-контента всех созданных страниц (иначе строки могут остаться
+    -- невидимыми: width/height контента = 1)
+    frame.content:SetScript("OnSizeChanged", function()
+        Panel.SyncPagesGeometry()
+    end)
     frame.pageFrames = {}
     frame.resizeHandle = CreateFrame("Button", nil, frame)
     frame.resizeHandle:SetSize(16, 16)
@@ -257,6 +284,9 @@ function Panel.ShowPage(key)
     end
     local container = GetPageFrame(key)
     container:Show()
+    -- до Refresh подгоняем геометрию скролла: если страница строилась,
+    -- когда окно было скрыто/свёрнуто, контент имел бы нулевые размеры
+    Panel.SyncPagesGeometry()
     if container.page.Refresh then
         container.page:Refresh()
     end
@@ -349,6 +379,10 @@ function Panel.Show()
     frame:Show()
     Panel.RefreshTheme()
     Panel.ShowPage(frame._activePage or (pageOrder[1] and pageOrder[1].key))
+    -- после Show размеры гарантированно валидны: финальная синхронизация
+    -- геометрии скролла и обновление контролов активной страницы
+    Panel.SyncPagesGeometry()
+    Panel.RefreshActivePage()
 end
 function Panel.Hide()
     if frame then

@@ -672,6 +672,7 @@ function Widgets.CreateScrollFrame(parent)
     scroll:SetScrollChild(scroll.content)
     scroll.content:SetPoint("TOPLEFT")
     scroll.content:SetWidth(1)
+    scroll.content:SetHeight(1)
     scroll:EnableMouseWheel(true)
     scroll:SetScript("OnMouseWheel", function(self, delta)
         local current = self:GetVerticalScroll()
@@ -679,6 +680,12 @@ function Widgets.CreateScrollFrame(parent)
         local new = math.max(0, math.min(maxScroll, current - delta * 40))
         self:SetVerticalScroll(new)
     end)
+    --- Подгоняет высоту контентного фрейма под содержимое (для вертикального скролла).
+    function scroll:SetContentHeight(h)
+        if h and h > 0 then
+            scroll.content:SetHeight(h)
+        end
+    end
     local function SyncWidth()
         local width = scroll:GetWidth()
         if width and width > 1 then
