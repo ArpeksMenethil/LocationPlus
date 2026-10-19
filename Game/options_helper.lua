@@ -1,5 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
+local L = LPS.L
 
 --- Вспомогательные функции и значения для дерева настроек (Game/options.lua).
 LPS.OptionsHelper = {}
@@ -207,25 +208,25 @@ local PANEL_EXTRA = {
     bags = {
         display = {
             order = 3,
-            name = LPS:L("VALUE_FORMAT"),
-            desc = LPS:L("CHOOSE_HOW_THE_VALUE_IS_SHOWN_ON_THE_PANEL"),
+            name = L.VALUE_FORMAT,
+            desc = L.CHOOSE_HOW_THE_VALUE_IS_SHOWN_ON_THE_PANEL,
             values = {
-                USED_TOTAL = LPS:L("USED_TOTAL"),
-                FREE = LPS:L("FREE_SLOTS"),
-                USED = LPS:L("USED_SLOTS"),
+                USED_TOTAL = L.USED_TOTAL,
+                FREE = L.FREE_SLOTS,
+                USED = L.USED_SLOTS,
             },
         },
     },
     experience = {
         display = {
             order = 3,
-            name = LPS:L("VALUE_FORMAT"),
-            desc = LPS:L("CHOOSE_HOW_THE_VALUE_IS_SHOWN_ON_THE_PANEL"),
+            name = L.VALUE_FORMAT,
+            desc = L.CHOOSE_HOW_THE_VALUE_IS_SHOWN_ON_THE_PANEL,
             values = {
-                PERCENT = LPS:L("PERCENT"),
-                CURMAX = LPS:L("CURRENT_MAX"),
-                CUR = LPS:L("CURRENT"),
-                REM = LPS:L("REMAINING"),
+                PERCENT = L.PERCENT,
+                CURMAX = L.CURRENT_MAX,
+                CUR = L.CURRENT,
+                REM = L.REMAINING,
             },
         },
     },
@@ -268,8 +269,8 @@ function OH:makePanelOptionGroup(key, def, order)
             args.maxLimit = {
                 order = 2,
                 type = "range",
-                name = LPS:L("MAX_ENTRIES_IN_TOOLTIP"),
-                desc = LPS:L("LIMIT_HOW_MANY_ENTRIES_ARE_SHOWN_IN_THIS_LIST"),
+                name = L.MAX_ENTRIES_IN_TOOLTIP,
+                desc = L.LIMIT_HOW_MANY_ENTRIES_ARE_SHOWN_IN_THIS_LIST,
                 min = 1,
                 max = 30,
                 step = 1,
@@ -295,7 +296,7 @@ function OH:makePanelOptionGroup(key, def, order)
         args.noLabel = {
             order = 5,
             type = "toggle",
-            name = LPS:L("HIDE_LABEL"),
+            name = L.HIDE_LABEL,
             width = "half",
             get = function()
                 local p = self:getDb().panels and self:getDb().panels.bags
@@ -313,7 +314,7 @@ function OH:makePanelOptionGroup(key, def, order)
         args.label = {
             order = 6,
             type = "input",
-            name = LPS:L("CUSTOM_LABEL"),
+            name = L.CUSTOM_LABEL,
             width = "half",
             disabled = function()
                 local p = self:getDb().panels and self:getDb().panels.bags
@@ -335,8 +336,6 @@ function OH:makePanelOptionGroup(key, def, order)
     end
     return {
         order = order,
-        type = "group",
-        inline = true,
         name = LPS:GetDatatextDisplayName(key),
         args = args,
     }
@@ -345,14 +344,14 @@ end
 --- Значения выпадающего списка Display Other Values.
 function OH:getDisplayOtherValues()
     local t = {
-        ["NONE"] = LPS:L("NONE"),
-        ["RLEVEL"] = LPS.icons.Level .. " " .. LPS:L("LEVEL_RANGE"),
+        ["NONE"] = L.NONE,
+        ["RLEVEL"] = LPS.icons.Level .. " " .. L.LEVEL_RANGE,
     }
     if not LPS.Retail and not LPS.Mists then
-        t["PFISH"] = LPS.icons.Fish .. " " .. LPS:L("FISHING")
+        t["PFISH"] = LPS.icons.Fish .. " " .. L.FISHING
     end
     if LPS.Retail or LPS.Mists then
-        t["PET"] = LPS.icons.Pet .. " " .. LPS:L("BATTLE_PETS")
+        t["PET"] = LPS.icons.Pet .. " " .. L.BATTLE_PETS
     end
     return t
 end
@@ -372,7 +371,7 @@ end
 --- Список значений флага шрифта.
 function OH:fontFlagValues()
     return {
-        ["NONE"] = LPS:L("NONE"),
+        ["NONE"] = L.NONE,
         ["OUTLINE"] = "OUTLINE",
         ["MONOCHROMEOUTLINE"] = "MONOCHROMEOUTLINE",
         ["THICKOUTLINE"] = "THICKOUTLINE",
