@@ -68,6 +68,16 @@ local function makeDisabled(node)
     end
 end
 
+--- Текст всплывающей подсказки пункта (desc в дереве настроек).
+local function nodeTooltip(node)
+    local d = node.desc
+    if type(d) == "function" then
+        local ok, v = pcall(d, false)
+        d = ok and v or nil
+    end
+    return (type(d) == "string" and d ~= "") and d or nil
+end
+
 --- Список items для dropdown из поля values (таблица или функция).
 local function resolveItems(entry)
     local values = entry.values
@@ -98,7 +108,7 @@ end
 --- Плоский список строк страницы: группы (узлы с args) схлопываются в заголовки.
 --- Ace3 больше не используется, поэтому поля type = "group" / inline в дереве
 --- настроек не нужны: группа определяется наличием args, по умолчанию.
-local function collectRows(group, out)
+local function collectRows(group, out, parentColumn)
     local args = group.args
     if type(args) == "function" then
         local ok, t = pcall(args, false)
@@ -106,11 +116,16 @@ local function collectRows(group, out)
     end
     if type(args) ~= "table" then return out end
     local rows = {}
-    for _, node in pairs(args) do
-        rows[#rows + 1] = node
+    for key, node in pairs(args) do
+        if type(node) == "table" then
+            node._key = tostring(key)
+            rows[#rows + 1] = node
+        end
     end
     table.sort(rows, function(a, b)
-        return (tonumber(a.order) or 999) < (tonumber(b.order) or 999)
+        local oa, ob = tonumber(a.order) or 999, tonumber(b.order) or 999
+        if oa ~= ob then return oa < ob end
+        return tostring(a._key) < tostring(b._key)
     end)
     for _, node in ipairs(rows) do
         local hidden = node.hidden
@@ -121,18 +136,31 @@ local function collectRows(group, out)
         if not hidden then
             local kind = WIDGET_TYPE[node.type]
             if type(node.args) == "table" or type(node.args) == "function" then
-                out[#out + 1] = { kind = "header", label = tostring(node.name or "") }
-                collectRows(node, out)
+                local groupName = tostring(node.name or "")
+                local isSpacer = (groupName == "" or groupName == " ")
+                if not isSpacer then
+                    out[#out + 1] = { kind = "header", label = groupName }
+                end
+                -- безымянные группы-колонки ("left"/"right") задают колонку строкам
+                local forcedColumn = nil
+                if node.key == "left" or node._key == "left" then forcedColumn = "left" end
+                if node.key == "right" or node._key == "right" then forcedColumn = "right" end
+                collectRows(node, out, forcedColumn or parentColumn)
             elseif kind == "label" then
                 if node.name and node.name ~= " " and node.name ~= "" then
-                    out[#out + 1] = { kind = "label", label = tostring(node.name) }
+                    out[#out + 1] = {
+                        kind = "label", label = tostring(node.name),
+                        tooltip = nodeTooltip(node), column = forcedColumn or parentColumn,
+                    }
                 end
             elseif kind == "header" then
                 out[#out + 1] = { kind = "header", label = tostring(node.name or "") }
             elseif kind == "toggle" and node.get then
                 out[#out + 1] = {
-                    kind = "toggle", fullRow = true,
+                    kind = "toggle", fullRow = not forcedColumn and true or false,
+                    column = forcedColumn or parentColumn,
                     label = tostring(node.name or ""),
+                    tooltip = nodeTooltip(node),
                     disabled = makeDisabled(node),
                     get = function() return callGet(node) == true end,
                     set = function(v) callSet(node, v and true or false) end,
@@ -141,6 +169,8 @@ local function collectRows(group, out)
                 out[#out + 1] = {
                     kind = "slider",
                     label = tostring(node.name or ""),
+                    tooltip = nodeTooltip(node),
+                    column = forcedColumn or parentColumn,
                     min = tonumber(node.min) or 0,
                     max = tonumber(node.max) or 100,
                     step = tonumber(node.bigStep) or tonumber(node.step) or 1,
@@ -153,6 +183,8 @@ local function collectRows(group, out)
                 out[#out + 1] = {
                     kind = "dropdown", dynamicItems = true,
                     label = tostring(node.name or ""),
+                    tooltip = nodeTooltip(node),
+                    column = forcedColumn or parentColumn,
                     disabled = makeDisabled(node),
                     items = function() return resolveItems(node) end,
                     get = function() return callGet(node) end,
@@ -162,6 +194,8 @@ local function collectRows(group, out)
                 out[#out + 1] = {
                     kind = "input",
                     label = tostring(node.name or ""),
+                    tooltip = nodeTooltip(node),
+                    column = forcedColumn or parentColumn,
                     disabled = makeDisabled(node),
                     multiline = tonumber(node.multiline),
                     get = function() return tostring(callGet(node) or "") end,
@@ -171,6 +205,8 @@ local function collectRows(group, out)
                 out[#out + 1] = {
                     kind = "color",
                     label = tostring(node.name or ""),
+                    tooltip = nodeTooltip(node),
+                    column = forcedColumn or parentColumn,
                     disabled = makeDisabled(node),
                     get = function() return readColor(node) end,
                     set = function(c) callSet(node, c) end,
@@ -179,6 +215,8 @@ local function collectRows(group, out)
                 out[#out + 1] = {
                     kind = "button",
                     label = tostring(node.name or ""),
+                    tooltip = nodeTooltip(node),
+                    column = forcedColumn or parentColumn,
                     disabled = makeDisabled(node),
                     func = function()
                         local ok = pcall(node.func, false)

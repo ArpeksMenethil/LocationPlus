@@ -20,8 +20,10 @@
         <Include file='.\\Options\\show.lua'/>
         <Include file='.\\Options\\tooltip.lua'/>
         <Include file='.\\Options\\layout.lua'/>
+        <Include file='.\\Options\\appearance.lua'/>
         <Include file='.\\Options\\profiles.lua'/>
         <Include file='.\\Options\\importexport.lua'/>
+        <Include file='.\\Options\\about.lua'/>
         <Include file='.\\options_init.lua'/>
 
         <Include file='.\\ui_options.lua'/>
