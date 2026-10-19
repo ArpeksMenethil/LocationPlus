@@ -108,7 +108,7 @@ end
 --- Плоский список строк страницы: группы (узлы с args) схлопываются в заголовки.
 --- Ace3 больше не используется, поэтому поля type = "group" / inline в дереве
 --- настроек не нужны: группа определяется наличием args, по умолчанию.
-local function collectRows(group, out, parentColumn)
+local function collectRows(group, out)
     local args = group.args
     if type(args) == "function" then
         local ok, t = pcall(args, false)
@@ -135,30 +135,28 @@ local function collectRows(group, out, parentColumn)
         end
         if not hidden then
             local kind = WIDGET_TYPE[node.type]
+            -- чекбоксы (toggle) в исходном аддоне идут парами в один ряд;
+            -- fullRow=true оставляет чекбокс на всю ширину строки
+            local isTogglePair = (kind == "toggle") and node.fullRow ~= true
             if type(node.args) == "table" or type(node.args) == "function" then
                 local groupName = tostring(node.name or "")
                 local isSpacer = (groupName == "" or groupName == " ")
                 if not isSpacer then
                     out[#out + 1] = { kind = "header", label = groupName }
                 end
-                -- безымянные группы-колонки ("left"/"right") задают колонку строкам
-                local forcedColumn = nil
-                if node.key == "left" or node._key == "left" then forcedColumn = "left" end
-                if node.key == "right" or node._key == "right" then forcedColumn = "right" end
-                collectRows(node, out, forcedColumn or parentColumn)
+                collectRows(node, out)
             elseif kind == "label" then
                 if node.name and node.name ~= " " and node.name ~= "" then
                     out[#out + 1] = {
                         kind = "label", label = tostring(node.name),
-                        tooltip = nodeTooltip(node), column = forcedColumn or parentColumn,
+                        tooltip = nodeTooltip(node),
                     }
                 end
             elseif kind == "header" then
                 out[#out + 1] = { kind = "header", label = tostring(node.name or "") }
             elseif kind == "toggle" and node.get then
                 out[#out + 1] = {
-                    kind = "toggle", fullRow = not forcedColumn and true or false,
-                    column = forcedColumn or parentColumn,
+                    kind = "toggle", fullRow = not isTogglePair,
                     label = tostring(node.name or ""),
                     tooltip = nodeTooltip(node),
                     disabled = makeDisabled(node),
@@ -170,7 +168,6 @@ local function collectRows(group, out, parentColumn)
                     kind = "slider",
                     label = tostring(node.name or ""),
                     tooltip = nodeTooltip(node),
-                    column = forcedColumn or parentColumn,
                     min = tonumber(node.min) or 0,
                     max = tonumber(node.max) or 100,
                     step = tonumber(node.bigStep) or tonumber(node.step) or 1,
@@ -184,7 +181,6 @@ local function collectRows(group, out, parentColumn)
                     kind = "dropdown", dynamicItems = true,
                     label = tostring(node.name or ""),
                     tooltip = nodeTooltip(node),
-                    column = forcedColumn or parentColumn,
                     disabled = makeDisabled(node),
                     items = function() return resolveItems(node) end,
                     get = function() return callGet(node) end,
@@ -195,7 +191,6 @@ local function collectRows(group, out, parentColumn)
                     kind = "input",
                     label = tostring(node.name or ""),
                     tooltip = nodeTooltip(node),
-                    column = forcedColumn or parentColumn,
                     disabled = makeDisabled(node),
                     multiline = tonumber(node.multiline),
                     get = function() return tostring(callGet(node) or "") end,
@@ -206,7 +201,6 @@ local function collectRows(group, out, parentColumn)
                     kind = "color",
                     label = tostring(node.name or ""),
                     tooltip = nodeTooltip(node),
-                    column = forcedColumn or parentColumn,
                     disabled = makeDisabled(node),
                     get = function() return readColor(node) end,
                     set = function(c) callSet(node, c) end,
@@ -216,7 +210,6 @@ local function collectRows(group, out, parentColumn)
                     kind = "button",
                     label = tostring(node.name or ""),
                     tooltip = nodeTooltip(node),
-                    column = forcedColumn or parentColumn,
                     disabled = makeDisabled(node),
                     func = function()
                         local ok = pcall(node.func, false)
@@ -335,10 +328,18 @@ function UI.BuildPages()
             local key = pageKeyFor(node)
             if not UI._pageKeys[key] then
                 UI._pageKeys[key] = true
+                local create = createTreePage(node)
+                -- страница профилей берётся из исходного аддона (CharacterStats
+                -- PageProfiles): дропдаун активного профиля + кнопки New/Copy/
+                -- Delete/Reset и попапы. Если фабрика недоступна — остаётся
+                -- обычная дерево-страница.
+                if node._pageId == "profiles" and LPS.CreateProfilesPanelPage then
+                    create = LPS.CreateProfilesPanelPage
+                end
                 Panel.RegisterPage(key, {
                     label = tostring(node.name or ""),
                     order = tonumber(node.order) or 99,
-                    create = createTreePage(node),
+                    create = create,
                 })
             end
         end

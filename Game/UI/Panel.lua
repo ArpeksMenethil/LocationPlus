@@ -13,6 +13,9 @@ local DEFAULT_HEIGHT = 520
 local NAV_WIDTH = 140
 local TITLE_HEIGHT = 32
 local CONTENT_PAD = 14
+-- Внутренняя страница «Настройка окна» (как WINDOW_PAGE в исходном аддоне):
+-- открывается кнопкой-шестерёнкой в заголовке, не видна в навигации.
+local WINDOW_PAGE = "window"
 local frame
 local pages = {}
 local pageOrder = {}
@@ -77,6 +80,115 @@ local function SaveFrameSize()
     db.uiOptions = db.uiOptions or {}
     db.uiOptions.width = frame:GetWidth()
     db.uiOptions.height = frame:GetHeight()
+end
+
+--- Строки внутренней страницы «Настройка окна» (порт BuildWindowEntries):
+--- тема окна, акцентный цвет и масштаб окна настроек.
+local function BuildWindowEntries(L)
+    local Theme = CS.Theme
+    local function ApplyAccent()
+        Panel.RefreshTheme()
+        if LPS.Options and LPS.Options.ApplyRefresh then
+            LPS.Options:ApplyRefresh()
+        end
+    end
+    return {
+        { kind = "header", label = L.SECTION_UI_THEME or "Window Theme" },
+        {
+            kind = "dropdown", key = "uiTheme", label = L.LABEL_UI_THEME or "Theme",
+            items = function()
+                local items = {}
+                for _, key in ipairs(Theme.ORDER) do
+                    items[#items + 1] = { value = key, text = Theme.GetName(key) }
+                end
+                return items
+            end,
+            get = function() return Theme.Get() and Theme.key end,
+            set = function() end,
+            onChange = function(value)
+                Theme.Set(value)
+            end,
+        },
+        { kind = "header", label = L.SECTION_THEME or "Accent Color" },
+        {
+            kind = "dropdown", key = "themeColor", label = L.LABEL_THEME or "Theme",
+            items = function() return Theme.GetAccentItems() end,
+            disabled = function()
+                local db = LPS:GetDB()
+                local ui = db and db.uiOptions
+                return (ui and ui.themeUseClassColor) == true
+            end,
+            get = function()
+                local db = LPS:GetDB()
+                local ui = db and db.uiOptions
+                return (ui and ui.themeColor) or "default"
+            end,
+            set = function(v)
+                local db = LPS:GetDB()
+                db.uiOptions = db.uiOptions or {}
+                db.uiOptions.themeColor = v
+            end,
+            onChange = ApplyAccent,
+        },
+        {
+            kind = "toggle", key = "themeUseClassColor", fullRow = true,
+            label = L.LABEL_THEME_USE_CLASS or "Use my class color",
+            onChange = ApplyAccent,
+            get = function()
+                local db = LPS:GetDB()
+                local ui = db and db.uiOptions
+                return (ui and ui.themeUseClassColor) == true
+            end,
+            set = function(v)
+                local db = LPS:GetDB()
+                db.uiOptions = db.uiOptions or {}
+                db.uiOptions.themeUseClassColor = v and true or false
+            end,
+        },
+        { kind = "header", label = L.SECTION_WINDOW or "Options Window" },
+        {
+            kind = "slider", key = "uiScale", label = L.LABEL_OPTIONS_SCALE or "Options Window Scale",
+            min = 0.5, max = 1.5, step = 0.05, format = "%.2f",
+            commitOnRelease = true,
+            get = function()
+                local db = LPS:GetDB()
+                local ui = db and db.uiOptions
+                return (ui and tonumber(ui.scale)) or 1.0
+            end,
+            set = function() end,
+            onChange = function(value)
+                Panel.SetWindowScale(value)
+            end,
+        },
+    }
+end
+
+--- Регистрация внутренней страницы window (вне pageOrder — в навигации её нет).
+pages[WINDOW_PAGE] = {
+    key = WINDOW_PAGE,
+    create = function(container)
+        local _, content = Panel.CreateScrollPage(container)
+        local page = CS.ConfigBuilder.Build(content, BuildWindowEntries(L), {
+            onChange = function()
+                Panel.OnSettingChanged()
+            end,
+        })
+        content:SetHeight(page.height)
+        return page
+    end,
+}
+
+--- Кнопка шестерёнки: переключает страницу «Настройка окна» (порт ToggleWindowSettings).
+function Panel.ToggleWindowSettings()
+    if not frame then return end
+    if frame._minimized then
+        Panel.SetMinimized(false)
+    end
+    if frame._activePage == WINDOW_PAGE then
+        Panel.ShowPage(frame._lastAddonPage or (pageOrder[1] and pageOrder[1].key))
+    else
+        Panel.ShowPage(WINDOW_PAGE)
+    end
 end
 local function CreateCircleButton(parent, iconName, isClose)
     local btn = CreateFrame("Button", nil, parent)
@@ -163,17 +275,40 @@ local function CreateMainFrame()
         Panel.Hide()
     end)
     
-    frame.minBtn = CS.Theme.IconButton(frame.titleBar, 22, "icon_minus")
+    if CS.Theme.key == "classic" then
+        frame.minBtn = CreateCircleButton(frame.titleBar, "icon_minus")
+    else
+        frame.minBtn = CS.Theme.IconButton(frame.titleBar, 22, "icon_minus")
+    end
     frame.minBtn:SetPoint("RIGHT", frame.closeBtn, "LEFT", -6, 0)
     frame.minBtn:SetScript("OnClick", function()
         Panel.SetMinimized(not frame._minimized)
     end)
     frame.minBtn:HookScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
-        GameTooltip:SetText(frame._minimized and L.EXPAND or L.MINIMIZE, 1, 1, 1)
+        GameTooltip:SetText(frame._minimized and (L.EXPAND or "Expand") or (L.MINIMIZE or "Minimize"), 1, 1, 1)
         GameTooltip:Show()
     end)
     frame.minBtn:HookScript("OnLeave", function()
+        GameTooltip:Hide()
+    end)
+    -- Кнопка шестерёнки (как в исходном аддоне): открывает страницу «Настройка окна»
+    if CS.Theme.key == "classic" then
+        frame.gearBtn = CreateCircleButton(frame.titleBar, "icon_gear")
+        frame.gearBtn.icon:SetSize(12, 12)
+    else
+        frame.gearBtn = CS.Theme.IconButton(frame.titleBar, 22, "icon_gear")
+    end
+    frame.gearBtn:SetPoint("RIGHT", frame.minBtn, "LEFT", -6, 0)
+    frame.gearBtn:SetScript("OnClick", function()
+        Panel.ToggleWindowSettings()
+    end)
+    frame.gearBtn:HookScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+        GameTooltip:SetText(L.TIP_WINDOW_SETTINGS or "Window Settings", 1, 1, 1)
+        GameTooltip:Show()
+    end)
+    frame.gearBtn:HookScript("OnLeave", function()
         GameTooltip:Hide()
     end)
     frame.nav = CreateFrame("Frame", nil, frame)
@@ -288,6 +423,10 @@ function Panel.ShowPage(key)
         container.page:Refresh()
     end
     frame._activePage = key
+    -- запоминаем последнюю обычную вкладку, чтобы шестерёнка возвращалась на неё
+    if key ~= WINDOW_PAGE then
+        frame._lastAddonPage = key
+    end
 end
 function Panel.RefreshActivePage()
     if not frame or not frame:IsShown() or not frame._activePage then return end
