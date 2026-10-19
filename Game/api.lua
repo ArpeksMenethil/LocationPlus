@@ -779,11 +779,11 @@ if LibStub then
 end
 LPS.Tourist = Tourist
 
-local AceLocale = LibStub and LibStub:GetLibrary("AceLocale-3.0", true)
-local Locale
-if AceLocale then
-	Locale = AceLocale:GetLocale("LocationPlus", true)
-end
+-- Локализация: таблица переводов заполняется файлами Locales/*.lua
+-- (по образцу Addons/CharacterStats/*, без AceLocale).
+-- enUS.lua создаёт LPS.L, остальные локали дописывают переводы в неё.
+LPS.L = LPS.L or {}
+local Locale = LPS.L
 
 -- Выводит сообщение в чат с префиксом аддона и поддержкой локализации
 --- @param msg string Сообщение
@@ -795,16 +795,11 @@ function LPS:Print(msg, isTranslate)
 	print("|c"..LPS.addon.textColor..LPS.addon.name.."|r: " .. tostring(msg))
 end
 
--- Возвращает локализованную строку по ключу или сам ключ, если значение = true
+-- Возвращает локализованную строку по ключу или сам ключ, если перевода нет
 function LPS:L(key)
-	if not Locale and AceLocale then
-		Locale = AceLocale:GetLocale("LocationPlus", true)
-	end
-	if Locale then
-		local val = rawget(Locale, key)
-		if val ~= nil then
-			return val
-		end
+	local val = rawget(Locale, key)
+	if val ~= nil then
+		return val
 	end
 
 	if LPS.DEBUG then
