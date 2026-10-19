@@ -428,24 +428,16 @@ if mode == nil then
 mode = 3
 end
 local r, g, b
-if f._lpsForceWhite then
--- gold/time всегда белые (поведение эталонной версии); флаг ставится
--- модулями панелей вместо проверки `f == frames.gold` (фреймы теперь
--- создаются лениво и сравнение ссылок было хрупким).
+if f == LPS.frame.location then
+-- Локация исключена из общей раскраски: её цвет всегда управляется
+-- своим updateFunc по статусу зоны — см. Modules/Frames/location.lua
+elseif f._lpsForceWhite then
+-- gold/time всегда белые; флаг ставится модулями панелей
 r, g, b = 1, 1, 1
 elseif mode == 3 then
-if f ~= frames.location then
 r, g, b = LPS:GetColor("text")
-end
--- при mode == 3 локация красится своим updateFunc (цвет зоны), здесь не трогаем
-else
-if f == frames.location then
--- Режимы 1/2 для локации: цвет из общего режима. В режиме 3 (зона)
--- красит updateFunc локации — см. Modules/Frames/location.lua.
-r, g, b = getLayoutTextColor(mode, layout.userColor)
 else
 r, g, b = getLayoutTextColor(mode, layout.userColor)
-end
 end
 if r then
 local nr, ng, nb = f.text:GetTextColor()

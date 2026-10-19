@@ -130,7 +130,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 		bags = {
 			display = {
 				order = 3,
-				name = LPS:L("Display"),
+				name = LPS:L("Value format"),
+				desc = LPS:L("Choose how the value is shown on the panel."),
 				values = {
 					USED_TOTAL = LPS:L("Used / Total"),
 					FREE = LPS:L("Free slots"),
@@ -141,7 +142,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 		experience = {
 			display = {
 				order = 3,
-				name = LPS:L("Display"),
+				name = LPS:L("Value format"),
+				desc = LPS:L("Choose how the value is shown on the panel."),
 				values = {
 					PERCENT = LPS:L("Percent"),
 					CURMAX = LPS:L("Current / Max"),
@@ -166,6 +168,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 					order = extra.display.order - 2,
 					type = "select",
 					name = extra.display.name,
+					desc = extra.display.desc,
 					values = extra.display.values,
 					get = function(info)
 						local p = getDb().panels and getDb().panels[info[#info]]
@@ -190,6 +193,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 					order = 2,
 					type = "range",
 					name = LPS:L("Max entries in tooltip"),
+					desc = LPS:L("Limit how many entries are shown in this list."),
 					min = 1,
 					max = 30,
 					step = 1,
@@ -499,6 +503,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 							showicon = {
 								order = 2,
 								name = LPS:L("Crest"),
+								desc = LPS:L("Show an icon next to the additional info."),
 								type = "toggle",
 								
 								disabled = function() return getDb().show.displayOther == "NONE" end,
@@ -584,7 +589,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 							experience = {
 								order = 1,
 								type = "select",
-								name = LPS:L("Display"),
+								name = LPS:L("Value format"),
+								desc = LPS:L("Choose how the value is shown on the panel."),
 								values = {
 									PERCENT = LPS:L("Percent"),
 									CURMAX = LPS:L("Current / Max"),
@@ -609,7 +615,8 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 							bags = {
 								order = 1,
 								type = "select",
-								name = LPS:L("Display"),
+								name = LPS:L("Value format"),
+								desc = LPS:L("Choose how the value is shown on the panel."),
 								values = {
 									USED_TOTAL = LPS:L("Used / Total"),
 									FREE = LPS:L("Free slots"),
@@ -670,6 +677,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 							tt = {
 								order = 1,
 								name = LPS:L("Show tooltip"),
+								desc = LPS:L("Show tooltips when hovering over panels."),
 								type = "toggle",
 								get = function() return getDb().tooltips.visibility.enable end,
 								set = function(_, v) getDb().tooltips.visibility.enable = v applySettingsRefresh() end,
@@ -1126,6 +1134,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								order = 2,
 								type = "range",
 								name = LPS:L("Max entries in tooltip"),
+								desc = LPS:L("Limit how many entries are shown in this list."),
 								min = 1,
 								max = 30,
 								step = 1,
@@ -1154,6 +1163,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								order = 2,
 								type = "range",
 								name = LPS:L("Max entries in tooltip"),
+								desc = LPS:L("Limit how many entries are shown in this list."),
 								min = 1,
 								max = 30,
 								step = 1,
@@ -1323,6 +1333,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 							leftSlot1 = {
 								order = 1.1,
 								name = LPS:L("Left Slot 1"),
+								desc = LPS:L("Select a panel for this slot."),
 								type = "select",
 								values = function()
 								local vals = { none = LPS:L("None") }
@@ -1409,6 +1420,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 							rightSlot1 = {
 								order = 1.2,
 								name = LPS:L("Right Slot 1"),
+								desc = LPS:L("Select a panel for this slot."),
 								type = "select",
 								values = function()
 								local vals = { none = LPS:L("None") }
@@ -1496,6 +1508,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								disabled = makeSlotDisabledFunc("left", 2),
 								order = 2.1,
 								name = LPS:L("Left Slot 2"),
+								desc = LPS:L("Select a panel for this slot."),
 								type = "select",
 								values = function()
 								local vals = { none = LPS:L("None") }
@@ -1585,6 +1598,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								disabled = makeSlotDisabledFunc("right", 2),
 								order = 2.2,
 								name = LPS:L("Right Slot 2"),
+								desc = LPS:L("Select a panel for this slot."),
 								type = "select",
 								values = function()
 								local vals = { none = LPS:L("None") }
@@ -1674,6 +1688,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								disabled = makeSlotDisabledFunc("left", 3),
 								order = 3.1,
 								name = LPS:L("Left Slot 3"),
+								desc = LPS:L("Select a panel for this slot."),
 								type = "select",
 								values = function()
 								local vals = { none = LPS:L("None") }
@@ -1763,6 +1778,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 								disabled = makeSlotDisabledFunc("right", 3),
 								order = 3.2,
 								name = LPS:L("Right Slot 3"),
+								desc = LPS:L("Select a panel for this slot."),
 								type = "select",
 								values = function()
 								local vals = { none = LPS:L("None") }
@@ -2018,6 +2034,7 @@ if LibStub and LibStub:GetLibrary("AceConfig-3.0", true) and LibStub:GetLibrary(
 							customColor = {
 								order = 1,
 								name = LPS:L("Text color"),
+								desc = LPS:L("Choose how panel text is colored. The location panel always keeps its own zone-status color."),
 								type = "select",
 								values = {
 									[1] = LPS:L("Custom"),
