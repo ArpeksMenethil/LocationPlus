@@ -56,8 +56,8 @@ do
 				end
 			end
 		end,
-		onClick = function()
-			if not InCombatLockdown() and ToggleCharacter then
+		onClick = function(self, button)
+			if not InCombatLockdown() and ToggleCharacter and button == "LeftButton" then
 				ToggleCharacter("PaperDollFrame")
 			end
 		end,
