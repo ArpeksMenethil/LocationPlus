@@ -8,7 +8,7 @@ local CS = LPS.UI
 CS.ConfigBuilder = Builder
 local ROW_GAP = 4
 local SECTION_GAP = 14
-local COLUMN_GAP = 16
+local TOGGLE_GUTTER = 8
 local ROW_HEIGHTS = {
     header = 18,
     slider = 22,
@@ -19,62 +19,6 @@ local ROW_HEIGHTS = {
     label = 16,
     input = 24,
 }
---- Строка обязана занять всю ширину страницы (слайдер/dropdown/input слева+справа).
-local function NeedsFullRow(entry)
-    return entry.fullRow == true or entry.kind == "slider"
-        or entry.kind == "dropdown" or entry.kind == "input"
-end
---- Двухколоночная сетка: строки распределяются по колонкам как в CharacterStats.
---- Если у записи задана column ("left"/"right"), она всегда идёт в эту колонку;
---- иначе включается в балансировку. Заголовок секции начинает новый блок:
---- он занимает всю ширину, а его группа коротких строк раскладывается по
---- обеим колонкам (как inline-группа в дереве настроек CharacterStats).
-local function SplitColumns(entries)
-    local left, right = {}, {}
-    local hL, hR = 0, 0
-    local function push(col, entry, h)
-        col[#col + 1] = { entry = entry, height = h }
-        return h + ROW_GAP
-    end
-    local i = 1
-    while i <= #entries do
-        local entry = entries[i]
-        local h = (ROW_HEIGHTS[entry.kind] or 20)
-        if entry.multiline then h = entry.rowHeight or 100 end
-        local forced = entry.column
-        if entry.kind == "header" then
-            -- заголовок на всю ширину
-            local target = forced == "right" and right or left
-            if target == left then hL = hL + push(target, entry, h) else hR = hR + push(target, entry, h) end
-            i = i + 1
-            -- группа строк до следующего заголовка: balance или left/right-колонки
-            local group = {}
-            while i <= #entries and entries[i].kind ~= "header" and not NeedsFullRow(entries[i]) and not entries[i].column do
-                group[#group + 1] = entries[i]
-                i = i + 1
-            end
-            for _, e in ipairs(group) do
-                local eh = (ROW_HEIGHTS[e.kind] or 20)
-                if hL <= hR then hL = hL + push(left, e, eh) else hR = hR + push(right, e, eh) end
-            end
-        elseif forced == "left" or forced == "right" then
-            local col = (forced == "left") and left or right
-            if col == left then hL = hL + push(col, entry, h) else hR = hR + push(col, entry, h) end
-            i = i + 1
-        elseif NeedsFullRow(entry) then
-            -- широкая строка: целиком в более высокую колонку? нет — как в CS:
-            -- full-row строки идут в левую колонку, занимая её всю ширину только
-            -- если правая пуста; иначе балансируем по высоте колонок.
-            if hL <= hR then hL = hL + push(left, entry, h) else hR = hR + push(right, entry, h) end
-            i = i + 1
-        else
-            -- одиночные короткие строки вне группы: в более высокую колонку
-            if hL <= hR then hL = hL + push(left, entry, h) else hR = hR + push(right, entry, h) end
-            i = i + 1
-        end
-    end
-    return left, right
-end
 local DISABLED_TEXT = { r = 0.4, g = 0.4, b = 0.4 }
 local function GetDB()
     return LPS:GetDB() or {}
@@ -391,76 +335,65 @@ local function RefreshControl(control, db)
         SetLabelEnabled(control.label, enabled)
     end
 end
---- Ширина колонки относительно родительского контейнера.
-local function AnchorColumn(colFrame, parent, side, colWidth)
-    colFrame:SetPoint("TOP", parent, "TOP", 0, 0)
-    colFrame:SetPoint("BOTTOM", parent, "BOTTOM", 0, 0)
-    if side == "left" then
-        colFrame:SetPoint("LEFT", parent, "LEFT", 0, 0)
-        colFrame:SetPoint("RIGHT", parent, "CENTER", -COLUMN_GAP / 2, 0)
-    else
-        colFrame:SetPoint("LEFT", parent, "CENTER", COLUMN_GAP / 2, 0)
-        colFrame:SetPoint("RIGHT", parent, "RIGHT", 0, 0)
-    end
-    if colWidth then colFrame:SetWidth(colWidth) end
-end
---- Раскладка колонок по записям [{entry=..., height=...}]. Возвращает высоту.
-local function LayoutColumn(colFrame, items, page, opts)
-    local y = -(opts.topPadding or 4)
-    for idx, item in ipairs(items) do
-        local entry = item.entry
-        local row = CreateFrame("Frame", nil, colFrame)
-        if entry.kind == "header" and idx > 1 then
-            y = y - (SECTION_GAP - ROW_GAP)
-        end
-        row:SetPoint("TOPLEFT", colFrame, "TOPLEFT", 0, y)
-        row:SetPoint("TOPRIGHT", colFrame, "TOPRIGHT", 0, y)
-        row:SetHeight(item.height)
-        SetRowTooltip(row, entry)
-        if opts.onRow then opts.onRow(row) end
-        local control = BuildControl(page, entry, row)
-        -- многострочные метки могли получить больше высоты из-за переноса слов
-        if control.multiline and row:GetHeight() > item.height then
-            item.height = row:GetHeight()
-        end
-        y = y - item.height - ROW_GAP
-        page.controls[#page.controls + 1] = control
-    end
-    return math.abs(y) + 8
-end
+--- Одноколоночная раскладка, как в исходном аддоне (CharacterStats Config/Builder):
+--- строки идут одна под другой на всю ширину; только короткие чекбоксы
+--- (toggle без fullRow) группируются по два — вторая строка встаёт в правую
+--- половину той же высоты, не сдвигая последующие строки.
 function Builder.Build(parent, entries, opts)
     opts = opts or {}
     local page = {
         controls = {},
         onChange = opts.onChange,
     }
-    -- двухколоночная сетка (как меню настроек CharacterStats): строки
-    -- распределяются по левой/правой колонкам, высота страницы = max колонки
-    local leftItems, rightItems = SplitColumns(entries)
-    local hasRight = #rightItems > 0
-    local parentWidth = parent:GetWidth()
-    if not (parentWidth and parentWidth > 1) then parentWidth = nil end
-    local leftCol = CreateFrame("Frame", nil, parent)
-    AnchorColumn(leftCol, parent, "left", hasRight and parentWidth and (parentWidth / 2 - COLUMN_GAP / 2) or nil)
-    local hLeft = LayoutColumn(leftCol, leftItems, page, opts)
-    local hRight = 0
-    if hasRight then
-        local rightCol = CreateFrame("Frame", nil, parent)
-        AnchorColumn(rightCol, parent, "right", parentWidth and (parentWidth / 2 - COLUMN_GAP / 2) or nil)
-        hRight = LayoutColumn(rightCol, rightItems, page, opts)
-        page.columns = { leftCol, rightCol }
-    else
-        page.columns = { leftCol }
-    end
-    page.height = math.max(hLeft, hRight)
-    --- Пересчёт ширины колонок при изменении ширины контента (resize окна).
-    function page:ResizeColumns(width)
-        if not width or width <= 1 then return end
-        local half = width / 2 - COLUMN_GAP / 2
-        for _, col in ipairs(page.columns) do
-            col:SetWidth(hasRight and half or width)
+    local y = -(opts.topPadding or 4)
+    local leftToggleRowY = nil
+    local first = true
+    for _, entry in ipairs(entries) do
+        if not entry.available or entry.available() then
+            local kind = entry.kind
+            local height = ROW_HEIGHTS[kind] or 20
+            if entry.multiline then height = entry.rowHeight or height end
+            local row = CreateFrame("Frame", nil, parent)
+            local placedRight = false
+            if kind == "toggle" and leftToggleRowY and not entry.fullRow then
+                -- второй чекбокс пары: правая половина строки первого чекбокса
+                row:SetPoint("TOPLEFT", parent, "TOP", TOGGLE_GUTTER, leftToggleRowY)
+                row:SetPoint("TOPRIGHT", parent, "TOPRIGHT", 0, leftToggleRowY)
+                leftToggleRowY = nil
+                placedRight = true
+            else
+                if kind == "header" and not first then
+                    y = y - (SECTION_GAP - ROW_GAP)
+                end
+                row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
+                if kind == "toggle" and not entry.fullRow then
+                    -- первый чекбокс пары: левая половина, ждём второй
+                    row:SetPoint("TOPRIGHT", parent, "TOP", -TOGGLE_GUTTER, y)
+                    leftToggleRowY = y
+                else
+                    row:SetPoint("TOPRIGHT", parent, "TOPRIGHT", 0, y)
+                    leftToggleRowY = nil
+                end
+            end
+            row:SetHeight(height)
+            if not placedRight then
+                y = y - height - ROW_GAP
+            end
+            SetRowTooltip(row, entry)
+            if opts.onRow then opts.onRow(row) end
+            local control = BuildControl(page, entry, row)
+            -- многострочные метки могли получить больше высоты из-за переноса слов
+            if control.multiline and row:GetHeight() > height then
+                if not placedRight then
+                    y = y + height - row:GetHeight()
+                end
+                height = row:GetHeight()
+            end
+            first = false
+            page.controls[#page.controls + 1] = control
         end
     end
+    page.height = math.abs(y) + 8
     function page:Refresh()
         Builder.RefreshPage(self)
     end

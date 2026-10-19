@@ -22,6 +22,7 @@
         <Include file='.\\Options\\layout.lua'/>
         <Include file='.\\Options\\appearance.lua'/>
         <Include file='.\\Options\\profiles.lua'/>
+        <Include file='.\\Options\\page_profiles.lua'/>
         <Include file='.\\Options\\importexport.lua'/>
         <Include file='.\\Options\\about.lua'/>
         <Include file='.\\options_init.lua'/>
