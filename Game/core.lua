@@ -186,15 +186,29 @@ function LPS:onLoaded(name)
         LPS:ApplyTimeFormat()
         LPS:ApplyHolderPosition()
 
-        -- Фрейм локации — главный, к нему якорятся остальные панели, поэтому
-        -- молча пропускать его нельзя: аддон без него не работает. Если модуль
-        -- Modules/Frames/location.lua по какой-то причине не загрузился и
-        -- конструктор не определился, грузим файл напрямую и создаём фрейм.
+        -- Фрейм локации — главный, к нему якорятся остальные панели.
+        -- Если модуль Modules/Frames/location.lua по какой-то причине не
+        -- загрузился (конструктор не определился) или вернул nil, молча
+        -- падать с "attempt to call a nil value" нельзя: выводим понятную
+        -- ошибку и продолжаем работу без фатального прерывания onLoaded.
         if type(LPS.CreateLocationFrame) ~= "function" then
-            local chunk = LoadAddOnFile and LoadAddOnFile("Interface\\AddOns\\" .. LPS.addon.name .. "\\Modules\\Frames\\location.lua")
-            if chunk then pcall(chunk) end
+            -- Пробуем загрузить файл напрямую (если API доступен в этом клиенте).
+            if LoadAddOnFile then
+                local ok, chunk = pcall(LoadAddOnFile, "Interface\\AddOns\\" .. LPS.addon.name .. "\\Modules\\Frames\\location.lua")
+                if ok and chunk then pcall(chunk) end
+            end
         end
-        LPS.frame.location = LPS:CreateLocationFrame()
+
+        if type(LPS.CreateLocationFrame) == "function" then
+            local ok, frame = pcall(LPS.CreateLocationFrame, LPS)
+            if ok and frame then
+                LPS.frame.location = frame
+            else
+                LPS:Print("Location frame creation failed: " .. tostring(frame), false)
+            end
+        else
+            LPS:Print("Module Modules/Frames/location.lua is not loaded (LPS:CreateLocationFrame is undefined)", false)
+        end
 
         LPS:ApplyAllSettings()
         if LPS.ApplyAddonCompartmentRegistration then
