@@ -275,6 +275,22 @@ local function createTreePage(group)
             self:Build()
             Builder.RefreshPage(page)
         end
+        -- Делегат OnValueChanged: без него любой клик по чекбоксу/слайдеру на
+        -- ленивой странице падал с "attempt to call a nil value" (Builder.lua),
+        -- из-за чего половина элементов вкладки оставалась непостроенной.
+        function page:OnValueChanged(entry, value)
+            local built = self.controls[1] and self.controls[1].entry and true or false
+            if not built then return end
+            local themeBefore = LPS.UI.Theme.key
+            if entry.onChange then
+                entry.onChange(value)
+            elseif self.onChange then
+                self.onChange(entry, value)
+            end
+            if LPS.UI.Theme.key == themeBefore then
+                Builder.RefreshPage(self)
+            end
+        end
         -- если страница была построена до того, как фрейм получил реальные
         -- размеры (свернутое окно, первый кадр), достраиваем её после Show
         if container then

@@ -80,12 +80,30 @@ function Theme.GetDescription(key)
     if not def then return "" end
     return L[def.descKey] or def.fallbackDesc
 end
---- Палитра цветовых тем (акцента), как в CharacterStats: классы + золотой по умолчанию.
-local CLASS_ACCENTS = {
+--- Палитра цветовых тем (акцента): только классы, доступные в текущей сборке игры.
+local CLASS_ACCENTS_ALL = {
     "DEATHKNIGHT", "DEMONHUNTER", "DRUID", "EVOKER", "HUNTER", "MAGE",
     "MONK", "PALADIN", "PRIEST", "ROGUE", "SHAMAN", "WARLOCK", "WARRIOR",
 }
+--- Есть ли класс в этой версии игры (в Classic нет DH/Evoker и т.д.).
+local function ClassExists(classToken)
+    if not classToken then return false end
+    local key = classToken:upper()
+    if C_ClassColor and C_ClassColor.GetClassColor then
+        if C_ClassColor.GetClassColor(key) then return true end
+    end
+    if RAID_CLASS_COLORS and RAID_CLASS_COLORS[key] then return true end
+    return false
+end
+--- Золотой запасается только если класс-цвета недоступны.
 local DEFAULT_ACCENT = { 0.78, 0.66, 0.22 }
+--- Акцент «По умолчанию» = цвет текущего класса игрока (если класс определён).
+local function GetDefaultAccent()
+    local _, classFile = UnitClass("player")
+    local r, g, b = GetClassColor(classFile)
+    if r then return r, g, b end
+    return DEFAULT_ACCENT[1], DEFAULT_ACCENT[2], DEFAULT_ACCENT[3]
+end
 local function MuteColor(r, g, b, amount)
     amount = amount or 0.15
     return r + (0.5 - r) * amount, g + (0.5 - g) * amount, b + (0.5 - b) * amount
@@ -102,6 +120,7 @@ local function GetClassColor(classToken)
     return nil
 end
 --- Цвет выбранной цветовой темы (db.uiOptions.themeColor / themeUseClassColor).
+--- "default" = цвет текущего класса игрока (не золото).
 function Theme.GetAccentColor()
     local db = LPS:GetDB()
     local ui = db and db.uiOptions
@@ -113,22 +132,29 @@ function Theme.GetAccentColor()
         return nil
     end
     local id = ui.themeColor
-    if not id or id == "default" then return DEFAULT_ACCENT[1], DEFAULT_ACCENT[2], DEFAULT_ACCENT[3] end
-    for _, cls in ipairs(CLASS_ACCENTS) do
+    if not id or id == "default" then
+        local r, g, b = GetDefaultAccent()
+        return MuteColor(r, g, b, 0.2)
+    end
+    for _, cls in ipairs(CLASS_ACCENTS_ALL) do
         if cls == id then
             local r, g, b = GetClassColor(cls)
             if r then return MuteColor(r, g, b, 0.2) end
             break
         end
     end
-    return DEFAULT_ACCENT[1], DEFAULT_ACCENT[2], DEFAULT_ACCENT[3]
+    local r, g, b = GetDefaultAccent()
+    return MuteColor(r, g, b, 0.2)
 end
---- Список значений dropdown'а цветовых тем (с локализацией классов).
+--- Список значений dropdown'а цветовых тем: только классы, доступные в игре;
+--- значение "default" = текущий класс игрока.
 function Theme.GetAccentItems()
-    local items = { { value = "default", text = L.THEME_COLOR_DEFAULT or "Default" } }
-    for _, cls in ipairs(CLASS_ACCENTS) do
-        local name = (LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[cls]) or cls
-        items[#items + 1] = { value = cls, text = name }
+    local items = { { value = "default", text = L.THEME_COLOR_DEFAULT or "Default (my class)" } }
+    for _, cls in ipairs(CLASS_ACCENTS_ALL) do
+        if ClassExists(cls) then
+            local name = (LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[cls]) or cls
+            items[#items + 1] = { value = cls, text = name }
+        end
     end
     return items
 end

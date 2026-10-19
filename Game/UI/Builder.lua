@@ -74,20 +74,52 @@ local function CreateRowLabel(row, text)
     CS.ConfigWidgets.ApplyFontColor(label, "textMuted")
     return label
 end
-local function SetRowTooltip(row, entry)
-    if not (entry.tooltip or entry.desc) then return end
-    row:EnableMouse(true)
-    row:SetScript("OnEnter", function(self)
+--- Тултип показывается на конкретном контроле (текст чекбокса, слайдер,
+--- дропдаун, поле, кнопка, метка), а не на всей строке: иначе подсказка
+--- всплывала при наведении на пустоту между элементами.
+local function AttachTooltip(target, entry)
+    if not target then return end
+    local tip = entry.tooltip or entry.desc
+    if not tip then return end
+    if type(target.SetScript) ~= "function" then return end
+    target:HookScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
         if entry.label and entry.label ~= "" and entry.label ~= " " then
             GameTooltip:AddLine(entry.label, 1, 1, 1)
         end
-        GameTooltip:AddLine((entry.tooltip or entry.desc), nil, nil, nil, true)
+        GameTooltip:AddLine(tip, nil, nil, nil, true)
         GameTooltip:Show()
     end)
-    row:SetScript("OnLeave", function()
+    target:HookScript("OnLeave", function()
         GameTooltip:Hide()
     end)
+end
+local function SetRowTooltip(row, control, entry)
+    if not (entry.tooltip or entry.desc) then return end
+    local kind = entry.kind
+    if kind == "toggle" then
+        -- подсказка — на сам чекбокс вместе с его подписью
+        AttachTooltip(control.toggle, entry)
+        AttachTooltip(control.toggle.text, entry)
+    elseif kind == "slider" then
+        AttachTooltip(control.slider, entry)
+        AttachTooltip(control.label, entry)
+    elseif kind == "dropdown" then
+        AttachTooltip(control.dropdown, entry)
+        AttachTooltip(control.label, entry)
+    elseif kind == "color" then
+        AttachTooltip(control.swatch, entry)
+        AttachTooltip(control.label, entry)
+    elseif kind == "input" then
+        AttachTooltip(control.edit, entry)
+        AttachTooltip(control.label, entry)
+    elseif kind == "button" then
+        AttachTooltip(control.button, entry)
+    elseif kind == "label" then
+        AttachTooltip(control.text or row, entry)
+    else
+        AttachTooltip(row, entry)
+    end
 end
 --- Подбирает тему шрифта многострочного label'а по содержимому: заголовки
 --- секций (без цвета/переносов строк) — heading, остальное — обычный текст.
@@ -379,9 +411,11 @@ function Builder.Build(parent, entries, opts)
             if not placedRight then
                 y = y - height - ROW_GAP
             end
-            SetRowTooltip(row, entry)
             if opts.onRow then opts.onRow(row) end
             local control = BuildControl(page, entry, row)
+            -- подсказка вешается на конкретный контрол (текст/чекбокс/слайдер),
+            -- а не на всю строку — иначе всплывала при наведении на пустоту
+            SetRowTooltip(row, control, entry)
             -- многострочные метки могли получить больше высоты из-за переноса слов
             if control.multiline and row:GetHeight() > height then
                 if not placedRight then

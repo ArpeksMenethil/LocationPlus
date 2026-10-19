@@ -94,24 +94,54 @@ function LPS.CreateProfilesPanelPage(container)
     buttonRow:SetPoint("TOPLEFT", content, "TOPLEFT", 0, y)
     buttonRow:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, y)
     buttonRow:SetHeight(ROW_HEIGHT)
+    -- кнопки в один ряд по центру: раньше первая кнопка ставилась от центра
+    -- строки, из-за чего последние кнопки уезжали за правый край окна
     local newBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_NEW or "New")
     local copyBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_COPY or "Copy")
     local deleteBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_DELETE or "Delete")
     local resetBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.RESET_PROFILE or "Reset profile")
     local buttons = { newBtn, copyBtn, deleteBtn, resetBtn }
-    Widgets.NormalizeButtonWidths(buttons, 10)
-    for i, btn in ipairs(buttons) do
-        if i == 1 then
-            btn:SetPoint("LEFT", buttonRow, "CENTER", 8, 0)
-        else
-            btn:SetPoint("LEFT", buttons[i - 1], "RIGHT", 6, 0)
+    local BTN_GAP = 6
+    --- Одинаковая ширина кнопок + общий зазор ряда (чтобы не залезали друг на друга).
+    function page:SizeButtons()
+        local textMax = 0
+        for _, btn in ipairs(buttons) do
+            if btn.text then
+                local tw = btn.text:GetStringWidth() or 0
+                if tw > textMax then textMax = tw end
+            end
+        end
+        -- ширина по самой длинной подписи + двойной padding: соседние кнопки
+        -- получают гарантированный зазор и не перекрываются
+        local width = math.max(80, textMax + BTN_GAP * 4)
+        for _, btn in ipairs(buttons) do
+            btn:SetWidth(width)
         end
     end
+    function page:LayoutButtons()
+        self:SizeButtons()
+        local total = 0
+        for i, btn in ipairs(buttons) do
+            total = total + btn:GetWidth()
+            if i > 1 then total = total + BTN_GAP end
+        end
+        local half = total / 2
+        for i, btn in ipairs(buttons) do
+            btn:ClearAllPoints()
+            if i == 1 then
+                btn:SetPoint("LEFT", buttonRow, "CENTER", -half, 0)
+            else
+                btn:SetPoint("LEFT", buttons[i - 1], "RIGHT", BTN_GAP, 0)
+            end
+        end
+    end
+    page._buttonRow = buttonRow
     y = y - ROW_HEIGHT - 8
 
     content:SetHeight(math.abs(y) + 8)
     page.scroll = content:GetParent()
     page.height = math.abs(y) + 8
+    page:LayoutButtons()
 
     --- Обновление списка профилей и состояния элементов.
     function page:Refresh()
@@ -128,6 +158,9 @@ function LPS.CreateProfilesPanelPage(container)
             if item.value ~= "Default" then canDelete = true break end
         end
         SetButtonEnabled(deleteBtn, canDelete)
+        -- после применения шрифтов темы подписи могли стать шире —
+        -- пересчитываем одинаковую ширину кнопок и центрируем ряд заново
+        self:LayoutButtons()
     end
 
     profileDrop:SetOnChange(function(value)

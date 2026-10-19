@@ -82,20 +82,46 @@ local function SaveFrameSize()
     db.uiOptions.height = frame:GetHeight()
 end
 
---- Строки внутренней страницы «Настройка окна» (порт BuildWindowEntries):
---- тема окна, акцентный цвет и масштаб окна настроек.
+--- Значение по умолчанию для dropdown'а акцента: "default" = цвет текущего
+--- класса игрока; если сохранён класс, недоступный в этой игре (например,
+--- Evoker в Classic) — считаем значение невалидным и показываем "default".
+local function GetValidAccentValue()
+    local db = LPS:GetDB()
+    local ui = db and db.uiOptions
+    local v = ui and ui.themeColor
+    if not v or v == "default" then return "default" end
+    for _, item in ipairs(CS.Theme.GetAccentItems()) do
+        if item.value == v then return v end
+    end
+    return "default"
+end
+
+--- Строки внутренней страницы «Настройка окна»: тема окна, цвета акцента,
+--- свой цвет фона окна и масштаб. Раньше это была отдельная вкладка
+--- «Внешний вид» (Game/Options/appearance.lua) — теперь только эта страница
+--- под кнопкой-шестерёнкой в заголовке.
 local function BuildWindowEntries(L)
     local Theme = CS.Theme
-    local function ApplyAccent()
+    local function UIOpts()
+        local db = LPS:GetDB()
+        db.uiOptions = db.uiOptions or {}
+        return db.uiOptions
+    end
+    local function ApplyTheme()
         Panel.RefreshTheme()
         if LPS.Options and LPS.Options.ApplyRefresh then
             LPS.Options:ApplyRefresh()
         end
     end
+    local function IsCustomMode()
+        local ui = LPS:GetDB() and LPS:GetDB().uiOptions
+        return (ui and ui.windowColorMode) == "custom"
+    end
     return {
         { kind = "header", label = L.SECTION_UI_THEME or "Window Theme" },
         {
             kind = "dropdown", key = "uiTheme", label = L.LABEL_UI_THEME or "Theme",
+            tooltip = L.THEME_STYLE_DESC,
             items = function()
                 local items = {}
                 for _, key in ipairs(Theme.ORDER) do
@@ -111,43 +137,88 @@ local function BuildWindowEntries(L)
         },
         { kind = "header", label = L.SECTION_THEME or "Accent Color" },
         {
-            kind = "dropdown", key = "themeColor", label = L.LABEL_THEME or "Theme",
+            kind = "dropdown", key = "themeColor", label = L.THEME_COLOR or "Accent color",
+            tooltip = L.THEME_COLOR_DESC,
             items = function() return Theme.GetAccentItems() end,
             disabled = function()
                 local db = LPS:GetDB()
                 local ui = db and db.uiOptions
                 return (ui and ui.themeUseClassColor) == true
             end,
-            get = function()
-                local db = LPS:GetDB()
-                local ui = db and db.uiOptions
-                return (ui and ui.themeColor) or "default"
-            end,
-            set = function(v)
-                local db = LPS:GetDB()
-                db.uiOptions = db.uiOptions or {}
-                db.uiOptions.themeColor = v
-            end,
-            onChange = ApplyAccent,
+            get = GetValidAccentValue,
+            set = function(v) UIOpts().themeColor = v end,
+            onChange = ApplyTheme,
         },
         {
             kind = "toggle", key = "themeUseClassColor", fullRow = true,
-            label = L.LABEL_THEME_USE_CLASS or "Use my class color",
-            onChange = ApplyAccent,
+            label = L.USE_CLASS_COLOR or "Use my class color",
+            tooltip = L.USE_CLASS_COLOR_DESC,
+            onChange = ApplyTheme,
             get = function()
                 local db = LPS:GetDB()
                 local ui = db and db.uiOptions
                 return (ui and ui.themeUseClassColor) == true
             end,
-            set = function(v)
-                local db = LPS:GetDB()
-                db.uiOptions = db.uiOptions or {}
-                db.uiOptions.themeUseClassColor = v and true or false
+            set = function(v) UIOpts().themeUseClassColor = v and true or false end,
+        },
+        {
+            kind = "color", key = "accentColor", label = L.ACCENT_COLOR or "Custom accent color",
+            tooltip = L.ACCENT_COLOR_DESC,
+            get = function()
+                local ui = LPS:GetDB() and LPS:GetDB().uiOptions
+                local c = ui and ui.accentColor
+                if c and tonumber(c.r) then return c end
+                local r, g, b = Theme.GetAccentColor()
+                if r then return { r = r, g = g, b = b } end
+                return { r = 0.78, g = 0.66, b = 0.22 }
             end,
+            set = function(c) UIOpts().accentColor = { r = c.r, g = c.g, b = c.b } end,
+            onChange = ApplyTheme,
+        },
+        { kind = "header", label = L.WINDOW_COLOR_MODE or "Window background" },
+        {
+            kind = "dropdown", key = "windowColorMode", label = L.WINDOW_COLOR_MODE or "Window color mode",
+            tooltip = L.WINDOW_COLOR_MODE_DESC,
+            items = {
+                { value = "theme", text = L.WINDOW_COLOR_BY_THEME or "By theme" },
+                { value = "custom", text = L.WINDOW_COLOR_CUSTOM or "Custom color" },
+            },
+            get = function()
+                local ui = LPS:GetDB() and LPS:GetDB().uiOptions
+                return (ui and ui.windowColorMode) or "theme"
+            end,
+            set = function(v) UIOpts().windowColorMode = v end,
+            onChange = ApplyTheme,
+        },
+        {
+            kind = "color", key = "windowColor", label = L.WINDOW_COLOR or "Window color",
+            tooltip = L.WINDOW_COLOR_DESC,
+            disabled = function() return not IsCustomMode() end,
+            get = function()
+                local ui = LPS:GetDB() and LPS:GetDB().uiOptions
+                local c = ui and ui.windowColor
+                if c and tonumber(c.r) then return c end
+                return { r = 0.09, g = 0.10, b = 0.12 }
+            end,
+            set = function(c) UIOpts().windowColor = { r = c.r, g = c.g, b = c.b } end,
+            onChange = ApplyTheme,
+        },
+        {
+            kind = "toggle", key = "windowColorKeepHeader", fullRow = true,
+            label = L.WINDOW_COLOR_KEEP_HEADER or "Keep themed header",
+            tooltip = L.WINDOW_COLOR_KEEP_HEADER_DESC,
+            disabled = function() return not IsCustomMode() end,
+            get = function()
+                local ui = LPS:GetDB() and LPS:GetDB().uiOptions
+                return (ui and ui.windowColorKeepHeader) and true or false
+            end,
+            set = function(v) UIOpts().windowColorKeepHeader = v and true or false end,
+            onChange = ApplyTheme,
         },
         { kind = "header", label = L.SECTION_WINDOW or "Options Window" },
         {
-            kind = "slider", key = "uiScale", label = L.LABEL_OPTIONS_SCALE or "Options Window Scale",
+            kind = "slider", key = "uiScale", label = L.WINDOW_SCALE or "Options Window Scale",
+            tooltip = L.WINDOW_SCALE_DESC,
             min = 0.5, max = 1.5, step = 0.05, format = "%.2f",
             commitOnRelease = true,
             get = function()
@@ -158,6 +229,25 @@ local function BuildWindowEntries(L)
             set = function() end,
             onChange = function(value)
                 Panel.SetWindowScale(value)
+            end,
+        },
+        {
+            kind = "button", key = "resetAppearance", label = L.RESET_APPEARANCE or "Reset appearance",
+            tooltip = L.RESET_APPEARANCE_DESC,
+            func = function()
+                local ui = UIOpts()
+                ui.theme = nil
+                ui.themeColor = nil
+                ui.themeUseClassColor = nil
+                ui.accentColor = nil
+                ui.windowColorMode = nil
+                ui.windowColor = nil
+                ui.windowColorKeepHeader = nil
+                ui.scale = 1.0
+                if Theme.Set then Theme.Set("classic") else Theme.Load() end
+                Panel.SetWindowScale(1.0)
+                ApplyTheme()
+                Panel.RefreshActivePage()
             end,
         },
     }
@@ -379,6 +469,7 @@ function Panel.OnThemeChanged()
         return
     end
     local page = current._activePage
+    local lastAddonPage = current._lastAddonPage
     local point, relativeTo, relativePoint, x, y = current:GetPoint(1)
     current:Hide()
     frame = nil
@@ -387,8 +478,12 @@ function Panel.OnThemeChanged()
         frame:ClearAllPoints()
         frame:SetPoint(point, relativeTo, relativePoint, x, y)
     end
-    if page then
+    -- Show() сам восстанавливает _activePage/_lastAddonPage (в т.ч. внутреннюю
+    -- «Настройка окна»): раньше страница терялась и при смене стиля окно
+    -- перебрасывало на «Основные»
+    if page and pages[page] and frame._activePage ~= page then
         Panel.ShowPage(page)
+        frame._lastAddonPage = lastAddonPage or frame._lastAddonPage
     end
 end
 local function GetPageFrame(key)
