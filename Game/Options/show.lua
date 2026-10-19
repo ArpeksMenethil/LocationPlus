@@ -1,6 +1,5 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
-local L = LPS.L
 
 local OH = LPS.OptionsHelper
 
@@ -8,21 +7,21 @@ local OH = LPS.OptionsHelper
 function LPS.Options.BuildTree.tabs.show()
 	return {
 			type = "group",
-			name = L.DISPLAY,
+			name = LPS:L("DISPLAY"),
 			order = 2,
 			args = {
 				locationGroup = {
 					order = 1,
 					type = "group",
-					name = L.LOCATION,
+					name = LPS:L("LOCATION"),
 					inline = true,
 					
 					args = {
 						zone = {
 							order = 1,
 							type = "toggle",
-							name = L.SHOW_ZONE,
-							desc = L.SHOW_ZONE_NAME_ON_THE_PANEL,
+							name = LPS:L("SHOW_ZONE"),
+							desc = LPS:L("SHOW_ZONE_NAME_ON_THE_PANEL"),
 							
 							get = function() return OH:getDb().show.zone end,
 							set = function(_, v)
@@ -40,8 +39,8 @@ function LPS.Options.BuildTree.tabs.show()
 						},
 						showicon = {
 							order = 2,
-							name = L.CREST,
-							desc = L.SHOW_AN_ICON_NEXT_TO_THE_ADDITIONAL_INFO,
+							name = LPS:L("CREST"),
+							desc = LPS:L("SHOW_AN_ICON_NEXT_TO_THE_ADDITIONAL_INFO"),
 							type = "toggle",
 							
 							disabled = function() return OH:getDb().show.displayOther == "NONE" end,
@@ -56,8 +55,8 @@ function LPS.Options.BuildTree.tabs.show()
 						},
 						displayOther = {
 							order = 3,
-							name = L.OTHER,
-							desc = L.SHOW_ADDITIONAL_INFO_IN_THE_LOCATION_PANEL,
+							name = LPS:L("OTHER"),
+							desc = LPS:L("SHOW_ADDITIONAL_INFO_IN_THE_LOCATION_PANEL"),
 							type = "select",
 							
 							values = OH:getDisplayOtherValues(),
@@ -79,14 +78,14 @@ function LPS.Options.BuildTree.tabs.show()
 				coordsGroup = {
 					order = 2,
 					type = "group",
-					name = L.COORDS,
+					name = LPS:L("COORDS"),
 					inline = true,
 					
 					args = {
 						dig = {
 							order = 1,
-							name = L.DETAILED_COORDS,
-							desc = L.ADDS_2_DIGITS_IN_THE_COORDS,
+							name = LPS:L("DETAILED_COORDS"),
+							desc = LPS:L("ADDS_2_DIGITS_IN_THE_COORDS"),
 							type = "toggle",
 							
 							get = function() return OH:getDb().show.dig end,
@@ -100,8 +99,8 @@ function LPS.Options.BuildTree.tabs.show()
 						},
 						coordsTimeUpdate = {
 							order = 2,
-							name = L.UPDATE_TIMER,
-							desc = L.ADJUST_COORDS_UPDATES_IN_SECONDS_TO_AVOID_CPU_LOAD,
+							name = LPS:L("UPDATE_TIMER"),
+							desc = LPS:L("ADJUST_COORDS_UPDATES_IN_SECONDS_TO_AVOID_CPU_LOAD"),
 							type = "range",
 							
 							min = 0.05,
@@ -120,20 +119,20 @@ function LPS.Options.BuildTree.tabs.show()
 				experienceGroup = {
 					order = 3,
 					type = "group",
-					name = L.EXPERIENCE,
+					name = LPS:L("EXPERIENCE"),
 					inline = true,
 					
 					args = {
 						experience = {
 							order = 1,
 							type = "select",
-							name = L.VALUE_FORMAT,
-							desc = L.CHOOSE_HOW_THE_VALUE_IS_SHOWN_ON_THE_PANEL,
+							name = LPS:L("VALUE_FORMAT"),
+							desc = LPS:L("CHOOSE_HOW_THE_VALUE_IS_SHOWN_ON_THE_PANEL"),
 							values = {
-								PERCENT = L.PERCENT,
-								CURMAX = L.CURRENT_MAX,
-								CUR = L.CURRENT,
-								REM = L.REMAINING,
+								PERCENT = LPS:L("PERCENT"),
+								CURMAX = LPS:L("CURRENT_MAX"),
+								CUR = LPS:L("CURRENT"),
+								REM = LPS:L("REMAINING"),
 							},
 							get = function() return OH:getDb().show.experience.display or "PERCENT" end,
 							set = function(_, v)
@@ -146,19 +145,19 @@ function LPS.Options.BuildTree.tabs.show()
 				bagsGroup = {
 					order = 4,
 					type = "group",
-					name = L.BAGS,
+					name = LPS:L("BAGS"),
 					inline = true,
 					
 					args = {
 						bags = {
 							order = 1,
 							type = "select",
-							name = L.VALUE_FORMAT,
-							desc = L.CHOOSE_HOW_THE_VALUE_IS_SHOWN_ON_THE_PANEL,
+							name = LPS:L("VALUE_FORMAT"),
+							desc = LPS:L("CHOOSE_HOW_THE_VALUE_IS_SHOWN_ON_THE_PANEL"),
 							values = {
-								USED_TOTAL = L.USED_TOTAL,
-								FREE = L.FREE_SLOTS,
-								USED = L.USED_SLOTS,
+								USED_TOTAL = LPS:L("USED_TOTAL"),
+								FREE = LPS:L("FREE_SLOTS"),
+								USED = LPS:L("USED_SLOTS"),
 							},
 							get = function() return OH:getDb().show.bags.display or "USED_TOTAL" end,
 							set = function(_, v)
@@ -179,7 +178,7 @@ function LPS.Options.BuildTree.tabs.show()
 						bagsLabel = {
 							order = 2,
 							type = "input",
-							name = L.CUSTOM_LABEL,
+							name = LPS:L("CUSTOM_LABEL"),
 							disabled = function() return OH:getDb().show.bags.noLabel end,
 							get = function() return OH:getDb().show.bags.label or "" end,
 							set = function(_, v)
@@ -190,7 +189,7 @@ function LPS.Options.BuildTree.tabs.show()
 						bagsNoLabel = {
 							order = 3,
 							type = "toggle",
-							name = L.HIDE_LABEL,
+							name = LPS:L("HIDE_LABEL"),
 							get = function() return OH:getDb().show.bags.noLabel or false end,
 							set = function(_, v)
 								OH:getDb().show.bags.noLabel = v and true or false

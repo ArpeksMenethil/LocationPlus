@@ -1,6 +1,5 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
-local L = LPS.L
 
 local OH = LPS.OptionsHelper
 
@@ -8,7 +7,7 @@ local OH = LPS.OptionsHelper
 function LPS.Options.BuildTree.tabs.profiles()
 	return {
 			type = "group",
-			name = L.PROFILES,
+			name = LPS:L("PROFILES"),
 			order = 90,
 			args = {}
 }

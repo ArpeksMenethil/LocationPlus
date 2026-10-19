@@ -709,13 +709,14 @@ end
 LPS.Tourist = Tourist
 
 -- Локализация: таблица переводов создаётся файлами Locales/*.lua
--- (полная копия системы перевода CharacterStats: ns.L + RegisterLocale /
--- ApplyLocaleOverride). Если файл локалей не загрузился — пустая таблица
--- с fallback на имя ключа (то же поведение, что и __index у ns.L).
-if not _G.ArpeksLPS.L then
-	_G.ArpeksLPS.L = setmetatable({}, { __index = function(_, k) return k end })
+-- (система перевода CharacterStats: таблица L = LPS.L + LPS.RegisterLocale /
+-- LPS.ApplyLocaleOverride; namespace-таблица локалей — глобальная LPS).
+-- Здесь LPS.L — только поле-данные (таблица), метод перевода — LPS:L(key).
+-- Если файл локалей не загрузился — пустая таблица с fallback на имя ключа
+-- (то же поведение, что и __index у LPS.L в Locales/enUS.lua).
+if not LPS.L then
+	LPS.L = setmetatable({}, { __index = function(_, k) return k end })
 end
-LPS.L = _G.ArpeksLPS.L
 local Locale = LPS.L
 
 -- Выводит сообщение в чат с префиксом аддона и поддержкой локализации
@@ -730,7 +731,7 @@ end
 
 -- Возвращает локализованную строку по ключу или сам ключ, если перевода нет
 function LPS:L(key)
-	-- обычный доступ, а не rawget: переводы лежат в ns.L за __index = L
+	-- обычный доступ, а не rawget: переводы лежат в LPS.L за __index = L
 	local val = Locale[key]
 	if val ~= nil then
 		return val

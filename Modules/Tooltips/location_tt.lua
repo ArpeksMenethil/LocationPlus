@@ -1,6 +1,5 @@
-local L = LPS.L
-local MyAddon = _G.ArpeksLPS
-local LPS = MyAddon.LPS
+local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
+if not LPS then return end
 LPS_DB = LPS_DB or {}
 
 local Tourist = LPS.Tourist
@@ -275,17 +274,17 @@ function LPS:BuildLocationTooltip()
 	GameTooltip:ClearLines()
 
 	-- Zone
-	GameTooltip:AddDoubleLine(L.ZONE..": ", zoneText, r, g, b)
+	GameTooltip:AddDoubleLine(LPS:L("ZONE")..": ", zoneText, r, g, b)
 
 	-- Continent
-	GameTooltip:AddDoubleLine(L.CONTINENT..": ", LPS:GetContinentName(), r, g, b)
+	GameTooltip:AddDoubleLine(LPS:L("CONTINENT")..": ", LPS:GetContinentName(), r, g, b)
 
 	-- Home
-	GameTooltip:AddDoubleLine(L.HOME..": ", GetBindLocation(), r, g, b, 0.41, 0.8, 0.94)
+	GameTooltip:AddDoubleLine(LPS:L("HOME")..": ", GetBindLocation(), r, g, b, 0.41, 0.8, 0.94)
 
 	-- Status
 	if db.tooltips.location.status then
-		GameTooltip:AddDoubleLine(L.STATUS..": ", LPS:GetZoneStatus(), r, g, b)
+		GameTooltip:AddDoubleLine(LPS:L("STATUS")..": ", LPS:GetZoneStatus(), r, g, b)
 	end
 
 	-- Предварительно получаем данные для проверки необходимости пробела
@@ -337,13 +336,13 @@ function LPS:BuildLocationTooltip()
 
 	-- Pet Levels
 	if (LPS.Retail or LPS.Mists) and db.tooltips.location.battlePets and battlePetLevel then
-		GameTooltip:AddDoubleLine(L.BATTLE_PET_LEVEL.. ": ", battlePetLevel.." "..PET_ICON, r, g, b)
+		GameTooltip:AddDoubleLine(LPS:L("BATTLE_PET_LEVEL").. ": ", battlePetLevel.." "..PET_ICON, r, g, b)
 	end
 
 	-- Recommended zones
 	if db.tooltips.location.recomZone and Tourist then
 		GameTooltip:AddLine(" ")
-		GameTooltip:AddLine(L.RECOMMENDED_ZONES..": ", rY, gY, bY)
+		GameTooltip:AddLine(LPS:L("RECOMMENDED_ZONES")..": ", rY, gY, bY)
 		local max = tonumber(db.tooltips.location.recomZoneMax) or 5
 		if max < 3 then max = 3 elseif max > 10 then max = 10 end
 		local shown = 0
@@ -374,7 +373,7 @@ function LPS:BuildLocationTooltip()
 	local level = UnitLevel('player')
 	if db.tooltips.location.recomDungeon and Tourist and Tourist.HasRecommendedInstances and Tourist:HasRecommendedInstances() and level >= 15 then
 		GameTooltip:AddLine(" ")
-		GameTooltip:AddLine(L.RECOMMENDED_DUNGEONS..": ", rY, gY, bY)
+		GameTooltip:AddLine(LPS:L("RECOMMENDED_DUNGEONS")..": ", rY, gY, bY)
 		local max = tonumber(db.tooltips.location.recomDungeonMax) or 5
 		if max < 3 then max = 3 elseif max > 10 then max = 10 end
 		local shown = 0
@@ -427,10 +426,10 @@ function LPS:BuildLocationTooltip()
 			-- Список профессий, которые нужно показывать
 			local professions = {
 				-- Primary Professions
-				L.ALCHEMY, L.BLACKSMITHING, L.ENCHANTING, L.ENGINEERING, L.JEWELCRAFTING,
-				L.HERBALISM, L.LEATHERWORKING, L.MINING, L.SKINNING, L.TAILORING,
+				LPS:L("ALCHEMY"), LPS:L("BLACKSMITHING"), LPS:L("ENCHANTING"), LPS:L("ENGINEERING"), LPS:L("JEWELCRAFTING"),
+				LPS:L("HERBALISM"), LPS:L("LEATHERWORKING"), LPS:L("MINING"), LPS:L("SKINNING"), LPS:L("TAILORING"),
 				-- Secondary Professions
-				L.COOKING, L.FIRST_AID, L.FISHING
+				LPS:L("COOKING"), LPS:L("FIRST_AID"), LPS:L("FISHING")
 			}
 
 			local professionsSet = {}
@@ -477,7 +476,7 @@ function LPS:BuildLocationTooltip()
 	end
 
 	GameTooltip:AddLine(" ")
-	GameTooltip:AddDoubleLine(L.LMB, L.TOGGLE_WORLDMAP, rB, gB, bB, rB, gB, bB)
-	GameTooltip:AddDoubleLine(L.RMB, L.TOGGLE_CONFIGURATION, rB, gB, bB, rB, gB, bB)
-	GameTooltip:AddDoubleLine(L.SHIFT_LMB, L.SEND_THE_COORDINATES_TO_THE_CHAT, rB, gB, bB, rB, gB, bB)
+	GameTooltip:AddDoubleLine(LPS:L("LMB"), LPS:L("TOGGLE_WORLDMAP"), rB, gB, bB, rB, gB, bB)
+	GameTooltip:AddDoubleLine(LPS:L("RMB"), LPS:L("TOGGLE_CONFIGURATION"), rB, gB, bB, rB, gB, bB)
+	GameTooltip:AddDoubleLine(LPS:L("SHIFT_LMB"), LPS:L("SEND_THE_COORDINATES_TO_THE_CHAT"), rB, gB, bB, rB, gB, bB)
 end

@@ -1,6 +1,5 @@
-local L = LPS.L
-local MyAddon = _G.ArpeksLPS
-local LPS = MyAddon.LPS
+local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
+if not LPS then return end
 
 local function getCVar(name)
         if C_CVar and C_CVar.GetCVar then return C_CVar.GetCVar(name) end
@@ -32,13 +31,13 @@ function LPS:BuildVolumeTooltip(GameTooltip)
     local rB, gB, bB = LPS:GetColor("tooltipSetting")
     local rY, gY, bY = LPS:GetColor("tooltip")
 
-                                tt:AddLine(L.VOLUME_STREAMS, 1, 0.82, 0)
+                                tt:AddLine(LPS:L("VOLUME_STREAMS"), 1, 0.82, 0)
                                 tt:AddLine(" ")
                                 for _, s in ipairs(AudioStreams) do
                                         tt:AddDoubleLine(s.Name, streamString(s), 1, 1, 1, 1, 1, 1)
                                 end
                                 tt:AddLine(" ")
-                                tt:AddDoubleLine(L.LMB, L.SELECT_VOLUME_STREAM, rB, gB, bB, rB, gB, bB)
-                                tt:AddDoubleLine(L.MMB, L.MUTE, rB, gB, bB, rB, gB, bB)
-                                tt:AddDoubleLine(L.RMB, L.TOGGLE_VOLUME_STREAM, rB, gB, bB, rB, gB, bB)
+                                tt:AddDoubleLine(LPS:L("LMB"), LPS:L("SELECT_VOLUME_STREAM"), rB, gB, bB, rB, gB, bB)
+                                tt:AddDoubleLine(LPS:L("MMB"), LPS:L("MUTE"), rB, gB, bB, rB, gB, bB)
+                                tt:AddDoubleLine(LPS:L("RMB"), LPS:L("TOGGLE_VOLUME_STREAM"), rB, gB, bB, rB, gB, bB)
 end

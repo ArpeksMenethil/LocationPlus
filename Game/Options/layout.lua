@@ -1,6 +1,5 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
-local L = LPS.L
 
 local OH = LPS.OptionsHelper
 
@@ -8,17 +7,17 @@ local OH = LPS.OptionsHelper
 function LPS.Options.BuildTree.tabs.layout()
 	return {
 			type = "group",
-			name = L.LAYOUT,
+			name = LPS:L("LAYOUT"),
 			order = 4,
 			args = {
 				chainAnchor = {
 					order = 3,
 					type = "select",
-					name = L.FRAME_ANCHOR_MODE,
-					desc = L.SIDE_PANELS_ALWAYS_GROW_ALONG_THEIR_EDGE_LEFT_PANELS_ATTACH_TO_THE_LEFT_SIDE_OF_THE_GROUP_RIGHT_PANELS_ATTACH_TO_THE_RIGHT_SIDE_THIS_OPTION_CONTROLS_WHAT_THE_FIRST_PANEL_OF_EACH_CHAIN_ANCHORS_TO_THE_LOCATION_PANEL_EDGES_DEFAULT_OR_THE_OUTER_EDGES_OF_THE_WHOLE_HOLDER_FRAME,
+					name = LPS:L("FRAME_ANCHOR_MODE"),
+					desc = LPS:L("SIDE_PANELS_ALWAYS_GROW_ALONG_THEIR_EDGE_LEFT_PANELS_ATTACH_TO_THE_LEFT_SIDE_OF_THE_GROUP_RIGHT_PANELS_ATTACH_TO_THE_RIGHT_SIDE_THIS_OPTION_CONTROLS_WHAT_THE_FIRST_PANEL_OF_EACH_CHAIN_ANCHORS_TO_THE_LOCATION_PANEL_EDGES_DEFAULT_OR_THE_OUTER_EDGES_OF_THE_WHOLE_HOLDER_FRAME"),
 					values = {
-						chain = L.LOCATION_PANEL_EDGES,
-						location = L.HOLDER_OUTER_EDGES,
+						chain = LPS:L("LOCATION_PANEL_EDGES"),
+						location = LPS:L("HOLDER_OUTER_EDGES"),
 					},
 					get = function() return OH:getDb().layout.chainAnchor or "chain" end,
 					set = function(_, v)
@@ -29,14 +28,14 @@ function LPS.Options.BuildTree.tabs.layout()
 				locpanel = {
 					order = 4,
 					type = "group",
-					name = L.LOCATION_PANEL,
+					name = LPS:L("LOCATION_PANEL"),
 					inline = true,
 					args = {
 						locMinWidth = {
 							order = 0,
 							type = "range",
-							name = L.MINIMUM_WIDTH,
-							desc = L.SETS_THE_MINIMUM_WIDTH_OF_THE_LOCATION_PANEL,
+							name = LPS:L("MINIMUM_WIDTH"),
+							desc = LPS:L("SETS_THE_MINIMUM_WIDTH_OF_THE_LOCATION_PANEL"),
 							min = 200,
 							max = 300,
 							step = 1,
@@ -49,8 +48,8 @@ function LPS.Options.BuildTree.tabs.layout()
 						locPaddingX = {
 							order = 1,
 							type = "range",
-							name = L.TEXT_PADDING_X,
-							desc = L.ADJUST_HORIZONTAL_TEXT_PADDING_INSIDE_LOCATION_PANEL,
+							name = LPS:L("TEXT_PADDING_X"),
+							desc = LPS:L("ADJUST_HORIZONTAL_TEXT_PADDING_INSIDE_LOCATION_PANEL"),
 							min = 0,
 							max = 60,
 							step = 1,
@@ -63,8 +62,8 @@ function LPS.Options.BuildTree.tabs.layout()
 						locPaddingY = {
 							order = 2,
 							type = "range",
-							name = L.TEXT_PADDING_Y,
-							desc = L.ADJUST_VERTICAL_TEXT_PADDING_INSIDE_LOCATION_PANEL,
+							name = LPS:L("TEXT_PADDING_Y"),
+							desc = LPS:L("ADJUST_VERTICAL_TEXT_PADDING_INSIDE_LOCATION_PANEL"),
 							min = 0,
 							max = 30,
 							step = 1,
@@ -79,13 +78,13 @@ function LPS.Options.BuildTree.tabs.layout()
 				panels = {
 					order = 5,
 					type = "group",
-					name = L.PANELS,
+					name = LPS:L("PANELS"),
 					inline = true,
 					args = {
 						dtshow = {
 							order = 0.3,
-							name = L.SHOW_PANELS,
-							desc = L.SHOW_HIDE_THE_EXTRA_PANELS_COORDS_AND_TIME,
+							name = LPS:L("SHOW_PANELS"),
+							desc = LPS:L("SHOW_HIDE_THE_EXTRA_PANELS_COORDS_AND_TIME"),
 							type = "toggle",
 							
 							get = function() return OH:getDb().layout.dtshow end,
@@ -111,8 +110,8 @@ function LPS.Options.BuildTree.tabs.layout()
 						dtMinWidth = {
 							order = 1,
 							type = "range",
-							name = L.MINIMUM_WIDTH,
-							desc = L.SETS_THE_MINIMUM_WIDTH_OF_THE_EXTRA_PANELS,
+							name = LPS:L("MINIMUM_WIDTH"),
+							desc = LPS:L("SETS_THE_MINIMUM_WIDTH_OF_THE_EXTRA_PANELS"),
 							min = 100,
 							max = 200,
 							step = 1,
@@ -126,8 +125,8 @@ function LPS.Options.BuildTree.tabs.layout()
 						dtPaddingX = {
 							order = 2,
 							type = "range",
-							name = L.TEXT_PADDING_X,
-							desc = L.ADJUST_HORIZONTAL_TEXT_PADDING_INSIDE_PANELS,
+							name = LPS:L("TEXT_PADDING_X"),
+							desc = LPS:L("ADJUST_HORIZONTAL_TEXT_PADDING_INSIDE_PANELS"),
 							min = 0,
 							max = 60,
 							step = 1,
@@ -141,8 +140,8 @@ function LPS.Options.BuildTree.tabs.layout()
 						dtPaddingY = {
 							order = 3,
 							type = "range",
-							name = L.TEXT_PADDING_Y,
-							desc = L.ADJUST_VERTICAL_TEXT_PADDING_INSIDE_PANELS,
+							name = LPS:L("TEXT_PADDING_Y"),
+							desc = LPS:L("ADJUST_VERTICAL_TEXT_PADDING_INSIDE_PANELS"),
 							min = 0,
 							max = 30,
 							step = 1,
@@ -158,16 +157,16 @@ function LPS.Options.BuildTree.tabs.layout()
 				panelsGroup = {
 					order = 6,
 					type = "group",
-					name = L.SIDE_PANELS,
+					name = LPS:L("SIDE_PANELS"),
 					inline = true,
 					args = {
 						leftSlot1 = {
 							order = 1.1,
-							name = L.LEFT_SLOT_1,
-							desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
+							name = LPS:L("LEFT_SLOT_1"),
+							desc = LPS:L("SELECT_A_PANEL_FOR_THIS_SLOT"),
 							type = "select",
 							values = function()
-							local vals = { none = L.NONE }
+							local vals = { none = LPS:L("NONE") }
 							if LPS.GetSlotKeyList then
 							for _, k in ipairs(LPS:GetSlotKeyList()) do
 							vals[k] = LPS:GetDatatextName(k)
@@ -207,7 +206,7 @@ function LPS.Options.BuildTree.tabs.layout()
 						},
 						leftOffsetX1 = {
 							order = 1.11,
-							name = L.LEFT_OFFSET_X_1,
+							name = LPS:L("LEFT_OFFSET_X_1"),
 							type = "range",
 							min = -200,
 							max = 200,
@@ -226,7 +225,7 @@ function LPS.Options.BuildTree.tabs.layout()
 						},
 						leftOffsetY1 = {
 							order = 1.12,
-							name = L.LEFT_OFFSET_Y_1,
+							name = LPS:L("LEFT_OFFSET_Y_1"),
 							type = "range",
 							min = -200,
 							max = 200,
@@ -245,11 +244,11 @@ function LPS.Options.BuildTree.tabs.layout()
 						},
 						rightSlot1 = {
 							order = 1.2,
-							name = L.RIGHT_SLOT_1,
-							desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
+							name = LPS:L("RIGHT_SLOT_1"),
+							desc = LPS:L("SELECT_A_PANEL_FOR_THIS_SLOT"),
 							type = "select",
 							values = function()
-							local vals = { none = L.NONE }
+							local vals = { none = LPS:L("NONE") }
 							if LPS.GetSlotKeyList then
 							for _, k in ipairs(LPS:GetSlotKeyList()) do
 							vals[k] = LPS:GetDatatextName(k)
@@ -289,7 +288,7 @@ function LPS.Options.BuildTree.tabs.layout()
 						},
 						rightOffsetX1 = {
 							order = 1.21,
-							name = L.RIGHT_OFFSET_X_1,
+							name = LPS:L("RIGHT_OFFSET_X_1"),
 							type = "range",
 							min = -200,
 							max = 200,
@@ -308,7 +307,7 @@ function LPS.Options.BuildTree.tabs.layout()
 						},
 						rightOffsetY1 = {
 							order = 1.22,
-							name = L.RIGHT_OFFSET_Y_1,
+							name = LPS:L("RIGHT_OFFSET_Y_1"),
 							type = "range",
 							min = -200,
 							max = 200,
@@ -328,11 +327,11 @@ function LPS.Options.BuildTree.tabs.layout()
 						leftSlot2 = {
 							disabled = OH:makeSlotDisabledFunc("left", 2),
 							order = 2.1,
-							name = L.LEFT_SLOT_2,
-							desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
+							name = LPS:L("LEFT_SLOT_2"),
+							desc = LPS:L("SELECT_A_PANEL_FOR_THIS_SLOT"),
 							type = "select",
 							values = function()
-							local vals = { none = L.NONE }
+							local vals = { none = LPS:L("NONE") }
 							if LPS.GetSlotKeyList then
 							for _, k in ipairs(LPS:GetSlotKeyList()) do
 							vals[k] = LPS:GetDatatextName(k)
@@ -373,7 +372,7 @@ function LPS.Options.BuildTree.tabs.layout()
 						leftOffsetX2 = {
 							disabled = OH:makeSlotDisabledFunc("left", 2),
 							order = 2.11,
-							name = L.LEFT_OFFSET_X_2,
+							name = LPS:L("LEFT_OFFSET_X_2"),
 							type = "range",
 							min = -200,
 							max = 200,
@@ -393,7 +392,7 @@ function LPS.Options.BuildTree.tabs.layout()
 						leftOffsetY2 = {
 							disabled = OH:makeSlotDisabledFunc("left", 2),
 							order = 2.12,
-							name = L.LEFT_OFFSET_Y_2,
+							name = LPS:L("LEFT_OFFSET_Y_2"),
 							type = "range",
 							min = -200,
 							max = 200,
@@ -413,11 +412,11 @@ function LPS.Options.BuildTree.tabs.layout()
 						rightSlot2 = {
 							disabled = OH:makeSlotDisabledFunc("right", 2),
 							order = 2.2,
-							name = L.RIGHT_SLOT_2,
-							desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
+							name = LPS:L("RIGHT_SLOT_2"),
+							desc = LPS:L("SELECT_A_PANEL_FOR_THIS_SLOT"),
 							type = "select",
 							values = function()
-							local vals = { none = L.NONE }
+							local vals = { none = LPS:L("NONE") }
 							if LPS.GetSlotKeyList then
 							for _, k in ipairs(LPS:GetSlotKeyList()) do
 							vals[k] = LPS:GetDatatextName(k)
@@ -458,7 +457,7 @@ function LPS.Options.BuildTree.tabs.layout()
 						rightOffsetX2 = {
 							disabled = OH:makeSlotDisabledFunc("right", 2),
 							order = 2.21,
-							name = L.RIGHT_OFFSET_X_2,
+							name = LPS:L("RIGHT_OFFSET_X_2"),
 							type = "range",
 							min = -200,
 							max = 200,
@@ -478,7 +477,7 @@ function LPS.Options.BuildTree.tabs.layout()
 						rightOffsetY2 = {
 							disabled = OH:makeSlotDisabledFunc("right", 2),
 							order = 2.22,
-							name = L.RIGHT_OFFSET_Y_2,
+							name = LPS:L("RIGHT_OFFSET_Y_2"),
 							type = "range",
 							min = -200,
 							max = 200,
@@ -498,11 +497,11 @@ function LPS.Options.BuildTree.tabs.layout()
 						leftSlot3 = {
 							disabled = OH:makeSlotDisabledFunc("left", 3),
 							order = 3.1,
-							name = L.LEFT_SLOT_3,
-							desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
+							name = LPS:L("LEFT_SLOT_3"),
+							desc = LPS:L("SELECT_A_PANEL_FOR_THIS_SLOT"),
 							type = "select",
 							values = function()
-							local vals = { none = L.NONE }
+							local vals = { none = LPS:L("NONE") }
 							if LPS.GetSlotKeyList then
 							for _, k in ipairs(LPS:GetSlotKeyList()) do
 							vals[k] = LPS:GetDatatextName(k)
@@ -543,7 +542,7 @@ function LPS.Options.BuildTree.tabs.layout()
 						leftOffsetX3 = {
 							disabled = OH:makeSlotDisabledFunc("left", 3),
 							order = 3.11,
-							name = L.LEFT_OFFSET_X_3,
+							name = LPS:L("LEFT_OFFSET_X_3"),
 							type = "range",
 							min = -200,
 							max = 200,
@@ -563,7 +562,7 @@ function LPS.Options.BuildTree.tabs.layout()
 						leftOffsetY3 = {
 							disabled = OH:makeSlotDisabledFunc("left", 3),
 							order = 3.12,
-							name = L.LEFT_OFFSET_Y_3,
+							name = LPS:L("LEFT_OFFSET_Y_3"),
 							type = "range",
 							min = -200,
 							max = 200,
@@ -583,11 +582,11 @@ function LPS.Options.BuildTree.tabs.layout()
 						rightSlot3 = {
 							disabled = OH:makeSlotDisabledFunc("right", 3),
 							order = 3.2,
-							name = L.RIGHT_SLOT_3,
-							desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
+							name = LPS:L("RIGHT_SLOT_3"),
+							desc = LPS:L("SELECT_A_PANEL_FOR_THIS_SLOT"),
 							type = "select",
 							values = function()
-							local vals = { none = L.NONE }
+							local vals = { none = LPS:L("NONE") }
 							if LPS.GetSlotKeyList then
 							for _, k in ipairs(LPS:GetSlotKeyList()) do
 							vals[k] = LPS:GetDatatextName(k)
@@ -628,7 +627,7 @@ function LPS.Options.BuildTree.tabs.layout()
 						rightOffsetX3 = {
 							disabled = OH:makeSlotDisabledFunc("right", 3),
 							order = 3.21,
-							name = L.RIGHT_OFFSET_X_3,
+							name = LPS:L("RIGHT_OFFSET_X_3"),
 							type = "range",
 							min = -200,
 							max = 200,
@@ -648,7 +647,7 @@ function LPS.Options.BuildTree.tabs.layout()
 						rightOffsetY3 = {
 							disabled = OH:makeSlotDisabledFunc("right", 3),
 							order = 3.22,
-							name = L.RIGHT_OFFSET_Y_3,
+							name = LPS:L("RIGHT_OFFSET_Y_3"),
 							type = "range",
 							min = -200,
 							max = 200,
@@ -670,14 +669,14 @@ function LPS.Options.BuildTree.tabs.layout()
 				spacingGroup = {
 					order = 7,
 					type = "group",
-					name = L.SPACING,
+					name = LPS:L("SPACING"),
 					inline = true,
 					args = {
 						spacingAuto = {
 							order = 1,
 							type = "toggle",
-							name = L.AUTO,
-							desc = L.AUTOMATICALLY_MANAGE_SPACING_BETWEEN_PANELS,
+							name = LPS:L("AUTO"),
+							desc = LPS:L("AUTOMATICALLY_MANAGE_SPACING_BETWEEN_PANELS"),
 							get = function() return OH:getDb().layout.spacingAuto end,
 							set = function(_, v)
 							OH:getDb().layout.spacingAuto = v
@@ -687,8 +686,8 @@ function LPS.Options.BuildTree.tabs.layout()
 						spacingManual = {
 							order = 2,
 							type = "range",
-							name = L.MANUAL,
-							desc = L.SET_SPACING_BETWEEN_PANELS,
+							name = LPS:L("MANUAL"),
+							desc = LPS:L("SET_SPACING_BETWEEN_PANELS"),
 							min = 0,
 							max = 50,
 							step = 1,
@@ -703,14 +702,14 @@ function LPS.Options.BuildTree.tabs.layout()
 				},
 				style = {
 					type = "group",
-					name = L.STYLE,
+					name = LPS:L("STYLE"),
 					order = 8,
 					inline = true,
 					args = {
 						frameStrata = {
 							type = "select",
-							name = L.FRAME_STRATA,
-							desc = L.CONTROLS_HOW_HIGH_THE_LOCATIONPLUS_PANELS_ARE_DRAWN,
+							name = LPS:L("FRAME_STRATA"),
+							desc = LPS:L("CONTROLS_HOW_HIGH_THE_LOCATIONPLUS_PANELS_ARE_DRAWN"),
 							order = 0,
 							values = OH:strataValues(),
 							get = function() return OH:getDb().layout.frameStrata end,
@@ -721,8 +720,8 @@ function LPS.Options.BuildTree.tabs.layout()
 						},
 						frameLevel = {
 							type = "range",
-							name = L.FRAME_LEVEL,
-							desc = L.FINE_TUNE_DRAW_ORDER_WITHIN_THE_SELECTED_STRATA,
+							name = LPS:L("FRAME_LEVEL"),
+							desc = LPS:L("FINE_TUNE_DRAW_ORDER_WITHIN_THE_SELECTED_STRATA"),
 							order = 0.1,
 							min = 0,
 							max = 1000,
@@ -740,8 +739,8 @@ function LPS.Options.BuildTree.tabs.layout()
 						},
 						fontSize = {
 							type = "range",
-							name = L.FONT_SIZE,
-							desc = L.SET_FONT_SIZE,
+							name = LPS:L("FONT_SIZE"),
+							desc = LPS:L("SET_FONT_SIZE"),
 							order = 1.1,
 							min = 8,
 							max = 20,
@@ -756,8 +755,8 @@ function LPS.Options.BuildTree.tabs.layout()
 						},
 						borderSize = {
 							type = "range",
-							name = L.BORDER_SIZE,
-							desc = L.SET_BORDER_THICKNESS,
+							name = LPS:L("BORDER_SIZE"),
+							desc = LPS:L("SET_BORDER_THICKNESS"),
 							order = 1.2,
 							min = 0,
 							max = 6,
@@ -777,8 +776,8 @@ function LPS.Options.BuildTree.tabs.layout()
 						},
 						bgEnable = {
 							type = "toggle",
-							name = L.ENABLE_BACKGROUND,
-							desc = L.TOGGLE_BACKGROUND_ON_THE_PANEL,
+							name = LPS:L("ENABLE_BACKGROUND"),
+							desc = LPS:L("TOGGLE_BACKGROUND_ON_THE_PANEL"),
 							order = 2.1,
 							get = function() return OH:getDb().settings.colors.bgEnable end,
 							set = function(_, v)
@@ -790,8 +789,8 @@ function LPS.Options.BuildTree.tabs.layout()
 						},
 						bgColor = {
 							type = "color",
-							name = L.BACKGROUND_COLOR,
-							desc = L.SET_BACKGROUND_COLOR,
+							name = LPS:L("BACKGROUND_COLOR"),
+							desc = LPS:L("SET_BACKGROUND_COLOR"),
 							order = 2.2,
 							hasAlpha = true,
 							get = function()
@@ -808,8 +807,8 @@ function LPS.Options.BuildTree.tabs.layout()
 						},
 						borderColor = {
 							type = "color",
-							name = L.BORDER_COLOR,
-							desc = L.SET_BORDER_COLOR,
+							name = LPS:L("BORDER_COLOR"),
+							desc = LPS:L("SET_BORDER_COLOR"),
 							order = 3.3,
 							hasAlpha = true,
 							get = function()
@@ -829,18 +828,18 @@ function LPS.Options.BuildTree.tabs.layout()
 				colors = {
 					order = 9,
 					type = "group",
-					name = L.COLORS,
+					name = LPS:L("COLORS"),
 					inline = true,
 					args = {
 						customColor = {
 							order = 1,
-							name = L.TEXT_COLOR,
-							desc = L.CHOOSE_HOW_PANEL_TEXT_IS_COLORED_THE_LOCATION_PANEL_ALWAYS_KEEPS_ITS_OWN_ZONE_STATUS_COLOR,
+							name = LPS:L("TEXT_COLOR"),
+							desc = LPS:L("CHOOSE_HOW_PANEL_TEXT_IS_COLORED_THE_LOCATION_PANEL_ALWAYS_KEEPS_ITS_OWN_ZONE_STATUS_COLOR"),
 							type = "select",
 							values = {
-								[1] = L.CUSTOM,
-								[2] = L.CLASS_COLORS,
-								[3] = L.DEFAULT,
+								[1] = LPS:L("CUSTOM"),
+								[2] = LPS:L("CLASS_COLORS"),
+								[3] = LPS:L("DEFAULT"),
 							},
 							get = function() return OH:getDb().layout.customColor end,
 							set = function(_, v)
@@ -850,8 +849,8 @@ function LPS.Options.BuildTree.tabs.layout()
 						},
 						userColor = {
 							order = 2,
-							name = L.TEXT_CUSTOM_COLOR,
-							desc = L.PICK_A_CUSTOM_COLOR_FOR_PANEL_TEXT,
+							name = LPS:L("TEXT_CUSTOM_COLOR"),
+							desc = LPS:L("PICK_A_CUSTOM_COLOR_FOR_PANEL_TEXT"),
 							type = "color",
 							disabled = function() return OH:getDb().layout.customColor ~= 1 end,
 							get = function()

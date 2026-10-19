@@ -1,6 +1,5 @@
-local L = LPS.L
-local MyAddon = _G.ArpeksLPS
-local LPS = MyAddon.LPS
+local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
+if not LPS then return end
 local DT = LPS._DT
 
 function LPS:BuildBagsTooltip(GameTooltip)
@@ -9,7 +8,7 @@ function LPS:BuildBagsTooltip(GameTooltip)
     local rB, gB, bB = LPS:GetColor("tooltipSetting")
     local rY, gY, bY = LPS:GetColor("tooltip")
 
-        			tt:AddDoubleLine(L.BAGS, L.USED_SLOTS .. " / " .. L.TOTAL, 1, 0.82, 0, 1, 1, 1)
+        			tt:AddDoubleLine(LPS:L("BAGS"), LPS:L("USED_SLOTS") .. " / " .. LPS:L("TOTAL"), 1, 0.82, 0, 1, 1, 1)
         			tt:AddLine(" ")
         			local NUM_BAG_SLOTS = NUM_BAG_SLOTS or (C_Container and C_Container.NUM_BAG_SLOTS) or 4
         			for i = 0, NUM_BAG_SLOTS do
@@ -31,5 +30,5 @@ function LPS:BuildBagsTooltip(GameTooltip)
         			end
 
     tt:AddLine(" ")
-    tt:AddDoubleLine(L.LMB, L.TOGGLE_ALL_BAGS, rB, gB, bB, rB, gB, bB)
+    tt:AddDoubleLine(LPS:L("LMB"), LPS:L("TOGGLE_ALL_BAGS"), rB, gB, bB, rB, gB, bB)
 end

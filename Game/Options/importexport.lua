@@ -1,6 +1,5 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
-local L = LPS.L
 
 local OH = LPS.OptionsHelper
 
@@ -13,24 +12,24 @@ function LPS.Options.BuildTree.tabs.importexport()
         end
         return {
                 type = "group",
-                name = L.IMPORT_EXPORT,
+                name = LPS:L("IMPORT_EXPORT"),
                 order = 91,
                 args = {
                         export = {
                                 type = "group",
-                                name = L.EXPORT,
+                                name = LPS:L("EXPORT"),
                                 order = 1,
                                 args = {
                                         header = {
                                                 order = 1,
                                                 type = "header",
-                                                name = L.EXPORT,
+                                                name = LPS:L("EXPORT"),
                                         },
                                         generate = {
                                                 order = 2,
                                                 type = "execute",
-                                                name = L.GENERATE_EXPORT_STRING,
-                                                desc = L.GENERATE_AN_EXPORT_STRING_FOR_THE_CURRENT_PROFILE,
+                                                name = LPS:L("GENERATE_EXPORT_STRING"),
+                                                desc = LPS:L("GENERATE_AN_EXPORT_STRING_FOR_THE_CURRENT_PROFILE"),
                                                 disabled = function()
                                                 return not canExport()
                                                 end,
@@ -51,8 +50,8 @@ function LPS.Options.BuildTree.tabs.importexport()
                                         text = {
                                                 order = 3,
                                                 type = "input",
-                                                name = L.EXPORT_STRING,
-                                                desc = L.COPY_THIS_STRING_TO_EXPORT_YOUR_CURRENT_PROFILE,
+                                                name = LPS:L("EXPORT_STRING"),
+                                                desc = LPS:L("COPY_THIS_STRING_TO_EXPORT_YOUR_CURRENT_PROFILE"),
                                                 width = "full",
                                                 multiline = 12,
                                                 disabled = function()
@@ -65,19 +64,19 @@ function LPS.Options.BuildTree.tabs.importexport()
                         },
                         import = {
                                 type = "group",
-                                name = L.IMPORT,
+                                name = LPS:L("IMPORT"),
                                 order = 2,
                                 args = {
                                         header = {
                                                 order = 1,
                                                 type = "header",
-                                                name = L.IMPORT,
+                                                name = LPS:L("IMPORT"),
                                         },
                                         asName = {
                                                 order = 2,
                                                 type = "input",
-                                                name = L.PROFILE_NAME,
-                                                desc = L.NAME_OF_THE_PROFILE_TO_IMPORT_INTO,
+                                                name = LPS:L("PROFILE_NAME"),
+                                                desc = LPS:L("NAME_OF_THE_PROFILE_TO_IMPORT_INTO"),
                                                 disabled = function()
                                                 return not (canExport() and LPS.db and LPS.db.SetProfile)
                                                 end,
@@ -87,8 +86,8 @@ function LPS.Options.BuildTree.tabs.importexport()
                                         text = {
                                                 order = 3,
                                                 type = "input",
-                                                name = L.IMPORT_STRING,
-                                                desc = L.PASTE_AN_EXPORT_STRING_HERE_TO_IMPORT_A_PROFILE,
+                                                name = LPS:L("IMPORT_STRING"),
+                                                desc = LPS:L("PASTE_AN_EXPORT_STRING_HERE_TO_IMPORT_A_PROFILE"),
                                                 width = "full",
                                                 multiline = 12,
                                                 disabled = function()
@@ -100,8 +99,8 @@ function LPS.Options.BuildTree.tabs.importexport()
                                         doImport = {
                                                 order = 4,
                                                 type = "execute",
-                                                name = L.IMPORT,
-                                                desc = L.IMPORT_THE_STRING_INTO_THE_SELECTED_PROFILE_NAME,
+                                                name = LPS:L("IMPORT"),
+                                                desc = LPS:L("IMPORT_THE_STRING_INTO_THE_SELECTED_PROFILE_NAME"),
                                                 disabled = function()
                                                 return not (canExport() and LPS.db and LPS.db.SetProfile)
                                                 end,

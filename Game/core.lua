@@ -1,6 +1,5 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
-local L = LPS.L
 LPS_DB = LPS_DB or {}
 
 LPS.addon.version = (
@@ -166,7 +165,7 @@ function LPS:onLoaded(name)
         self._loaded = true
 
         -- Язык аддона: переопределение из SavedVariables (система CharacterStats:
-        -- Locales/enUS.lua определяет ns.RegisterLocale / ns.ApplyLocaleOverride).
+        -- Locales/enUS.lua определяет LPS.RegisterLocale / LPS.ApplyLocaleOverride).
         if _G.ArpeksLPS and _G.ArpeksLPS.ApplyLocaleOverride then
                 _G.ArpeksLPS.ApplyLocaleOverride(_G.LPS_DB and _G.LPS_DB.localeOverride)
         end
@@ -217,7 +216,7 @@ function LPS:onLoaded(name)
         end
 
         if db and db.general and db.general.loginMessage then
-                LPS:Print(format(L.LOADED_CURRENT_VERSION..": |c%sv%s|r", LPS.addon.textColor, LPS.addon.version), false)
+                LPS:Print(format(LPS:L("LOADED_CURRENT_VERSION")..": |c%sv%s|r", LPS.addon.textColor, LPS.addon.version), false)
         end
 end
 
@@ -238,13 +237,13 @@ SlashCmdList["LPS"] = function(input)
                 -- Полный сброс всех настроек профиля к значениям по умолчанию
                 if LPS.ResetAllSettingsToDefaults then
                         LPS:ResetAllSettingsToDefaults()
-                        LPS:Print(L.RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES)
+                        LPS:Print(LPS:L("RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES"))
                 end
         elseif arg == "resetpanels" then
                 -- Сброс только настроек панелей (без LPS.defaults.panels)
                 if LPS.ResetPanelsToDefaults then
                         LPS:ResetPanelsToDefaults()
-                        LPS:Print(L.PANEL_SETTINGS_HAVE_BEEN_RESET_TO_DEFAULTS)
+                        LPS:Print(LPS:L("PANEL_SETTINGS_HAVE_BEEN_RESET_TO_DEFAULTS"))
                 end
         else
                 -- Меню всегда нативное (без Ace3)

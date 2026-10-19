@@ -1,8 +1,8 @@
 -- Переводы ruRU. Формат как в Addons/CharacterStats/Locales/ruRU.lua:
--- регистрация через ns.RegisterLocale (см. enUS.lua).
-local ADDON_NAME, ns = ...
+-- регистрация через LPS.RegisterLocale (см. enUS.lua).
+local ADDON_NAME, LPS = ...
 
-ns.RegisterLocale("ruRU", {
+LPS.RegisterLocale("ruRU", {
     GENERAL = "Основные",
     LOGIN_MESSAGE = "Сообщение при входе",
     SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN = "Показывать сообщение в чате при входе.",

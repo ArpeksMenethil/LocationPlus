@@ -1,6 +1,5 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
-local L = LPS.L
 
 function LPS:BuildGoldTooltip(tt)
 	local db = LPS.GetDB and LPS:GetDB() or nil
@@ -59,13 +58,13 @@ function LPS:BuildGoldTooltip(tt)
 	local whiteR, whiteG, whiteB = 1, 1, 1
 
 	if not cfg or cfg.session ~= false then
-		tt:AddLine(L.SESSION..":", headerR, headerG, headerB)
-		tt:AddDoubleLine(L.EARNED..":", moneyText(data.earned), whiteR, whiteG, whiteB, 1, 1, 1)
-		tt:AddDoubleLine(L.SPENT..":", moneyText(data.spent), whiteR, whiteG, whiteB, 1, 1, 1)
+		tt:AddLine(LPS:L("SESSION")..":", headerR, headerG, headerB)
+		tt:AddDoubleLine(LPS:L("EARNED")..":", moneyText(data.earned), whiteR, whiteG, whiteB, 1, 1, 1)
+		tt:AddDoubleLine(LPS:L("SPENT")..":", moneyText(data.spent), whiteR, whiteG, whiteB, 1, 1, 1)
 		if profit >= 0 then
-			tt:AddDoubleLine(L.PROFIT..":", profitText, 0.1, 1, 0.1, 0.1, 1, 0.1)
+			tt:AddDoubleLine(LPS:L("PROFIT")..":", profitText, 0.1, 1, 0.1, 0.1, 1, 0.1)
 		else
-			tt:AddDoubleLine(L.LOSS..":", profitText, 1, 0.1, 0.1, 1, 0.1, 0.1)
+			tt:AddDoubleLine(LPS:L("LOSS")..":", profitText, 1, 0.1, 0.1, 1, 0.1, 0.1)
 		end
 	end
 
@@ -118,7 +117,7 @@ function LPS:BuildGoldTooltip(tt)
 		if cfg.session ~= false then
 			tt:AddLine(" ")
 		end
-		tt:AddLine(L.CHARACTERS..":", headerR, headerG, headerB)
+		tt:AddLine(LPS:L("CHARACTERS")..":", headerR, headerG, headerB)
 		local maxChars = (cfg and tonumber(cfg.charactersMax)) or 20
 		if maxChars < 3 then maxChars = 3 elseif maxChars > 40 then maxChars = 40 end
 		local shown = 0
@@ -139,10 +138,10 @@ function LPS:BuildGoldTooltip(tt)
 
 	if not cfg or cfg.serverTotals ~= false then
 		tt:AddLine(" ")
-		tt:AddLine(L.ON_SERVER..":", headerR, headerG, headerB)
-		tt:AddDoubleLine(L.ALLIANCE..":", moneyText(allyTotal), rB, gB, bB, whiteR, whiteG, whiteB)
-		tt:AddDoubleLine(L.HORDE..":", moneyText(hordeTotal), 1, 0.1, 0.1, whiteR, whiteG, whiteB)
-		tt:AddDoubleLine(L.TOTAL..":", moneyText(accountTotal), whiteR, whiteG, whiteB, whiteR, whiteG, whiteB)
+		tt:AddLine(LPS:L("ON_SERVER")..":", headerR, headerG, headerB)
+		tt:AddDoubleLine(LPS:L("ALLIANCE")..":", moneyText(allyTotal), rB, gB, bB, whiteR, whiteG, whiteB)
+		tt:AddDoubleLine(LPS:L("HORDE")..":", moneyText(hordeTotal), 1, 0.1, 0.1, whiteR, whiteG, whiteB)
+		tt:AddDoubleLine(LPS:L("TOTAL")..":", moneyText(accountTotal), whiteR, whiteG, whiteB, whiteR, whiteG, whiteB)
 	end
 
 	if LPS.Retail then
@@ -164,9 +163,9 @@ function LPS:BuildGoldTooltip(tt)
 		end
 		if (not cfg or cfg.warband ~= false) and (warbandApiOk or warbandMoney ~= nil) then
 			tt:AddLine(" ")
-			tt:AddDoubleLine(L.WARBAND..":", moneyText(warbandMoney or 0), whiteR, whiteG, whiteB, whiteR, whiteG, whiteB)
+			tt:AddDoubleLine(LPS:L("WARBAND")..":", moneyText(warbandMoney or 0), whiteR, whiteG, whiteB, whiteR, whiteG, whiteB)
 			if warbandApiOk then
-				tt:AddDoubleLine(L.TOTAL..":", moneyText(accountTotal + (tonumber(warbandMoney) or 0)), whiteR, whiteG, whiteB, whiteR, whiteG, whiteB)
+				tt:AddDoubleLine(LPS:L("TOTAL")..":", moneyText(accountTotal + (tonumber(warbandMoney) or 0)), whiteR, whiteG, whiteB, whiteR, whiteG, whiteB)
 			end
 		end
 
@@ -181,7 +180,7 @@ function LPS:BuildGoldTooltip(tt)
 		
 		if (not cfg or cfg.token ~= false) and tokenPrice and tonumber(tokenPrice) and tonumber(tokenPrice) > 0 then
 			tt:AddLine(" ")
-			tt:AddDoubleLine(L.WOW_TOKEN..":", moneyText(tokenPrice), rB, gB, bB, whiteR, whiteG, whiteB)
+			tt:AddDoubleLine(LPS:L("WOW_TOKEN")..":", moneyText(tokenPrice), rB, gB, bB, whiteR, whiteG, whiteB)
 		elseif (not cfg or cfg.token ~= false) and C_WowTokenPublic and C_WowTokenPublic.UpdateMarketPrice then
 			C_WowTokenPublic.UpdateMarketPrice()
 		end
@@ -195,7 +194,7 @@ function LPS:BuildGoldTooltip(tt)
 	end
 	if (not cfg or cfg.currency ~= false) and watched > 0 then
 		tt:AddLine(" ")
-		tt:AddLine(L.CURRENCY, headerR, headerG, headerB)
+		tt:AddLine(LPS:L("CURRENCY"), headerR, headerG, headerB)
 		for i = 1, watched do
 			local name, amount, icon
 			if C_CurrencyInfo and C_CurrencyInfo.GetBackpackCurrencyInfo then
@@ -217,7 +216,7 @@ function LPS:BuildGoldTooltip(tt)
 
 	if not cfg or cfg.resetHints ~= false then
 		tt:AddLine(" ")
-		tt:AddDoubleLine(L.CTRL_RMB, L.RESET_SESSION_DATA, rB, gB, bB, rB, gB, bB)
-		tt:AddDoubleLine(L.SHIFT_RMB, L.RESET_CHARACTER_DATA, rB, gB, bB, rB, gB, bB)
+		tt:AddDoubleLine(LPS:L("CTRL_RMB"), LPS:L("RESET_SESSION_DATA"), rB, gB, bB, rB, gB, bB)
+		tt:AddDoubleLine(LPS:L("SHIFT_RMB"), LPS:L("RESET_CHARACTER_DATA"), rB, gB, bB, rB, gB, bB)
 	end
 end
