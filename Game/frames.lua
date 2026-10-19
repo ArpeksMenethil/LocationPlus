@@ -123,40 +123,80 @@ function LPS:CreateFrame(params)
         f._lpsPaddingX = tonumber(params.padding[1]) or 0
         f._lpsPaddingY = tonumber(params.padding[2]) or 0
         local oldUpdate = params.updateFunc
-        -- Пересчёт габаритов под текст. ВАЖНО: измерять строку нужно ДО
-        -- применения ограничений (SetPoint к краям фрейма): как только у текста
-        -- появляются TOPLEFT/BOTTOMRIGHT-якоря, его ширина ограничивается
-        -- текущим размером фрейма и GetStringWidth() возвращает уже «зажатое»
-        -- значение — фрейм никогда не расширяется под длинный текст.
+        --- Естественные габариты текста БЕЗ ограничений. Замер делает отдельная
+        --- невидимая рамка: измерять сам f.text было нельзя, потому что для
+        --- корректного замера приходилось снимать с него якоря (ClearAllPoints)
+        --- и вешать обратно на каждый рефреш. Из-за этого текст на один кадр
+        --- отвязывался от панели, клиент округлял позицию до пикселя — и весь
+        --- текст в сборке «прыгал» влево-вправо при каждом обновлении любой из
+        --- панелей (особенно заметно на FPS-панели с тикером раз в секунду).
+        local ghostFontCache
+        local lastMeasureKey
+        local function measureText(text)
+            if not f.text then return 0, 0 end
+            if not LPS._lpsMeasureFS then
+                local mf = CreateFrame("Frame")
+                LPS._lpsMeasureFS = mf:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            end
+            local m = LPS._lpsMeasureFS
+            local file, size, flags = f.text:GetFont()
+            if not file then
+                -- Fallback: GetFont у FontString иногда возвращает nil — берём
+                -- шрифт из кэша кортежей (создаётся в блоке «Текст» выше) либо
+                -- из FontObject-наследника.
+                ghostFontCache = ghostFontCache or {}
+                local tuple = ghostFontCache[size or 0] or LPS._fontTuples and LPS._fontTuples[size or 0]
+                if tuple and tuple[1] then
+                    file, flags = tuple[1], tuple[2]
+                else
+                    local obj = f.text:GetFontObject()
+                    if obj and obj.GetFont then
+                        file, _, flags = obj:GetFont()
+                    end
+                end
+            end
+            -- SetFont на измерительной рамке дергаем только при РЕАЛЬНОЙ смене
+            -- шрифта: повторный SetFont с теми же параметрами сбрасывает
+            -- внутреннее состояние строки и замеры могли плавать на пиксель.
+            if file then
+                local key = tostring(file) .. "|" .. tostring(size) .. "|" .. tostring(flags)
+                if key ~= lastMeasureKey then
+                    lastMeasureKey = key
+                    m:SetFont(file, size or 12, flags or "")
+                end
+            end
+            m:SetText(text or "")
+            local w = m:GetStringWidth() or 0
+            local h = m:GetStringHeight() or 0
+            m:SetText("")
+            return w, h
+        end
+        f._lpsMeasureText = measureText
+
+        local lastFitW, lastFitH, lastFitPad
         local function resizeToFit()
             if not f.text then return end
             local px = tonumber(f._lpsPaddingX) or 0
             local py = tonumber(f._lpsPaddingY) or 0
             local minW = tonumber(f._lpsMinWidth) or 60
-            -- Сбрасываем якоря и любые ограничения ширины, чтобы получить
-            -- естественный размер строки без переносов.
-            f.text:ClearAllPoints()
-            if f.text.GetMaxLineWidth then
-                f.text:SetMaxLineWidth(0)
+            local w, h = measureText(f.text:GetText())
+            -- Если замеры не дали ничего (шрифт ещё не применён), оставляем
+            -- текущие габариты — иначе панель схлопнется до minWidth.
+            if w <= 0 then w = lastFitW or 0 end
+            if h <= 0 then h = lastFitH or 0 end
+            local newW = math.max(minW, w + px * 2)
+            local newH = math.max(1, h + py * 2)
+            -- ВАЖНО: SetSize вызывается ТОЛЬКО при реальном изменении габарита
+            -- (или отступов). Прежний код звал SetSize на КАЖДОМ рефреше даже
+            -- с тем же размером; это заставляло WoW заново пересчитывать
+            -- позиции дочерних якорей, и все панели в цепочке смещались на
+            -- пиксель туда-обратно («прыгающий текст»).
+            local padKey = px .. "|" .. py .. "|" .. minW
+            if newW ~= lastFitW or newH ~= lastFitH or padKey ~= lastFitPad then
+                lastFitW, lastFitH, lastFitPad = newW, newH, padKey
+                f:SetSize(newW, newH)
+                LPS:ScheduleFrameSizeUpdate()
             end
-            if f.text.SetNonSpaceMaxWidth then
-                f.text:SetNonSpaceMaxWidth(0)
-            end
-            local w = f.text:GetStringWidth() or 0
-            local h = f.text:GetStringHeight() or 0
-            -- Сбрасываем ограничения размера строки (0 = без ограничения).
-            -- Отрицательная ширина недопустима: WoW трактует её как некорректное
-            -- значение и текст на фрейме становится невидимым.
-            f.text:SetWidth(0)
-            f.text:SetHeight(0)
-            -- ВАЖНО про отступы Y: жёсткий пол «26» раньше перекрывал любой
-            -- эффект padding по вертикали (текст ~13px + 2*py < 26 при py<=6,
-            -- а базовая высота шрифта всегда больше минимальной высоты панели),
-            -- из-за чего «Отступ текста Y» выглядел неработающим. Пол убираем;
-            -- итоговая высота = высота текста + 2*paddingY.
-            f:SetSize(math.max(minW, w + px * 2), math.max(1, h + py * 2))
-            f.text:SetPoint("CENTER", f, "CENTER", 0, 0)
-            LPS:ScheduleFrameSizeUpdate()
         end
         f._lpsResizeToFit = resizeToFit
         params.updateFunc = function(frame, ev)

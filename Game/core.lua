@@ -220,17 +220,6 @@ function LPS:onLoaded(name)
         end
 end
 
---- Возвращает список slash-команд аддона для страницы «О модификации».
-function LPS:GetCommandList()
-        return {
-                { cmd = "/lps",             desc = L.OPEN_OPTIONS_WINDOW },
-                { cmd = "/lps reset",       desc = L.RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES },
-                { cmd = "/lps resetpanels", desc = L.PANEL_SETTINGS_HAVE_BEEN_RESET_TO_DEFAULTS },
-                { cmd = "/lps move",        desc = L.CMD_MOVE },
-                { cmd = "/lps resetpos",    desc = L.CMD_RESET_POSITION },
-        }
-end
-
 SLASH_LPS1 = "/lps"
 SlashCmdList["LPS"] = function(input)
         local arg = (input or ""):gsub("^%s+", ""):gsub("%s+$", ""):lower()

@@ -10,7 +10,7 @@ end
 
 --- Возвращает вкладку "About" дерева настроек (внутренний формат дерева).
 --- Полноценная страница «О модификации»: описание аддона, сведения о
---- версии/авторе, ссылки и список slash-команд.
+--- версии/авторе и ссылки.
 function LPS.Options.BuildTree.tabs.about()
     local title = (LPS.addon.title and LPS.addon.title ~= "") and LPS.addon.title or "Location Plus"
     local version = tostring(LPS.addon.version or "")
@@ -26,14 +26,6 @@ function LPS.Options.BuildTree.tabs.about()
     end
     notes = (type(notes) == "string" and notes ~= "") and notes
             or L.ADDS_LOCATION_COORDS_NEXTRA_PANELS_AND_AN_INFO_RICH_TOOLTIP_N_NO_ELVUI_REQUIRED
-
-    -- Список команд — единый источник: LPS:GetCommandList() (Game/core.lua)
-    local commands = {}
-    if LPS.GetCommandList then
-        for _, c in ipairs(LPS:GetCommandList()) do
-            commands[#commands + 1] = c
-        end
-    end
 
     local args = {
         aboutHeader = header(L.ABOUT_THIS_ADDON, 1),
@@ -55,15 +47,7 @@ function LPS.Options.BuildTree.tabs.about()
             type = "description",
             name = "CurseForge: |cff4aa3ffhttps://www.curseforge.com/wow/addons/location-plus|r",
         },
-        commandsHeader = header(L.COMMANDS, 6),
     }
-    for i, c in ipairs(commands) do
-        args["cmd" .. i] = {
-            order = 7 + i * 0.01,
-            type = "description",
-            name = "|cffe0c060" .. c.cmd .. "|r  -  " .. tostring(c.desc or ""),
-        }
-    end
 
     return {
         name = L.ABOUT,

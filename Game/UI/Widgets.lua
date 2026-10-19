@@ -15,6 +15,41 @@ local THEME_KEYS = {
     border = "border",
     divider = "line",
 }
+
+--- Стабильная измерительная рамка для GetStringWidth/Height. Нативный
+--- GetFont() у FontString'а иногда возвращает nil (шрифт задан через
+--- FontObject-наследник), из-за чего размеры брались от шрифта по умолчанию
+--- и менялись между вызовами — текст «прыгал» при каждом рефреше страницы.
+--- Здесь же шрифт фиксируется один раз, поэтому замеры стабильны.
+local measureFS
+local function GetMeasureFontString()
+    if not measureFS then
+        local f = CreateFrame("Frame")
+        measureFS = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    end
+    if not measureFS:GetFont() then
+        local obj = measureFS:GetFontObject()
+        if obj and obj.GetFont then
+            local file, size, flags = obj:GetFont()
+            if file then measureFS:SetFont(file, size, flags) end
+        end
+    end
+    return measureFS
+end
+
+--- Ширина текста тем же шрифтом, что у fs (стабильно, без nil-GetFont).
+function Widgets.MeasureTextWidth(fs, text)
+    local m = GetMeasureFontString()
+    local file, size, flags = fs and fs:GetFont() or nil
+    if not file then
+        local obj = fs and fs:GetFontObject()
+        file, size, flags = nil
+        if obj and obj.GetFont then file, size, flags = obj:GetFont() end
+    end
+    if file then m:SetFont(file, size, flags or "") end
+    m:SetText(text or "")
+    return m:GetStringWidth() or 0
+end
 local function ThemeColor(key)
     local _, C = CS.Theme.Get()
     return C[THEME_KEYS[key] or key] or C.text
