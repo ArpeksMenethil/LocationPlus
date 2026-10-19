@@ -8,6 +8,21 @@ local inventorySlots = {
         INVTYPE_WEAPONMAINHAND = 16, INVTYPE_WEAPONOFFHAND = 17, INVTYPE_RANGED = 18,
 }
 
+-- См. Modules/Frames/durability.lua: GetInventoryItemDurability() в актуальных
+-- клиентах возвращает secret-числа — берём прочность через C_Item.
+local function slotDurability(index)
+        if C_Item and C_Item.Create then
+                local item = C_Item:Create("player", index)
+                if item and item.IsValid and item:IsValid()
+                        and item.HasDurability and item:HasDurability() then
+                        local cur, max = item:GetDurability()
+                        if cur and max and max > 0 then return cur, max end
+                end
+                return nil
+        end
+        return GetInventoryItemDurability(index)
+end
+
 function LPS:BuildDurabilityTooltip(GameTooltip)
     local tt = GameTooltip
     local r, g, b = LPS:GetColor("text")
@@ -17,7 +32,7 @@ function LPS:BuildDurabilityTooltip(GameTooltip)
                                 tt:AddLine(DURABILITY, 1, 0.82, 0)
                                 tt:AddLine(" ")
                                 for slotName, index in pairs(inventorySlots) do
-                                        local cur, max = GetInventoryItemDurability(index)
+                                        local cur, max = slotDurability(index)
                                         if cur and max and max > 0 then
                                                 local perc = math.floor(cur / max * 100 + 0.5)
                                                 local link = GetInventoryItemLink("player", index) or _G[slotName] or slotName

@@ -708,7 +708,7 @@ function LPS:ResetAllSettingsToDefaults()
 	if LPS.frame then
 		for _, k in ipairs({ "bags", "combatIndicator",
 			"difficulty", "durability", "experience", "friends", "guild", "itemLevel", "mail",
-			"microBar", "reputation", "volume" }) do
+			"microBar", "volume" }) do
 			local f = LPS.frame[k]
 			if f then
 				f:Hide()
