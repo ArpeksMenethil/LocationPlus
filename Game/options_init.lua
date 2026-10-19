@@ -3,10 +3,12 @@ if not LPS then return end
 
 local OH = LPS.OptionsHelper
 
-LPS.Options = {}
+-- Не пересоздаём LPS.Options: в options.lua и Game/Options/*.lua
+-- фабрики вкладок уже зарегистрированы в LPS.Options.BuildTree.tabs.
+LPS.Options = LPS.Options or {}
 LPS.Options.aceAppName = "LocationPlus"
 LPS.Options.BuildTree = LPS.Options.BuildTree or {}
-LPS.Options.BuildTree.tabs = {}
+LPS.Options.BuildTree.tabs = LPS.Options.BuildTree.tabs or {}
 
 --- Единая точка применения настроек: инвалидация кэша, пересчёт layout,
 --- обновление окон AceConfigDialog и нативного UI. Работает и без Ace3.
@@ -44,12 +46,12 @@ type = "group",
 name = LPS.addon.title .. " v" .. LPS.addon.version,
 childGroups = "tab",
 args = {
-general = tabs.general(),
-show = tabs.show(),
-tooltip = tabs.tooltip(),
-layout = tabs.layout(),
-profiles = tabs.profiles(),
-importexport = tabs.importexport(),
+general = tabs.general and tabs.general() or {},
+show = tabs.show and tabs.show() or {},
+tooltip = tabs.tooltip and tabs.tooltip() or {},
+layout = tabs.layout and tabs.layout() or {},
+profiles = tabs.profiles and tabs.profiles() or {},
+importexport = tabs.importexport and tabs.importexport() or {},
 },
 }
 end
