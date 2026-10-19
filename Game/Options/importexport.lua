@@ -16,17 +16,62 @@ function LPS.Options.BuildTree.tabs.importexport()
         return (LPS.db and LPS.db.profile) ~= nil
     end
 
+    --- Кнопка «скопировать в буфер обмена»: без неё длинную строку экспорта
+    --- нельзя выделить мышью (многострочное поле только для чтения глазами),
+    --- и страница выглядела нерабочей. Текст берётся из state.exportText.
+    local function copyButton(order, getText)
+        return {
+            order = order,
+            type = "execute",
+            fullRow = false,
+            name = L.COPY_TO_CLIPBOARD or "Copy to Clipboard",
+            desc = L.COPY_THE_STRING_TO_YOUR_CLIPBOARD or "Copies the string above to your clipboard.",
+            func = function()
+                local t = tostring(getText() or "")
+                if t == "" then return end
+                if LPS.DEBUG then print("LPS: copy, len=" .. #t) end
+                local edit = _G.LPSImportExportClipboardEditBox
+                if not edit then
+                    edit = CreateFrame("EditBox", "LPSImportExportClipboardEditBox", _G.UIParent)
+                    edit:SetMultiLine(true)
+                    edit:SetAutoFocus(false)
+                    edit:SetMaxLetters(0)
+                    edit:Hide()
+                end
+                edit:SetText(t)
+                edit:HighlightText(0, #t)
+                edit:SetFocus()
+                edit:CopyInput()
+                if edit.HasCopied and edit:HasCopied() then
+                    LPS:Print(L.COPIED_TO_CLIPBOARD or "Copied to clipboard!", false)
+                else
+                    LPS:Print(L.COPY_TO_CLIPBOARD_FAILED or "Copy failed: select the text with Ctrl-A and press Ctrl-C.", false)
+                end
+                edit:ClearFocus()
+                edit:Hide()
+            end,
+        }
+    end
+
     return {
         name = L.IMPORT_EXPORT,
         order = 91,
         args = {
+            aboutLabel = {
+                order = 0.5,
+                type = "description",
+                name = L.IMPORT_EXPORT_PAGE_DESC or "Generate an export string for the current profile, copy it to the clipboard, and paste a string here to import it into any profile by name.",
+            },
             exportGroup = {
                 name = L.EXPORT,
                 order = 1,
                 args = {
+                    -- fullRow: кнопка одна — не оставляем справа пустую
+                    -- половину строки (Builder иначе ждёт второй чекбокс в пару)
                     generate = {
                         order = 1,
                         type = "execute",
+                        fullRow = true,
                         name = L.GENERATE_EXPORT_STRING,
                         desc = L.GENERATE_AN_EXPORT_STRING_FOR_THE_CURRENT_PROFILE,
                         disabled = function()
@@ -58,6 +103,7 @@ function LPS.Options.BuildTree.tabs.importexport()
                         get = function() return tostring(state.exportText or "") end,
                         set = function(_, v) state.exportText = v end,
                     },
+                    copyExport = copyButton(3, function() return state.exportText end),
                 },
             },
             importGroup = {
@@ -87,6 +133,7 @@ function LPS.Options.BuildTree.tabs.importexport()
                         get = function() return tostring(state.importText or "") end,
                         set = function(_, v) state.importText = v end,
                     },
+                    copyImport = copyButton(2.5, function() return state.importText end),
                     doImport = {
                         order = 3,
                         type = "execute",

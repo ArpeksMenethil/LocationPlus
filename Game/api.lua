@@ -223,7 +223,10 @@ if mode == 2 then
 return getClassColor()
 end
 if mode == 3 then
-return LPS:GetZoneStatus(true)
+-- «По умолчанию» = цвет текста из настроек стиля (db.settings.colors.text),
+-- а не цвет статуса зоны: у панели локации свой цвет по зоне всегда
+-- (см. Modules/Frames/location.lua), здесь раскрашиваются остальные панели
+return LPS:GetColor("text")
 end
 return nil
 end
@@ -795,18 +798,16 @@ function LPS:GetGoldRoot()
     return LPS_DB.global.gold
 end
 
--- Сбрасывает позицию основного фрейма к значениям по умолчанию
+-- Сбрасывает позицию основного фрейма к значениям по умолчанию.
+-- ВАЖНО: сбрасывается ТОЛЬКО положение holder-фрейма (db.position ->
+-- LPS.defaults.position). Смещения боковых панелей (sideSlots.offsetX/Y)
+-- сюда трогать нельзя — для них есть /lps resetpanels и кнопка сброса
+-- значений; раньше эта функция обнуляла ещё и offset'ы панелей, из-за
+-- чего «сброс позиции» разбрасывал пользовательскую сборку панелей.
 function LPS:ResetFramePosition()
     local db = LPS:GetDB()
-    db.position = { point = "TOP", relativePoint = "TOP", x = 0, y = -10 }
-    db.layout = db.layout or {}
-    db.layout.sideSlots = db.layout.sideSlots or {}
-    for _, s in pairs(db.layout.sideSlots) do
-        if type(s) == "table" then
-            s.offsetX = 0
-            s.offsetY = 0
-        end
-    end
+    local def = (LPS.defaults and LPS.defaults.position) or { point = "TOP", relativePoint = "TOP", x = 0, y = -10 }
+    db.position = { point = def.point, relativePoint = def.relativePoint, x = def.x, y = def.y }
     local holder = LPS.frame and LPS.frame.holder
     if holder and holder.isMoving then
         if LPS.SetMoveMode then
@@ -815,10 +816,6 @@ function LPS:ResetFramePosition()
         holder.isMoving = false
     end
     LPS:ApplyHolderPosition()
-    if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-    if LPS.ApplyLayout then
-        LPS:ApplyLayout()
-    end
     LPS:Print("The frame position is reset")
 end
 
@@ -925,7 +922,8 @@ function LPS:GetFormattedGameTime()
     elseif mode == 2 then
         r, g, b = getClassColor()
     else
-        r, g, b = 1, 1, 1
+        -- режим «По умолчанию»: тот же цвет текста, что у остальных панелей
+        r, g, b = LPS:GetColor("text")
     end
     local colon = "|cff" .. rgbToHex(r, g, b) .. ":|r"
 

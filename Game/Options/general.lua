@@ -143,6 +143,10 @@ function LPS.Options.BuildTree.tabs.general()
                             btnOrder = 1,
                             func = function() LPS:ToggleMoveMode() end,
                         },
+                        -- «Сбросить позицию»: возвращает holder-фрейм к
+                        -- положению по умолчанию (db.position из LPS.defaults),
+                        -- смещения боковых панелей НЕ трогаются (для этого
+                        -- есть /lps resetpanels и полный сброс значений)
                         resetPosition = {
                             type = "execute",
                             name = L.RESET_HOLDER_POSITION,
@@ -151,15 +155,35 @@ function LPS.Options.BuildTree.tabs.general()
                             btnOrder = 2,
                             func = function() LPS:ResetFramePosition() end,
                         },
+                        -- Первая кнопка сброса: только панели/layout
+                        resetPanels = {
+                            type = "execute",
+                            name = L.RESET_PANELS_BUTTON or L.RESET_VALUES,
+                            desc = L.PANEL_SETTINGS_HAVE_BEEN_RESET_TO_DEFAULTS,
+                            order = 1,
+                            btnOrder = 3,
+                            func = function()
+                            if LPS.ResetPanelsToDefaults then
+                            LPS:ResetPanelsToDefaults()
+                            end
+                            if LPS.Options and LPS.Options.ApplyRefresh then
+                            LPS.Options:ApplyRefresh()
+                            end
+                            end,
+                        },
+                        -- Вторая кнопка сброса: все настройки профиля
                         resetValues = {
                             type = "execute",
                             name = L.RESET_VALUES,
                             desc = L.RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES,
                             order = 1,
-                            btnOrder = 3,
+                            btnOrder = 4,
                             func = function()
                             if LPS.ResetAllSettingsToDefaults then
                             LPS:ResetAllSettingsToDefaults()
+                            end
+                            if LPS.Options and LPS.Options.ApplyRefresh then
+                            LPS.Options:ApplyRefresh()
                             end
                             end,
                         },
