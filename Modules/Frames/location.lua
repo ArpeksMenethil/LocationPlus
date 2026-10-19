@@ -91,10 +91,8 @@ function LPS:CreateLocationFrame()
 
 			if f.text then
 				f.text:SetText(text)
-				local layout = db2 and db2.layout
-				if not layout or layout.customColor == 3 then
-					f.text:SetTextColor(LPS:GetZoneStatus(true))
-				end
+				-- Цвет локации всегда определяется статусом зоны
+				f.text:SetTextColor(LPS:GetZoneStatus(true))
 			end
 		end,
 		updateEvent = {events = {"ZONE_CHANGED","ZONE_CHANGED_NEW_AREA","ZONE_CHANGED_INDOORS","PLAYER_ENTERING_WORLD"}},
