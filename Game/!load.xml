@@ -6,4 +6,7 @@
 	<Include file='.\utils.lua'/>
 	<Include file='.\api.lua'/>
 	<Include file='.\ui.lua'/>
+
+	<Include file='.\datatexts.lua'/>
+    <Include file='.\options.lua'/>
 </Ui>

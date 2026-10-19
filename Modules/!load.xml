@@ -1,8 +1,4 @@
 <Ui xmlns='http://www.blizzard.com/wow/ui/'>
-	<Include file='.\datatexts.lua'/>
-    <Include file='.\options.lua'/>
-
-
 	<Include file='.\Tooltips\location_tt.lua'/>
 	<Include file='.\Tooltips\time_tt.lua'/>
 	<Include file='.\Tooltips\gold_tt.lua'/>
