@@ -325,6 +325,11 @@ function OH:registerSubCategory(appName, suffix, group)
     if displayName == "" then
         displayName = suffix
     end
-    self.Ace.Config:RegisterOptionsTable(appName .. suffix, group)
-    self.Ace.Dialog:AddToBlizOptions(appName .. suffix, displayName, LPS.addon.title)
+    -- pcall: ошибка валидации одной подкатегории не должна обрывать загрузку чанка
+    local ok, err = pcall(self.Ace.Config.RegisterOptionsTable, self.Ace.Config, appName .. suffix, group)
+    if not ok then
+        LPS:Print("AceConfig: options table validation failed (" .. tostring(suffix) .. "): " .. tostring(err))
+        return
+    end
+    pcall(self.Ace.Dialog.AddToBlizOptions, self.Ace.Dialog, appName .. suffix, displayName, LPS.addon.title)
 end

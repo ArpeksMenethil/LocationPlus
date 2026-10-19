@@ -1375,6 +1375,20 @@ function LPS:ToggleLegacyMenu()
 	end
 	do
 		local appName = LPS.Options.aceAppName
+		-- Корневая таблица должна быть зарегистрирована в AceConfigRegistry
+		-- (регистрация выполняется в options_ace.lua / FinalizeAce). Если её
+		-- нет — не звать aceDialog:Open (иначе AceConfigDialog бросает
+		-- "<app> isn't registed with AceConfigRegistry, unable to open config"),
+		-- а отдаём управление нативному окну настроек.
+		local registry = LibStub:GetLibrary("AceConfigRegistry-3.0", true)
+		if not (registry and registry.GetOptionsTable and registry:GetOptionsTable(appName)) then
+			if LPS.Options.FinalizeAce then
+				pcall(LPS.Options.FinalizeAce, LPS.Options)
+			end
+			if not (registry and registry.GetOptionsTable and registry:GetOptionsTable(appName)) then
+				return false
+			end
+		end
 		if aceDialog.OpenFrames and aceDialog.OpenFrames[appName] then
 			if LPS.DisableMoveModeIfActive then
 				LPS:DisableMoveModeIfActive()
