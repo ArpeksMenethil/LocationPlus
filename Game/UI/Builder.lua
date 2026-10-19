@@ -305,15 +305,13 @@ function Builder.Build(parent, entries, opts)
                 y = y - height - ROW_GAP
             end
             first = false
+            if opts.onRow then opts.onRow(row) end
             page.controls[#page.controls + 1] = BuildControl(page, entry, row)
         end
     end
     page.height = math.abs(y) + 8
     function page:Refresh()
-        local db = GetDB()
-        for _, control in ipairs(self.controls) do
-            RefreshControl(control, db)
-        end
+        Builder.RefreshPage(self)
     end
     function page:OnValueChanged(entry, value)
         local themeBefore = CS.Theme.key
@@ -327,5 +325,14 @@ function Builder.Build(parent, entries, opts)
         end
     end
     return page
+end
+--- Публичный рефреш значений контролов страницы (используется и ленивыми
+--- страницами ui_options, и самим Builder при изменении значений).
+function Builder.RefreshPage(page)
+    if not page or not page.controls then return end
+    local db = GetDB()
+    for _, control in ipairs(page.controls) do
+        RefreshControl(control, db)
+    end
 end
 return Builder

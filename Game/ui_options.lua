@@ -192,16 +192,70 @@ local function collectRows(group, out)
 end
 
 --- Создание контейнера страницы: скролл-фрейм + строки из Builder.
+--- Содержимое строится лениво — при первом Refresh (он вызывается из
+--- Panel.ShowPage перед показом страницы). Если первая попытка дала пустой
+--- список строк (например, фабрика вкладки упала или дерево собралось до
+--- готовности БД), страница будет пересобрана при следующем открытии.
 local function createTreePage(group)
     local Panel, Builder = LPS.UI.Panel, LPS.UI.Builder
     return function(container)
         local scroll, content = Panel.CreateScrollPage(container)
-        local entries = collectRows(group, {})
-        local built = Builder.Build(content, entries, {
-            onChange = function() Panel.OnSettingChanged() end,
-        })
-        built.scroll = scroll
-        return built
+        local page = {
+            controls = {},
+            height = 0,
+            _container = container,
+            _content = content,
+            _group = group,
+            _built = false,
+            scroll = scroll,
+        }
+        function page:Build(force)
+            if self._built and not force then return end
+            local entries = collectRows(self._group, {})
+            if #entries == 0 then
+                -- пусто: оставляем страницу unbuilt — следующий Refresh
+                -- (повторное открытие окна/вкладки) попробует собрать заново.
+                self._built = false
+                return
+            end
+            self._built = true
+            -- пересборка поверх старых строк: удаляем прежние row-фреймы
+            if content.rows then
+                for _, row in ipairs(content.rows) do row:Hide(); row:ClearAllPoints() end
+            end
+            content.rows = {}
+            local built = Builder.Build(content, entries, {
+                onChange = function() Panel.OnSettingChanged() end,
+                onRow = function(row) content.rows[#content.rows + 1] = row end,
+            })
+            -- переносим состояние построенной страницы в этот ленивый контейнер
+            page.controls = built.controls
+            page.height = built.height
+            page.onChange = built.onChange
+            -- подгоняем ширину и высоту скролл-контента под содержимое:
+            -- без этого строки нулевой ширины остаются невидимыми (пустые вкладки)
+            local cw = scroll:GetWidth()
+            if cw and cw > 1 then content:SetWidth(cw) end
+            if scroll.SetContentHeight then
+                scroll:SetContentHeight(built.height)
+            end
+        end
+        function page:Refresh()
+            self:Build()
+            Builder.RefreshPage(page)
+        end
+        -- если страница была построена до того, как фрейм получил реальные
+        -- размеры (свернутое окно, первый кадр), достраиваем её после Show
+        if container then
+            container:HookScript("OnShow", function()
+                if page._built and scroll.SetContentHeight then
+                    local cw = scroll:GetWidth()
+                    if cw and cw > 1 then content:SetWidth(cw) end
+                    scroll:SetContentHeight(page.height)
+                end
+            end)
+        end
+        return page
     end
 end
 
@@ -236,7 +290,10 @@ function UI.BuildPages()
         return (tonumber(a.order) or 999) < (tonumber(b.order) or 999)
     end)
     for _, node in ipairs(nodes) do
-        if node.args then
+        -- страница регистрируется, если у узла есть args (даже когда первая
+        -- попытка collectRows дала пусто: строки могут появиться позже —
+        -- ленивая сборка в createTreePage пересоберёт их при следующем открытии)
+        if node.args ~= nil then
             local key = pageKeyFor(node)
             if not UI._pageKeys[key] then
                 UI._pageKeys[key] = true
