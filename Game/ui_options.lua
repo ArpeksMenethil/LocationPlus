@@ -160,6 +160,7 @@ local function collectRows(group, out, additionalSortKeys)
                     out[#out + 1] = {
                         kind = "label", label = tostring(node.name),
                         tooltip = nodeTooltip(node),
+                        multiline = true,
                     }
                 end
             elseif kind == "header" then

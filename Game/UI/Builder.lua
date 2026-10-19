@@ -161,6 +161,13 @@ local function RelayoutMultiline(control)
         row:SetHeight(h)
     end
 end
+--- Фиксация текста многострочного поля (экспорт/импорт): вызывается при вводе.
+local function commitMultiline(self, entry, page)
+    local text = self:GetText() or ""
+    WriteValue(entry, text)
+    if page and page.OnValueChanged then page:OnValueChanged(entry, text) end
+end
+
 local function BuildControl(page, entry, row)
     local Widgets = CS.ConfigWidgets
     if entry.available then
@@ -266,25 +273,84 @@ local function BuildControl(page, entry, row)
         control.swatch = swatch
     elseif kind == "input" then
         control.label = CreateRowLabel(row, entry.label)
-        local edit = CreateFrame("EditBox", nil, row, "InputBoxTemplate")
-        edit:SetAutoFocus(false)
-        edit:ClearAllPoints()
         if entry.multiline then
-            -- многострочное поле: метка сверху, поле на всю ширину строки
-            row:SetHeight(entry.rowHeight or math.min(180, 20 + (entry.multiline or 6) * 13))
+            -- Многострочное поле (строки экспорта/импорта): обычный EditBox с
+            -- SetMultiLine в нативном UI не даёт ни переноса слов, ни скролла —
+            -- длинная строка экспорта была нечитаема. Поэтому поле помещается в
+            -- собственный ScrollFrame; сам EditBox растягивается по высоте
+            -- контента, вертикальный скролл — за счёт scroll child.
+            local boxHeight = entry.rowHeight or math.min(220, 24 + (entry.multiline or 6) * 15)
+            row:SetHeight(boxHeight)
             control.label:ClearAllPoints()
             control.label:SetPoint("TOPLEFT", row, "TOPLEFT", 0, 0)
             control.label:SetPoint("TOPRIGHT", row, "TOPRIGHT", 0, 0)
-            edit:SetPoint("TOPLEFT", row, "TOPLEFT", 0, -18)
-            edit:SetPoint("BOTTOMRIGHT", row, "BOTTOMRIGHT", 0, 0)
+
+            local scroll = CreateFrame("ScrollFrame", nil, row)
+            scroll:SetPoint("TOPLEFT", row, "TOPLEFT", 0, -18)
+            scroll:SetPoint("BOTTOMRIGHT", row, "BOTTOMRIGHT", -4, 0)
+            local inner = CreateFrame("Frame", nil, scroll)
+            inner:SetPoint("TOPLEFT")
+            inner:SetPoint("TOPRIGHT")
+            inner:SetHeight(1)
+            scroll:SetScrollChild(inner)
+
+            local edit = CreateFrame("EditBox", nil, inner, "InputBoxTemplate")
+            edit:SetAutoFocus(false)
+            edit:SetPoint("TOPLEFT", inner, "TOPLEFT", 4, 0)
+            edit:SetPoint("TOPRIGHT", inner, "TOPRIGHT", -4, 0)
+            edit:SetHeight(boxHeight - 22)
             edit:SetMultiLine(true)
-            if edit.SetMaxLetters then edit:SetMaxLetters(20000) end
-        else
-            edit:SetPoint("LEFT", row, "CENTER", 8, 0)
-            edit:SetPoint("RIGHT", row, "RIGHT", 0, 0)
-            edit:SetHeight(ROW_HEIGHTS.input)
-            if edit.SetMaxLetters then edit:SetMaxLetters(200) end
+            edit:SetFontObject(GameFontHighlightSmall)
+            if edit.SetMaxLetters then edit:SetMaxLetters(200000) end
+
+            -- текст всегда виден целиком: нижняя граница поля следует за текстом
+            local function SyncInnerHeight(self)
+                local h = math.max((self:GetTextHeight() or 0) + 8, boxHeight - 22)
+                inner:SetHeight(h)
+                self:SetHeight(h)
+            end
+            edit:SetScript("OnTextChanged", function(self, userInput)
+                SyncInnerHeight(self)
+                -- многострочное поле коммитит текст по Enter (как в Ace-версии):
+                -- live-коммит на каждое изменение перестраивал страницу во время
+                -- ввода и сбрасывал каретку
+            end)
+            edit:SetScript("OnEnterPressed", function(self)
+                commitMultiline(self, entry, page)
+                self:ClearFocus()
+            end)
+            edit:SetScript("OnEscapePressed", function(self)
+                self:ClearFocus()
+                if page and page.Refresh then page:Refresh() end
+            end)
+            scroll:EnableMouseWheel(true)
+            scroll:SetScript("OnMouseWheel", function(self, delta)
+                local maxScroll = math.max(0, inner:GetHeight() - self:GetHeight())
+                local cur = self:GetVerticalScroll()
+                self:SetVerticalScroll(math.max(0, math.min(maxScroll, cur - delta * 20)))
+            end)
+            -- колесо мыши доходит до скролла только когда фокус внутри поля
+            edit:HookScript("OnMouseWheel", function(self, delta)
+                local parent = scroll
+                if parent then
+                    local maxScroll = math.max(0, inner:GetHeight() - parent:GetHeight())
+                    local cur = parent:GetVerticalScroll()
+                    parent:SetVerticalScroll(math.max(0, math.min(maxScroll, cur - delta * 20)))
+                end
+            end)
+            control.edit = edit
+            control.scroll = scroll
+            control.inner = inner
+            control.syncHeight = SyncInnerHeight
+            return control
         end
+        -- Одиночная строка ввода: поле справа от подписи
+        local edit = CreateFrame("EditBox", nil, row, "InputBoxTemplate")
+        edit:SetAutoFocus(false)
+        edit:SetPoint("LEFT", row, "CENTER", 8, 0)
+        edit:SetPoint("RIGHT", row, "RIGHT", 0, 0)
+        edit:SetHeight(ROW_HEIGHTS.input)
+        if edit.SetMaxLetters then edit:SetMaxLetters(200) end
         local function commit(self)
             local text = self:GetText() or ""
             WriteValue(entry, text)
@@ -358,6 +424,8 @@ local function RefreshControl(control, db)
         local text = value ~= nil and tostring(value) or ""
         if control.edit:GetText() ~= text then
             control.edit:SetText(text)
+            -- после подмены текста пересчитываем высоту многострочного поля
+            if control.syncHeight then control.syncHeight(control.edit) end
         end
         if enabled then
             control.edit:Enable()
@@ -426,7 +494,12 @@ function Builder.Build(parent, entries, opts)
         if not entry.available or entry.available() then
             local kind = entry.kind
             local height = ROW_HEIGHTS[kind] or 20
-            if entry.multiline then height = entry.rowHeight or height end
+            if entry.multiline then
+                if kind == "input" then
+                    height = entry.rowHeight or math.min(220, 24 + (tonumber(entry.multiline) or 6) * 15)
+                else
+                    height = entry.rowHeight or height
+                end end
 
             -- группа кнопок: собираем до BUTTON_COLUMNS подряд идущих button-entry
             local btnGroup = nil

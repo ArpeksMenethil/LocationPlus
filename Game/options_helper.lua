@@ -18,108 +18,179 @@ OH.PROFILE_EXPORT_PREFIX = "!LPS1!"
 
 ---------------------------------------------------------------------------
 -- Собственная сериализация профилей (замена AceSerializer-3.0).
--- Формат: "key=value" построчно; значения кодируются как
---   s|<string>  n|<number>  b|<0|1>  t|<json-подобное вложенное значение>
--- Ключи/значения экранируются (\n -> \\n и т.п.), decode проверяется строго.
+-- Формат: одно значение "t{...}" на весь профиль; таблицы состоят из пар
+-- "key:value", разделённых запятыми. Каждое значение имеет явный код:
+--   s|<строка>   n|<целое>   r|<вещественное>   b|<0|1>   t{...}
+-- Внутри строк экранируются спец-символы формата: \\ \n \r \| \: \, \} \)
+-- ВАЖНО (история поломки импорта): раньше парсер доискивался чисел по
+-- шаблону "[%%d%%.%%-]", из-за чего экспоненциальная форма "%.14g"
+-- ("1e-05", "-4.5e+22") декодировалась частично, а строковые значения
+-- «съедали» закрывающую скобку таблицы — импорт падал на любой реальной БД.
+-- Теперь разбор строго токеновый: у каждого значения есть свой конец.
 ---------------------------------------------------------------------------
 local function escStr(s)
     s = tostring(s)
-    s = s:gsub("\\", "\\\\"):gsub("\n", "\\n"):gsub("\r", "\\r"):gsub("|", "\\p"):gsub("=", "\\e")
+    s = s:gsub("\\", "\\\\")
+          :gsub("\n", "\\n")
+          :gsub("\r", "\\r")
+          :gsub("|", "\\e")
+          :gsub(":", "\\c")
+          :gsub(",", "\\m")
+          :gsub("}", "\\b")
+          :gsub("{", "\\o")
     return s
 end
 
+local unescMap = {
+    ["\\"] = "\\", n = "\n", r = "\r", e = "|",
+    c = ":", m = ",", b = "}", o = "{",
+}
 local function unescStr(s)
-    -- обратная замена к escStr (порядок важен: \1 — временный плейсхолдер для \\)
-    local res = s:gsub("\\\\", "\1"):gsub("\\n", "\n"):gsub("\\r", "\r"):gsub("\\p", "|"):gsub("\\e", "=")
-    res = res:gsub("\1", "\\")
-    return res
+    -- одиночный проход: разворачиваем все escape-последовательности сразу,
+    -- поэтому "\\n" внутри исходной строки не превращается в перевод строки
+    return (s:gsub("\\(.)", function(ch)
+        return unescMap[ch] or ch
+    end))
 end
 
-local encodeValue, decodeValue
-
-local function encodeTable(t)
-    local parts = {}
-    for k, v in pairs(t) do
-        if type(k) == "number" or type(k) == "string" then
-            parts[#parts + 1] = (type(k) == "number") and ("n" .. k) or ("s" .. escStr(k))
-            parts[#parts] = parts[#parts] .. ":" .. encodeValue(v)
-        end
-    end
-    table.sort(parts)
-    return "{" .. table.concat(parts, ",") .. "}"
-end
+-- каждая функция объявлена СРАЗУ после своей upvalue-локальной
+-- переменной: так рекурсивные и взаимные вызовы (encodeValue->encodeTable,
+-- decodeValue->decodeTable) замыкаются на уже присвоенный слот, а не на nil
+local encodeValue
+local decodeValue
+local decodeTable
+local encodeTable
 
 encodeValue = function(v)
     local tv = type(v)
     if tv == "string" then return "s|" .. escStr(v)
-    elseif tv == "number" then return "n|" .. string.format("%.14g", v)
+    elseif tv == "number" then
+        if v ~= v or v == math.huge or v == -math.huge then return "s|" end
+        if v == math.floor(v) and math.abs(v) < 2^53 then
+            return "n|" .. string.format("%d", v)
+        end
+        return "r|" .. string.format("%.17g", v)
     elseif tv == "boolean" then return "b|" .. (v and "1" or "0")
     elseif tv == "table" then return "t" .. encodeTable(v)
     end
     return "s|" -- nil/функции не сериализуются
 end
 
-local function decodeTable(s, pos)
-    -- s[pos] == "{"; возвращает (tbl, newPos)
+encodeTable = function(t)
+    local parts = {}
+    for k, v in pairs(t) do
+        if (type(k) == "number" or type(k) == "string")
+            and v ~= nil and type(v) ~= "function" then
+            parts[#parts + 1] = encodeValue(k) .. ":" .. encodeValue(v)
+        end
+    end
+    table.sort(parts)
+    return "{" .. table.concat(parts, ",") .. "}"
+end
+
+-- Читает закодированное строковое значение s|... начиная с pos.
+-- pos указывает на первый символ после "s|". Строка заканчивается первым
+-- незаэкранированным стоп-символом формата: "," (разделитель пар),
+-- ":" (разделитель ключ:значение) или "}" (конец таблицы).
+-- Возвращает (decodedString, newPos): для "," позиция СЛЕДУЮЩЕЙ лексемы
+-- (стоп-символ потреблён), для ":" и "}" — позиция на стоп-символе
+-- (decodeTable сам его съедает).
+-- Читает тело строки s|... начиная с pos (первый символ ПОСЛЕ "s|").
+-- Сканирование посимвольное: escape-пара "\\x" добавляется в буфер целиком
+-- и никогда не считается стоп-символом; первый незаэкранированный "," ":"
+-- или "}" завершает разбор. Возвращает (decodedString, newPos): для ","
+-- позиция СЛЕДУЮЩЕЙ лексемы (потреблён), для ":" и "}" — позиция на
+-- стоп-символе (его съедает decodeTable).
+local DECODE_BUF = {}
+local function decodeString(s, pos)
+    local i, n = pos, #s
+    local buf = DECODE_BUF
+    for k = 1, #buf do buf[k] = nil end
+    while i <= n do
+        local c = s:sub(i, i)
+        if c == "\\" then
+            buf[#buf + 1] = c .. s:sub(i + 1, i + 1)
+            i = i + 2
+        elseif c == "," or c == ":" or c == "}" then
+            -- стоп-символ всегда потребляется: возвращаем позицию СЛЕДУЮЩЕЙ
+            -- лексемы (единое соглашение для всех декодеров значений)
+            return unescStr(table.concat(buf)), i + 1
+        else
+            buf[#buf + 1] = c
+            i = i + 1
+        end
+    end
+    -- стоп-символа нет: значение доходит до конца строки
+    return unescStr(table.concat(buf)), n + 1
+end
+
+decodeTable = function(s, pos)
+    -- s[pos] == "{"; возвращает (tbl, newPos за закрывающей "}")
+    if s:sub(pos, pos) ~= "{" then return nil, nil end
     local t = {}
     pos = pos + 1
     if s:sub(pos, pos) == "}" then return t, pos + 1 end
     while pos <= #s do
-        local c = s:sub(pos, pos)
-        if c == "n" then
-            local numEnd = pos + 1
-            while numEnd <= #s and s:sub(numEnd, numEnd):match("[%d%.%-]") do numEnd = numEnd + 1 end
-            local key = tonumber(s:sub(pos + 1, numEnd - 1))
-            pos = numEnd
-        elseif c == "s" then
-            local e = pos + 1
-            while e <= #s do
-                local ch = s:sub(e, e)
-                if ch == "\\" then e = e + 2
-                elseif ch == ":" then break
-                else e = e + 1 end
-            end
-            local rawKey = s:sub(pos + 1, e - 1)
-            local decoded = unescStr(rawKey)
-            key = tonumber(decoded) or decoded
-            pos = e + 1
-        else
+        local key, np = decodeValue(s, pos)
+        if key == nil then return nil, nil end
+        if type(key) ~= "number" and type(key) ~= "string" then return nil, nil end
+        -- decodeValue возвращает позицию сразу после разделителя ":"
+        -- (для строковых ключей ":" потребляет decodeString, для числовых
+        -- и табличных ":" стоит за возвращенной позицией — skip ниже)
+        if s:sub(np, np) == ":" then np = np + 1 end
+        local val, np2 = decodeValue(s, np)
+        if val == nil then return nil, nil end
+        t[key] = val
+        -- все декодеры значений возвращают позицию ПОСЛЕ потреблённого ","
+        -- либо НА закрывающую "}"; значит здесь либо конец таблицы, либо
+        -- начало следующей пары
+        local ch = s:sub(np2, np2)
+        if ch == "}" then
+            return t, np2 + 1
+        elseif ch == "" or np2 > #s then
             return nil, nil
         end
-        if not key then return nil, nil end
-        local val, np = decodeValue(s, pos)
-        if val == nil and not (s:sub(pos, pos + 1) == "s|") then return nil, nil end
-        t[key] = val
-        pos = np
-        local delim = s:sub(pos, pos)
-        if delim == "," then pos = pos + 1
-        elseif delim == "}" then return t, pos + 1
-        else return nil, nil end
+        pos = np2
     end
     return nil, nil
 end
 
 decodeValue = function(s, pos)
-    local c = s:sub(pos, pos)
-    if c == "s" then
-        local e = pos + 2
-        while e <= #s do
-            local ch = s:sub(e, e)
-            if ch == "\\" then e = e + 2
-            elseif ch == "," or ch == "}" or e > #s then break
-            else e = e + 1 end
-        end
-        -- строка заканчивается на верхнеуровневом разделителе; для "key=value"
-        -- строковых значений конец — это конец строки
-        return unescStr(s:sub(pos + 2, e - 1)), e
-    elseif c == "n" then
+    local code = s:sub(pos, pos)
+    if code == "s" then
+        if s:sub(pos + 1, pos + 1) ~= "|" then return nil, nil end
+        return decodeString(s, pos + 2)
+    elseif code == "n" then
         local e = pos + 1
-        while e <= #s and s:sub(e, e):match("[%d%.%-]") do e = e + 1 end
-        return tonumber(s:sub(pos + 1, e - 1)), e
-    elseif c == "b" then
-        return s:sub(pos + 2, pos + 2) == "1", pos + 3
-    elseif c == "t" then
-        return decodeTable(s, pos + 1)
+        while e <= #s and s:sub(e, e):match("[%d%-]") do e = e + 1 end
+        local num = tonumber(s:sub(pos + 1, e - 1))
+        if num == nil then return nil, nil end
+        -- разделитель пар "," потребляется здесь (как в decodeString),
+        -- чтобы decodeTable всегда получал позицию НА следующем токене
+        -- или на закрывающей "}" — единое соглашение для всех типов
+        if e <= #s and s:sub(e, e) == "," then e = e + 1 end
+        return num, e
+    elseif code == "r" then
+        local e = pos + 1
+        while e <= #s and s:sub(e, e):match("[%d%+%.eE%-]") do e = e + 1 end
+        local num = tonumber(s:sub(pos + 1, e - 1))
+        if num == nil then return nil, nil end
+        if e <= #s and s:sub(e, e) == "," then e = e + 1 end
+        return num, e
+    elseif code == "b" then
+        local bit = s:sub(pos + 2, pos + 2)
+        if bit ~= "0" and bit ~= "1" then return nil, nil end
+        local e = pos + 3
+        if e <= #s and s:sub(e, e) == "," then e = e + 1 end
+        return bit == "1", e
+    elseif code == "t" then
+        -- НЕ хвостовой вызов! В Lua 5.1 хвостовой вызов возвращает ВСЕ
+        -- значения callee: decodeTable отдаёт (tbl, newPos), и без ограничивающих
+        -- скобок DecodeValue возвращало бы два значения, а OH:DeserializeProfile
+        -- принимал только первое -> мусорный epos -> импорт падал на ЛЮБОМ
+        -- профиле с вложенными таблицами (т.е. на реальной БД).
+        local t, e = decodeTable(s, pos + 1)
+        return t, e
     end
     return nil, nil
 end
@@ -127,35 +198,22 @@ end
 --- Сериализует таблицу профиля в многострочную строку.
 function OH:SerializeProfile(tbl)
     if type(tbl) ~= "table" then return "" end
-    local lines = {}
-    local keys = {}
-    for k in pairs(tbl) do
-        if type(k) == "string" or type(k) == "number" then keys[#keys + 1] = tostring(k) end
-    end
-    table.sort(keys)
-    for _, k in ipairs(keys) do
-        local v = tbl[k] or tbl[tonumber(k)]
-        if v ~= nil and type(v) ~= "function" then
-            lines[#lines + 1] = k .. "=" .. (select(1, encodeValue(v)))
-        end
-    end
-    return table.concat(lines, "\n")
+    -- Один общий токен "t{...}" на весь профиль: ключи верхнего уровня тоже
+    -- кодируются encodeValue, поэтому спец-символы (=, |, :, ,) в них
+    -- гарантированно не ломают разбор.
+    return encodeValue(tbl)
 end
 
 --- Обратная операция к SerializeProfile; nil при битой строке.
 function OH:DeserializeProfile(str)
-    if type(str) ~= "string" or str == "" then return nil end
-    local out = {}
-    for line in str:gmatch("[^\n]+") do
-        local eq = line:find("=", 1, true)
-        if not eq then return nil end
-        local key = line:sub(1, eq - 1)
-        local val, epos = decodeValue(line, eq + 1)
-        if val == nil then return nil end
-        local numKey = tonumber(key)
-        out[numKey or key] = val
-    end
-    return next(out) and out or nil
+    if type(str) ~= "string" then return nil end
+    -- Допускаем переносы строк внутри поля ввода: просто убираем их.
+    local s = str:gsub("[\r\n]", "")
+    if s == "" then return nil end
+    local t, epos = decodeValue(s, 1)
+    if type(t) ~= "table" then return nil end
+    if epos and epos <= #s then return nil end -- мусор после конца значения
+    return next(t) and t or {}
 end
 
 --- Глубокая копия таблицы.

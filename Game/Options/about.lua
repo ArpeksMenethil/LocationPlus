@@ -2,57 +2,72 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local L = LPS.L
 
---- Возвращает вкладку "About" дерева настроек (внутренний формат дерева настроек).
---- Информация о модификации и список доступных slash-команд (как в CharacterStats).
+--- Метка-заголовок секции («header» в дереве настроек): рисуется крупным
+--- акцентным шрифтом, как заголовки групп на других страницах.
+local function header(nameText, order)
+    return { type = "header", name = nameText, order = order }
+end
+
+--- Возвращает вкладку "About" дерева настроек (внутренний формат дерева).
+--- Полноценная страница «О модификации»: описание аддона, сведения о
+--- версии/авторе, ссылки и список slash-команд.
 function LPS.Options.BuildTree.tabs.about()
-    local title = LPS.addon.title or "Location Plus"
+    local title = (LPS.addon.title and LPS.addon.title ~= "") and LPS.addon.title or "Location Plus"
     local version = tostring(LPS.addon.version or "")
     local author = LPS.Options.aboutAuthor or "Arpeks"
 
-    local aboutText = string.format(
-        "|c%s%s|r v%s\n%s: %s\n\n%s",
-        LPS.addon.textColor or "ff1784d1", title, version,
-        L.AUTHOR, author,
-        L.ADDS_LOCATION_COORDS_NEXTRA_PANELS_AND_AN_INFO_RICH_TOOLTIP_N_NO_ELVUI_REQUIRED:gsub("\\n", "\n")
-    )
+    -- Описание: Notes из .toc для текущего языка клиента (с fallback на enUS)
+    local notes = nil
+    local getMeta = (C_AddOns and C_AddOns.GetAddOnMetadata) or GetAddOnMetadata
+    if getMeta and LPS.addon.name then
+        local locale = LPS.ACTIVE_LOCALE or GetLocale()
+        notes = getMeta(LPS.addon.name, "Notes-" .. tostring(locale))
+                or getMeta(LPS.addon.name, "Notes")
+    end
+    notes = (type(notes) == "string" and notes ~= "") and notes
+            or L.ADDS_LOCATION_COORDS_NEXTRA_PANELS_AND_AN_INFO_RICH_TOOLTIP_N_NO_ELVUI_REQUIRED
 
-    -- Список команд берём из обработчика SlashCmdList["LPS"] (Game/core.lua)
-    local commands = {
-        { cmd = "/lps",            desc = L.OPEN_OPTIONS_WINDOW },
-        { cmd = "/lps reset",      desc = L.RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES },
-        { cmd = "/lps resetpanels", desc = L.PANEL_SETTINGS_HAVE_BEEN_RESET_TO_DEFAULTS },
+    -- Список команд — единый источник: LPS:GetCommandList() (Game/core.lua)
+    local commands = {}
+    if LPS.GetCommandList then
+        for _, c in ipairs(LPS:GetCommandList()) do
+            commands[#commands + 1] = c
+        end
+    end
+
+    local args = {
+        aboutHeader = header(L.ABOUT_THIS_ADDON, 1),
+        aboutLabel = {
+            order = 2,
+            type = "description",
+            name = "|c" .. (LPS.addon.textColor or "ff1784d1") .. title .. "|r v" .. version .. "\n" .. notes,
+        },
+        infoHeader = header(L.AUTHOR, 3),
+        infoLabel = {
+            order = 4,
+            type = "description",
+            name = string.format("%s: %s\n%s: %s",
+                L.AUTHOR, author,
+                L.VERSION_LABEL or "Version", version),
+        },
+        linksLabel = {
+            order = 5,
+            type = "description",
+            name = "CurseForge: |cff4aa3ffhttps://www.curseforge.com/wow/addons/location-plus|r",
+        },
+        commandsHeader = header(L.COMMANDS, 6),
     }
-    local commandsText = ""
-    for _, c in ipairs(commands) do
-        commandsText = commandsText .. "|cffe0c060" .. c.cmd .. "|r - " .. (c.desc or "") .. "\n"
+    for i, c in ipairs(commands) do
+        args["cmd" .. i] = {
+            order = 7 + i * 0.01,
+            type = "description",
+            name = "|cffe0c060" .. c.cmd .. "|r  -  " .. tostring(c.desc or ""),
+        }
     end
 
     return {
         name = L.ABOUT,
         order = 92,
-        args = {
-            -- порядок + 0.01/0.02 — «воздух» под заголовком группы, чтобы
-            -- текст не слипался с ним (нативный рендерер строит строки подряд)
-            aboutLabel = {
-                order = 1.01,
-                type = "description",
-                name = aboutText,
-            },
-            linksLabel = {
-                order = 1.02,
-                type = "description",
-                name = "CurseForge: |cff4aa3ffhttps://www.curseforge.com/wow/addons/location-plus|r",
-            },
-            spacerCommands = {
-                order = 1.5,
-                type = "description",
-                name = "",
-            },
-            commandsLabel = {
-                order = 2.01,
-                type = "description",
-                name = commandsText,
-            },
-        },
+        args = args,
     }
 end
