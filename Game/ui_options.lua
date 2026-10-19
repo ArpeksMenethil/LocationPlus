@@ -4,8 +4,8 @@ if not LPS then return end
 -------------------------------------------------
 -- Нативное окно настроек (дизайн портирован из CharacterStats)
 -------------------------------------------------
--- Единственный источник пунктов — дерево AceConfig-формата из options.lua
--- (LPS.Options.tree). Здесь оно превращается в страницы панели UI/Panel.
+-- Единственный источник пунктов — внутреннее дерево формата options.lua
+-- (LPS.Options.tree, без Ace3). Здесь оно превращается в страницы панели UI/Panel.
 local UI = {}
 LPS.UI_Options = UI
 
@@ -21,7 +21,7 @@ local WIDGET_TYPE = {
 	execute = "button",
 }
 
---- Вызов get-функции пункта (AceConfig передаёт uiInfo, нам он не нужен).
+--- Вызов get-функции пункта (нативный рендерер передаёт uiInfo — аргумент сохранён для совместимости).
 local function callGet(entry)
 	if type(entry.get) == "function" then
 		local ok, v = pcall(entry.get, false)
@@ -68,7 +68,7 @@ local function makeDisabled(node)
 	end
 end
 
---- Список items для dropdown из AceConfig values (таблица или функция).
+--- Список items для dropdown из поля values (таблица или функция).
 local function resolveItems(entry)
 	local values = entry.values
 	if type(values) == "function" then
@@ -205,23 +205,30 @@ end
 
 --- Ключ страницы в Panel для узла дерева (стабилен между пересборками).
 local function pageKeyFor(node)
-	return "tree_" .. tostring(node.name or "") .. "_" .. tostring(tonumber(node.order) or 0)
+	-- ключ — имя таба в дереве (стабилен между пересборками и сменами локали)
+	return "tree_" .. tostring(node._pageId or node.name or "")
 end
 
 --- Построение/обновление списка страниц по текущему дереву опций.
 --- Идемпотентно: вызывается каждый раз при открытии окна, чтобы подтянуть
---- вкладку Profiles (появляется позже, когда готова БД/AceDBOptions).
+--- свежие переводы/вкладки после смены языка или профиля.
 function UI.BuildPages()
-	if LPS.Options.EnsureAceProfilesTab then
-		pcall(LPS.Options.EnsureAceProfilesTab, LPS.Options)
+	-- дерево пересобирается при каждом построении страниц: фабрики вкладок
+	-- читают переводы L в момент вызова, поэтому смена языка (ApplyLocaleOverride)
+	-- автоматически попадает в заголовки страниц.
+	if LPS.Options.GetTree then
+		LPS.Options.tree = LPS.Options:GetTree()
 	end
 	local tree = LPS.Options.tree
 	if not tree or type(tree.args) ~= "table" then return end
 	local Panel = LPS.UI and LPS.UI.Panel
 	if not Panel then return end
 	local nodes = {}
-	for _, node in pairs(tree.args) do
-		nodes[#nodes + 1] = node
+	for key, node in pairs(tree.args) do
+		if type(node) == "table" then
+			node._pageId = tostring(key)
+			nodes[#nodes + 1] = node
+		end
 	end
 	table.sort(nodes, function(a, b)
 		return (tonumber(a.order) or 999) < (tonumber(b.order) or 999)

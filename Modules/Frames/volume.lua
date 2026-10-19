@@ -1,5 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
+local L = LPS.L
 local DT = LPS._DT
 
 -------------------------------------------------- Volume
@@ -55,7 +56,7 @@ do
 		end,
 		onClick = function(self, button)
 			if button == "LeftButton" then
-				local list = { { text = LPS:L("Select Volume Stream"), isTitle = true } }
+				local list = { { text = L.SELECT_VOLUME_STREAM, isTitle = true } }
 				for i, s in ipairs(AudioStreams) do
 					list[#list + 1] = { text = s.Name, func = function() activeIndex = i; if self._lpsUpdateFunc then self._lpsUpdateFunc(self) end end }
 				end
@@ -63,7 +64,7 @@ do
 			elseif button == "MiddleButton" then
 				setCVar(AudioStreams[1].enabled, getCVarBool(AudioStreams[1].enabled) and 0 or 1)
 			else
-				local list = { { text = LPS:L("Toggle Volume Stream"), isTitle = true } }
+				local list = { { text = L.TOGGLE_VOLUME_STREAM, isTitle = true } }
 				for i, s in ipairs(AudioStreams) do
 					list[#list + 1] = { text = s.Name, func = function() setCVar(s.enabled, getCVarBool(s.enabled) and 0 or 1); if self._lpsUpdateFunc then self._lpsUpdateFunc(self) end end }
 				end

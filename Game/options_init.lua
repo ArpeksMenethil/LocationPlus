@@ -11,13 +11,10 @@ LPS.Options.BuildTree = LPS.Options.BuildTree or {}
 LPS.Options.BuildTree.tabs = LPS.Options.BuildTree.tabs or {}
 
 --- Единая точка применения настроек: инвалидация кэша, пересчёт layout,
---- обновление окон AceConfigDialog и нативного UI. Работает и без Ace3.
+--- обновление нативного окна опций (Ace3 больше не используется).
 function LPS.Options:ApplyRefresh()
 if LPS.RefreshAfterProfileChange then
 LPS:RefreshAfterProfileChange()
-end
-if OH.Ace.Registry and OH.Ace.Registry.NotifyChange then
-OH.Ace.Registry:NotifyChange(self.aceAppName)
 end
 if LPS.UI_Options and LPS.UI_Options.RefreshActivePage then
 LPS.UI_Options:RefreshActivePage()
@@ -38,7 +35,7 @@ cur[segs[#segs]] = value
 self:ApplyRefresh()
 end
 
---- Собирает и возвращает полное дерево настроек (формат AceConfig-3.0).
+--- Собирает и возвращает полное дерево настроек (внутренний формат дерева настроек).
 function LPS.Options:GetTree()
 local tabs = self.BuildTree.tabs
 return {

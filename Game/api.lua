@@ -622,86 +622,15 @@ function LPS:ResetPanelsToDefaults()
 end
 
 function LPS:ResetAllSettingsToDefaults()
-	-- Сначала пробуем штатный сброс AceDB (он корректно снимает дефолты и
-	-- чистит пустые секции). Если он недоступен или падает — вручную
-	-- перезаписываем содержимое SavedVariables.
-	local resetDone = false
+	-- Сброс без внешних библиотек: ResetProfile собственной БД (core.lua)
+	-- перезаписывает содержимое текущего профиля копией LPS.defaults. Объект
+	-- глобала LPS_DB не подменяется — WoW сериализует именно его, поэтому
+	-- настройки гарантированно сохраняются после /reload.
 	if LPS.db and LPS.db.ResetProfile then
-		local ok = pcall(function() LPS.db:ResetProfile() end)
-		resetDone = ok and true or false
-		if resetDone and LPS.InvalidateDBCache then LPS:InvalidateDBCache() end
+		pcall(function() LPS.db:ResetProfile() end)
 	end
-	if not resetDone then
-		-- Сброс без ResetProfile: переписываем СОДЕРЖИМОЕ текущего объекта
-		-- SavedVariables, а не заменяем саму таблицу. WoW при сохранении пишет
-		-- тот объект, на который указывает ГЛОБАЛЬНАЯ переменная LPS_DB; если
-		-- подменить её новым объектом, старые ссылки (в т.ч. внутри AceDB и
-		-- кешей) останутся на прежней таблице и записанные настройки «исчезнут»
-		-- после /reload — ровно симптом «всё возвращается к defaults».
-		local newProf = CopyTable(LPS.defaults)
-		if type(newProf) ~= "table" then newProf = {} end
-		newProf.gold = nil
-		local function resetApply()
-			_G.LPS_DB = _G.LPS_DB or {}
-			if type(_G.LPS_DB) ~= "table" then return end
-			-- Миграция плоской структуры в профилевую, если нужно.
-			if not _G.LPS_DB.profiles then
-				local flat = {}
-				for k, v in pairs(_G.LPS_DB) do
-					if k ~= "global" and k ~= "profiles" and k ~= "profileKeys" and k ~= "char" and k ~= "realm"
-						and k ~= "class" and k ~= "race" and k ~= "faction" and k ~= "factionrealm" and k ~= "gold" then
-						flat[k] = v
-						_G.LPS_DB[k] = nil
-					end
-				end
-				_G.LPS_DB.profiles = { Default = flat }
-			end
-			-- Сохраняем глобальные данные (золото/реалмы): они не относятся к
-			-- настройкам профиля и не должны сбрасываться.
-			_G.LPS_DB.global = _G.LPS_DB.global or {}
-			if type(_G.LPS_DB.gold) == "table" and not _G.LPS_DB.global.gold then
-				_G.LPS_DB.global.gold = _G.LPS_DB.gold
-			end
-			_G.LPS_DB.gold = nil
-			-- Заменяем содержимое ВСЕХ профилей свежими дефолтами (пользователь
-			-- просит полный сброс), но сами таблицы profiles/global/profileKeys
-			-- не трогаем — ссылка на SavedVariables остаётся валидной.
-			for pname in pairs(_G.LPS_DB.profiles) do
-				if pname ~= "Default" then
-					_G.LPS_DB.profiles[pname] = nil
-				else
-					_G.LPS_DB.profiles.Default = newProf
-				end
-			end
-			if _G.LPS_DB.profiles.Default == nil then
-				_G.LPS_DB.profiles.Default = newProf
-			end
-			-- Все привязки персонажей переводим на Default (саму таблицу
-			-- profileKeys не удаляем — её может хранить ссылка старого db.keys).
-			if type(_G.LPS_DB.profileKeys) == "table" then
-				for k in pairs(_G.LPS_DB.profileKeys) do
-					_G.LPS_DB.profileKeys[k] = "Default"
-				end
-			end
-		end
-		resetApply()
-		-- Если AcceDB доступен — пересоздаём БД поверх ТОГО ЖЕ объекта sv
-		-- (AceDB:New принимает имя глобала и использует текущий _G.LPS_DB),
-		-- чтобы db.sv совпадал с тем, что сериализует WoW.
-		if LibStub and LibStub:GetLibrary("AceDB-3.0", true) and LPS.defaults then
-			local ok = pcall(function()
-				local AceDB = LibStub("AceDB-3.0")
-				LPS.db = AceDB:New("LPS_DB", { profile = LPS.defaults, global = { gold = { realms = {} } } }, "Default")
-				if LPS.db and LPS.db.RegisterCallback then
-					LPS.db.RegisterCallback(LPS, "OnProfileChanged", "OnAceProfileChanged")
-					LPS.db.RegisterCallback(LPS, "OnProfileCopied", "OnAceProfileCopied")
-					LPS.db.RegisterCallback(LPS, "OnProfileReset", "OnAceProfileReset")
-				end
-			end)
-			if not ok then LPS.db = nil end
-		end
-		if LPS.InvalidateDBCache then LPS:InvalidateDBCache() end
-	end
+	if LPS.InvalidateDBCache then LPS:InvalidateDBCache() end
+
 	-- Сброс настроек должен вернуть и вид панелей: закрываем созданные фреймы
 	-- инфотекстов (кроме зарезервированных coords/time/gold/system), чтобы они
 	-- пересоздались с дефолтовыми значениями при следующем ApplyLayout
@@ -779,10 +708,14 @@ if LibStub then
 end
 LPS.Tourist = Tourist
 
--- Локализация: таблица переводов заполняется файлами Locales/*.lua
--- (по образцу Addons/CharacterStats/*, без AceLocale).
--- enUS.lua создаёт LPS.L, остальные локали дописывают переводы в неё.
-LPS.L = LPS.L or {}
+-- Локализация: таблица переводов создаётся файлами Locales/*.lua
+-- (полная копия системы перевода CharacterStats: ns.L + RegisterLocale /
+-- ApplyLocaleOverride). Если файл локалей не загрузился — пустая таблица
+-- с fallback на имя ключа (то же поведение, что и __index у ns.L).
+if not _G.ArpeksLPS.L then
+	_G.ArpeksLPS.L = setmetatable({}, { __index = function(_, k) return k end })
+end
+LPS.L = _G.ArpeksLPS.L
 local Locale = LPS.L
 
 -- Выводит сообщение в чат с префиксом аддона и поддержкой локализации
@@ -797,7 +730,8 @@ end
 
 -- Возвращает локализованную строку по ключу или сам ключ, если перевода нет
 function LPS:L(key)
-	local val = rawget(Locale, key)
+	-- обычный доступ, а не rawget: переводы лежат в ns.L за __index = L
+	local val = Locale[key]
 	if val ~= nil then
 		return val
 	end
@@ -1348,79 +1282,15 @@ end
 --- Переключить нативное окно настроек (дизайн CharacterStats, без Ace3).
 function LPS:ToggleNativeOptions()
 	if LPS.UI_Options and LPS.UI_Options.Toggle then
-		-- Если открыто окно Ace — закрыть его, чтобы не было двух меню сразу
-		local aceDialog = LibStub and LibStub:GetLibrary("AceConfigDialog-3.0", true)
-		if aceDialog and LPS.Options and LPS.Options.aceAppName
-			and aceDialog.OpenFrames and aceDialog.OpenFrames[LPS.Options.aceAppName] then
-			aceDialog:Close(LPS.Options.aceAppName)
-		end
 		LPS.UI_Options:Toggle()
 		return true
 	end
 	return false
 end
 
---- Открыть/закрыть прежнее меню на AceConfigDialog (если Ace3 доступен).
--- @return true, если окно Ace было открыто/закрыто; false — Ace недоступен.
-function LPS:ToggleLegacyMenu()
-	local aceDialog = LibStub and LibStub:GetLibrary("AceConfigDialog-3.0", true) and LibStub("AceConfigDialog-3.0")
-	if not (aceDialog and LPS.Options and LPS.Options.aceAppName) then return false end
-	if LPS.EnsureOptionsCloseHooks then
-		LPS:EnsureOptionsCloseHooks()
-	end
-	do
-		local appName = LPS.Options.aceAppName
-		-- Корневая таблица должна быть зарегистрирована в AceConfigRegistry
-		-- (регистрация выполняется в options_ace.lua / FinalizeAce). Если её
-		-- нет — не звать aceDialog:Open (иначе AceConfigDialog бросает
-		-- "<app> isn't registed with AceConfigRegistry, unable to open config"),
-		-- а отдаём управление нативному окну настроек.
-		local registry = LibStub:GetLibrary("AceConfigRegistry-3.0", true)
-		if not (registry and registry.GetOptionsTable and registry:GetOptionsTable(appName)) then
-			if LPS.Options.FinalizeAce then
-				pcall(LPS.Options.FinalizeAce, LPS.Options)
-			end
-			if not (registry and registry.GetOptionsTable and registry:GetOptionsTable(appName)) then
-				return false
-			end
-		end
-		if aceDialog.OpenFrames and aceDialog.OpenFrames[appName] then
-			if LPS.DisableMoveModeIfActive then
-				LPS:DisableMoveModeIfActive()
-			end
-			aceDialog:Close(appName)
-		else
-			aceDialog:Open(appName)
-			local f = aceDialog.OpenFrames and aceDialog.OpenFrames[appName]
-			if f then
-				if f.EnableResize then
-					f:EnableResize(false)
-				end
-				local frame = f.frame
-				if frame and frame.SetResizable then
-					frame:SetResizable(false)
-				end
-				if frame and frame.HookScript then
-					LPS._optionsCloseHooks = LPS._optionsCloseHooks or {}
-					if not LPS._optionsCloseHooks.AceConfigDialogFrame then
-						LPS._optionsCloseHooks.AceConfigDialogFrame = true
-						frame:HookScript("OnHide", function()
-							if LPS.DisableMoveModeIfActive then
-								LPS:DisableMoveModeIfActive()
-							end
-						end)
-					end
-				end
-			end
-		end
-		return true
-	end
-end
-
---- Главное переключение меню: есть Ace3 — legacy-окно AceConfigDialog,
---- иначе нативное окно (Game/UI/*). Fallback — стандартные панели Blizzard.
+--- Главное переключение меню: всегда нативное окно (Game/UI/*), без Ace3.
+--- Fallback — стандартные панели Blizzard.
 function LPS:ToggleOptions()
-	if self:ToggleLegacyMenu() then return end
 	if self:ToggleNativeOptions() then return end
 
 	if _G.SettingsPanel and _G.SettingsPanel.IsShown and _G.SettingsPanel:IsShown() then
@@ -1438,7 +1308,4 @@ function LPS:ToggleOptions()
 		return
 	end
 
-	if LPS.Options and LPS.Options.category and Settings and Settings.OpenToCategory then
-		Settings.OpenToCategory(LPS.Options.category:GetID())
-	end
 end

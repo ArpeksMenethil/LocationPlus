@@ -1,5 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
+local L = LPS.L
 
 ----------------------------------------------------------------
 -- Addon Compartment
@@ -18,9 +19,9 @@ local function OnAddonCompartmentEnter(addonName, menuButtonFrame)
 	GameTooltip:SetOwner(UIParent, "ANCHOR_CURSOR")
 	GameTooltip:AddDoubleLine(LPS.addon.name, LPS.addon.version, ry, gy, by, r, g, b)
 	GameTooltip:AddLine(" ")
-	GameTooltip:AddLine(LPS:L("Adds location, coords,\nextra panels and an info-rich tooltip\n(no ElvUI required)"), r, g, b)
+	GameTooltip:AddLine(L.ADDS_LOCATION_COORDS_NEXTRA_PANELS_AND_AN_INFO_RICH_TOOLTIP_N_NO_ELVUI_REQUIRED, r, g, b)
 	GameTooltip:AddLine(" ")
-	GameTooltip:AddDoubleLine(LPS:L("RMB"), LPS:L("Toggle Configuration"), rb, gb, bb, rb, gb, bb)
+	GameTooltip:AddDoubleLine(L.RMB, L.TOGGLE_CONFIGURATION, rb, gb, bb, rb, gb, bb)
 
 	GameTooltip:Show()
 end

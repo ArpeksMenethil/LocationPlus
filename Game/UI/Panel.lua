@@ -1,5 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
+local L = LPS.L
 --- Каркас нативного окна настроек: заголовок, навигация, страницы (порт ConfigPanel).
 local Panel = {}
 LPS.UI = LPS.UI or {}
@@ -151,7 +152,7 @@ local function CreateMainFrame()
     end)
     frame.minBtn:HookScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
-        GameTooltip:SetText(frame._minimized and LPS:L("Expand") or LPS:L("Minimize"), 1, 1, 1)
+        GameTooltip:SetText(frame._minimized and L.EXPAND or L.MINIMIZE, 1, 1, 1)
         GameTooltip:Show()
     end)
     frame.minBtn:HookScript("OnLeave", function()
@@ -336,7 +337,7 @@ end
 function Panel.Show()
     if InCombatLockdown() then
         if LPS.PrintMsg then
-            LPS.PrintMsg(LPS:L("Cannot open options during combat"))
+            LPS.PrintMsg(L.CANNOT_OPEN_OPTIONS_DURING_COMBAT)
         end
         return
     end

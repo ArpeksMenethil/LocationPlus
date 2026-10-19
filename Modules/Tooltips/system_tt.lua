@@ -1,5 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
+local L = LPS.L
 
 
 local function formatMem(kb)
@@ -56,9 +57,9 @@ function LPS:BuildSystemTooltip(tt)
 
 	if not cfg or cfg.network ~= false then
 		tt:AddDoubleLine("FPS:", LPS:ColorByThreshold(fps, 60, 30, false), 1, 1, 1, 1, 1, 1)
-		tt:AddDoubleLine(LPS:L("Local latency")..":", string.format("%d ms", lagHome), 1, 1, 1, 0.41, 0.8, 0.94)
-		tt:AddDoubleLine(LPS:L("Global latency")..":", string.format("%d ms", lagWorld), 1, 1, 1, 0.41, 0.8, 0.94)
-		tt:AddDoubleLine(LPS:L("Bandwidth")..":", string.format("%.2f", bandwidth or 0), 1, 1, 1, 0.41, 0.8, 0.94)
+		tt:AddDoubleLine(L.LOCAL_LATENCY..":", string.format("%d ms", lagHome), 1, 1, 1, 0.41, 0.8, 0.94)
+		tt:AddDoubleLine(L.GLOBAL_LATENCY..":", string.format("%d ms", lagWorld), 1, 1, 1, 0.41, 0.8, 0.94)
+		tt:AddDoubleLine(L.BANDWIDTH..":", string.format("%.2f", bandwidth or 0), 1, 1, 1, 0.41, 0.8, 0.94)
 	end
 
 	local now = GetTime()
@@ -89,7 +90,7 @@ function LPS:BuildSystemTooltip(tt)
 
 	if not cfg or cfg.addons ~= false then
 		if cfg.network ~= false then tt:AddLine(" ") end
-		tt:AddLine(LPS:L("AddOns"), 1, 0.82, 0)
+		tt:AddLine(L.ADDONS, 1, 0.82, 0)
 		local max = (cfg and tonumber(cfg.addonsMax)) or 15
 		if max < 3 then max = 3 elseif max > 40 then max = 40 end
 		for i = 1, math.min(#addons, max) do
@@ -99,6 +100,6 @@ function LPS:BuildSystemTooltip(tt)
 	end
 	if not cfg or cfg.total ~= false then
 		if cfg.network ~= false or cfg.addons ~= false then tt:AddLine(" ") end
-		tt:AddDoubleLine(LPS:L("Total"), formatMem(total), 1, 1, 1, 0.41, 0.8, 0.94)
+		tt:AddDoubleLine(L.TOTAL, formatMem(total), 1, 1, 1, 0.41, 0.8, 0.94)
 	end
 end

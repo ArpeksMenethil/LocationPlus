@@ -1,3 +1,4 @@
+local L = LPS.L
 local MyAddon = _G.ArpeksLPS
 local LPS = MyAddon.LPS
 
@@ -15,7 +16,7 @@ function LPS:BuildMailTooltip(GameTooltip)
         				if s then tt:AddLine(s, 1, 1, 1); any = true end
         			end
         			if not any then
-        				tt:AddLine(LPS:L("No mail"), 0.65, 0.65, 0.65)
+        				tt:AddLine(L.NO_MAIL_2, 0.65, 0.65, 0.65)
         			end
 
 end
