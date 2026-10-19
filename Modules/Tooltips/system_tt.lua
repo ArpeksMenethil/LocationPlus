@@ -55,7 +55,7 @@ function LPS:BuildSystemTooltip(tt)
 	lagWorld = math.floor(lagWorld or 0)
 
 	if not cfg or cfg.network ~= false then
-		tt:AddDoubleLine(LPS:L("FPS")..":", LPS:ColorByThreshold(fps, 60, 30, false), 1, 1, 1, 1, 1, 1)
+		tt:AddDoubleLine("FPS:", LPS:ColorByThreshold(fps, 60, 30, false), 1, 1, 1, 1, 1, 1)
 		tt:AddDoubleLine(LPS:L("Local latency")..":", string.format("%d ms", lagHome), 1, 1, 1, 0.41, 0.8, 0.94)
 		tt:AddDoubleLine(LPS:L("Global latency")..":", string.format("%d ms", lagWorld), 1, 1, 1, 0.41, 0.8, 0.94)
 		tt:AddDoubleLine(LPS:L("Bandwidth")..":", string.format("%.2f", bandwidth or 0), 1, 1, 1, 0.41, 0.8, 0.94)

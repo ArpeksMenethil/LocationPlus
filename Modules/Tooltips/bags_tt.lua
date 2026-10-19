@@ -30,5 +30,5 @@ function LPS:BuildBagsTooltip(GameTooltip)
         			end
 
     tt:AddLine(" ")
-    tt:AddDoubleLine(LPS:L("Open"), LPS:L("Toggle all bags"), rB, gB, bB, rB, gB, bB)
+    tt:AddDoubleLine(LPS:L("LMB"), LPS:L("Toggle all bags"), rB, gB, bB, rB, gB, bB)
 end

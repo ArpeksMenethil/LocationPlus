@@ -47,8 +47,8 @@ do
 				end
 			end
 		end,
-		onClick = function(self)
-			if ToggleAllBags then ToggleAllBags() end
+		onClick = function(self, button)
+			if ToggleAllBags and button == "LeftButton" then ToggleAllBags() end
 		end,
 	})
 end

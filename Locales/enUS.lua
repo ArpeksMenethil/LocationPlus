@@ -218,7 +218,6 @@ L["Shift+RMB"] = true
 L["Local latency"] = true
 L["Global latency"] = true
 L["Bandwidth"] = true
-L["FPS"] = true
 L["AddOns"] = true
 L["Total"] = true
 L["Currency"] = true
