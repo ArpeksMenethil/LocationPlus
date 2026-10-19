@@ -1,17 +1,29 @@
 <Ui xmlns='http://www.blizzard.com/wow/ui/'>
-	<Include file='.\init.lua'/>
-	<Include file='.\UI\Theme.lua'/>
-	<Include file='.\UI\Widgets.lua'/>
-	<Include file='.\UI\Builder.lua'/>
-	<Include file='.\UI\Panel.lua'/>
-	<Include file='.\frames.lua'/>
-	<Include file='.\layout.lua'/>
-	<Include file='.\core.lua'/>
-	<Include file='.\utils.lua'/>
-	<Include file='.\api.lua'/>
-	<Include file='.\ui.lua'/>
+        <Include file='.\\init.lua'/>
+        <Include file='.\\UI\\Theme.lua'/>
+        <Include file='.\\UI\\Widgets.lua'/>
+        <Include file='.\\UI\\Builder.lua'/>
+        <Include file='.\\UI\\Panel.lua'/>
+        <Include file='.\\frames.lua'/>
+        <Include file='.\\layout.lua'/>
+        <Include file='.\\core.lua'/>
+        <Include file='.\\utils.lua'/>
+        <Include file='.\\api.lua'/>
+        <Include file='.\\ui.lua'/>
 
-	<Include file='.\datatexts.lua'/>
-	<Include file='.\options.lua'/>
-	<Include file='.\ui_options.lua'/>
+        <Include file='.\\datatexts.lua'/>
+
+        <!-- Дерево настроек: реестр, помощники, фабрики вкладок, сборка и Ace-регистрация -->
+        <Include file='.\\options.lua'/>
+        <Include file='.\\options_helper.lua'/>
+        <Include file='.\\Options\\general.lua'/>
+        <Include file='.\\Options\\show.lua'/>
+        <Include file='.\\Options\\tooltip.lua'/>
+        <Include file='.\\Options\\layout.lua'/>
+        <Include file='.\\Options\\profiles.lua'/>
+        <Include file='.\\Options\\importexport.lua'/>
+        <Include file='.\\options_init.lua'/>
+        <Include file='.\\options_ace.lua'/>
+
+        <Include file='.\\ui_options.lua'/>
 </Ui>

@@ -135,6 +135,8 @@ L["Move frame"] = "Перемещение"
 L["Toggle move mode for the frame."] = "Включить/выключить режим перемещения фрейма."
 L["Reset holder position"] = "Сброс позиции"
 L["Reset the holder frame position."] = "Сбросить позицию основного фрейма."
+L["Expand"] = "Развернуть"
+L["Minimize"] = "Свернуть"
 
 L["Detailed Coords"] = "Точные координаты"
 L["Adds 2 digits in the coords"] = "Добавляет 2 знака после запятой"
