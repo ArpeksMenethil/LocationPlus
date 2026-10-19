@@ -189,12 +189,9 @@ local function BuildControl(page, entry, row)
         control.text = text
     elseif kind == "button" then
         -- ширина по тексту, чтобы подпись кнопки не залезала за края
-        local probe = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        probe:SetText(entry.label or "")
-        local textWidth = probe:GetStringWidth() or 0
-        probe:Freeze()
-        probe:SetParent(nil)
-        local btn = Widgets.CreateFlatButton(row, math.max(90, textWidth + 24), ROW_HEIGHTS.button, entry.label)
+        local btn = Widgets.CreateFlatButton(row, 90, ROW_HEIGHTS.button, entry.label)
+        local textWidth = btn.text:GetStringWidth() or 0
+        btn:SetWidth(math.max(90, textWidth + 24))
         btn:SetPoint("LEFT", row, "LEFT", 0, 0)
         btn:SetScript("OnClick", function()
             if entry.func then entry.func() end
