@@ -20,8 +20,8 @@
 
 Libs/!load.xml
 
-Locales/enUS.lua [AllowLoadTextLocale enUS, deDE, frFR, itIT, koKR, ptBR, esES, esMX, zhCN, zhTW]
-Locales/ruRU.lua [AllowLoadTextLocale ruRU]
+Locales/enUS.lua
+Locales/ruRU.lua
 
 Game/!load.xml
 Modules/!load.xml
