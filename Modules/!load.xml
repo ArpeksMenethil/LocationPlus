@@ -25,6 +25,7 @@
 	<Include file='.\Frames\bags.lua'/>
 	<Include file='.\Frames\combatIndicator.lua'/>
 	<Include file='.\Frames\difficulty.lua'/>
+	<Include file='.\Frames\durability_util.lua'/>
 	<Include file='.\Frames\durability.lua'/>
 	<Include file='.\Frames\experience.lua'/>
 	<Include file='.\Frames\friends.lua'/>
