@@ -173,11 +173,11 @@ function LPS:onLoaded(name)
         InitDB()
 
         if LPS.DEBUG then
-                LPS:Print("WOW PATCH: "..LPS.wow.patch, false)
-                LPS:Print("WOW BUILD: "..LPS.wow.build, false)
-                LPS:Print("WOW DATE: "..LPS.wow.date, false)
-                LPS:Print("WOW TOC: "..LPS.wow.toc, false)
-                LPS:Print("WOW PROJECT: "..LPS.wow.project, false)
+			LPS:Print("WOW PATCH: "..LPS.wow.patch, false)
+			LPS:Print("WOW BUILD: "..LPS.wow.build, false)
+			LPS:Print("WOW DATE: "..LPS.wow.date, false)
+			LPS:Print("WOW TOC: "..LPS.wow.toc, false)
+			LPS:Print("WOW PROJECT: "..LPS.wow.project, false)
         end
 
         local db = LPS:GetDB()
@@ -185,7 +185,8 @@ function LPS:onLoaded(name)
         LPS:ApplyTimeFormat()
         LPS:ApplyHolderPosition()
 
-        LPS:CreateAllFrames()
+        LPS.frame.location = LPS:CreateLocationFrame()
+		
         LPS:ApplyAllSettings()
         if LPS.ApplyAddonCompartmentRegistration then
                 LPS:ApplyAddonCompartmentRegistration()
@@ -195,7 +196,7 @@ function LPS:onLoaded(name)
         end
 
         if LPS.Retail and db.general.is24H then
-                SetCVar("timeMgrUseMilitaryTime", 1)
+            SetCVar("timeMgrUseMilitaryTime", 1)
         end
 
         if IsLoggedIn and IsLoggedIn() then
@@ -218,16 +219,6 @@ function LPS:onLoaded(name)
         if db and db.general and db.general.loginMessage then
                 LPS:Print(format(LPS:L("LOADED_CURRENT_VERSION")..": |c%sv%s|r", LPS.addon.textColor, LPS.addon.version), false)
         end
-end
-
-function LPS:CreateAllFrames()
-        LPS.frame.location = LPS:CreateLocationFrame()
-        -- coords/time/gold/system переписаны на LPS:RegisterDatatext(): их фреймы
-        -- больше не создаются здесь отдельными конструкторами — занятые слоты
-        -- создают их через общий GetOrCreatePanelFrame при ApplyLayout (в т.ч.
-        -- дефолтные left1="gold", right1="system"), поэтому отступы/минимальная
-        -- ширина всегда берутся из актуального db.layout, а не фиксируются при
-        -- старте аддона.
 end
 
 SLASH_LPS1 = "/lps"
