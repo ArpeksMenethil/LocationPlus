@@ -220,23 +220,39 @@ function LPS:onLoaded(name)
         end
 end
 
+--- Возвращает список slash-команд аддона для страницы «О модификации».
+function LPS:GetCommandList()
+        return {
+                { cmd = "/lps",             desc = L.OPEN_OPTIONS_WINDOW },
+                { cmd = "/lps reset",       desc = L.RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES },
+                { cmd = "/lps resetpanels", desc = L.PANEL_SETTINGS_HAVE_BEEN_RESET_TO_DEFAULTS },
+                { cmd = "/lps move",        desc = L.CMD_MOVE },
+                { cmd = "/lps resetpos",    desc = L.CMD_RESET_POSITION },
+        }
+end
+
 SLASH_LPS1 = "/lps"
 SlashCmdList["LPS"] = function(input)
         local arg = (input or ""):gsub("^%s+", ""):gsub("%s+$", ""):lower()
         if arg == "reset" then
-                -- Полный сброс всех настроек профиля к значениям по умолчанию
                 if LPS.ResetAllSettingsToDefaults then
                         LPS:ResetAllSettingsToDefaults()
                         LPS:Print(L.RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES)
                 end
         elseif arg == "resetpanels" then
-                -- Сброс только настроек панелей (без LPS.defaults.panels)
                 if LPS.ResetPanelsToDefaults then
                         LPS:ResetPanelsToDefaults()
                         LPS:Print(L.PANEL_SETTINGS_HAVE_BEEN_RESET_TO_DEFAULTS)
                 end
+        elseif arg == "move" then
+                if LPS.ToggleMoveMode then
+                        LPS:ToggleMoveMode()
+                end
+        elseif arg == "resetpos" then
+                if LPS.ResetFramePosition then
+                        LPS:ResetFramePosition()
+                end
         else
-                -- Меню всегда нативное (без Ace3)
                 LPS:ToggleOptions()
         end
 end

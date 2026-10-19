@@ -131,26 +131,32 @@ function LPS.Options.BuildTree.tabs.general()
                 actionsGroup = {
                     order = 99,
                     name = L.ACTIONS,
+                    -- порядок кнопок фиксирован (btnOrder): Builder ставит их
+                    -- в один ряд по 3 в стиле страницы «Профиль»
+                    sortKeys = { "btnOrder" },
                     args = {
                         moveFrame = {
                             type = "execute",
                             name = L.MOVE_FRAME,
                             desc = L.TOGGLE_MOVE_MODE_FOR_THE_FRAME,
                             order = 1,
+                            btnOrder = 1,
                             func = function() LPS:ToggleMoveMode() end,
                         },
                         resetPosition = {
                             type = "execute",
                             name = L.RESET_HOLDER_POSITION,
                             desc = L.RESET_THE_HOLDER_FRAME_POSITION,
-                            order = 2,
+                            order = 1,
+                            btnOrder = 2,
                             func = function() LPS:ResetFramePosition() end,
                         },
                         resetValues = {
                             type = "execute",
                             name = L.RESET_VALUES,
                             desc = L.RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES,
-                            order = 3,
+                            order = 1,
+                            btnOrder = 3,
                             func = function()
                             if LPS.ResetAllSettingsToDefaults then
                             LPS:ResetAllSettingsToDefaults()

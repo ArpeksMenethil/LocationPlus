@@ -188,7 +188,9 @@ local function BuildControl(page, entry, row)
         CS.ConfigWidgets.ApplyFontColor(text, "textMuted")
         control.text = text
     elseif kind == "button" then
-        -- ширина по тексту, чтобы подпись кнопки не залезала за края
+        -- ширина по тексту, чтобы подпись кнопки не залезала за края;
+        -- buttonColumns: N — ряд кнопок в N одинаковых колонок (как на
+        -- странице «Профиль»: CreateFlatButton + равная ширина по подписи)
         local btn = Widgets.CreateFlatButton(row, 90, ROW_HEIGHTS.button, entry.label)
         local textWidth = btn.text:GetStringWidth() or 0
         btn:SetWidth(math.max(90, textWidth + 24))
@@ -197,6 +199,7 @@ local function BuildControl(page, entry, row)
             if entry.func then entry.func() end
         end)
         control.button = btn
+        control._btnAutoWidth = true
     elseif kind == "toggle" then
         local toggle = Widgets.CreateToggle(row, entry.label)
         toggle:SetPoint("LEFT", row, "LEFT", 0, 0)
@@ -368,6 +371,36 @@ end
 --- строки идут одна под другой на всю ширину; только короткие чекбоксы
 --- (toggle без fullRow) группируются по два — вторая строка встаёт в правую
 --- половину той же высоты, не сдвигая последующие строки.
+--- Подряд идущие кнопки (kind == "button") группируются в ряды максимум по
+--- BUTTON_COLUMNS (3) — в стиле страницы «Профиль»: одинаковая ширина кнопок
+--- в ряду (по самой длинной подписи), равные зазоры, выравнивание по левому краю.
+local BUTTON_COLUMNS = 3
+local BUTTON_GAP = 6
+
+--- Раскладка ряда кнопок: уравнивает ширины и ставит их слева направо.
+local function LayoutButtonRow(buttons, row)
+    local textMax = 0
+    for _, btn in ipairs(buttons) do
+        if btn.text then
+            local tw = btn.text:GetStringWidth() or 0
+            if tw > textMax then textMax = tw end
+        end
+    end
+    -- та же формула ширины, что в page_profiles.lua (SizeButtons)
+    local width = math.max(80, textMax + BUTTON_GAP * 4)
+    local x = 0
+    for i, btn in ipairs(buttons) do
+        btn:SetWidth(width)
+        btn:ClearAllPoints()
+        if i == 1 then
+            btn:SetPoint("LEFT", row, "LEFT", 0, 0)
+        else
+            btn:SetPoint("LEFT", buttons[i - 1], "RIGHT", BUTTON_GAP, 0)
+        end
+        x = x + width + BUTTON_GAP
+    end
+end
+
 function Builder.Build(parent, entries, opts)
     opts = opts or {}
     local page = {
@@ -377,11 +410,41 @@ function Builder.Build(parent, entries, opts)
     local y = -(opts.topPadding or 4)
     local leftToggleRowY = nil
     local first = true
-    for _, entry in ipairs(entries) do
+
+    --- Индекс следующей записи, которую стоит обработать (для захвата
+    --- подряд идущих кнопок в один ряд); nil = идти по циклу.
+    local skipTo = nil
+
+    local i = 0
+    while i < #entries do
+        i = i + 1
+        if skipTo and skipTo > i then
+            i = skipTo
+            skipTo = nil
+        end
+        local entry = entries[i]
         if not entry.available or entry.available() then
             local kind = entry.kind
             local height = ROW_HEIGHTS[kind] or 20
             if entry.multiline then height = entry.rowHeight or height end
+
+            -- группа кнопок: собираем до BUTTON_COLUMNS подряд идущих button-entry
+            local btnGroup = nil
+            if kind == "button" then
+                btnGroup = { entry }
+                local j = i + 1
+                while j <= #entries and #btnGroup < BUTTON_COLUMNS do
+                    local e2 = entries[j]
+                    if e2.kind == "button" and (not e2.available or e2.available()) then
+                        btnGroup[#btnGroup + 1] = e2
+                        j = j + 1
+                    else
+                        break
+                    end
+                end
+                skipTo = j - 1
+            end
+
             local row = CreateFrame("Frame", nil, parent)
             local placedRight = false
             if kind == "toggle" and leftToggleRowY and not entry.fullRow then
@@ -409,19 +472,42 @@ function Builder.Build(parent, entries, opts)
                 y = y - height - ROW_GAP
             end
             if opts.onRow then opts.onRow(row) end
-            local control = BuildControl(page, entry, row)
-            -- подсказка вешается на конкретный контрол (текст/чекбокс/слайдер),
-            -- а не на всю строку — иначе всплывала при наведении на пустоту
-            SetRowTooltip(row, control, entry)
-            -- многострочные метки могли получить больше высоты из-за переноса слов
-            if control.multiline and row:GetHeight() > height then
-                if not placedRight then
-                    y = y + height - row:GetHeight()
+
+            if btnGroup then
+                -- один общий row с N кнопками в стиле страницы «Профиль»
+                local groupControls = {}
+                for bi, bentry in ipairs(btnGroup) do
+                    local control = BuildControl(page, bentry, row)
+                    SetRowTooltip(row, control, bentry)
+                    if control.button then
+                        control.button.index = bi
+                    end
+                    groupControls[#groupControls + 1] = control
+                    page.controls[#page.controls + 1] = control
                 end
-                height = row:GetHeight()
+                LayoutButtonRow((function()
+                    local list = {}
+                    for _, c in ipairs(groupControls) do
+                        if c.button then list[#list + 1] = c.button end
+                    end
+                    return list
+                end)(), row)
+                first = false
+            else
+                local control = BuildControl(page, entry, row)
+                -- подсказка вешается на конкретный контрол (текст/чекбокс/слайдер),
+                -- а не на всю строку — иначе всплывала при наведении на пустоту
+                SetRowTooltip(row, control, entry)
+                -- многострочные метки могли получить больше высоты из-за переноса слов
+                if control.multiline and row:GetHeight() > height then
+                    if not placedRight then
+                        y = y + height - row:GetHeight()
+                    end
+                    height = row:GetHeight()
+                end
+                first = false
+                page.controls[#page.controls + 1] = control
             end
-            first = false
-            page.controls[#page.controls + 1] = control
         end
     end
     page.height = math.abs(y) + 8
