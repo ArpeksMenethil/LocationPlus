@@ -10,25 +10,34 @@ do
 		INVTYPE_WEAPONMAINHAND = 16, INVTYPE_WEAPONOFFHAND = 17, INVTYPE_RANGED = 18,
 	}
 
-	-- Прочность берётся через C_Item (как это делает Blizzard InventoryUnitFrames):
-	-- Item:GetDurability() возвращает НЕ secret-значения и не тинтит код аддона.
-	-- Раньше использовался глобальный GetInventoryItemDurability() — в актуальных
-	-- клиентах WoW он отдаёт secret-числа; они «просачивались» в текст панели, а
-	-- затем в Blizzard_TextStatusBar (полоска прочности в окне персонажа), где
-	-- сравнение secret-числа вызывало ошибку:
-	-- "attempt to compare a secret number value (execution tainted by 'LocationPlus')".
-	local function slotDurability(index)
-		if C_Item and C_Item.Create then
-			local item = C_Item:Create("player", index)
-			if item and item.IsValid and item:IsValid()
-				and item.HasDurability and item:HasDurability() then
-				local cur, max = item:GetDurability()
-				if cur and max and max > 0 then return cur, max end
-			end
-			return nil
+	-- Только C_Item: GetInventoryItemDurability() отдаёт secret-числа, которые
+	-- ломали protected-код Blizzard при открытии окна персонажа.
+	local function isValidNumber(v)
+		if type(v) ~= "number" then return false end
+		if isSecret then
+			local ok, secret = pcall(isSecret, v)
+			if ok and secret then return false end
 		end
-		-- Фолбэк для старых клиентов без C_Item.
-		return GetInventoryItemDurability(index)
+		return true
+	end
+
+	local function slotDurability(index)
+		if not (C_Item and C_Item.Create) then return nil end
+		local ok, item = pcall(C_Item.Create, C_Item, "player", index)
+		if not ok or type(item) ~= "table" then return nil end
+		local validOk, valid = pcall(function() return item.IsValid and item:IsValid() end)
+		if not (validOk and valid) then return nil end
+		local hasOk, has = pcall(function() return item.HasDurability and item:HasDurability() end)
+		if not (hasOk and has) then return nil end
+		local dOk, cur, max = pcall(function()
+			local a, b = item:GetDurability()
+			return a, b
+		end)
+		if not dOk then return nil end
+		if cur and max and isValidNumber(cur) and isValidNumber(max) and max > 0 then
+			return cur, max
+		end
+		return nil
 	end
 
 	LPS:RegisterDatatext({
