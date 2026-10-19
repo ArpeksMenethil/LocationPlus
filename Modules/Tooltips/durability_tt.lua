@@ -1,5 +1,5 @@
-local MyAddon = _G.ArpeksLPS
-local LPS = MyAddon.LPS
+local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
+if not LPS then return end
 local DT = LPS._DT
 
 local inventorySlots = {

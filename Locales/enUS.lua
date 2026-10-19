@@ -1,6 +1,7 @@
 -- Базовая локализация (enUS). Формат скопирован с Addons/CharacterStats/Locales:
--- константы вместо строковых ключей; ns.RegisterLocale / ns.ApplyLocaleOverride.
-local ADDON_NAME, ns = ...
+-- константы вместо строковых ключей; LPS.RegisterLocale / LPS.ApplyLocaleOverride.
+-- namespace (второй параметр ...) — глобальная таблица LPS.
+local _, LPS = ...
 
 local L = {
     GENERAL = "General",
@@ -149,7 +150,7 @@ local L = {
     HIDES_A_PROFESSION_WHEN_THE_PLAYER_REACHES_ITS_HIGHEST_LEVEL = "Hides a profession when the player reaches its highest level.",
     FILTERS = "Filters",
     HIDE_RAID = "Hide Raid",
-    SHOW_HIDE_RAIDS_ON_RECOMMENDED_DUNGEONS = "Show/Hide raids on recommended dungeons.",
+    SHOW_HIDE_RAIDS_ON_RECOMMENDED_DUNGEONS = "Show/Hide raids on recommended dungeoLPS.",
     HIDE_PVP = "Hide PvP",
     SHOW_HIDE_PVP_ZONES_ARENAS_AND_BGS_ON_RECOMMENDED_DUNGEONS_AND_ZONES = "Show/Hide PvP zones, Arenas and BGs on recommended dungeons and zones.",
     RECOMMENDED_ZONES = "Recommended Zones",
@@ -295,24 +296,24 @@ local L = {
     VOLUME = "Volume",
 }
 
--- Публичная таблица переводов (как в Addons/CharacterStats/Locales/enUS.lua):
+-- Публичная таблица переводов (LPS.L):
 -- метатаблица __index = L даёт немедленные переводы и fallback на ключ.
-ns.L = setmetatable({}, { __index = L })
+LPS.L = setmetatable({}, { __index = L })
 
 -- Базовая таблица (enUS) доступна для регистрации других локалей.
-ns._L_enUS = L
-ns.GAME_LOCALE = GetLocale()
-ns.ACTIVE_LOCALE = ns.GAME_LOCALE
+LPS._L_enUS = L
+LPS.GAME_LOCALE = GetLocale()
+LPS.ACTIVE_LOCALE = LPS.GAME_LOCALE
 local registered = {}
 
 --- Регистрирует переводы локали; если код совпадает с языком клиента,
---- переводы сразу перекрывают базовые значения в ns.L.
+--- переводы сразу перекрывают базовые значения в LPS.L.
 --- @param code string Код локали ("ruRU", "deDE", ...)
 --- @param translations table<string,string> Переводы по константам
-function ns.RegisterLocale(code, translations)
-    if code == ns.GAME_LOCALE then
+function LPS.RegisterLocale(code, translations)
+    if code == LPS.GAME_LOCALE then
         for k, v in pairs(translations) do
-            ns.L[k] = v
+            LPS.L[k] = v
         end
     end
     if registered then
@@ -324,18 +325,18 @@ end
 --- (CharacterStatsDB.localeOverride -> LPS_DB.localeOverride). Вызывается
 --- один раз при ADDON_LOADED после регистрации всех локалей.
 --- @param code string|nil Принудительный код локали
-function ns.ApplyLocaleOverride(code)
+function LPS.ApplyLocaleOverride(code)
     local translations = code and registered and registered[code]
-    if code and code ~= ns.GAME_LOCALE and (translations or code == "enUS") then
-        for k in pairs(ns.L) do
-            ns.L[k] = nil
+    if code and code ~= LPS.GAME_LOCALE and (translations or code == "enUS") then
+        for k in pairs(LPS.L) do
+            LPS.L[k] = nil
         end
         if translations then
             for k, v in pairs(translations) do
-                ns.L[k] = v
+                LPS.L[k] = v
             end
         end
-        ns.ACTIVE_LOCALE = code
+        LPS.ACTIVE_LOCALE = code
     end
     registered = nil
 end

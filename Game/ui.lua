@@ -1,6 +1,5 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
-local L = LPS.L
 
 local LibStub = _G.LibStub
 local LDB = LibStub and LibStub:GetLibrary("LibDataBroker-1.1", true)
@@ -36,11 +35,11 @@ local function FillMinimapTooltip(tt)
 	if vis.combat and InCombatLockdown() then return end
 	local r, g, b = LPS:GetColor("text")
 	local rb, gb, bb = LPS:GetColor("tooltipSetting")
-	tt:AddLine(L.LOCATION_PLUS, 1, 0.82, 0)
-	tt:AddLine(L.ADDS_LOCATION_COORDS_NEXTRA_PANELS_AND_AN_INFO_RICH_TOOLTIP_N_NO_ELVUI_REQUIRED, r, g, b)
+	tt:AddLine(LPS:L("LOCATION_PLUS"), 1, 0.82, 0)
+	tt:AddLine(LPS:L("ADDS_LOCATION_COORDS_NEXTRA_PANELS_AND_AN_INFO_RICH_TOOLTIP_N_NO_ELVUI_REQUIRED"), r, g, b)
 	tt:AddLine(" ")
-	tt:AddDoubleLine(L.LMB, L.MOVE_FRAME, rb, gb, bb, rb, gb, bb)
-	tt:AddDoubleLine(L.RMB, L.TOGGLE_CONFIGURATION, rb, gb, bb, rb, gb, bb)
+	tt:AddDoubleLine(LPS:L("LMB"), LPS:L("MOVE_FRAME"), rb, gb, bb, rb, gb, bb)
+	tt:AddDoubleLine(LPS:L("RMB"), LPS:L("TOGGLE_CONFIGURATION"), rb, gb, bb, rb, gb, bb)
 end
 
 function LPS:EnsureLDBMinimapIcon()

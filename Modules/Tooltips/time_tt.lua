@@ -1,6 +1,5 @@
-local L = LPS.L
-local MyAddon = _G.ArpeksLPS
-local LPS = MyAddon.LPS
+local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
+if not LPS then return end
 
 LPS_DB = LPS_DB or {}
 
@@ -391,7 +390,7 @@ function LPS:BuildTimeTooltip()
 
 		-- рейды
 		if db.tooltips.time.raids and #raids > 0 then
-			GameTooltip:AddLine(L.COOLDOWN_RAIDS, rY, gY, bY)
+			GameTooltip:AddLine(LPS:L("COOLDOWN_RAIDS"), rY, gY, bY)
 			for _, v in ipairs(raids) do
 					GameTooltip:AddDoubleLine(v.left, v.right, r, g, b, rB, gB, bB)
 			end
@@ -399,7 +398,7 @@ function LPS:BuildTimeTooltip()
 		end
 
 		if db.tooltips.time.dungeons and #dungeons > 0 then
-			GameTooltip:AddLine(L.COOLDOWN_DUNGEONS, rY, gY, bY)
+			GameTooltip:AddLine(LPS:L("COOLDOWN_DUNGEONS"), rY, gY, bY)
 			for _, v in ipairs(dungeons) do
 					GameTooltip:AddDoubleLine(v.left, v.right, r, g, b, rB, gB, bB)
 			end
@@ -409,13 +408,13 @@ function LPS:BuildTimeTooltip()
 
 	-- таймеры внизу
 	local dailySeconds = C_DateAndTime.GetSecondsUntilDailyReset()
-	GameTooltip:AddDoubleLine(L.DAILY_RESET, LPS:FormatTime(dailySeconds), r, g, b, r, g, b)
+	GameTooltip:AddDoubleLine(LPS:L("DAILY_RESET"), LPS:FormatTime(dailySeconds), r, g, b, r, g, b)
 
 	local weeklySeconds = C_DateAndTime.GetSecondsUntilWeeklyReset()
-	GameTooltip:AddDoubleLine(L.WEEKLY_RESET, LPS:FormatTime(weeklySeconds), r, g, b, r, g, b)
+	GameTooltip:AddDoubleLine(LPS:L("WEEKLY_RESET"), LPS:FormatTime(weeklySeconds), r, g, b, r, g, b)
 
 	local calTime = C_DateAndTime.GetCurrentCalendarTime()
-	GameTooltip:AddDoubleLine(L.SERVER_TIME, string.format("%02d:%02d", calTime.hour, calTime.minute), r, g, b, r, g, b)
+	GameTooltip:AddDoubleLine(LPS:L("SERVER_TIME"), string.format("%02d:%02d", calTime.hour, calTime.minute), r, g, b, r, g, b)
 
 	
 	if brokerPlayedTime and db.tooltips.time.playedTime then
@@ -426,14 +425,14 @@ function LPS:BuildTimeTooltip()
 
     GameTooltip:AddLine(" ")
 	GameTooltip:AddLine(" ")
-	GameTooltip:AddDoubleLine(L.LMB, L.TOGGLE_TIME, rB, gB, bB, rB, gB, bB)
+	GameTooltip:AddDoubleLine(LPS:L("LMB"), LPS:L("TOGGLE_TIME"), rB, gB, bB, rB, gB, bB)
 
 	if brokerPlayedTime and db.tooltips.time.playedTime then
-    	GameTooltip:AddDoubleLine(L.RMB, L.BROKER_TIME_SETTINGS, rB, gB, bB, rB, gB, bB)
+    	GameTooltip:AddDoubleLine(LPS:L("RMB"), LPS:L("BROKER_TIME_SETTINGS"), rB, gB, bB, rB, gB, bB)
 	end
 	
 
 	if ToggleCalendar then
-		GameTooltip:AddDoubleLine(L.MMB, L.TOGGLE_CALENDAR, rB, gB, bB, rB, gB, bB)
+		GameTooltip:AddDoubleLine(LPS:L("MMB"), LPS:L("TOGGLE_CALENDAR"), rB, gB, bB, rB, gB, bB)
 	end
 end

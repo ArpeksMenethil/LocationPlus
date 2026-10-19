@@ -1,6 +1,5 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
-local L = LPS.L
 
 local function formatThousands(n)
 	n = tonumber(n) or 0
@@ -121,12 +120,12 @@ function LPS:ShowGoldResetMenu(owner)
 		info = UIDropDownMenu_CreateInfo()
 		info.isTitle = true
 		info.notCheckable = true
-		info.text = L.RESET_CHARACTER_DATA
+		info.text = LPS:L("RESET_CHARACTER_DATA")
 		UIDropDownMenu_AddButton(info, level)
 
 		info = UIDropDownMenu_CreateInfo()
 		info.notCheckable = true
-		info.text = L.RESET_VALUES
+		info.text = LPS:L("RESET_VALUES")
 		info.func = function()
 			LPS:ResetGoldAllCharacterData()
 			if owner._lpsUpdateFunc then owner._lpsUpdateFunc(owner) end
@@ -136,7 +135,7 @@ function LPS:ShowGoldResetMenu(owner)
 		info = UIDropDownMenu_CreateInfo()
 		info.isTitle = true
 		info.notCheckable = true
-		info.text = L.CHARACTERS
+		info.text = LPS:L("CHARACTERS")
 		UIDropDownMenu_AddButton(info, level)
 
 		for _, n in ipairs(names) do

@@ -1,6 +1,5 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
-local L = LPS.L
 local DT = LPS._DT
 
 -------------------------------------------------- Bags
@@ -36,7 +35,7 @@ do
 			local cfg = (d and d.show and d.show.bags) or {}
 			local free, total = freeTotal()
 			local used = total - free
-			local label = (cfg.label ~= nil and cfg.label ~= "") and (cfg.label .. ": ") or (L.BAGS .. ": ")
+			local label = (cfg.label ~= nil and cfg.label ~= "") and (cfg.label .. ": ") or (LPS:L("BAGS") .. ": ")
 			if f.text then
 				if cfg.noLabel then label = "" end
 				if cfg.display == "FREE" then

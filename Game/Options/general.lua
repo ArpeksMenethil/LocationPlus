@@ -1,6 +1,5 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
-local L = LPS.L
 
 local OH = LPS.OptionsHelper
 
@@ -8,13 +7,13 @@ local OH = LPS.OptionsHelper
 function LPS.Options.BuildTree.tabs.general()
 	return {
 			type = "group",
-			name = L.GENERAL,
+			name = LPS:L("GENERAL"),
 			order = 1,
 			args = {
 				generalGroup = {
 					order = 4,
 					type = "group",
-					name = L.GENERAL,
+					name = LPS:L("GENERAL"),
 					inline = true,
 					args = {
 						left = {
@@ -26,8 +25,8 @@ function LPS.Options.BuildTree.tabs.general()
 							args = {
 								loginMessage = {
 									order = 1,
-									name = L.LOGIN_MESSAGE,
-									desc = L.SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN,
+									name = LPS:L("LOGIN_MESSAGE"),
+									desc = LPS:L("SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN"),
 									type = "toggle",
 									
 									get = function() return OH:getDb().general.loginMessage end,
@@ -40,8 +39,8 @@ function LPS.Options.BuildTree.tabs.general()
 								},
 								is24H = {
 									type = "toggle",
-									name = L._24H_TIME_FORMAT,
-									desc = L.USE_24_HOUR_TIME_FORMAT,
+									name = LPS:L("_24H_TIME_FORMAT"),
+									desc = LPS:L("USE_24_HOUR_TIME_FORMAT"),
 									order = 3,
 									
 									get = function() return OH:getDb().general.is24H end,
@@ -54,8 +53,8 @@ function LPS.Options.BuildTree.tabs.general()
 								},
 								seconds = {
 									type = "toggle",
-									name = L.SHOW_SECONDS,
-									desc = L.SHOW_SECONDS_WHEN_USING_LOCAL_TIME,
+									name = LPS:L("SHOW_SECONDS"),
+									desc = LPS:L("SHOW_SECONDS_WHEN_USING_LOCAL_TIME"),
 									order = 4,
 									
 									get = function() return OH:getDb().general.seconds end,
@@ -77,8 +76,8 @@ function LPS.Options.BuildTree.tabs.general()
 							args = {
 								minimapIcon = {
 									type = "toggle",
-									name = L.MINIMAP_ICON,
-									desc = L.SHOW_HIDE_MINIMAP_ICON,
+									name = LPS:L("MINIMAP_ICON"),
+									desc = LPS:L("SHOW_HIDE_MINIMAP_ICON"),
 									order = 1,
 									
 									get = function()
@@ -98,8 +97,8 @@ function LPS.Options.BuildTree.tabs.general()
 								},
 								addonCompartment = {
 									type = "toggle",
-									name = L.ADDON_COMPARTMENT,
-									desc = L.SHOW_HIDE_ADDON_IN_THE_ADDON_COMPARTMENT,
+									name = LPS:L("ADDON_COMPARTMENT"),
+									desc = LPS:L("SHOW_HIDE_ADDON_IN_THE_ADDON_COMPARTMENT"),
 									order = 2,
 									
 									hidden = function() return not (LPS.Retail or LPS.Forever) end,
@@ -119,8 +118,8 @@ function LPS.Options.BuildTree.tabs.general()
 								},
 								combatHide = {
 									order = 4,
-									name = L.COMBAT_HIDE,
-									desc = L.SHOW_HIDE_ALL_PANELS_WHEN_IN_COMBAT,
+									name = LPS:L("COMBAT_HIDE"),
+									desc = LPS:L("SHOW_HIDE_ALL_PANELS_WHEN_IN_COMBAT"),
 									type = "toggle",
 									
 									get = function() return OH:getDb().show.visibility.combat end,
@@ -138,27 +137,27 @@ function LPS.Options.BuildTree.tabs.general()
 				actionsGroup = {
 					order = 99,
 					type = "group",
-					name = L.ACTIONS,
+					name = LPS:L("ACTIONS"),
 					inline = true,
 					args = {
 						moveFrame = {
 							type = "execute",
-							name = L.MOVE_FRAME,
-							desc = L.TOGGLE_MOVE_MODE_FOR_THE_FRAME,
+							name = LPS:L("MOVE_FRAME"),
+							desc = LPS:L("TOGGLE_MOVE_MODE_FOR_THE_FRAME"),
 							order = 1,
 							func = function() LPS:ToggleMoveMode() end,
 						},
 						resetPosition = {
 							type = "execute",
-							name = L.RESET_HOLDER_POSITION,
-							desc = L.RESET_THE_HOLDER_FRAME_POSITION,
+							name = LPS:L("RESET_HOLDER_POSITION"),
+							desc = LPS:L("RESET_THE_HOLDER_FRAME_POSITION"),
 							order = 2,
 							func = function() LPS:ResetFramePosition() end,
 						},
 						resetValues = {
 							type = "execute",
-							name = L.RESET_VALUES,
-							desc = L.RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES,
+							name = LPS:L("RESET_VALUES"),
+							desc = LPS:L("RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES"),
 							order = 3,
 							func = function()
 							if LPS.ResetAllSettingsToDefaults then

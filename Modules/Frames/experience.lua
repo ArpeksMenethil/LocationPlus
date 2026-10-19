@@ -1,6 +1,5 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
-local L = LPS.L
 local DT = LPS._DT
 
 -------------------------------------------------- Experience
@@ -17,12 +16,12 @@ do
 				-- На максимальном уровне — локализованное «Макс. уровень» вместо
 				-- глобального MAX_LEVEL; подсказка на этом уровне не показывается
 				-- (см. experience_tt.lua).
-				if f.text then f.text:SetText(L.MAX_LEVEL) end
+				if f.text then f.text:SetText(LPS:L("MAX_LEVEL")) end
 				return
 			end
 			local cur, max = UnitXP("player"), UnitXPMax("player")
 			if not max or max == 0 then
-				if f.text then f.text:SetText(L.MAX_LEVEL) end
+				if f.text then f.text:SetText(LPS:L("MAX_LEVEL")) end
 				return
 			end
 			-- Настройка отображения живёт на вкладке Show: db.show.experience

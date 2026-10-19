@@ -1,6 +1,5 @@
-local L = LPS.L
-local MyAddon = _G.ArpeksLPS
-local LPS = MyAddon.LPS
+local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
+if not LPS then return end
 local DT = LPS._DT
 
 function LPS:BuildGuildTooltip(GameTooltip)
@@ -37,9 +36,9 @@ function LPS:BuildGuildTooltip(GameTooltip)
                                         end
                                 end
                                 if shown == 0 then
-                                        tt:AddLine(L.NO_MEMBERS_ONLINE, 0.65, 0.65, 0.65)
+                                        tt:AddLine(LPS:L("NO_MEMBERS_ONLINE"), 0.65, 0.65, 0.65)
                                 end
 
     tt:AddLine(" ")
-    tt:AddDoubleLine(L.LMB, L.OPEN_GUILD_FRAME, rB, gB, bB, rB, gB, bB)
+    tt:AddDoubleLine(LPS:L("LMB"), LPS:L("OPEN_GUILD_FRAME"), rB, gB, bB, rB, gB, bB)
 end

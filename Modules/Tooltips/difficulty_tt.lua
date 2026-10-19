@@ -1,6 +1,5 @@
-local L = LPS.L
-local MyAddon = _G.ArpeksLPS
-local LPS = MyAddon.LPS
+local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
+if not LPS then return end
 
 function LPS:BuildDifficultyTooltip(GameTooltip)
     local tt = GameTooltip
@@ -15,13 +14,13 @@ function LPS:BuildDifficultyTooltip(GameTooltip)
         return tostring(id)
     end
 
-        			tt:AddLine(L.CURRENT_DIFFICULTIES, 1, 0.82, 0)
+        			tt:AddLine(LPS:L("CURRENT_DIFFICULTIES"), 1, 0.82, 0)
         			tt:AddLine(" ")
         			if GetDungeonDifficultyID then
-        				tt:AddDoubleLine(L.DUNGEON, diffLabel(GetDungeonDifficultyID()), 1, 1, 1, 1, 1, 1)
+        				tt:AddDoubleLine(LPS:L("DUNGEON"), diffLabel(GetDungeonDifficultyID()), 1, 1, 1, 1, 1, 1)
         			end
         			if GetRaidDifficultyID then
-        				tt:AddDoubleLine(L.RAID, diffLabel(GetRaidDifficultyID()), 1, 1, 1, 1, 1, 1)
+        				tt:AddDoubleLine(LPS:L("RAID"), diffLabel(GetRaidDifficultyID()), 1, 1, 1, 1, 1, 1)
         			end
 
 end
