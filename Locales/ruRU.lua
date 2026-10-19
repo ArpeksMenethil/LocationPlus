@@ -333,7 +333,7 @@ LPS.RegisterLocale("ruRU", {
     USE_CLASS_COLOR_DESC = "Акцент повторяет цвет вашего персонажа.",
     THEME_COLOR = "Цветовая тема акцента",
     THEME_COLOR_DESC = "Цветовая схема акцента окна.",
-    THEME_COLOR_DEFAULT = "По умолчанию (золото)",
+    THEME_COLOR_DEFAULT = "По умолчанию (цвет моего класса)",
     ACCENT_COLOR = "Свой цвет акцента",
     ACCENT_COLOR_DESC = "Переопределяет цветовую тему акцента выше.",
     SIZE_AND_SCALE = "Размер и масштаб",

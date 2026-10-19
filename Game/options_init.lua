@@ -46,7 +46,8 @@ general = tabs.general and tabs.general() or {},
 show = tabs.show and tabs.show() or {},
 tooltip = tabs.tooltip and tabs.tooltip() or {},
 layout = tabs.layout and tabs.layout() or {},
-appearance = tabs.appearance and tabs.appearance() or {},
+-- Вкладка «Внешний вид» убрана: это настройки окна, они доступны под
+-- кнопкой-шестерёнкой в заголовке (страница "window" в UI/Panel.lua)
 profiles = tabs.profiles and tabs.profiles() or {},
 importexport = tabs.importexport and tabs.importexport() or {},
 about = tabs.about and tabs.about() or {},
