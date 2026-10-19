@@ -94,7 +94,6 @@ local function CreateMainFrame()
         frame:Hide()
     end
     local Widgets = CS.ConfigWidgets
-    local L = CS.L
     frame = CreateFrame("Frame", "ArpeksLPSConfigFrame", UIParent)
     frame.themeKey = themeKey
     local savedUi = LPS:GetDB() and LPS:GetDB().uiOptions
@@ -152,7 +151,7 @@ local function CreateMainFrame()
     end)
     frame.minBtn:HookScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
-        GameTooltip:SetText(frame._minimized and (L.TIP_EXPAND or "Expand") or (L.TIP_MINIMIZE or "Minimize"), 1, 1, 1)
+        GameTooltip:SetText(frame._minimized and LPS:L("Expand") or LPS:L("Minimize"), 1, 1, 1)
         GameTooltip:Show()
     end)
     frame.minBtn:HookScript("OnLeave", function()

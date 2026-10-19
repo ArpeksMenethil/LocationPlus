@@ -139,6 +139,8 @@ L["Move frame"] = true
 L["Toggle move mode for the frame."] = true
 L["Reset holder position"] = true
 L["Reset the holder frame position."] = true
+L["Expand"] = true
+L["Minimize"] = true
 L["Colors"] = true
 
 L["Show panels"] = true
