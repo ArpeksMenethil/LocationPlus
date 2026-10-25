@@ -1,7 +1,7 @@
 ## Interface: 11509, 16001, 20506, 50504, 120105, 120107
 ## Title: |cff1784d1Location Plus|r |cfd9b9b9b[by Arpeks]|r
 ## Author: Arpeks
-## Version: 2.0.0
+## Version: 2.0.1
 ## SavedVariables: LPS_DB
 ## OptionalDeps: LibDBIcon-1.0, Broker_PlayedTime
 ## IconTexture: Interface\AddOns\LocationPlus\Media\Logo.png

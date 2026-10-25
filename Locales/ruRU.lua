@@ -20,6 +20,8 @@ LPS.RegisterLocale("ruRU", {
     TOGGLE_MOVE_MODE_FOR_THE_FRAME = "Включить/выключить режим перемещения фрейма.",
     RESET_VALUES = "Сбросить значения",
     RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES = "Сбросить все настройки аддона к значениям по умолчанию.",
+    RESET_POSITION = "Сбросить позицию",
+    RESET_POSITION_DESC = "Вернуть группу панелей в исходное положение.",
     LAYOUT = "Макет",
     FRAME_ANCHOR_MODE = "Режим привязки фреймов",
     SIDE_PANELS_ALWAYS_GROW_ALONG_THEIR_EDGE_LEFT_PANELS_ATTACH_TO_THE_LEFT_SIDE_OF_THE_GROUP_RIGHT_PANELS_ATTACH_TO_THE_RIGHT_SIDE_THIS_OPTION_CONTROLS_WHAT_THE_FIRST_PANEL_OF_EACH_CHAIN_ANCHORS_TO_THE_LOCATION_PANEL_EDGES_DEFAULT_OR_THE_OUTER_EDGES_OF_THE_WHOLE_HOLDER_FRAME = "Боковые панели всегда растут вдоль своего края: левые панели крепятся к ЛЕВОЙ стороне группы, правые — к ПРАВОЙ. Эта настройка определяет, к чему крепится ПЕРВАЯ панель каждой цепочки: к краям панели локации (по умолчанию) или к внешним краям всего фрейма.",

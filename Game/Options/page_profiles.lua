@@ -4,7 +4,7 @@ if not LPS then return end
 ---------------------------------------------------------------------------
 -- Страница «Профили»: реализация страницы профилей.
 -- Регистрируется в обход дерева настроек (см. Game/ui_options.lua):
--- заголовок секции, дропдаун активного профиля и ряд кнопок
+-- заголовок секции, дропдаун активного профиля и сетка кнопок 2×2
 -- New / Copy / Delete / Reset с попапами виджетов.
 -- Профили привязаны только к персонажу (profileKeys в SavedVariables).
 ---------------------------------------------------------------------------
@@ -92,16 +92,17 @@ function LPS.CreateProfilesPanelPage(container)
     local buttonRow = CreateFrame("Frame", nil, content)
     buttonRow:SetPoint("TOPLEFT", content, "TOPLEFT", 0, y)
     buttonRow:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, y)
-    buttonRow:SetHeight(ROW_HEIGHT)
-    -- кнопки в один ряд по центру: раньше первая кнопка ставилась от центра
-    -- строки, из-за чего последние кнопки уезжали за правый край окна
+    local BTN_GAP = 6
+    -- Сетка 2×2: четыре кнопки в один ряд не помещались в окно (последние
+    -- уезжали за правый край), поэтому два ряда по две кнопки, оба по центру.
+    buttonRow:SetHeight(ROW_HEIGHT * 2 + BTN_GAP)
     local newBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_NEW or "New")
     local copyBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_COPY or "Copy")
     local deleteBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_DELETE or "Delete")
     local resetBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.RESET_PROFILE or "Reset profile")
     local buttons = { newBtn, copyBtn, deleteBtn, resetBtn }
-    local BTN_GAP = 6
-    --- Одинаковая ширина кнопок + общий зазор ряда (чтобы не залезали друг на друга).
+    --- Одинаковая ширина кнопок (по самой длинной подписи): в сетке 2×2
+    --- соседние кнопки получают гарантированный зазор и не перекрываются.
     function page:SizeButtons()
         local textMax = 0
         for _, btn in ipairs(buttons) do
@@ -117,25 +118,24 @@ function LPS.CreateProfilesPanelPage(container)
             btn:SetWidth(width)
         end
     end
+    --- Раскладка сетки 2×2: две кнопки в строке, строки по центру.
     function page:LayoutButtons()
         self:SizeButtons()
-        local total = 0
+        local pairW = buttons[1]:GetWidth() * 2 + BTN_GAP
         for i, btn in ipairs(buttons) do
-            total = total + btn:GetWidth()
-            if i > 1 then total = total + BTN_GAP end
-        end
-        local half = total / 2
-        for i, btn in ipairs(buttons) do
+            local row = math.floor((i - 1) / 2)
+            local col = (i - 1) % 2
             btn:ClearAllPoints()
-            if i == 1 then
-                btn:SetPoint("LEFT", buttonRow, "CENTER", -half, 0)
+            local yOff = -ROW_HEIGHT / 2 - row * (ROW_HEIGHT + BTN_GAP)
+            if col == 0 then
+                btn:SetPoint("LEFT", buttonRow, "TOP", -pairW / 2, yOff)
             else
                 btn:SetPoint("LEFT", buttons[i - 1], "RIGHT", BTN_GAP, 0)
             end
         end
     end
     page._buttonRow = buttonRow
-    y = y - ROW_HEIGHT - 8
+    y = y - ROW_HEIGHT * 2 - BTN_GAP - 8
 
     content:SetHeight(math.abs(y) + 8)
     page.scroll = content:GetParent()

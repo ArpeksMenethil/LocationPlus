@@ -44,15 +44,36 @@ local function callSet(entry, value)
 end
 
 --- Значение для color-строки билдера: {r,g,b} из get().
+--- get() в Ace-формате возвращает компоненты как ОТСУЛЬНЫЕ значения
+--- (например, userColor: return r, g, b), а callGet ловит только первое из
+--- них — из-за этого свотч был белым (одно число — не цвет). Здесь ловим
+--- все возвращаемые значения; табличная форма {r,g,b[,a]} тоже поддерживается.
 local function readColor(entry)
-    local v = callGet(entry)
-    if type(v) == "table" and tonumber(v.r) then
-        return { r = v.r, g = v.g, b = v.b, a = tonumber(v.a) or 1 }
+    local r, g, b, a
+    if type(entry.get) == "function" then
+        local ok
+        ok, r, g, b, a = pcall(entry.get, false)
+        if not ok then
+            r, g, b, a = 1, 1, 1, 1
+        end
+    elseif entry.get ~= nil then
+        r, g, b, a = entry.get
     end
-    if type(v) == "table" and tonumber(v[1]) then
-        return { r = v[1], g = v[2], b = v[3], a = tonumber(v[4]) or 1 }
+    if type(r) == "table" then
+        local v = r
+        if tonumber(v.r) then
+            return { r = v.r, g = v.g or v.r, b = v.b or v.r, a = tonumber(v.a) or 1 }
+        end
+        if tonumber(v[1]) then
+            return { r = v[1], g = v[2] or v[1], b = v[3] or v[1], a = tonumber(v[4]) or 1 }
+        end
     end
-    return { r = 1, g = 1, b = 1 }
+    return {
+        r = tonumber(r) or 1,
+        g = tonumber(g) or tonumber(r) or 1,
+        b = tonumber(b) or tonumber(r) or 1,
+        a = tonumber(a) or 1,
+    }
 end
 
 --- Обёртка над disabled-функцией пункта (для серых строк в нативном UI).
@@ -92,7 +113,24 @@ local function resolveItems(entry)
         seen[value] = true
         items[#items + 1] = { value = value, text = tostring(text or value) }
     end
-    if #values > 0 then
+    -- Список — только когда все ключи целые 1..n и все элементы — таблицы
+    -- {value=, text=}. Скаляры под целыми ключами — это map key -> название
+    -- (например, «Цвет текста» { [1] = "Custom", [2] = "Class colors",
+    -- [3] = "Default" }): у такого map'а #values > 0, и старая ветка ipairs
+    -- проходила по значениям-именам, из-за чего в дропдауне вместо подписей
+    -- показывались индексы (и в БД записывались строки вместо чисел).
+    local count = 0
+    for _ in pairs(values) do count = count + 1 end
+    local isList = count > 0
+    if isList then
+        for k, v in pairs(values) do
+            if type(k) ~= "number" or k < 1 or k > count or type(v) ~= "table" then
+                isList = false
+                break
+            end
+        end
+    end
+    if isList then
         for _, v in ipairs(values) do
             if type(v) == "table" then add(v.value, v.text or v.label) else add(v, v) end
         end

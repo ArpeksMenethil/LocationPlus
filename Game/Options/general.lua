@@ -143,16 +143,29 @@ function LPS.Options.BuildTree.tabs.general()
                             btnOrder = 1,
                             func = function() LPS:ToggleMoveMode() end,
                         },
-                        -- Единственная кнопка сброса на странице: полный сброс
-                        -- всех настроек профиля к значениям по умолчанию.
-                        -- Частичные сбросы доступны только через слэш-команды
-                        -- (/lps resetpos, /lps resetpanels).
+                        -- Сброс позиции группы панелей (частичный сброс,
+                        -- аналог слэш-команды /lps resetpos).
+                        resetPosition = {
+                            type = "execute",
+                            name = L.RESET_POSITION,
+                            desc = L.RESET_POSITION_DESC,
+                            order = 1,
+                            btnOrder = 2,
+                            func = function()
+                            if LPS.ResetFramePosition then
+                            LPS:ResetFramePosition()
+                            end
+                            end,
+                        },
+                        -- Полный сброс всех настроек профиля к значениям по
+                        -- умолчанию. Частичные сбросы, например /lps resetpanels,
+                        -- доступны только через слэш-команды.
                         resetValues = {
                             type = "execute",
                             name = L.RESET_VALUES,
                             desc = L.RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES,
                             order = 1,
-                            btnOrder = 2,
+                            btnOrder = 3,
                             func = function()
                             if LPS.ResetAllSettingsToDefaults then
                             LPS:ResetAllSettingsToDefaults()

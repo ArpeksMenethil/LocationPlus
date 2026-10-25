@@ -485,10 +485,12 @@ function Builder.Build(parent, entries, opts)
     local i = 0
     while i < #entries do
         i = i + 1
-        if skipTo and skipTo > i then
-            i = skipTo
+        if skipTo then
+            if i < skipTo then i = skipTo end
             skipTo = nil
         end
+        -- skipTo мог указать за конец списка (группа кнопок до самого конца)
+        if i > #entries then break end
         local entry = entries[i]
         if not entry.available or entry.available() then
             local kind = entry.kind
@@ -514,7 +516,11 @@ function Builder.Build(parent, entries, opts)
                         break
                     end
                 end
-                skipTo = j - 1
+                -- j — первая запись ПОСЛЕ группы: цикл продолжится с неё.
+                -- Было j - 1 (последняя кнопка группы) — из-за этого последняя
+                -- кнопка пересобиралась в новый «групповой» ряд и дублировалась
+                -- в UI (кнопка, которой нет в дереве настроек).
+                skipTo = j
             end
 
             local row = CreateFrame("Frame", nil, parent)

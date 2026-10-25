@@ -3,13 +3,28 @@ if not LPS then return end
 
 local cachedPlayerClass
 local function getClassColor()
+    -- Кэшируем ТОЛЬКО непустой classFile: первый вызов может случиться до
+    -- входа в мир (первый полный проход ApplyLayout на загрузке аддона),
+    -- где UnitClass("player") ещё не знает персонажа. Пустое/nil значение
+    -- иначе записалось бы в кэш навсегда, и цвет молча деградировал бы в
+    -- белый («цвет класса не работает»).
     if not cachedPlayerClass then
-        local _, class = UnitClass("player")
-        cachedPlayerClass = class
+        local _, classFile = UnitClass("player")
+        if classFile and classFile ~= "" then
+            cachedPlayerClass = classFile
+        end
     end
-    local c = cachedPlayerClass and RAID_CLASS_COLORS and RAID_CLASS_COLORS[cachedPlayerClass]
-    if c then
-        return c.r, c.g, c.b
+    if cachedPlayerClass then
+        -- Тот же подход, что в Theme.lua (GetClassColor): сначала современный
+        -- API, затем классический глобал. Прямой опрос RAID_CLASS_COLORS без
+        -- C_ClassColor мог молча не находить класс в некоторых сборках.
+        local key = cachedPlayerClass:upper()
+        if C_ClassColor and C_ClassColor.GetClassColor then
+            local c = C_ClassColor.GetClassColor(key)
+            if c then return c.r, c.g, c.b end
+        end
+        local c = RAID_CLASS_COLORS and RAID_CLASS_COLORS[key]
+        if c then return c.r, c.g, c.b end
     end
     return 1, 1, 1
 end
@@ -1160,8 +1175,13 @@ function LPS:ApplyStyle()
     local db = LPS:GetDB()
     local frames = LPS.frame
     if not frames then return end
-    for _, f in pairs({frames.location, frames.coords, frames.time, frames.gold, frames.system}) do
-        if f then
+    -- Все панели (location и data-text панели реестра RegisterDatatext,
+    -- включая coords/time/gold/system) лежат в LPS.frame под своими ключами.
+    -- Жёстко заданный список из пяти фреймов не обновлял цвета остальных
+    -- панелей — итерируем весь реестр (holder и minimapButton — не панели).
+    for key, f in pairs(frames) do
+        if key ~= "holder" and key ~= "minimapButton"
+            and type(f) == "table" and f.SetBackdropColor then
             local bs = tonumber(db.settings.borderSize)
             if not bs then bs = 2 end
             bs = math.max(0, math.min(bs, 6))
