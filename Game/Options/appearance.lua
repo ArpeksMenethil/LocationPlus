@@ -18,7 +18,7 @@ local function themeItems()
 end
 
 --- Возвращает вкладку "Appearance" дерева настроек (внутренний формат дерева настроек).
---- Тема окна, цвет акцента, цвет фона окна и масштаб — как в PageAppearance CharacterStats.
+--- Тема окна, цвет акцента, цвет фона окна и масштаб.
 function LPS.Options.BuildTree.tabs.appearance()
     local Theme = LPS.UI and LPS.UI.Theme
     return {

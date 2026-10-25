@@ -1,6 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
---- Нативные виджеты конфигурации (порт ConfigWidgets из CharacterStats).
+--- Нативные виджеты конфигурации.
 local Widgets = {}
 LPS.UI = LPS.UI or {}
 LPS.UI.Widgets = Widgets

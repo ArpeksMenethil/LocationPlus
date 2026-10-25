@@ -1,5 +1,5 @@
--- Базовая локализация (enUS). Формат скопирован с Addons/CharacterStats/Locales:
--- константы вместо строковых ключей; LPS.RegisterLocale / LPS.ApplyLocaleOverride.
+-- Базовая локализация (enUS). Константы вместо строковых ключей;
+-- LPS.RegisterLocale / LPS.ApplyLocaleOverride.
 -- namespace (второй параметр ...) — глобальная таблица LPS.
 local _, LPS = ...
 
@@ -90,7 +90,7 @@ local L = {
     TEXT_CUSTOM_COLOR = "Text custom color",
     PICK_A_CUSTOM_COLOR_FOR_PANEL_TEXT = "Pick a custom color for panel text.",
     PROFILES = "Profiles",
-    -- Вкладка Profiles (порт PageProfiles из CharacterStats)
+    -- Вкладка Profiles
     HEADER_PROFILES = "Profiles",
     LABEL_ACTIVE_PROFILE = "Active Profile",
     BTN_NEW = "New",
@@ -303,7 +303,7 @@ local L = {
     MAIL = "Mail",
     MICRO_BAR = "Micro Bar",
     THEME_CLASSIC = "Classic",
-    THEME_CLASSIC_DESC = "The original CharacterStats look.",
+    THEME_CLASSIC_DESC = "The original classic look.",
     THEME_LEDGER = "Artisan Ledger",
     THEME_LEDGER_DESC = "Walnut and brass with engraved headings.",
     THEME_WORKBENCH = "Workbench",
@@ -366,7 +366,7 @@ function LPS.RegisterLocale(code, translations)
 end
 
 --- Применяет язык аддона: сохранённое переопределение из SavedVariables
---- (CharacterStatsDB.localeOverride -> LPS_DB.localeOverride). Вызывается
+--- (LPS_DB.localeOverride). Вызывается
 --- один раз при ADDON_LOADED после регистрации всех локалей.
 --- @param code string|nil Принудительный код локали
 function LPS.ApplyLocaleOverride(code)

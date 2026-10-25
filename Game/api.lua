@@ -711,14 +711,6 @@ if LibStub then
 end
 LPS.Tourist = Tourist
 
--- Локализация: таблица переводов создаётся файлами Locales/*.lua
--- (система перевода CharacterStats: таблица L = LPS.L + LPS.RegisterLocale /
--- LPS.ApplyLocaleOverride; namespace-таблица локалей — глобальная LPS).
--- Здесь LPS.L — только поле-данные (таблица). Перевод выполняется напрямую
--- через константы локали: local L = LPS.L; L.BATTLE_PET_LEVEL и т.п.
--- Метод LPS:L() удалён.
--- Если файл локалей не загрузился — пустая таблица с fallback на имя ключа
--- (то же поведение, что и __index у LPS.L в Locales/enUS.lua).
 if not LPS.L then
     LPS.L = setmetatable({}, { __index = function(_, k) return k end })
 end
@@ -1267,7 +1259,7 @@ function LPS:EnsureOptionsCloseHooks()
     hookOnHide(_G.InterfaceOptionsFrame, "InterfaceOptionsFrame")
 end
 
---- Переключить нативное окно настроек (дизайн CharacterStats, без Ace3).
+--- Переключить нативное окно настроек.
 function LPS:ToggleNativeOptions()
     if LPS.UI_Options and LPS.UI_Options.Toggle then
         LPS.UI_Options:Toggle()

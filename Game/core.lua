@@ -165,8 +165,8 @@ function LPS:onLoaded(name)
         if self._loaded then return end
         self._loaded = true
 
-    -- Язык аддона: переопределение из SavedVariables (система CharacterStats:
-    -- Locales/enUS.lua определяет LPS.RegisterLocale / LPS.ApplyLocaleOverride).
+    -- Язык аддона: переопределение из SavedVariables
+    -- (LPS.RegisterLocale / LPS.ApplyLocaleOverride в Locales/enUS.lua).
     if LPS.ApplyLocaleOverride then
         LPS.ApplyLocaleOverride(_G.LPS_DB and _G.LPS_DB.localeOverride)
     end

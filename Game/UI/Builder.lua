@@ -1,6 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
---- Автогенерация строк настроек из flat-описаний (порт Config/Builder из CharacterStats).
+--- Автогенерация строк настроек из flat-описаний
 local Builder = {}
 LPS.UI = LPS.UI or {}
 LPS.UI.Builder = Builder
@@ -435,8 +435,7 @@ local function RefreshControl(control, db)
         SetLabelEnabled(control.label, enabled)
     end
 end
---- Одноколоночная раскладка, как в исходном аддоне (CharacterStats Config/Builder):
---- строки идут одна под другой на всю ширину; только короткие чекбоксы
+--- Одноколоночная раскладка: строки идут одна под другой на всю ширину; только короткие чекбоксы
 --- (toggle без fullRow) группируются по два — вторая строка встаёт в правую
 --- половину той же высоты, не сдвигая последующие строки.
 --- Подряд идущие кнопки (kind == "button") группируются в ряды максимум по

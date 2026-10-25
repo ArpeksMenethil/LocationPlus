@@ -1,7 +1,7 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local L = LPS.L
---- Тема оформления нативного окна настроек (порт design-системы CharacterStats).
+--- Тема оформления нативного окна настроек.
 local Theme = {}
 LPS.UI = LPS.UI or {}
 local ns = LPS.UI
@@ -56,7 +56,7 @@ Theme.THEMES = {
     },
     classic = {
         nameKey = "THEME_CLASSIC", fallbackName = "Classic",
-        descKey = "THEME_CLASSIC_DESC", fallbackDesc = "The original CharacterStats look.",
+        descKey = "THEME_CLASSIC_DESC", fallbackDesc = "The original classic look.",
         titleSize = 16, windowRadius = 0, buttonRadius = 0,
         headerFill = true,
         colors = {

@@ -1,5 +1,4 @@
--- Переводы ruRU. Формат как в Addons/CharacterStats/Locales/ruRU.lua:
--- регистрация через LPS.RegisterLocale (см. enUS.lua).
+-- Переводы ruRU. Регистрация через LPS.RegisterLocale (см. enUS.lua).
 local ADDON_NAME, LPS = ...
 
 LPS.RegisterLocale("ruRU", {
@@ -89,7 +88,7 @@ LPS.RegisterLocale("ruRU", {
     TEXT_CUSTOM_COLOR = "Свой цвет текста",
     PICK_A_CUSTOM_COLOR_FOR_PANEL_TEXT = "Выберите свой цвет для текста панели.",
     PROFILES = "Профиль",
-    -- Вкладка Profiles (порт PageProfiles из CharacterStats)
+    -- Вкладка Profiles
     HEADER_PROFILES = "Профиль",
     LABEL_ACTIVE_PROFILE = "Активный профиль",
     BTN_NEW = "Новый",
@@ -299,7 +298,7 @@ LPS.RegisterLocale("ruRU", {
     ITEM_LEVEL = "Уровень предмета",
     MAIL = "Почта",
     MICRO_BAR = "Микро-меню",
-    THEME_CLASSIC_DESC = "Исходный вид CharacterStats.",
+    THEME_CLASSIC_DESC = "Исходный классический вид.",
     THEME_LEDGER_DESC = "Орех и латунь с гравированными заголовками.",
     THEME_WORKBENCH_DESC = "Плоский графит с зеленым акцентом.",
     -- Вкладка Appearance (тема/цвет окна настроек)

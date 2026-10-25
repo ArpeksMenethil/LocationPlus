@@ -2,7 +2,7 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
 -------------------------------------------------
--- Нативное окно настроек (дизайн портирован из CharacterStats)
+-- Нативное окно настроек (дизайн портирован из исходного аддона)
 -------------------------------------------------
 -- Единственный источник пунктов — внутреннее дерево формата options.lua
 -- (LPS.Options.tree, без Ace3). Здесь оно превращается в страницы панели UI/Panel.
@@ -356,10 +356,9 @@ function UI.BuildPages()
             if not UI._pageKeys[key] then
                 UI._pageKeys[key] = true
                 local create = createTreePage(node)
-                -- страница профилей берётся из исходного аддона (CharacterStats
-                -- PageProfiles): дропдаун активного профиля + кнопки New/Copy/
-                -- Delete/Reset и попапы. Если фабрика недоступна — остаётся
-                -- обычная дерево-страница.
+                -- страница профилей берётся из Game/Options/page_profiles.lua:
+                -- дропдаун активного профиля + кнопки New/Copy/Delete/Reset
+                -- и попапы. Если фабрика недоступна — остаётся обычная дерево-страница.
                 if node._pageId == "profiles" and LPS.CreateProfilesPanelPage then
                     create = LPS.CreateProfilesPanelPage
                 end

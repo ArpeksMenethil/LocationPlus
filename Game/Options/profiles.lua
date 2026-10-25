@@ -3,8 +3,8 @@ if not LPS then return end
 local L = LPS.L
 
 --- Вкладка "Profiles" строится напрямую из портированной страницы
---- Game/Options/page_profiles.lua (как в исходном аддоне CharacterStats),
---- поэтому в дереве настроек она представлена пустым узлом: ui_options.lua
+--- Game/Options/page_profiles.lua, поэтому в дереве настроек она
+--- представлена пустым узлом: ui_options.lua
 --- зарегистрирует для неё нативную страницу Panel, а collectRows не выведет
 --- никаких сгенерированных строк.
 function LPS.Options.BuildTree.tabs.profiles()
