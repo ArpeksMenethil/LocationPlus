@@ -4,8 +4,8 @@ if not LPS then return end
 ---------------------------------------------------------------------------
 -- Страница «Профили»: реализация страницы профилей.
 -- Регистрируется в обход дерева настроек (см. Game/ui_options.lua):
--- заголовок секции, дропдаун активного профиля и сетка кнопок 2×2
--- New / Copy / Delete / Reset с попапами виджетов.
+-- заголовок секции, дропдаун активного профиля и сетка кнопок 2×N
+-- New / Copy / Delete / Reset / Import / Export с попапами виджетов.
 -- Профили привязаны только к персонажу (profileKeys в SavedVariables).
 ---------------------------------------------------------------------------
 local ROW_HEIGHT = 22
@@ -93,14 +93,17 @@ function LPS.CreateProfilesPanelPage(container)
     buttonRow:SetPoint("TOPLEFT", content, "TOPLEFT", 0, y)
     buttonRow:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, y)
     local BTN_GAP = 6
-    -- Сетка 2×2: четыре кнопки в один ряд не помещались в окно (последние
-    -- уезжали за правый край), поэтому два ряда по две кнопки, оба по центру.
-    buttonRow:SetHeight(ROW_HEIGHT * 2 + BTN_GAP)
+    -- Сетка 2×N: кнопки в один ряд не помещаются в окно (уезжают за
+    -- правый край), поэтому по две кнопки в ряду, ряды по центру.
     local newBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_NEW or "New")
     local copyBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_COPY or "Copy")
     local deleteBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_DELETE or "Delete")
     local resetBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.RESET_PROFILE or "Reset profile")
-    local buttons = { newBtn, copyBtn, deleteBtn, resetBtn }
+    local importBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_IMPORT or "Import")
+    local exportBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_EXPORT or "Export")
+    local buttons = { newBtn, copyBtn, deleteBtn, resetBtn, importBtn, exportBtn }
+    local btnRows = math.ceil(#buttons / 2)
+    buttonRow:SetHeight(ROW_HEIGHT * btnRows + BTN_GAP * (btnRows - 1))
     --- Одинаковая ширина кнопок (по самой длинной подписи): в сетке 2×2
     --- соседние кнопки получают гарантированный зазор и не перекрываются.
     function page:SizeButtons()
@@ -135,7 +138,7 @@ function LPS.CreateProfilesPanelPage(container)
         end
     end
     page._buttonRow = buttonRow
-    y = y - ROW_HEIGHT * 2 - BTN_GAP - 8
+    y = y - (ROW_HEIGHT * btnRows + BTN_GAP * (btnRows - 1)) - 8
 
     content:SetHeight(math.abs(y) + 8)
     page.scroll = content:GetParent()
@@ -264,6 +267,18 @@ function LPS.CreateProfilesPanelPage(container)
             L.BTN_RESET or "Reset",
             L.BTN_CANCEL or "Cancel"
         )
+    end)
+
+    importBtn:SetScript("OnClick", function()
+        if LPS.ProfileIO and LPS.ProfileIO.ShowImportPopup then
+            LPS.ProfileIO.ShowImportPopup()
+        end
+    end)
+
+    exportBtn:SetScript("OnClick", function()
+        if LPS.ProfileIO and LPS.ProfileIO.ShowExportPopup then
+            LPS.ProfileIO.ShowExportPopup()
+        end
     end)
 
     return page

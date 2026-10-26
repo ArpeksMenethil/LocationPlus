@@ -865,6 +865,15 @@ local function CloseActivePopup()
         activePopup = nil
     end
 end
+--- Закрывает текущий активный попап (публичный доступ к CloseActivePopup).
+function Widgets.CloseActivePopup()
+    CloseActivePopup()
+end
+--- Регистрирует кастомный попап как активный (чтобы другие попапы
+--- Widgets.Create* корректно закрывали его).
+function Widgets.SetActivePopup(popup)
+    activePopup = popup
+end
 function Widgets.CreatePopup(title, body, onAccept, okText, cancelText)
     CloseActivePopup()
     local popup = CreateFrame("Frame", nil, UIParent)
