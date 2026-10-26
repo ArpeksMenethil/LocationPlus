@@ -164,7 +164,7 @@ local function BuildWindowEntries(L)
                 ui.theme = nil
                 ui.themeColor = nil
                 ui.scale = 1.0
-                if Theme.Set then Theme.Set("classic") else Theme.Load() end
+                if Theme.Set then Theme.Set("modern") else Theme.Load() end
                 Panel.SetWindowScale(1.0)
                 ApplyTheme()
                 Panel.RefreshActivePage()

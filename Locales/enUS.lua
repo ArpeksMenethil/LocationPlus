@@ -304,12 +304,12 @@ local L = {
     ITEM_LEVEL = "Item Level",
     MAIL = "Mail",
     MICRO_BAR = "Micro Bar",
+    THEME_MODERN = "Modern",
+    THEME_MODERN_DESC = "Flat charcoal with a green accent.",
+    THEME_VINTAGE = "Vintage",
+    THEME_VINTAGE_DESC = "Walnut and brass with engraved headings.",
     THEME_CLASSIC = "Classic",
     THEME_CLASSIC_DESC = "The original classic look.",
-    THEME_LEDGER = "Artisan Ledger",
-    THEME_LEDGER_DESC = "Walnut and brass with engraved headings.",
-    THEME_WORKBENCH = "Workbench",
-    THEME_WORKBENCH_DESC = "Flat charcoal with a green accent.",
     -- Вкладка Appearance (тема/цвет окна настроек)
     APPEARANCE = "Appearance",
     THEME = "Theme",
@@ -339,6 +339,7 @@ local L = {
     ABOUT = "About",
     ABOUT_THIS_ADDON = "About this addon",
     AUTHOR = "Author",
+    LINK_CURSEFORGE = "CurseForge",
     VOLUME = "Volume",
 }
 

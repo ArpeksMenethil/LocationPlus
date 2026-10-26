@@ -19,6 +19,8 @@ local WIDGET_TYPE = {
     description = "label",
     header = "header",
     execute = "button",
+    image = "image",
+    link = "link",
 }
 
 --- Вызов get-функции пункта (нативный рендерер передаёт uiInfo — аргумент сохранён для совместимости).
@@ -201,6 +203,21 @@ local function collectRows(group, out, additionalSortKeys)
                         multiline = true,
                     }
                 end
+            elseif kind == "image" and node.file then
+                out[#out + 1] = {
+                    kind = "image",
+                    file = tostring(node.file),
+                    width = tonumber(node.width) or 64,
+                    height = tonumber(node.height) or 64,
+                    align = node.align or "LEFT",
+                }
+            elseif kind == "link" and node.url then
+                out[#out + 1] = {
+                    kind = "link",
+                    label = tostring(node.name or ""),
+                    url = tostring(node.url),
+                    tooltip = nodeTooltip(node),
+                }
             elseif kind == "header" then
                 out[#out + 1] = { kind = "header", label = tostring(node.name or "") }
             elseif kind == "toggle" and node.get then

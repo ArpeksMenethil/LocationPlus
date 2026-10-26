@@ -18,6 +18,8 @@ local ROW_HEIGHTS = {
     button = 24,
     label = 16,
     input = 24,
+    image = 64,
+    link = 16,
 }
 local DISABLED_TEXT = { r = 0.4, g = 0.4, b = 0.4 }
 local function GetDB()
@@ -117,6 +119,9 @@ local function SetRowTooltip(row, control, entry)
         AttachTooltip(control.button, entry)
     elseif kind == "label" then
         AttachTooltip(control.text or row, entry)
+    elseif kind == "link" then
+        -- подсказка на самой ссылке (текст), а не на пустом месте строки
+        AttachTooltip(control.link or row, entry)
     else
         AttachTooltip(row, entry)
     end
@@ -168,6 +173,47 @@ local function commitMultiline(self, entry, page)
     if page and page.OnValueChanged then page:OnValueChanged(entry, text) end
 end
 
+--- Строка-картинка (логотип на вкладке About): вписывает изображение в
+--- прямоугольник boxW x boxH с сохранением пропорций. SetTexture сам
+--- подгоняет размер texture-фрейма под исходник; на современных клиентах
+--- размеры дополнительно доступны через Game.GetTextureDimensions.
+local function BuildImage(row, entry)
+    local boxW = math.max(16, tonumber(entry.width) or 64)
+    local boxH = math.max(16, tonumber(entry.height) or 64)
+    local tex = row:CreateTexture(nil, "ARTWORK")
+    tex:SetTexture(entry.file)
+    local tw, th = tex:GetWidth() or boxW, tex:GetHeight() or boxH
+    if Game and Game.GetTextureDimensions then
+        local ok, w, h = pcall(Game.GetTextureDimensions, entry.file)
+        if ok and w and h and w > 0 and h > 0 then
+            tw, th = w, h
+        end
+    end
+    local scale = math.min(boxW / tw, boxH / th)
+    tex:SetSize(math.max(1, tw * scale), math.max(1, th * scale))
+    if entry.align == "CENTER" then
+        tex:SetPoint("CENTER", row, "CENTER", 0, 0)
+    else
+        tex:SetPoint("LEFT", row, "LEFT", 0, 0)
+    end
+    row:SetHeight(math.max(16, tex:GetHeight() or boxH))
+    return tex
+end
+--- Строка-ссылка: статичный текст (подпись обычным цветом + URL синий),
+--- без кликов и копирования.
+local function BuildLink(row, entry)
+    local url = tostring(entry.url or "")
+    if url == "" then return nil end
+    local text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    text:SetPoint("LEFT", row, "LEFT", 0, 0)
+    text:SetPoint("RIGHT", row, "RIGHT", 0, 0)
+    text:SetJustifyH("LEFT")
+    local prefix = tostring(entry.label or "")
+    local prefixPart = prefix ~= "" and prefix .. ": " or ""
+    text:SetText(prefixPart .. "|cff4aa3ff" .. url .. "|r")
+    CS.ConfigWidgets.ApplyFontColor(text, "textMuted")
+    return text
+end
 local function BuildControl(page, entry, row)
     local Widgets = CS.ConfigWidgets
     if entry.available then
@@ -194,6 +240,10 @@ local function BuildControl(page, entry, row)
         text:SetText(entry.label or "")
         CS.ConfigWidgets.ApplyFontColor(text, "textMuted")
         control.text = text
+    elseif kind == "image" then
+        control.image = BuildImage(row, entry)
+    elseif kind == "link" then
+        control.link = BuildLink(row, entry)
     elseif kind == "button" then
         -- ширина по тексту, чтобы подпись кнопки не залезала за края;
         -- buttonColumns: N — ряд кнопок в N одинаковых колонок (как на
@@ -576,8 +626,11 @@ function Builder.Build(parent, entries, opts)
                 -- подсказка вешается на конкретный контрол (текст/чекбокс/слайдер),
                 -- а не на всю строку — иначе всплывала при наведении на пустоту
                 SetRowTooltip(row, control, entry)
-                -- многострочные метки могли получить больше высоты из-за переноса слов
-                if control.multiline and row:GetHeight() > height then
+                -- многострочные метки могли получить больше высоты из-за переноса слов,
+                -- а высота картинок (логотип) фиксируется BuildImage и может отличаться
+                -- от заготовленной ROW_HEIGHTS
+                if (control.multiline and row:GetHeight() > height)
+                    or (control.image and row:GetHeight() ~= height) then
                     if not placedRight then
                         y = y + height - row:GetHeight()
                     end

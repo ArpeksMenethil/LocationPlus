@@ -41,7 +41,7 @@ function LPS.Options.BuildTree.tabs.appearance()
                                 values = themeItems,
                                 get = function()
                                     local db = OH:getDb()
-                                    return (db.uiOptions and db.uiOptions.theme) or "classic"
+                                    return (db.uiOptions and db.uiOptions.theme) or "modern"
                                 end,
                                 set = function(_, v)
                                     if Theme and Theme.Set then Theme.Set(v) end
@@ -224,7 +224,7 @@ function LPS.Options.BuildTree.tabs.appearance()
                             db.uiOptions.windowColor = nil
                             db.uiOptions.windowColorKeepHeader = nil
                             db.uiOptions.scale = 1.0
-                            if Theme and Theme.Set then Theme.Set("classic") end
+                            if Theme and Theme.Set then Theme.Set("modern") end
                             local Panel = LPS.UI and LPS.UI.Panel
                             if Panel and Panel.GetFrame and Panel.GetFrame() and Panel.GetFrame():IsShown() then
                                 Panel.SetWindowScale(1.0)

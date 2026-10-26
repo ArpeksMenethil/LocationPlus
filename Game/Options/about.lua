@@ -9,8 +9,8 @@ local function header(nameText, order)
 end
 
 --- Возвращает вкладку "About" дерева настроек (внутренний формат дерева).
---- Полноценная страница «О модификации»: описание аддона, сведения о
---- версии/авторе и ссылки.
+--- Полноценная страница «О модификации»: логотип, описание аддона, сведения
+--- о версии/авторе и ссылки.
 function LPS.Options.BuildTree.tabs.about()
     local title = (LPS.addon.title and LPS.addon.title ~= "") and LPS.addon.title or "Location Plus"
     local version = tostring(LPS.addon.version or "")
@@ -29,23 +29,33 @@ function LPS.Options.BuildTree.tabs.about()
 
     local args = {
         aboutHeader = header(L.ABOUT_THIS_ADDON, 1),
-        aboutLabel = {
+        -- Логотип аддона (тот же, что в заголовке окна настроек)
+        aboutLogo = {
             order = 2,
+            type = "image",
+            file = LPS.icons.PathLogoModern,
+            width = 64,
+            height = 64,
+        },
+        aboutLabel = {
+            order = 3,
             type = "description",
             name = notes,
         },
-        infoHeader = header(L.AUTHOR, 3),
+        infoHeader = header(L.AUTHOR, 4),
         infoLabel = {
-            order = 4,
+            order = 5,
             type = "description",
             name = string.format("%s: %s\n%s: %s",
                 L.AUTHOR, author,
                 L.VERSION_LABEL or "Version", version),
         },
-        linksLabel = {
-            order = 5,
-            type = "description",
-            name = "CurseForge: |cff4aa3ffhttps://www.curseforge.com/wow/addons/location-plus|r",
+        -- Ссылка на CurseForge: статичный синий текст
+        curseForgeLink = {
+            order = 6,
+            type = "link",
+            name = L.LINK_CURSEFORGE,
+            url = "https://www.curseforge.com/wow/addons/location-plus",
         },
     }
 

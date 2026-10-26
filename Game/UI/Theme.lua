@@ -22,11 +22,11 @@ local NON_LATIN = { ruRU = true, koKR = true, zhCN = true, zhTW = true }
 local function UseGameFont()
     return NON_LATIN[GetLocale()] == true
 end
-Theme.ORDER = { "workbench", "ledger", "classic" }
+Theme.ORDER = { "modern", "vintage", "classic" }
 Theme.THEMES = {
-    workbench = {
-        nameKey = "THEME_WORKBENCH", fallbackName = "Workbench",
-        descKey = "THEME_WORKBENCH_DESC", fallbackDesc = "Flat charcoal with a green accent.",
+    modern = {
+        nameKey = "THEME_MODERN", fallbackName = "Modern",
+        descKey = "THEME_MODERN_DESC", fallbackDesc = "Flat charcoal with a green accent.",
         fonts = { body = BARLOW, strong = BARLOW_SEMI, heading = BARLOW_SEMI, title = BARLOW_COND, button = BARLOW_SEMI },
         titleSize = 18, windowRadius = 10, buttonRadius = 4, sizeBoost = 2,
         uppercaseTitle = true, headerFill = true, stripe = true,
@@ -39,9 +39,9 @@ Theme.THEMES = {
             disabled = Hex("#5c646d"),
         },
     },
-    ledger = {
-        nameKey = "THEME_LEDGER", fallbackName = "Artisan Ledger",
-        descKey = "THEME_LEDGER_DESC", fallbackDesc = "Walnut and brass with engraved headings.",
+    vintage = {
+        nameKey = "THEME_VINTAGE", fallbackName = "Vintage",
+        descKey = "THEME_VINTAGE_DESC", fallbackDesc = "Walnut and brass with engraved headings.",
         fonts = { body = SOURCE, strong = SOURCE_BOLD, heading = CINZEL, title = CINZEL, button = SOURCE_BOLD },
         titleSize = 15, windowRadius = 4, buttonRadius = 4, sizeBoost = 2,
         innerFrame = true,
@@ -157,6 +157,9 @@ function Theme.GetAccentItems()
     end
     return items
 end
+--- Устаревшие ключи тем: старые значения из БД прозрачно переносим в новые
+--- (время жизни аддона: "workbench" -> "modern", "ledger" -> "vintage").
+local LEGACY_THEME_KEYS = { workbench = "modern", ledger = "vintage" }
 function Theme.Load()
     local db = LPS:GetDB()
     local ui = db and db.uiOptions
@@ -166,7 +169,8 @@ function Theme.Load()
         for _, k in ipairs(OBSOLETE_UI_KEYS) do ui[k] = nil end
     end
     local key = ui and ui.theme
-    if not Theme.THEMES[key] then key = "classic" end
+    if key and LEGACY_THEME_KEYS[key] then key = LEGACY_THEME_KEYS[key] end
+    if not Theme.THEMES[key] then key = "modern" end
     Theme.key = key
     Theme.T = Theme.THEMES[key]
     local C = {}
@@ -202,7 +206,7 @@ function Theme.Set(key)
     end
 end
 function Theme.Cycle()
-    local current = Theme.key or "classic"
+    local current = Theme.key or "modern"
     for i, key in ipairs(Theme.ORDER) do
         if key == current then
             Theme.Set(Theme.ORDER[i % #Theme.ORDER + 1])

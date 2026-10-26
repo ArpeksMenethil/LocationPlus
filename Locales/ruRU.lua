@@ -300,9 +300,12 @@ LPS.RegisterLocale("ruRU", {
     ITEM_LEVEL = "Уровень предмета",
     MAIL = "Почта",
     MICRO_BAR = "Микро-меню",
+    THEME_MODERN = "Современная",
+    THEME_MODERN_DESC = "Плоский графит с зелёным акцентом.",
+    THEME_VINTAGE = "Винтажная",
+    THEME_VINTAGE_DESC = "Орех и латунь с гравированными заголовками.",
+    THEME_CLASSIC = "Классическая",
     THEME_CLASSIC_DESC = "Исходный классический вид.",
-    THEME_LEDGER_DESC = "Орех и латунь с гравированными заголовками.",
-    THEME_WORKBENCH_DESC = "Плоский графит с зеленым акцентом.",
     -- Вкладка Appearance (тема/цвет окна настроек)
     APPEARANCE = "Внешний вид",
     THEME = "Тема",
@@ -332,5 +335,6 @@ LPS.RegisterLocale("ruRU", {
     ABOUT = "О модификации",
     ABOUT_THIS_ADDON = "Об аддоне",
     AUTHOR = "Автор",
+    LINK_CURSEFORGE = "CurseForge",
     VOLUME = "Громкость",
 })
