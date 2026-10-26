@@ -12,8 +12,8 @@
 ## Dependencies: LibTouristClassicBCA [AllowLoadGameType TBC]
 ## Dependencies: LibTouristClassic-1.0 [AllowLoadGameType Mists]
 
-## Notes: Adds location, coords, extra panels and an info-rich tooltip (no ElvUI required)
-## Notes-ruRU: Добавляет локацию, координаты, доп. панели и информативную подсказку (без ElvUI)
+## Notes: Addon adds location, extra panels and an info-rich tooltip (no ElvUI required)
+## Notes-ruRU: Аддон добавляет локацию, доп. панели и информативную подсказку (без ElvUI)
 
 ## Category: Addons Arpeks
 ## Category-ruRU: Аддоны Arpeks

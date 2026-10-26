@@ -32,7 +32,7 @@ function LPS.Options.BuildTree.tabs.about()
         aboutLabel = {
             order = 2,
             type = "description",
-            name = "|c" .. (LPS.addon.textColor or "ff1784d1") .. title .. "|r v" .. version .. "\n" .. notes,
+            name = notes,
         },
         infoHeader = header(L.AUTHOR, 3),
         infoLabel = {

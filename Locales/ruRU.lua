@@ -218,7 +218,7 @@ LPS.RegisterLocale("ruRU", {
     EXPAND = "Развернуть",
     MINIMIZE = "Свернуть",
     CANNOT_OPEN_OPTIONS_DURING_COMBAT = "Нельзя открыть настройки во время боя",
-    ADDS_LOCATION_COORDS_NEXTRA_PANELS_AND_AN_INFO_RICH_TOOLTIP_N_NO_ELVUI_REQUIRED = "Добавляет локацию, координаты,\nдоп. панели и информативную подсказку\n(без ElvUI)",
+    ADDS_LOCATION_COORDS_NEXTRA_PANELS_AND_AN_INFO_RICH_TOOLTIP_N_NO_ELVUI_REQUIRED = "Аддон добавляет локацию, доп. панели и информативную подсказку (без ElvUI)",
     RMB = "ПКМ",
     TOGGLE_CONFIGURATION = "Конфигурация",
     LOADED_CURRENT_VERSION = "загружен. Текущая версия:",
