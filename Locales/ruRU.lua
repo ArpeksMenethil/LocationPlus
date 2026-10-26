@@ -306,6 +306,8 @@ LPS.RegisterLocale("ruRU", {
     THEME_VINTAGE_DESC = "Орех и латунь с гравированными заголовками.",
     THEME_CLASSIC = "Классическая",
     THEME_CLASSIC_DESC = "Исходный классический вид.",
+    THEME_FROST = "Ледяная",
+    THEME_FROST_DESC = "Холодные тёмно-синие тона с ледяным акцентом.",
     -- Вкладка Appearance (тема/цвет окна настроек)
     APPEARANCE = "Внешний вид",
     THEME = "Тема",

@@ -6,8 +6,23 @@ local Theme = {}
 LPS.UI = LPS.UI or {}
 local ns = LPS.UI
 ns.Theme = Theme
+--- Цвет из hex: "#RRGGBB" (alpha = 1) или "#AARRGGBB" (alpha впереди, как в
+--- цветовом пикере WoW); явный параметр alpha перекрывает alpha из хеша.
 local function Hex(value, alpha)
-    return { tonumber(value:sub(2, 3), 16) / 255, tonumber(value:sub(4, 5), 16) / 255, tonumber(value:sub(6, 7), 16) / 255, alpha or 1 }
+    local a, r, g, b
+    if value:len() == 9 then
+        a = alpha or tonumber(value:sub(2, 3), 16) / 255
+        r, g, b = value:sub(4, 5), value:sub(6, 7), value:sub(8, 9)
+    else
+        a = alpha
+        r, g, b = value:sub(2, 3), value:sub(4, 5), value:sub(6, 7)
+    end
+    return {
+        tonumber(r, 16) / 255,
+        tonumber(g, 16) / 255,
+        tonumber(b, 16) / 255,
+        a or 1,
+    }
 end
 local MEDIA = "Interface\\AddOns\\" .. (LPS.addon and LPS.addon.name or "LocationPlus") .. "\\Media\\"
 local FONTS = MEDIA .. "Fonts\\"
@@ -22,7 +37,7 @@ local NON_LATIN = { ruRU = true, koKR = true, zhCN = true, zhTW = true }
 local function UseGameFont()
     return NON_LATIN[GetLocale()] == true
 end
-Theme.ORDER = { "modern", "vintage", "classic" }
+Theme.ORDER = { "modern", "vintage", "classic", "frost" }
 Theme.THEMES = {
     modern = {
         nameKey = "THEME_MODERN", fallbackName = "Modern",
@@ -60,13 +75,28 @@ Theme.THEMES = {
         titleSize = 16, windowRadius = 0, buttonRadius = 0,
         headerFill = true,
         colors = {
-            window = { 0.06, 0.06, 0.06, 0.98 }, header = { 0.08, 0.08, 0.08, 1 }, nav = { 0.045, 0.045, 0.045, 1 }, surface = { 0.07, 0.07, 0.07, 1 },
-            field = { 0.10, 0.10, 0.10, 1 }, hover = { 0.12, 0.12, 0.12, 1 }, border = { 0.22, 0.22, 0.22, 1 }, line = { 0.28, 0.28, 0.28, 1 },
-            accent = { 0.78, 0.66, 0.22, 1 }, text = { 0.92, 0.91, 0.86, 1 }, muted = { 0.70, 0.70, 0.70, 1 },
-            title = { 0.92, 0.91, 0.86, 1 }, heading = { 0.92, 0.91, 0.86, 1 },
-            button = { 0.12, 0.12, 0.12, 1 }, buttonBorder = { 0.22, 0.22, 0.22, 1 }, buttonHover = { 0.18, 0.18, 0.18, 1 }, buttonText = { 0.70, 0.70, 0.70, 1 },
-            primary = { 0.12, 0.12, 0.12, 1 }, primaryBorder = { 0.78, 0.66, 0.22, 1 }, primaryHover = { 0.18, 0.18, 0.18, 1 }, primaryText = { 0.92, 0.91, 0.86, 1 },
-            disabled = { 0.40, 0.40, 0.40, 1 },
+            window = Hex("#fa0f0f0f"), header = Hex("#141414"), nav = Hex("#0b0b0b"), surface = Hex("#121212"),
+            field = Hex("#1a1a1a"), hover = Hex("#1f1f1f"), border = Hex("#383838"), line = Hex("#474747"),
+            accent = Hex("#c7a838"), text = Hex("#ebe8db"), muted = Hex("#b3b3b3"),
+            title = Hex("#ebe8db"), heading = Hex("#ebe8db"),
+            button = Hex("#1f1f1f"), buttonBorder = Hex("#383838"), buttonHover = Hex("#2e2e2e"), buttonText = Hex("#b3b3b3"),
+            primary = Hex("#1f1f1f"), primaryBorder = Hex("#c7a838"), primaryHover = Hex("#2e2e2e"), primaryText = Hex("#ebe8db"),
+            disabled = Hex("#666666"),
+        },
+    },
+    frost = {
+        nameKey = "THEME_FROST", fallbackName = "Frost",
+        descKey = "THEME_FROST_DESC", fallbackDesc = "Cool navy depths with an icy accent.",
+        fonts = { body = BARLOW, strong = BARLOW_SEMI, heading = BARLOW_SEMI, title = BARLOW_COND, button = BARLOW_SEMI },
+        titleSize = 18, windowRadius = 10, buttonRadius = 4, sizeBoost = 2,
+        uppercaseTitle = true, headerFill = true,
+        colors = {
+            window = Hex("#121821"), header = Hex("#17202c"), nav = Hex("#0f141c"), surface = Hex("#17202c"),
+            field = Hex("#0c1118"), hover = Hex("#213042"), border = Hex("#2e3d52"), line = Hex("#2e3d52"),
+            accent = Hex("#6cb8d8"), text = Hex("#e5ecf4"), muted = Hex("#94a6ba"), title = Hex("#e5ecf4"), heading = Hex("#e5ecf4"),
+            button = Hex("#213042"), buttonBorder = Hex("#2e3d52"), buttonHover = Hex("#2a3c51"), buttonText = Hex("#e5ecf4"),
+            primary = Hex("#2f7ea3"), primaryBorder = Hex("#6cb8d8"), primaryHover = Hex("#3891b8"), primaryText = Hex("#ffffff"),
+            disabled = Hex("#5b6c7e"),
         },
     },
 }
@@ -96,7 +126,7 @@ local function ClassExists(classToken)
     return false
 end
 --- Золотой запасается только если класс-цвета недоступны.
-local DEFAULT_ACCENT = { 0.78, 0.66, 0.22 }
+local DEFAULT_ACCENT = Hex("#c7a838")
 --- Акцент по умолчанию = цвет текущего класса игрока (если класс определён).
 local function GetDefaultAccent()
     local _, classFile = UnitClass("player")

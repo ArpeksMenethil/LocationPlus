@@ -310,6 +310,8 @@ local L = {
     THEME_VINTAGE_DESC = "Walnut and brass with engraved headings.",
     THEME_CLASSIC = "Classic",
     THEME_CLASSIC_DESC = "The original classic look.",
+    THEME_FROST = "Frost",
+    THEME_FROST_DESC = "Cool navy depths with an icy accent.",
     -- Вкладка Appearance (тема/цвет окна настроек)
     APPEARANCE = "Appearance",
     THEME = "Theme",
