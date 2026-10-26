@@ -368,7 +368,7 @@ function LPS:BuildTimeTooltip()
                         local safeNumEncounters = tonumber(numEncounters) or 0
 
                         local left = string.format(
-                                "|T%s:16:16|t %d %s%s|r |cFFAAAAAA(%s, %d/%d)|r",
+                                "|T%s:16:16|t%d %s%s|r |cFFAAAAAA(%s, %d/%d)|r",
                                 icon,
                                 safeMaxPlayers,
                                 color,
