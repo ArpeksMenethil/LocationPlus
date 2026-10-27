@@ -3,10 +3,11 @@
 ## Author: Arpeks
 ## Version: 2.0.4
 ## SavedVariables: LPS_DB
-## OptionalDeps: LibDBIcon-1.0, Broker_PlayedTime, LibDeflate
+## OptionalDeps: LibDeflate, Broker_PlayedTime
 ## IconTexture: Interface\AddOns\LocationPlus\Media\Logo.png
 ## X-Curse-Project-ID: 1444011
 
+## Dependencies: LibDBIcon-1.0
 ## Dependencies: LibTourist-3.0 [AllowLoadGameType Standard]
 ## Dependencies: LibTouristClassicEra [AllowLoadGameType Vanilla]
 ## Dependencies: LibTouristClassicBCA [AllowLoadGameType TBC]
