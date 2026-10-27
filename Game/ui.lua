@@ -10,20 +10,12 @@ local function ClampAngle(angle)
     return angle
 end
 
--- Круглая карта — та, где стоит стандартное окружное заднее стекло UI-Minimap-Background.
--- Кастомный фон (например, квадратная миникарта) считаем квадратной.
+-- Форма миникарты: выбирается вручную в настройках
+-- (db.show.minimap.shape = "round" / "square"), по умолчанию круг.
 local function IsMinimapSquare()
-    local foundDefaultRound = false
-    local n = Minimap:GetNumRegions()
-    for i = 1, n do
-        local t, r = Minimap:GetRegion(i)
-        r = r or t
-        if r and r.GetTexture and r:GetTexture() == "Interface\\Minimap\\UI-Minimap-Background" then
-            foundDefaultRound = true
-            break
-        end
-    end
-    return not foundDefaultRound
+    local db = LPS:GetDB()
+    local mm = db and db.show and db.show.minimap
+    return mm and mm.shape == "square"
 end
 
 local function PositionMinimapButton(btn)
@@ -135,21 +127,46 @@ function LPS:CreateMinimapButton()
         if not self.isDragging then return end
         local db = LPS:GetDB()
         if not db or not db.show or not db.show.minimap then return end
-        local mx, my = Minimap:GetCenter()
-        local x, y = GetCursorPosition()
-        local scale = UIParent:GetScale()
-        x = x / scale
-        y = y / scale
-        local dx = x - mx
-        local dy = y - my
-        local angle = math.deg(math.atan2(dy, dx))
-        angle = ClampAngle(angle)
+
+        -- Переводим курсор в координаты РОДИТЕЛЬСКОГО фрейма миникарты
+        -- (тот же отсчёт, что у Minimap:GetCenter). Так угол не зависит от
+        -- того, в каком фрейме висит карта и какой у неё собственный масштаб:
+        -- раньше курсор делился на масштаб UIParent, а центр брался в единицах
+        -- родительского фрейма — при кастомном UI эти системы не совпадали
+        -- и кнопка «прыгала» при привязке.
+        local sx, sy = GetCursorPosition()
+        local parent = Minimap:GetParent() or UIParent
+        local pScale = parent:GetEffectiveScale()
+        if not pScale or pScale == 0 then return end
+        local cx, cy = Minimap:GetCenter()
+        local dx = sx / pScale - cx
+        local dy = sy / pScale - cy
+        if dx == 0 and dy == 0 then return end
+        local angle = ClampAngle(math.deg(math.atan2(dy, dx)))
         db.show.minimap.angle = angle
         PositionMinimapButton(self)
     end)
 
     LPS.frame.minimapButton = btn
     LPS:UpdateMinimapButton()
+end
+
+-- Меняем масштаб/размер миникарты — сразу пересчитываем позицию кнопки,
+-- иначе радиус, рассчитанный при старом размере, «зависает» в воздухе.
+if Minimap and not Minimap._lpsPosHooked then
+    Minimap._lpsPosHooked = true
+
+    local _origSetScale = Minimap.SetScale
+    Minimap.SetScale = function(self, scale)
+        _origSetScale(self, scale)
+        if LPS.UpdateMinimapButton then LPS:UpdateMinimapButton() end
+    end
+
+    local _origSetSize = Minimap.SetSize
+    Minimap.SetSize = function(self, width, height)
+        _origSetSize(self, width, height)
+        if LPS.UpdateMinimapButton then LPS:UpdateMinimapButton() end
+    end
 end
 
 function LPS:SetMoveMode(enabled)

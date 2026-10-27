@@ -89,6 +89,37 @@ function LPS.Options.BuildTree.tabs.general()
                                     end
                                     end,
                                 },
+                                minimapShape = {
+                                    type = "select",
+                                    name = L.MINIMAP_SHAPE,
+                                    desc = L.MINIMAP_SHAPE_DESC,
+                                    order = 1.5,
+
+                                    values = {
+                                        ROUND = L.MINIMAP_SHAPE_ROUND,
+                                        SQUARE = L.MINIMAP_SHAPE_SQUARE,
+                                    },
+                                    disabled = function()
+                                    local mm = OH:getDb().show and OH:getDb().show.minimap
+                                    return mm and mm.hide
+                                    end,
+                                    get = function()
+                                    local mm = OH:getDb().show and OH:getDb().show.minimap
+                                    if mm and mm.shape == "square" then return "SQUARE" end
+                                    return "ROUND"
+                                    end,
+                                    set = function(_, v)
+                                    OH:getDb().show.minimap = OH:getDb().show.minimap or { hide = false, angle = 220 }
+                                    if v == "SQUARE" then
+                                        OH:getDb().show.minimap.shape = "square"
+                                    else
+                                        OH:getDb().show.minimap.shape = "round"
+                                    end
+                                    if LPS.UpdateMinimapButton then
+                                    LPS:UpdateMinimapButton()
+                                    end
+                                    end,
+                                },
                                 addonCompartment = {
                                     type = "toggle",
                                     name = L.ADDON_COMPARTMENT,

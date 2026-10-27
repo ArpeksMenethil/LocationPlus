@@ -143,6 +143,7 @@ LPS.defaults = {
         minimap = {
             hide = false,
             angle = 220,
+            shape = "round",
         },
 
         visibility = {
