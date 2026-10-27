@@ -110,20 +110,15 @@ function Theme.GetDescription(key)
     if not def then return "" end
     return L[def.descKey] or def.fallbackDesc
 end
---- Палитра цветовых тем (акцента): только классы, доступные в текущей сборке игры.
-local CLASS_ACCENTS_ALL = {
-    "DEATHKNIGHT", "DEMONHUNTER", "DRUID", "EVOKER", "HUNTER", "MAGE",
-    "MONK", "PALADIN", "PRIEST", "ROGUE", "SHAMAN", "WARLOCK", "WARRIOR",
-}
---- Есть ли класс в этой версии игры (в Classic нет DH/Evoker и т.д.).
+--- Есть ли класс в этой версии игры: опросом LOCALIZED_CLASS_NAMES_MALE —
+--- клиентской таблицы локализованных имён классов. В ней есть только те классы,
+--- что существуют в этой сборке (в Classic — классики, в Retail — все). Не по
+--- RAID_CLASS_COLORS (там цвета всех классов) и не по жёстко заданным уровням
+--- экспансий.
 local function ClassExists(classToken)
     if not classToken then return false end
-    local key = classToken:upper()
-    if C_ClassColor and C_ClassColor.GetClassColor then
-        if C_ClassColor.GetClassColor(key) then return true end
-    end
-    if RAID_CLASS_COLORS and RAID_CLASS_COLORS[key] then return true end
-    return false
+    if not LOCALIZED_CLASS_NAMES_MALE then return false end
+    return LOCALIZED_CLASS_NAMES_MALE[classToken:upper()] ~= nil
 end
 --- Золотой запасается только если класс-цвета недоступны.
 local DEFAULT_ACCENT = Hex("#c7a838")
@@ -165,12 +160,9 @@ function Theme.GetAccentColor()
         local r, g, b = GetDefaultAccent()
         return MuteColor(r, g, b, 0.2)
     end
-    for _, cls in ipairs(CLASS_ACCENTS_ALL) do
-        if cls == id then
-            local r, g, b = GetClassColor(cls)
-            if r then return MuteColor(r, g, b, 0.2) end
-            break
-        end
+    if ClassExists(id) then
+        local r, g, b = GetClassColor(id)
+        if r then return MuteColor(r, g, b, 0.2) end
     end
     local r, g, b = GetDefaultAccent()
     return MuteColor(r, g, b, 0.2)
@@ -179,10 +171,18 @@ end
 --- значение "default" = текущий класс игрока.
 function Theme.GetAccentItems()
     local items = { { value = "default", text = L.THEME_COLOR_DEFAULT } }
-    for _, cls in ipairs(CLASS_ACCENTS_ALL) do
-        if ClassExists(cls) then
-            local name = (LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[cls]) or cls
-            items[#items + 1] = { value = cls, text = name }
+    if LOCALIZED_CLASS_NAMES_MALE then
+        -- Классы, доступные в клиенте, берём напрямую из LOCALIZED_CLASS_NAMES_MALE:
+        -- ключ = токен (используется как ключ для цвета), значение = локализованное имя.
+        local classes = {}
+        for token, name in pairs(LOCALIZED_CLASS_NAMES_MALE) do
+            classes[#classes + 1] = { value = token, text = name }
+        end
+        table.sort(classes, function(a, b)
+            return (a.text or "") < (b.text or "")
+        end)
+        for _, it in ipairs(classes) do
+            items[#items + 1] = it
         end
     end
     return items
