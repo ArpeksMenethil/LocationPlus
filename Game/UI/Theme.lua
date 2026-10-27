@@ -167,16 +167,29 @@ function Theme.GetAccentColor()
     local r, g, b = GetDefaultAccent()
     return MuteColor(r, g, b, 0.2)
 end
---- Список значений dropdown'а цветовых тем: только классы, доступные в игре;
+--- Классы, которые убираем из списка тем независимо от цвета: сравниваем токен
+--- (ключ) и локализованное имя, без учёта регистра, и удаляем всё, что найдено
+--- в этом перечне. Расширяется по мере необходимости.
+local ACCENT_EXCLUDED = { adventurer = true, traveler = true }
+local function IsExcludedAccent(token, name)
+    if type(token) == "string" and ACCENT_EXCLUDED[token:lower()] then return true end
+    if type(name) == "string" and ACCENT_EXCLUDED[name:lower()] then return true end
+    return false
+end
+--- Список значений dropdown'а цветовых тем: только классы, доступные в игре,
+--- с подготовленным цветом и не входящие в ACCENT_EXCLUDED;
 --- значение "default" = текущий класс игрока.
 function Theme.GetAccentItems()
     local items = { { value = "default", text = L.THEME_COLOR_DEFAULT } }
     if LOCALIZED_CLASS_NAMES_MALE then
-        -- Классы, доступные в клиенте, берём напрямую из LOCALIZED_CLASS_NAMES_MALE:
+        -- Классы берём напрямую из LOCALIZED_CLASS_NAMES_MALE:
         -- ключ = токен (используется как ключ для цвета), значение = локализованное имя.
+        -- Оставляем только те, для которых есть цвет и которые не в списке исключений.
         local classes = {}
         for token, name in pairs(LOCALIZED_CLASS_NAMES_MALE) do
-            classes[#classes + 1] = { value = token, text = name }
+            if GetClassColor(token) and not IsExcludedAccent(token, name) then
+                classes[#classes + 1] = { value = token, text = name }
+            end
         end
         table.sort(classes, function(a, b)
             return (a.text or "") < (b.text or "")
