@@ -2,11 +2,6 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local L = LPS.L
 
-local LibStub = _G.LibStub
-local LDB = LibStub and LibStub:GetLibrary("LibDataBroker-1.1", true)
-local LibDBIcon = LibStub and LibStub:GetLibrary("LibDBIcon-1.0", true)
-local ldbObject
-
 local function ClampAngle(angle)
     angle = angle % 360
     if angle < 0 then
@@ -15,16 +10,47 @@ local function ClampAngle(angle)
     return angle
 end
 
+-- Круглая карта — та, где стоит стандартное окружное заднее стекло UI-Minimap-Background.
+-- Кастомный фон (например, квадратная миникарта) считаем квадратной.
+local function IsMinimapSquare()
+    local foundDefaultRound = false
+    local n = Minimap:GetNumRegions()
+    for i = 1, n do
+        local t, r = Minimap:GetRegion(i)
+        r = r or t
+        if r and r.GetTexture and r:GetTexture() == "Interface\\Minimap\\UI-Minimap-Background" then
+            foundDefaultRound = true
+            break
+        end
+    end
+    return not foundDefaultRound
+end
+
 local function PositionMinimapButton(btn)
     local db = LPS:GetDB()
     if not db or not db.show or not db.show.minimap then return end
     local angle = ClampAngle(tonumber(db.show.minimap.angle) or 220)
     db.show.minimap.angle = angle
 
-    local radius = (Minimap:GetWidth() / 2) + 8
+    local pad = 8
     local rad = math.rad(angle)
-    local x = math.cos(rad) * radius
-    local y = math.sin(rad) * radius
+    local x, y
+    if IsMinimapSquare() then
+        -- квадратная карта: цепляемся к её краям
+        local dx, dy = math.cos(rad), math.sin(rad)
+        local hw = (Minimap:GetWidth() / 2) + pad
+        local hh = (Minimap:GetHeight() / 2) + pad
+        local sx = (dx ~= 0) and (hw / math.abs(dx)) or math.huge
+        local sy = (dy ~= 0) and (hh / math.abs(dy)) or math.huge
+        local s = math.min(sx, sy)
+        x = dx * s
+        y = dy * s
+    else
+        -- круглая карта: идём по кругу
+        local radius = (Minimap:GetWidth() / 2) + pad
+        x = math.cos(rad) * radius
+        y = math.sin(rad) * radius
+    end
     btn:ClearAllPoints()
     btn:SetPoint("CENTER", Minimap, "CENTER", x, y)
 end
@@ -36,70 +62,20 @@ local function FillMinimapTooltip(tt)
     if vis.combat and InCombatLockdown() then return end
     local r, g, b = LPS:GetColor("text")
     local rb, gb, bb = LPS:GetColor("tooltipSetting")
-    tt:AddLine(L.LOCATION_PLUS, 1, 0.82, 0)
-    tt:AddLine(L.ADDS_LOCATION_COORDS_NEXTRA_PANELS_AND_AN_INFO_RICH_TOOLTIP_N_NO_ELVUI_REQUIRED, r, g, b)
+    tt:AddDoubleLine(LPS.addon.title, format("v%s", LPS.addon.version), 1, 0.82, 0, 1, 0.82, 0)
     tt:AddLine(" ")
-    tt:AddDoubleLine(L.LMB, L.MOVE_FRAME, rb, gb, bb, rb, gb, bb)
-    tt:AddDoubleLine(L.RMB, L.TOGGLE_CONFIGURATION, rb, gb, bb, rb, gb, bb)
-end
-
-function LPS:EnsureLDBMinimapIcon()
-    if not (LDB and LibDBIcon) then return false end
-    local db = LPS:GetDB()
-    if not db or not db.show then return false end
-    db.show.minimap = db.show.minimap or { hide = false, angle = 220 }
-    local mm = db.show.minimap
-    mm.minimapPos = ClampAngle(tonumber(mm.minimapPos) or tonumber(mm.angle) or 220)
-    mm.angle = mm.minimapPos
-
-    if not ldbObject then
-        ldbObject = LDB:NewDataObject("LocationPlus", {
-            type = "launcher",
-            icon = LPS.icons.PathLogo,
-            OnClick = function(_, button)
-                if button == "LeftButton" then
-                    LPS:ToggleMoveMode()
-                elseif button == "RightButton" then
-                    LPS:ToggleOptions()
-                end
-            end,
-            OnTooltipShow = FillMinimapTooltip,
-        })
-    end
-
-    if not LibDBIcon:IsRegistered("LocationPlus") then
-        LibDBIcon:Register("LocationPlus", ldbObject, mm)
-    else
-        LibDBIcon:Refresh("LocationPlus", mm)
-    end
-    return true
+    tt:AddLine(LPS:GetAddonNotes(), r, g, b)
+    tt:AddLine(" ")
+    tt:AddDoubleLine(L.LMB, L.TOGGLE_PANEL_MOVE_MODE, rb, gb, bb, rb, gb, bb)
+    tt:AddDoubleLine(L.DRAG, L.REPOSITION_MINIMAP_BUTTON, rb, gb, bb, rb, gb, bb)
+    tt:AddDoubleLine(L.RMB, L.OPEN_SETTINGS, rb, gb, bb, rb, gb, bb)
 end
 
 function LPS:UpdateMinimapButton()
-    local db = LPS:GetDB()
     local btn = LPS.frame and LPS.frame.minimapButton
-    if LPS:EnsureLDBMinimapIcon() then
-        local mm = db and db.show and db.show.minimap
-        if mm then
-            mm.angle = ClampAngle(tonumber(mm.minimapPos) or tonumber(mm.angle) or 220)
-            mm.minimapPos = mm.angle
-            if mm.hide then
-                LibDBIcon:Hide("LocationPlus")
-            else
-                LibDBIcon:Show("LocationPlus")
-            end
-        end
-        if btn then
-            btn:Hide()
-        end
-        return
-    end
     if not btn then return end
-    if not db or not db.show or not db.show.minimap then
-        btn:Hide()
-        return
-    end
-    if db.show.minimap.hide then
+    local db = LPS:GetDB()
+    if not db or not db.show or not db.show.minimap or db.show.minimap.hide then
         btn:Hide()
         return
     end
@@ -109,13 +85,6 @@ end
 
 function LPS:CreateMinimapButton()
     if not Minimap then return end
-    if LPS:EnsureLDBMinimapIcon() then
-        if LPS.frame and LPS.frame.minimapButton then
-            LPS.frame.minimapButton:Hide()
-        end
-        LPS:UpdateMinimapButton()
-        return
-    end
     if not LPS.frame then LPS.frame = {} end
     if LPS.frame.minimapButton then
         LPS:UpdateMinimapButton()
@@ -130,25 +99,9 @@ function LPS:CreateMinimapButton()
     btn:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
     btn:GetHighlightTexture():SetBlendMode("ADD")
 
-    btn.background = btn:CreateTexture(nil, "BACKGROUND")
-    btn.background:SetAllPoints()
-    btn.background:SetTexture("Interface\\Minimap\\UI-Minimap-Background")
-
-    btn.border = btn:CreateTexture(nil, "OVERLAY")
-    btn.border:SetAllPoints()
-    btn.border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
-
     btn.icon = btn:CreateTexture(nil, "ARTWORK")
-    btn.icon:SetPoint("CENTER")
-    btn.icon:SetSize(20, 20)
+    btn.icon:SetAllPoints()
     btn.icon:SetTexture(LPS.icons.PathLogo)
-    btn.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-    if btn.icon.SetMask then
-        btn.icon:SetMask("Interface\\CharacterFrame\\TempPortraitAlphaMask")
-    end
-
-    btn:SetPushedTexture("Interface\\Buttons\\UI-Quickslot-Depress")
-    btn:GetPushedTexture():SetAllPoints()
 
     btn:SetScript("OnClick", function(self, button)
         if button == "LeftButton" then

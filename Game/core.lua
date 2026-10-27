@@ -14,6 +14,17 @@ LPS.addon.title = (
                 or "?.?.?"
 ) -- Название аддона
 
+--- Описание аддона: Notes из .toc для текущего языка клиента (fallback на enUS).
+function LPS:GetAddonNotes()
+        local getMeta = (C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata)
+                or GetAddOnMetadata
+        if not (getMeta and LPS.addon.name) then return "" end
+        local locale = LPS.ACTIVE_LOCALE or GetLocale()
+        local notes = getMeta(LPS.addon.name, "Notes-" .. tostring(locale))
+                or getMeta(LPS.addon.name, "Notes") or ""
+        return (notes ~= "") and notes or ""
+end
+
 ----------------------------------------------------------------
 -- Holder (главный фрейм)
 ----------------------------------------------------------------

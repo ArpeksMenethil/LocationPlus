@@ -1,20 +1,19 @@
 ## Interface: 11509, 16001, 20506, 50504, 120105, 120107
 ## Title: |cff1784d1Location Plus|r |cfd9b9b9b[by Arpeks]|r
 ## Author: Arpeks
-## Version: 2.0.4
+## Version: 2.0.5
 ## SavedVariables: LPS_DB
-## OptionalDeps: LibDeflate, Broker_PlayedTime
+## OptionalDeps: LibStub, LibDeflate, Broker_PlayedTime
 ## IconTexture: Interface\AddOns\LocationPlus\Media\Logo.png
 ## X-Curse-Project-ID: 1444011
 
-## Dependencies: LibDBIcon-1.0
 ## Dependencies: LibTourist-3.0 [AllowLoadGameType Standard]
 ## Dependencies: LibTouristClassicEra [AllowLoadGameType Vanilla]
 ## Dependencies: LibTouristClassicBCA [AllowLoadGameType TBC]
 ## Dependencies: LibTouristClassic-1.0 [AllowLoadGameType Mists]
 
-## Notes: Addon adds location, extra panels and an info-rich tooltip (no ElvUI required)
-## Notes-ruRU: Аддон добавляет локацию, доп. панели и информативную подсказку (без ElvUI)
+## Notes: Addon adds location, extra panels and an info-rich tooltip
+## Notes-ruRU: Аддон добавляет локацию, доп. панели и информативную подсказку
 
 ## Category: Addons Arpeks
 ## Category-ruRU: Аддоны Arpeks

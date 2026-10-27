@@ -17,15 +17,7 @@ function LPS.Options.BuildTree.tabs.about()
     local author = LPS.Options.aboutAuthor or "Arpeks"
 
     -- Описание: Notes из .toc для текущего языка клиента (с fallback на enUS)
-    local notes = nil
-    local getMeta = (C_AddOns and C_AddOns.GetAddOnMetadata) or GetAddOnMetadata
-    if getMeta and LPS.addon.name then
-        local locale = LPS.ACTIVE_LOCALE or GetLocale()
-        notes = getMeta(LPS.addon.name, "Notes-" .. tostring(locale))
-                or getMeta(LPS.addon.name, "Notes")
-    end
-    notes = (type(notes) == "string" and notes ~= "") and notes
-            or L.ADDS_LOCATION_COORDS_NEXTRA_PANELS_AND_AN_INFO_RICH_TOOLTIP_N_NO_ELVUI_REQUIRED
+    local notes = LPS:GetAddonNotes()
 
     local args = {
         aboutHeader = header(L.ABOUT_THIS_ADDON, 1),

@@ -19,7 +19,7 @@ local function OnAddonCompartmentEnter(addonName, menuButtonFrame)
     GameTooltip:SetOwner(UIParent, "ANCHOR_CURSOR")
     GameTooltip:AddDoubleLine(LPS.addon.name, LPS.addon.version, ry, gy, by, r, g, b)
     GameTooltip:AddLine(" ")
-    GameTooltip:AddLine(L.ADDS_LOCATION_COORDS_NEXTRA_PANELS_AND_AN_INFO_RICH_TOOLTIP_N_NO_ELVUI_REQUIRED, r, g, b)
+    GameTooltip:AddLine(LPS:GetAddonNotes(), r, g, b)
     GameTooltip:AddLine(" ")
     GameTooltip:AddDoubleLine(L.RMB, L.TOGGLE_CONFIGURATION, rb, gb, bb, rb, gb, bb)
 
