@@ -1,4 +1,4 @@
--- Переводы ruRU. Регистрация через LPS.RegisterLocale (см. enUS.lua).
+---
 local ADDON_NAME, LPS = ...
 
 LPS.RegisterLocale("ruRU", {
@@ -364,4 +364,13 @@ LPS.RegisterLocale("ruRU", {
     AUTHOR = "Автор",
     LINK_CURSEFORGE = "CurseForge",
     VOLUME = "Громкость",
+    -- Пикер цвета
+    CP_TITLE = "Цвет",
+    CP_OK = "ОК",
+    CP_CANCEL = "Отмена",
+    CP_RESET = "Сбросить",
+    CP_DEFAULT = "По умолчанию",
+    CP_CLASS_COLOR = "Цвет класса",
+    CP_COPY = "Копировать",
+    CP_PASTE = "Вставить",
 })

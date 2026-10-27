@@ -1,10 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
--- Панель «Время» переписана на общий реестр LPS:RegisterDatatext():
--- фрейм создаётся конструктором CreateDatatextFrame (временный якорь у
--- holder'а; padding/minWidth не фиксируются при создании, а перечитываются
--- из db.layout в update), как и остальные панели.
 
 local function getDB() return LPS:GetDB() or {} end
 
@@ -20,7 +16,6 @@ LPS:RegisterDatatext({
     ticker = 1,
     clicks = { "LeftButtonUp", "RightButtonUp", "MiddleButtonUp" },
         create = function(f)
-                -- time всегда белый текст (см. gold.lua / ApplyLayout).
                 if f then f._lpsForceWhite = true end
         end,
     update = function(f)
@@ -51,8 +46,6 @@ LPS:RegisterDatatext({
             end
         end
     end,
-    -- Нестандартная подсказка (свои проверки видимости + флаг isTimeTooltip):
-    -- используем customTooltip, чтобы конструктор не подставлял общий tooltipGuard.
     customTooltip = true,
     buildTooltip = function(self)
         local db = getDB()

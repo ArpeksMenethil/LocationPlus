@@ -232,28 +232,15 @@ function LPS:OnPlayerMoney()
     end
 end
 
--- Панель «Золото» переписана на общий реестр LPS:RegisterDatatext():
--- фрейм создаётся конструктором CreateDatatextFrame, отступы/минимальная
--- ширина перечитываются из db.layout при каждом обновлении (старый
--- CreateGoldFrame фиксировал padding при создании — из-за этого панель
--- «наследовала» огромные отступы).
 
 LPS:RegisterDatatext({
     key = "gold",
     create = function(f)
-        -- gold всегда белый текст (эталонное поведение); флаг читается
-        -- в ApplyLayout вместо хрупкого сравнения ссылок frames.gold.
         if f then f._lpsForceWhite = true end
     end,
     nameKey = "Gold",
     events = { "PLAYER_ENTERING_WORLD", "PLAYER_MONEY" },
     update = function(f)
-        -- ВАЖНО: здесь НЕ должно быть early-return по f:IsShown().
-        -- Панель создаётся скрытой (hidden = true) и показывается в
-        -- applyPanelVisibility; если выходить по видимости, первичные
-        -- вызовы updateFunc из ApplyLayout игнорируются и панель
-        -- остаётся пустой («выбрал Золото — оно пустое»), пока не
-        -- придёт PLAYER_MONEY или панель не обновят вручную.
         local oldData = f.text and f.text:GetText()
         LPS:OnPlayerMoney()
         local data = LPS:GetGoldSessionData()

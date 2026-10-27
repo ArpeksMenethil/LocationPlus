@@ -162,8 +162,6 @@ function LPS.Options.BuildTree.tabs.general()
                 actionsGroup = {
                     order = 99,
                     name = L.ACTIONS,
-                    -- порядок кнопок фиксирован (btnOrder): Builder ставит их
-                    -- в один ряд по 3 в стиле страницы «Профиль»
                     sortKeys = { "btnOrder" },
                     args = {
                         moveFrame = {
@@ -174,8 +172,6 @@ function LPS.Options.BuildTree.tabs.general()
                             btnOrder = 1,
                             func = function() LPS:ToggleMoveMode() end,
                         },
-                        -- Сброс позиции группы панелей (частичный сброс,
-                        -- аналог слэш-команды /lps resetpos).
                         resetPosition = {
                             type = "execute",
                             name = L.RESET_POSITION,
@@ -188,9 +184,6 @@ function LPS.Options.BuildTree.tabs.general()
                             end
                             end,
                         },
-                        -- Полный сброс всех настроек профиля к значениям по
-                        -- умолчанию. Частичные сбросы, например /lps resetpanels,
-                        -- доступны только через слэш-команды.
                         resetValues = {
                             type = "execute",
                             name = L.RESET_VALUES,

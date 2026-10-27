@@ -1,11 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
--- Панель «Координаты» переписана на общий реестр LPS:RegisterDatatext():
--- фрейм создаётся конструктором CreateDatatextFrame (временный якорь у
--- holder'а; padding/minWidth не фиксируются при создании, а применяются в
--- ApplyLayout и перечитываются из db.layout в update), а не отдельной
--- функцией CreateCoordsFrame с захардкоженными отступами.
 
 local function getDB() return LPS:GetDB() or {} end
 

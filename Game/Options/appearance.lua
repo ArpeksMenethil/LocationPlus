@@ -71,6 +71,7 @@ function LPS.Options.BuildTree.tabs.appearance()
                                 name = L.WINDOW_COLOR,
                                 desc = L.WINDOW_COLOR_DESC,
                                 order = 3,
+                                default = { r = 0.09, g = 0.10, b = 0.12 },
                                 disabled = function()
                                     local ui = OH:getDb().uiOptions
                                     return not (ui and ui.windowColorMode == "custom")
@@ -160,6 +161,7 @@ function LPS.Options.BuildTree.tabs.appearance()
                                 name = L.ACCENT_COLOR,
                                 desc = L.ACCENT_COLOR_DESC,
                                 order = 3,
+                                default = { r = 0.78, g = 0.66, b = 0.22 },
                                 get = function()
                                     local ui = OH:getDb().uiOptions
                                     local c = ui and ui.accentColor

@@ -91,7 +91,6 @@ function LPS:CreateLocationFrame()
 
             if f.text then
                 f.text:SetText(text)
-                -- Цвет локации всегда определяется статусом зоны
                 f.text:SetTextColor(LPS:GetZoneStatus(true))
             end
         end,

@@ -3,10 +3,8 @@ if not LPS then return end
 
 local unpackFn = table.unpack or unpack
 
--- Мост для отложенной (после боя) регистрации событий панелей
 local frameEventBridge
 
--- Move Mode (перетаскивание)
 function LPS:CreateGuideLines()
     local grid = { vLines = {}, hLines = {} }
     local w = UIParent:GetWidth()
@@ -37,7 +35,7 @@ function LPS:CreateGuideLines()
     return grid
 end
 
--- types.lua
+---
 ---@class LPSFrameParams
 ---@field name string Имя создаваемого фрейма (обязательное)
 ---@field parent table Родительский фрейм (обязательное)
@@ -69,20 +67,15 @@ function LPS:CreateFrame(params)
     f:ClearAllPoints()
     f:SetPoint(unpackFn(params.anchor or {"CENTER", f:GetParent(), "CENTER", 0, 0}))
     if params.hidden then
-        -- Фрейм создаётся скрытым; ApplyLayout позиционирует его в цепочке
-        -- и покажет через applyPanelVisibility. Без этого новая панель
-        -- мелькала поверх предыдущей группы до первого пересчёта layout'а.
         f:Hide()
     end
     f._lpsUpdateFunc = nil
     f._lpsTicker = nil
 
-    -- Размер (фиксированный)
     if params.size then
         f:SetSize(params.size[1], params.size[2])
     end
 
-    -- Backdrop
     f:SetBackdrop({
         bgFile   = (params.backdrop and params.backdrop.bgFile) or "Interface\\Buttons\\WHITE8x8",
         edgeFile = (params.backdrop and params.backdrop.edgeFile) or "Interface\\Buttons\\WHITE8x8",
@@ -97,7 +90,6 @@ function LPS:CreateFrame(params)
         f:SetBackdropBorderColor(unpackFn(params.borderColor or {LPS:GetColor("border")} or {0,0,0,1}))
     end
 
-    -- Текст
     if params.fontSize then
         f.text = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         f.text:SetPoint("CENTER")
@@ -114,11 +106,9 @@ function LPS:CreateFrame(params)
             f.text:SetFont(tuple[1], params.fontSize, tuple[2])
         else
             f.text:SetFont(GameFontNormalSmall:GetFont(), params.fontSize)
-            -- local path = GameFontNormalSmall:GetFont(); f.text:SetFont(path, params.fontSize)
         end
     end
 
-    -- Авторазмер по тексту
     if params.padding and params.updateFunc and not params.size then
         f._lpsPaddingX = tonumber(params.padding[1]) or 0
         f._lpsPaddingY = tonumber(params.padding[2]) or 0
@@ -141,9 +131,6 @@ function LPS:CreateFrame(params)
             local m = LPS._lpsMeasureFS
             local file, size, flags = f.text:GetFont()
             if not file then
-                -- Fallback: GetFont у FontString иногда возвращает nil — берём
-                -- шрифт из кэша кортежей (создаётся в блоке «Текст» выше) либо
-                -- из FontObject-наследника.
                 ghostFontCache = ghostFontCache or {}
                 local tuple = ghostFontCache[size or 0] or LPS._fontTuples and LPS._fontTuples[size or 0]
                 if tuple and tuple[1] then
@@ -155,9 +142,6 @@ function LPS:CreateFrame(params)
                     end
                 end
             end
-            -- SetFont на измерительной рамке дергаем только при РЕАЛЬНОЙ смене
-            -- шрифта: повторный SetFont с теми же параметрами сбрасывает
-            -- внутреннее состояние строки и замеры могли плавать на пиксель.
             if file then
                 local key = tostring(file) .. "|" .. tostring(size) .. "|" .. tostring(flags)
                 if key ~= lastMeasureKey then
@@ -180,17 +164,10 @@ function LPS:CreateFrame(params)
             local py = tonumber(f._lpsPaddingY) or 0
             local minW = tonumber(f._lpsMinWidth) or 60
             local w, h = measureText(f.text:GetText())
-            -- Если замеры не дали ничего (шрифт ещё не применён), оставляем
-            -- текущие габариты — иначе панель схлопнется до minWidth.
             if w <= 0 then w = lastFitW or 0 end
             if h <= 0 then h = lastFitH or 0 end
             local newW = math.max(minW, w + px * 2)
             local newH = math.max(1, h + py * 2)
-            -- ВАЖНО: SetSize вызывается ТОЛЬКО при реальном изменении габарита
-            -- (или отступов). Прежний код звал SetSize на КАЖДОМ рефреше даже
-            -- с тем же размером; это заставляло WoW заново пересчитывать
-            -- позиции дочерних якорей, и все панели в цепочке смещались на
-            -- пиксель туда-обратно («прыгающий текст»).
             local padKey = px .. "|" .. py .. "|" .. minW
             if newW ~= lastFitW or newH ~= lastFitH or padKey ~= lastFitPad then
                 lastFitW, lastFitH, lastFitPad = newW, newH, padKey
@@ -205,7 +182,6 @@ function LPS:CreateFrame(params)
         end
     end
 
-    -- События
     if params.updateFunc then
         f._lpsUpdateFunc = params.updateFunc
         if params.updateTicker then
@@ -219,8 +195,6 @@ function LPS:CreateFrame(params)
                 end
             end)
         elseif params.updateEvent then
-            -- Белый список событий: не даём зарегистрировать несуществующее событие
-            -- (иначе WoW выдаёт "Attempt to register unknown event").
             local KNOWN_EVENTS = {
                 -- общие / мира
                 PLAYER_ENTERING_WORLD = true, PLAYER_LOGIN = true, ADDON_LOADED = true,
@@ -232,8 +206,6 @@ function LPS:CreateFrame(params)
                 PLAYER_XP_UPDATE = true, DISABLE_XP_GAIN = true, ENABLE_XP_GAIN = true,
                 -- (LEVEL_UP в WoW API не существует — правильное событие PLAYER_LEVEL_UP)
                 UPDATE_EXHAUSTION = true, PLAYER_LEVEL_UP = true,
-                -- броня / инвентарь / предметы
-                -- (UNIT_ARMOR в WoW API не существует)
                 PLAYER_EQUIPMENT_CHANGED = true, EQUIPMENT_SETS_CHANGED = true,
                 UNIT_INVENTORY_CHANGED = true, UPDATE_INVENTORY_DURABILITY = true,
                 PLAYER_AVG_ITEM_LEVEL_UPDATE = true,
@@ -265,8 +237,6 @@ function LPS:CreateFrame(params)
                 end
             end
             params.updateEvent.events = filtered
-            -- Регистрация событий защищённа (taint): во время боя RegisterEvent
-            -- вызывать нельзя (ADDON_ACTION_FORBIDDEN) — откладываем до выхода из боя.
             local function registerEvents()
                 for _, evt in ipairs(filtered) do
                     f:RegisterEvent(evt)
@@ -295,7 +265,6 @@ function LPS:CreateFrame(params)
         end
     end
 
-    -- OnClick
     if params.onClick then
         f:EnableMouse(true)
         if params.registerClicks then
@@ -306,7 +275,6 @@ function LPS:CreateFrame(params)
         f:SetScript("OnClick", params.onClick)
     end
 
-    -- Tooltip
     if params.tooltipFunc then
         f:EnableMouse(true)
         f:SetScript("OnEnter", params.tooltipFunc)

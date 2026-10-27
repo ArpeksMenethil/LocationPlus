@@ -4,16 +4,6 @@ local L = LPS.L
 local DT = LPS._DT
 
 --------------------------------------------------------------------
--- Подсказка друзей по образцу ElvUI (DataTexts/Friends.lua OnEnter).
--- ВАЖНО: в списке показываем ВСЕХ друзей в сети, а не только тех,
--- кто сейчас в World of Warcraft:
---   * wow-друзья (friends list) — C_FriendList.GetFriendInfoByIndex().connected;
---   * Battle.net-друзья — онлайн аккаунта ИЛИ любого игрового аккаунта
---     (друг может быть онлайн в BNet-приложении, мобильном клиенте или
---     другой игре Blizzard: HS, OW, D3/D4, SC2, WC3 и т.д.).
--- Счётчик «В сети: X/Y» считается из BNGetNumFriends/BNSetFilters так же,
--- как счётчик на панели (Modules/Frames/friends.lua), чтобы цифры совпадали.
--- ПКМ-меню нет по требованию пользователя — ЛКМ открывает стандартный фрейм.
 --------------------------------------------------------------------
 
 do
@@ -57,11 +47,6 @@ do
 
     local myRealm = (GetNormalizedRealmName and GetNormalizedRealmName()) or (GetRealmName and GetRealmName()) or ''
 
-    -- Инвалидация кэша: события приходят через общий Datatexts-мост панели
-    -- (params.updateEvent -> f:SetScript("OnEvent", ...)), поэтому подписку
-    -- вешаем хуком на саму панель при каждом построении подсказки. Панель
-    -- может пересоздаваться (сброс настроек / смена макета) — проверяем, что
-    -- хук навешан именно на текущий фрейм.
     local hookedPanel
     local function AttachInvalidator()
         local panel = LPS.frame and LPS.frame.friends
@@ -100,7 +85,6 @@ do
         return nil
     end
 
-    -- Звёздочка, если персонаж в нашей группе/рейде (ElvUI InGroup)
     local function InGroup(name, realmName)
         if not name then return '' end
         if realmName and realmName ~= '' and realmName ~= myRealm then
@@ -116,7 +100,6 @@ do
         end
     end
 
-    -- client -> project -> faction -> name (как в ElvUI)
     local function Sort(a, b)
         if a.client and b.client then
             if (a.client == b.client) then
@@ -252,7 +235,7 @@ do
                         isAdded = 1
                     elseif client == 'App' then
                         isAdded = (hasFocus and 2) or 1
-                    else -- Mobile -> Game
+                    else
                         isAdded = 2 --swap data
                     end
                 elseif bnInfo.client == 'App' then
@@ -260,16 +243,16 @@ do
                         isAdded = 1
                     elseif client == 'BSAp' then
                         isAdded = (hasFocus and 2) or 1
-                    else -- App -> Game
+                    else
                         isAdded = 2 --swap data
                     end
-                elseif bnInfo.client then -- Game
-                    if client == 'BSAp' or client == 'App' then -- ignore Mobile and App
+                elseif bnInfo.client then
+                    if client == 'BSAp' or client == 'App' then
                         isAdded = 1
                     end
                 end
             end
-            if isAdded == 2 then -- swap data
+            if isAdded == 2 then
                 if bnInfo.client and tableList[bnInfo.client] then
                     for n, y in ipairs(tableList[bnInfo.client]) do
                         if y == bnInfo then
@@ -291,8 +274,6 @@ do
         return bnIndex
     end
 
-    -- total = число из второго возврата BNGetNumFriends (после BNSetFilters),
-    -- т.е. количество ОТФИЛЬТРОВАННЫХ записей (как в ElvUI UpdateTooltip).
     local function BuildBNTable(total)
         for _, v in pairs(tableList) do wipe(v) end
         wipe(BNTable)
@@ -370,7 +351,6 @@ do
         local totalonline = onlineFriends + numBNetOnline
 
         if not dataValid then
-            -- данные собираем только когда реально показываем подсказку
             if numberOfFriends > 0 then BuildFriendTable(numberOfFriends) end
             if totalBNet > 0 and isBNOnline then BuildBNTable(totalBNet) end
             dataValid = true
@@ -382,7 +362,6 @@ do
 
         tt:AddDoubleLine(L.FRIENDS_LIST, format(totalOnlineString, totalonline, totalfriends), tthead.r, tthead.g, tthead.b, tthead.r, tthead.g, tthead.b)
 
-        -- wow-друзья в игре
         if (onlineFriends > 0) then
             for _, info in ipairs(friendTable) do
                 if info.online then
@@ -398,7 +377,6 @@ do
             end
         end
 
-        -- Battle.net-друзья: онлайн в WoW, других играх или BNet-приложении
         if numBNetOnline > 0 then
             local status
             for _, client in ipairs(clientSorted) do
@@ -422,7 +400,6 @@ do
                             else
                                 classc, levelc = RAID_CLASS_COLORS.PRIEST, RAID_CLASS_COLORS.PRIEST
                             end
-                            -- иногда список друзей показывает level 0 unknown friends
                             if not classc then classc = RAID_CLASS_COLORS.PRIEST end
 
                             TooltipAddXLine(tt, true, header,

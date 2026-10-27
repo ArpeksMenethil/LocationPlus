@@ -43,7 +43,6 @@ local function getAddOnInfo(i)
     return nil
 end
 
--- colorByThreshold -> LPS:ColorByThreshold (общая функция, см. ниже)
 
 function LPS:BuildSystemTooltip(tt)
     local db = LPS.GetDB and LPS:GetDB() or nil

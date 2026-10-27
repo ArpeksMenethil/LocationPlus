@@ -11,7 +11,7 @@ local LEVEL_ICON = LPS.icons.Level
 local FISH_ICON = LPS.icons.Fish
 
 
--- Zone level range
+---
 ---@param uiMapID number
 ---@return string playerMinLevel
 ---@return string playerMaxLevel
@@ -76,7 +76,6 @@ function LPS:GetLevelRange(uiMapID)
     return playerMinLevel, playerMaxLevel, playerLevelColor
 end
 
--- Fishing Level
 function LPS:GetFishingLvl()
     if LPS.Retail then return end
 
@@ -103,7 +102,6 @@ function LPS:GetFishingLvl()
     end
 end
 
--- PetBattle Range
 function LPS:GetBattlePetLvl(zoneText)
     if not (LPS.Retail or LPS.Mists) then return end
     if not Tourist or not Tourist.GetBattlePetLevel then return end
@@ -129,7 +127,6 @@ function LPS:GetBattlePetLvl(zoneText)
     return plevel
 end
 
--- Dungeon coords
 local function GetDungeonCoords(zone)
     if not Tourist then return end
 
@@ -154,7 +151,6 @@ local function GetDungeonCoords(zone)
     return dcoords
 end
 
--- PvP/Raid filter
 local function PvPorRaidFilter(zone)
     if not Tourist then return end
 
@@ -186,7 +182,6 @@ local function PvPorRaidFilter(zone)
     return (isPvP and "|cffff0000 "..PVP.."|r" or "")..(isRaid and "|cffff4400 "..RAID.."|r" or "")
 end
 
--- Recommended zones
 local function GetRecomZones(zone)
     if not Tourist then return end
 
@@ -207,7 +202,6 @@ local function GetRecomZones(zone)
     return true
 end
 
--- Dungeons in the zone
 local function GetZoneDungeons(dungeon)
     if not Tourist then return end
 
@@ -234,7 +228,6 @@ local function GetZoneDungeons(dungeon)
 
 end
 
--- Recommended Dungeons
 local function GetRecomDungeons(dungeon)
     if not Tourist then return end
 
@@ -274,21 +267,16 @@ function LPS:BuildLocationTooltip()
 
     GameTooltip:ClearLines()
 
-    -- Zone
     GameTooltip:AddDoubleLine(L.ZONE..": ", zoneText, r, g, b)
 
-    -- Continent
     GameTooltip:AddDoubleLine(L.CONTINENT..": ", LPS:GetContinentName(), r, g, b)
 
-    -- Home
     GameTooltip:AddDoubleLine(L.HOME..": ", GetBindLocation(), r, g, b, 0.41, 0.8, 0.94)
 
-    -- Status
     if db.tooltips.location.status then
         GameTooltip:AddDoubleLine(L.STATUS..": ", LPS:GetZoneStatus(), r, g, b)
     end
 
-    -- Предварительно получаем данные для проверки необходимости пробела
     local levelMin, levelMax, levelColor
     local fishMin, fishMax
     local battlePetLevel
@@ -311,7 +299,6 @@ function LPS:BuildLocationTooltip()
         GameTooltip:AddLine(" ")
     end
 
-    -- Zone level range
     if db.tooltips.location.level and levelMin then
         local zoneLevel
                 
@@ -326,7 +313,6 @@ function LPS:BuildLocationTooltip()
         end
     end
 
-    -- Fishing
     if not LPS.Retail and db.tooltips.location.fish then
         if fishMin and fishMax then
             GameTooltip:AddDoubleLine(PROFESSIONS_FISHING..": ", format("%s-%s %s", fishMin, fishMax, FISH_ICON), r, g, b)
@@ -335,12 +321,10 @@ function LPS:BuildLocationTooltip()
         end
     end
 
-    -- Pet Levels
     if (LPS.Retail or LPS.Mists) and db.tooltips.location.battlePets and battlePetLevel then
         GameTooltip:AddDoubleLine(L.BATTLE_PET_LEVEL.. ": ", battlePetLevel.." "..PET_ICON, r, g, b)
     end
 
-    -- Recommended zones
     if db.tooltips.location.recomZone and Tourist then
         GameTooltip:AddLine(" ")
         GameTooltip:AddLine(L.RECOMMENDED_ZONES..": ", rY, gY, bY)
@@ -355,7 +339,6 @@ function LPS:BuildLocationTooltip()
         end
     end
 
-    -- Instances in the zone
     if db.tooltips.location.zoneDungeon and Tourist and Tourist.DoesZoneHaveInstances and Tourist:DoesZoneHaveInstances(zoneText) then
         GameTooltip:AddLine(" ")
         GameTooltip:AddLine(DUNGEONS.." "..L.IN.." "..zoneText..": ", rY, gY, bY)
@@ -426,10 +409,8 @@ function LPS:BuildLocationTooltip()
 
             -- Список профессий, которые нужно показывать
             local professions = {
-                -- Primary Professions
                 L.ALCHEMY, L.BLACKSMITHING, L.ENCHANTING, L.ENGINEERING, L.JEWELCRAFTING,
                 L.HERBALISM, L.LEATHERWORKING, L.MINING, L.SKINNING, L.TAILORING,
-                -- Secondary Professions
                 L.COOKING, L.FIRST_AID, L.FISHING
             }
 
@@ -460,7 +441,6 @@ function LPS:BuildLocationTooltip()
                 end
             end
 
-            -- 🔑 выводим только если есть профессии
             if #lines > 0 then
                 GameTooltip:AddLine(" ")
                 GameTooltip:AddLine(TRADE_SKILLS .. ":", rY, gY, bY)

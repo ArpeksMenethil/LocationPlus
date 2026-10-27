@@ -12,7 +12,6 @@ local function RemoveGrayParenthesesLine(tooltip)
         local leftText = _G["GameTooltipTextLeft" .. i]
         if leftText then
             local text = leftText:GetText()
-            -- Ищем серый текст в скобках: |cffa8a8a8(...)
             if text and text:match("|cffa8a8a8%(.-%)|r") then
                 leftText:SetText("")
                 leftText:Hide()
@@ -243,18 +242,16 @@ local ICON_EJ = {
 }
 
 local InstanceNameByID = {
-    -- NOTE: for some reason the instanceID from EJ_GetInstanceByIndex doesn't match,
-    -- the instanceID from GetInstanceInfo, so use the collectIDs to find the ID to add.
     [749] = C_Map.GetAreaInfo(3845) -- 'The Eye' -> 'Tempest Keep'
 }
 
 local difficultyColor = {
-    ["О"] = "|cFFFFFFFF",  -- белый (Normal)
-    ["Г"] = "|cFFFF7F00",  -- оранжевый (Heroic)
-    ["Э"] = "|cFFC000FF",  -- фиолетовый (Mythic)
-    ["Э+"] = "|cFF00FF00", -- зелёный (Mythic+)
-    ["П"] = "|cFF007FFF",  -- синий (LookingForRaid)
-    ["В"] = "|cFFFFFF00",  -- жёлтый (Timewalking / placeholder)
+    ["О"] = "|cFFFFFFFF",
+    ["Г"] = "|cFFFF7F00",
+    ["Э"] = "|cFFC000FF",
+    ["Э+"] = "|cFF00FF00",
+    ["П"] = "|cFF007FFF",
+    ["В"] = "|cFFFFFF00",
 }
 
 function LPS:FormatTime(seconds)
@@ -273,7 +270,6 @@ function LPS:FormatTime(seconds)
         table.insert(parts, string.format("%d "..L.MINUTE, minutes))
     end
 
-    -- Если всё равно 0 (секунды < 60), показываем "0 мин"
     if #parts == 0 then
         table.insert(parts, "0 "..L.MINUTE)
     end
@@ -314,11 +310,10 @@ local collectedImages = false
 function LPS:CollectImages()
     local numTiers = (EJ_GetNumTiers() or 0)
     if numTiers > 0 then
-        -- Loop through the expansions to collect the textures
         for i=1, numTiers do
             EJ_SelectTier(i)
-            LPS:GetInstanceImages(1, false) -- Populate for dungeon icons
-            LPS:GetInstanceImages(1, true) -- Populate for raid icons
+            LPS:GetInstanceImages(1, false)
+            LPS:GetInstanceImages(1, true)
         end
 
         -- Set it back to the previous tier
@@ -389,7 +384,6 @@ function LPS:BuildTimeTooltip()
                 end
         end
 
-        -- рейды
         if db.tooltips.time.raids and #raids > 0 then
             GameTooltip:AddLine(L.COOLDOWN_RAIDS, rY, gY, bY)
             for _, v in ipairs(raids) do

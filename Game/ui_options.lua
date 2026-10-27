@@ -2,10 +2,8 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
 -------------------------------------------------
--- Нативное окно настроек (дизайн портирован из исходного аддона)
+---
 -------------------------------------------------
--- Единственный источник пунктов — внутреннее дерево формата options.lua
--- (LPS.Options.tree, без Ace3). Здесь оно превращается в страницы панели UI/Panel.
 local UI = {}
 LPS.UI_Options = UI
 
@@ -78,6 +76,21 @@ local function readColor(entry)
     }
 end
 
+--- Дефолт color-пункта (entry.default): {r,g,b[,a]} или [1..4].
+--- Нужен пикеру для кнопки «сбросить» — сброс возвращает дефолт опции.
+local function readDefaultColor(entry)
+    local d = entry.default
+    if type(d) == "table" then
+        if tonumber(d.r) then
+            return { r = d.r, g = d.g or d.r, b = d.b or d.r, a = tonumber(d.a) or 1 }
+        end
+        if tonumber(d[1]) then
+            return { r = d[1], g = d[2] or d[1], b = d[3] or d[1], a = tonumber(d[4]) or 1 }
+        end
+    end
+    return nil
+end
+
 --- Обёртка над disabled-функцией пункта (для серых строк в нативном UI).
 local function makeDisabled(node)
     if not node.disabled then return nil end
@@ -115,12 +128,6 @@ local function resolveItems(entry)
         seen[value] = true
         items[#items + 1] = { value = value, text = tostring(text or value) }
     end
-    -- Список — только когда все ключи целые 1..n и все элементы — таблицы
-    -- {value=, text=}. Скаляры под целыми ключами — это map key -> название
-    -- (например, «Цвет текста» { [1] = "Custom", [2] = "Class colors",
-    -- [3] = "Default" }): у такого map'а #values > 0, и старая ветка ipairs
-    -- проходила по значениям-именам, из-за чего в дропдауне вместо подписей
-    -- показывались индексы (и в БД записывались строки вместо чисел).
     local count = 0
     for _ in pairs(values) do count = count + 1 end
     local isList = count > 0
@@ -185,8 +192,6 @@ local function collectRows(group, out, additionalSortKeys)
         end
         if not hidden then
             local kind = WIDGET_TYPE[node.type]
-            -- чекбоксы (toggle) в исходном аддоне идут парами в один ряд;
-            -- fullRow=true оставляет чекбокс на всю ширину строки
             local isTogglePair = (kind == "toggle") and node.fullRow ~= true
             if type(node.args) == "table" or type(node.args) == "function" then
                 local groupName = tostring(node.name or "")
@@ -268,6 +273,8 @@ local function collectRows(group, out, additionalSortKeys)
                     label = tostring(node.name or ""),
                     tooltip = nodeTooltip(node),
                     disabled = makeDisabled(node),
+                    alpha = node.alpha == true or node.hasAlpha == true,
+                    default = readDefaultColor(node),
                     get = function() return readColor(node) end,
                     set = function(c) callSet(node, c) end,
                 }
@@ -310,13 +317,10 @@ local function createTreePage(group)
             if self._built and not force then return end
             local entries = collectRows(self._group, {})
             if #entries == 0 then
-                -- пусто: оставляем страницу unbuilt — следующий Refresh
-                -- (повторное открытие окна/вкладки) попробует собрать заново.
                 self._built = false
                 return
             end
             self._built = true
-            -- пересборка поверх старых строк: удаляем прежние row-фреймы
             if content.rows then
                 for _, row in ipairs(content.rows) do row:Hide(); row:ClearAllPoints() end
             end
@@ -329,8 +333,6 @@ local function createTreePage(group)
             page.controls = built.controls
             page.height = built.height
             page.onChange = built.onChange
-            -- подгоняем ширину и высоту скролл-контента под содержимое:
-            -- без этого строки нулевой ширины остаются невидимыми (пустые вкладки)
             local cw = scroll:GetWidth()
             if cw and cw > 1 then content:SetWidth(cw) end
             if scroll.SetContentHeight then
@@ -341,9 +343,6 @@ local function createTreePage(group)
             self:Build()
             Builder.RefreshPage(page)
         end
-        -- Делегат OnValueChanged: без него любой клик по чекбоксу/слайдеру на
-        -- ленивой странице падал с "attempt to call a nil value" (Builder.lua),
-        -- из-за чего половина элементов вкладки оставалась непостроенной.
         function page:OnValueChanged(entry, value)
             local built = self.controls[1] and self.controls[1].entry and true or false
             if not built then return end
@@ -357,8 +356,6 @@ local function createTreePage(group)
                 Builder.RefreshPage(self)
             end
         end
-        -- если страница была построена до того, как фрейм получил реальные
-        -- размеры (свернутое окно, первый кадр), достраиваем её после Show
         if container then
             container:HookScript("OnShow", function()
                 if page._built and scroll.SetContentHeight then
@@ -374,7 +371,6 @@ end
 
 --- Ключ страницы в Panel для узла дерева (стабилен между пересборками).
 local function pageKeyFor(node)
-    -- ключ — имя таба в дереве (стабилен между пересборками и сменами локали)
     return "tree_" .. tostring(node._pageId or node.name or "")
 end
 
@@ -382,9 +378,6 @@ end
 --- Идемпотентно: вызывается каждый раз при открытии окна, чтобы подтянуть
 --- свежие переводы/вкладки после смены языка или профиля.
 function UI.BuildPages()
-    -- дерево пересобирается при каждом построении страниц: фабрики вкладок
-    -- читают переводы L в момент вызова, поэтому смена языка (ApplyLocaleOverride)
-    -- автоматически попадает в заголовки страниц.
     if LPS.Options.GetTree then
         LPS.Options.tree = LPS.Options:GetTree()
     end
@@ -403,17 +396,11 @@ function UI.BuildPages()
         return (tonumber(a.order) or 999) < (tonumber(b.order) or 999)
     end)
     for _, node in ipairs(nodes) do
-        -- страница регистрируется, если у узла есть args (даже когда первая
-        -- попытка collectRows дала пусто: строки могут появиться позже —
-        -- ленивая сборка в createTreePage пересоберёт их при следующем открытии)
         if node.args ~= nil then
             local key = pageKeyFor(node)
             if not UI._pageKeys[key] then
                 UI._pageKeys[key] = true
                 local create = createTreePage(node)
-                -- страница профилей берётся из Game/Options/page_profiles.lua:
-                -- дропдаун активного профиля + кнопки New/Copy/Delete/Reset
-                -- и попапы. Если фабрика недоступна — остаётся обычная дерево-страница.
                 if node._pageId == "profiles" and LPS.CreateProfilesPanelPage then
                     create = LPS.CreateProfilesPanelPage
                 end

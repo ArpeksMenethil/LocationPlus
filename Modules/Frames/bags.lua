@@ -9,7 +9,6 @@ do
         local NUM_BAG_SLOTS = NUM_BAG_SLOTS or (C_Container and C_Container.NUM_BAG_SLOTS) or 4
         local free, total = 0, 0
         for i = 0, NUM_BAG_SLOTS do
-            -- На новых клиентах глобальные GetContainer* перенесены в C_Container
             local f, t
             if C_Container and C_Container.GetContainerNumFreeSlots then
                 f = C_Container.GetContainerNumFreeSlots(i)

@@ -14,9 +14,6 @@ do
             local level = UnitLevel("player")
             local maxPlayer = GetMaxPlayerLevel()
             if level == nil or level <= 0 or (maxPlayer and level >= maxPlayer) then
-                -- На максимальном уровне — локализованное «Макс. уровень» вместо
-                -- глобального MAX_LEVEL; подсказка на этом уровне не показывается
-                -- (см. experience_tt.lua).
                 if f.text then f.text:SetText(L.MAX_LEVEL) end
                 return
             end

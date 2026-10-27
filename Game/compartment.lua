@@ -3,7 +3,7 @@ if not LPS then return end
 local L = LPS.L
 
 ----------------------------------------------------------------
--- Addon Compartment
+---
 ----------------------------------------------------------------
 local function OnAddonCompartmentClick(addonName, buttonName, menuButtonFrame)
     if buttonName == "RightButton" then

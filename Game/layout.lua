@@ -2,7 +2,6 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 LPS_DB = LPS_DB or {}
 
--- Применяет сохранённую позицию к holder-фрейму
 function LPS:ApplyHolderPosition()
     local db = LPS:GetDB()
     db.position = db.position or { point = "TOP", relativePoint = "TOP", x = 0, y = -10 }
@@ -11,7 +10,6 @@ function LPS:ApplyHolderPosition()
     self.frame.holder:SetPoint(p.point, UIParent, p.relativePoint, p.x, p.y)
 end
 
--- Пересчитывает размер главного фрейма по вложенным элементам
 local lastW, lastH
 function LPS:UpdateFrameSize()
     if not (LPS.frame and LPS.frame.holder) then return end
@@ -23,13 +21,6 @@ function LPS:UpdateFrameSize()
         return (f and f:IsShown()) and f:GetHeight() or 0
     end
 
-    -- ВАЖНО: coords/time/gold/system переписаны на общий реестр
-    -- RegisterDatatext и лежат в LPS.frame под своими ключами. Старый код
-    -- суммировал размеры только этих четырёх панелей + локации; как только
-    -- в слоты ставились другие панели (bags, difficulty...), holder'у
-    -- считался размер БЕЗ них — вся сборка сжималась до размера одной
-    -- локации и панели «вообще не отображались». Теперь учитываются ВСЕ
-    -- показанные дочерние фреймы holder'а (кроме служебных).
     local width = w(LPS.frame.location)
     local height = h(LPS.frame.location)
     for key, f in pairs(LPS.frame) do

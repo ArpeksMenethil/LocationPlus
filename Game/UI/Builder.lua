@@ -100,7 +100,6 @@ local function SetRowTooltip(row, control, entry)
     if not (entry.tooltip or entry.desc) then return end
     local kind = entry.kind
     if kind == "toggle" then
-        -- подсказка — на сам чекбокс вместе с его подписью
         AttachTooltip(control.toggle, entry)
         AttachTooltip(control.toggle.text, entry)
     elseif kind == "slider" then
@@ -120,7 +119,6 @@ local function SetRowTooltip(row, control, entry)
     elseif kind == "label" then
         AttachTooltip(control.text or row, entry)
     elseif kind == "link" then
-        -- подсказка на самой ссылке (текст), а не на пустом месте строки
         AttachTooltip(control.link or row, entry)
     else
         AttachTooltip(row, entry)
@@ -245,9 +243,6 @@ local function BuildControl(page, entry, row)
     elseif kind == "link" then
         control.link = BuildLink(row, entry)
     elseif kind == "button" then
-        -- ширина по тексту, чтобы подпись кнопки не залезала за края;
-        -- buttonColumns: N — ряд кнопок в N одинаковых колонок (как на
-        -- странице «Профиль»: CreateFlatButton + равная ширина по подписи)
         local btn = Widgets.CreateFlatButton(row, 90, ROW_HEIGHTS.button, entry.label)
         local textWidth = btn.text:GetStringWidth() or 0
         btn:SetWidth(math.max(90, textWidth + 24))
@@ -312,23 +307,29 @@ local function BuildControl(page, entry, row)
         swatch:SetScript("OnClick", function()
             local db = GetDB()
             local c = ReadValue(entry, db) or { r = 1, g = 1, b = 1 }
-            Widgets.OpenColorPicker(c.r or 1, c.g or 1, c.b or 1, function(r, g, b)
-                WriteValue(entry, { r = r, g = g, b = b })
+            local function write(r, g, b, a)
+                local v = { r = r, g = g, b = b }
+                if entry.alpha then v.a = a or 1 end
+                WriteValue(entry, v)
                 page:OnValueChanged(entry)
-            end, function(r, g, b)
-                WriteValue(entry, { r = r, g = g, b = b })
-                page:OnValueChanged(entry)
-            end)
+            end
+            local CP = LPS.UI and LPS.UI.ColorPicker
+            if CP and CP.Open then
+                CP.Open(c.r or 1, c.g or 1, c.b or 1, c.a or 1,
+                    function(r, g, b, a) write(r, g, b, a) end,
+                    function(r, g, b, a) write(r, g, b, a) end,
+                    { hasAlpha = entry.alpha == true, title = entry.label,
+                      defaultColor = entry.default })
+            else
+                Widgets.OpenColorPicker(c.r or 1, c.g or 1, c.b or 1,
+                    function(r, g, b) write(r, g, b) end,
+                    function(r, g, b) write(r, g, b) end)
+            end
         end)
         control.swatch = swatch
     elseif kind == "input" then
         control.label = CreateRowLabel(row, entry.label)
         if entry.multiline then
-            -- Многострочное поле (строки экспорта/импорта): обычный EditBox с
-            -- SetMultiLine в нативном UI не даёт ни переноса слов, ни скролла —
-            -- длинная строка экспорта была нечитаема. Поэтому поле помещается в
-            -- собственный ScrollFrame; сам EditBox растягивается по высоте
-            -- контента, вертикальный скролл — за счёт scroll child.
             local boxHeight = entry.rowHeight or math.min(220, 24 + (entry.multiline or 6) * 15)
             row:SetHeight(boxHeight)
             control.label:ClearAllPoints()
@@ -353,7 +354,6 @@ local function BuildControl(page, entry, row)
             edit:SetFontObject(GameFontHighlightSmall)
             if edit.SetMaxLetters then edit:SetMaxLetters(200000) end
 
-            -- текст всегда виден целиком: нижняя граница поля следует за текстом
             local function SyncInnerHeight(self)
                 local h = math.max((self:GetTextHeight() or 0) + 8, boxHeight - 22)
                 inner:SetHeight(h)
@@ -361,9 +361,6 @@ local function BuildControl(page, entry, row)
             end
             edit:SetScript("OnTextChanged", function(self, userInput)
                 SyncInnerHeight(self)
-                -- многострочное поле коммитит текст по Enter (как в Ace-версии):
-                -- live-коммит на каждое изменение перестраивал страницу во время
-                -- ввода и сбрасывал каретку
             end)
             edit:SetScript("OnEnterPressed", function(self)
                 commitMultiline(self, entry, page)
@@ -379,7 +376,6 @@ local function BuildControl(page, entry, row)
                 local cur = self:GetVerticalScroll()
                 self:SetVerticalScroll(math.max(0, math.min(maxScroll, cur - delta * 20)))
             end)
-            -- колесо мыши доходит до скролла только когда фокус внутри поля
             edit:HookScript("OnMouseWheel", function(self, delta)
                 local parent = scroll
                 if parent then
@@ -415,7 +411,6 @@ local function BuildControl(page, entry, row)
             page:Refresh()
         end)
         if not entry.multiline then
-            -- live-применение при вводе (как хук LPSEditBoxNoButton в Ace-версии)
             edit:SetScript("OnTextChanged", function(self, userInput)
                 if userInput then commit(self) end
             end)
@@ -474,7 +469,6 @@ local function RefreshControl(control, db)
         local text = value ~= nil and tostring(value) or ""
         if control.edit:GetText() ~= text then
             control.edit:SetText(text)
-            -- после подмены текста пересчитываем высоту многострочного поля
             if control.syncHeight then control.syncHeight(control.edit) end
         end
         if enabled then
@@ -539,7 +533,6 @@ function Builder.Build(parent, entries, opts)
             if i < skipTo then i = skipTo end
             skipTo = nil
         end
-        -- skipTo мог указать за конец списка (группа кнопок до самого конца)
         if i > #entries then break end
         local entry = entries[i]
         if not entry.available or entry.available() then
@@ -566,17 +559,12 @@ function Builder.Build(parent, entries, opts)
                         break
                     end
                 end
-                -- j — первая запись ПОСЛЕ группы: цикл продолжится с неё.
-                -- Было j - 1 (последняя кнопка группы) — из-за этого последняя
-                -- кнопка пересобиралась в новый «групповой» ряд и дублировалась
-                -- в UI (кнопка, которой нет в дереве настроек).
                 skipTo = j
             end
 
             local row = CreateFrame("Frame", nil, parent)
             local placedRight = false
             if kind == "toggle" and leftToggleRowY and not entry.fullRow then
-                -- второй чекбокс пары: правая половина строки первого чекбокса
                 row:SetPoint("TOPLEFT", parent, "TOP", TOGGLE_GUTTER, leftToggleRowY)
                 row:SetPoint("TOPRIGHT", parent, "TOPRIGHT", 0, leftToggleRowY)
                 leftToggleRowY = nil
@@ -587,7 +575,6 @@ function Builder.Build(parent, entries, opts)
                 end
                 row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
                 if kind == "toggle" and not entry.fullRow then
-                    -- первый чекбокс пары: левая половина, ждём второй
                     row:SetPoint("TOPRIGHT", parent, "TOP", -TOGGLE_GUTTER, y)
                     leftToggleRowY = y
                 else
@@ -623,12 +610,7 @@ function Builder.Build(parent, entries, opts)
                 first = false
             else
                 local control = BuildControl(page, entry, row)
-                -- подсказка вешается на конкретный контрол (текст/чекбокс/слайдер),
-                -- а не на всю строку — иначе всплывала при наведении на пустоту
                 SetRowTooltip(row, control, entry)
-                -- многострочные метки могли получить больше высоты из-за переноса слов,
-                -- а высота картинок (логотип) фиксируется BuildImage и может отличаться
-                -- от заготовленной ROW_HEIGHTS
                 if (control.multiline and row:GetHeight() > height)
                     or (control.image and row:GetHeight() ~= height) then
                     if not placedRight then

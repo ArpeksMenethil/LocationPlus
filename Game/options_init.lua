@@ -3,8 +3,6 @@ if not LPS then return end
 
 local OH = LPS.OptionsHelper
 
--- Не пересоздаём LPS.Options: в options.lua и Game/Options/*.lua
--- фабрики вкладок уже зарегистрированы в LPS.Options.BuildTree.tabs.
 LPS.Options = LPS.Options or {}
 LPS.Options.aceAppName = "LocationPlus"
 LPS.Options.BuildTree = LPS.Options.BuildTree or {}
@@ -46,8 +44,6 @@ general = tabs.general and tabs.general() or {},
 show = tabs.show and tabs.show() or {},
 tooltip = tabs.tooltip and tabs.tooltip() or {},
 layout = tabs.layout and tabs.layout() or {},
--- Вкладка «Внешний вид» убрана: это настройки окна, они доступны под
--- кнопкой-шестерёнкой в заголовке (страница "window" в UI/Panel.lua)
 profiles = tabs.profiles and tabs.profiles() or {},
 about = tabs.about and tabs.about() or {},
 },

@@ -3,21 +3,11 @@ if not LPS then return end
 local L = LPS.L
 
 ---------------------------------------------------------------------------
--- Экспорт/импорт профилей через LibDeflate.
--- Формат переноса: профиль сериализуется в JSON, сжимается
--- LibDeflate:CompressDeflate и кодируется в печатную строку
--- LibDeflate:EncodeForPrint, которую пользователь копирует (в чат,
--- файл, в другой клиент / другую версию игры) и вставляет в Import.
---
--- Payload: { addon = "LocationPlus", format = 1, version = "...",
---            profile = "Имя", data = {...настройки профиля...} }
 ---------------------------------------------------------------------------
 LPS.ProfileIO = LPS.ProfileIO or {}
 local IO = LPS.ProfileIO
 
 ---------------------------------------------------------------------------
--- JSON: кодирование/декодирование «плоских» таблиц (строки/числа/
--- булевы/вложенные таблицы) — именно такая структура у профилей.
 ---------------------------------------------------------------------------
 local MAX_DEPTH = 8
 
@@ -32,7 +22,7 @@ local function EncodeValue(v, depth)
         end
         return string.format("%.16g", v)
     elseif t == "string" then
-        return string.format("%q", v) -- double-quoted, JSON-совместимо
+        return string.format("%q", v)
     elseif t == "table" and depth < MAX_DEPTH then
         -- массив (сплошные числовые индексы) или объект
         local n = #v
@@ -198,8 +188,6 @@ function IO.Decode(json)
 end
 
 ---------------------------------------------------------------------------
--- LibDeflate: встроенная копия регистрируется через LibStub (если он
--- есть), иначе доступна как глобальная LibDeflate.
 ---------------------------------------------------------------------------
 local function GetLibDeflate()
     if LibStub and LibStub.GetLibrary then
@@ -212,14 +200,9 @@ local function GetLibDeflate()
     return nil
 end
 
--- Строка переноса всегда начинается с префикса CODE_PREFIX, чтобы её
--- можно было отличить от переносов других аддонов.
 local CODE_PREFIX = "!LPS!"
 
 --- Собирает печатную строку переноса для настроек профиля.
--- @param profileName string Имя профиля, которое создаст импорт
--- @param settings table Настройки профиля (будут скопированы)
--- @return string|nil code, string|nil err
 function IO.EncodeProfile(profileName, settings)
     local ld = GetLibDeflate()
     if not ld then return nil, L.PROFILE_IO_NO_LIB or "LibDeflate is not available." end
@@ -240,7 +223,6 @@ function IO.EncodeProfile(profileName, settings)
 end
 
 --- Разбирает строку переноса в payload {addon, format, profile, data}.
--- @return table|nil payload, string|nil err
 function IO.DecodeProfile(code)
     local ld = GetLibDeflate()
     if not ld then return nil, L.PROFILE_IO_NO_LIB or "LibDeflate is not available." end
@@ -270,7 +252,7 @@ function IO.DecodeProfile(code)
 end
 
 ---------------------------------------------------------------------------
--- UI: общая обвязка кастомного попапа (в стиле Widgets.Create*).
+---
 ---------------------------------------------------------------------------
 local function CreateBasePopup(width, height)
     local Widgets = LPS.UI.Widgets
@@ -322,8 +304,6 @@ local function CreateFieldBox(popup, x, y, w, h)
 end
 
 ---------------------------------------------------------------------------
--- Экспорт: попап с полем кода для копирования. Имя профиля вводится
--- на стороне импорта.
 ---------------------------------------------------------------------------
 function IO.ShowExportPopup()
     local Widgets = LPS.UI.Widgets
@@ -348,9 +328,6 @@ function IO.ShowExportPopup()
         L.POPUP_EXPORT_PROFILE_DESC or "Copy the code below and paste it into Import on another client or game version."
     )
 
-    -- Код переноса. WoW не имеет EditBox:SetReadOnly, поэтому любые
-    -- изменения текста откатываются обратно к коду (выделение/копирование
-    -- при этом работают). Высота фиксированная — поле не растёт под код.
     local CODE_H = 204
     local codeBox = CreateFieldBox(popup, 12, -64, 536, CODE_H)
     codeBox:SetMultiLine(true)
@@ -362,9 +339,6 @@ function IO.ShowExportPopup()
         end
         self:SetHeight(CODE_H)
     end)
-    -- Ctrl+C — скопировать весь код, клик — выделить всё.
-    -- На классических клиентах нет SetClipboardText — тогда копирование
-    -- работает нативно с выделенным текстом (клик выделяет всё).
     codeBox:SetScript("OnKeyDown", function(_, key)
         if key == "C" and IsControlKeyDown() and type(SetClipboardText) == "function" then
             SetClipboardText(code)
@@ -383,9 +357,6 @@ function IO.ShowExportPopup()
 end
 
 ---------------------------------------------------------------------------
--- Импорт: попап с многострочным полем для вставки кода.
--- При успехе создаётся новый профиль (с уникальным именем, если такое
--- уже занято) и показывается подтверждение.
 ---------------------------------------------------------------------------
 function IO.ShowImportPopup()
     local Widgets = LPS.UI.Widgets
@@ -404,8 +375,6 @@ function IO.ShowImportPopup()
     Widgets.ApplyFontColor(nameLabel, "textMuted")
     local nameBox = CreateFieldBox(popup, 12, -82, 260, 22)
 
-    -- Код переноса. Многострочный EditBox в WoW сам растёт под текст,
-    -- поэтому высоту фиксируем: ~20 строк, при вставке не увеличивается.
     local codeLabel = popup:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     codeLabel:SetPoint("TOPLEFT", 12, -114)
     codeLabel:SetText(L.LABEL_CODE or "Code")
@@ -417,9 +386,6 @@ function IO.ShowImportPopup()
     codeBox:SetScript("OnTextChanged", function(self)
         self:SetHeight(CODE_H)
     end)
-    -- Ctrl+V — вставка. WoW API не имеет GetClipboardText (на большинстве
-    -- версий), поэтому вставка идёт нативно через сам EditBox; если функция
-    -- всё же есть — вставляем буфер явно.
     codeBox:SetScript("OnKeyDown", function(self, key)
         if key == "V" and IsControlKeyDown() and type(GetClipboardText) == "function" then
             self:SetText(GetClipboardText())
@@ -459,14 +425,11 @@ function IO.ShowImportPopup()
         if name == "" then name = L.PROFILE_IMPORTED_BASE or "Imported Profile" end
         local finalName = BuildUniqueName(name)
         LPS.sv.profiles[finalName] = LPS.OptionsHelper:deepCopy(payload.data) or {}
-        -- Активируем импортированный профиль: SetProfile обновляет db.profile,
-        -- инвалидирует кеши и применяет настройки (RefreshAfterProfileChange)
         if LPS.db and LPS.db.SetProfile then
             LPS.db:SetProfile(finalName)
         end
         local Panel = LPS.UI.Panel
         if Panel and Panel.RefreshActivePage then Panel.RefreshActivePage() end
-        -- CreatePopup закроет текущий попап и покажет подтверждение
         Widgets.CreatePopup(
             L.POPUP_IMPORT_PROFILE_TITLE or "Import Profile",
             string.format(L.IMPORT_CREATED or "Profile \"%s\" created.", finalName),

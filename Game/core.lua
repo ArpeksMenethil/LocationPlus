@@ -26,7 +26,7 @@ function LPS:GetAddonNotes()
 end
 
 ----------------------------------------------------------------
--- Holder (главный фрейм)
+---
 ----------------------------------------------------------------
 ---@type LPSFrameParams
 local params = {
@@ -42,7 +42,7 @@ LPS.frame.holder = LPS:CreateFrame(params)
 LPS.frame.holder:SetFrameStrata("HIGH")
 
 ----------------------------------------------------------------
--- ADDON_LOADED
+---
 ----------------------------------------------------------------
 LPS.frame.holder:RegisterEvent("ADDON_LOADED")
 LPS.frame.holder:SetScript("OnEvent", function(self, event, name)
@@ -51,11 +51,6 @@ LPS.frame.holder:SetScript("OnEvent", function(self, event, name)
 end)
 
 ----------------------------------------------------------------
--- Собственная система профилей (без AceDB/Ace3).
--- Структура SavedVariables:
---   LPS_DB = { profiles = { [имя] = {...настройки...} },
---              profileKeys = { ["realm - character"] = имя },
---              global = { gold = { realms = {...} } } }
 ----------------------------------------------------------------
 local svMeta = {}
 svMeta.__index = svMeta
@@ -120,14 +115,11 @@ local function InitDB()
         local sv = _G.LPS_DB
         if type(sv) ~= "table" then sv = {}; _G.LPS_DB = sv end
         sv.global = sv.global or {}
-        -- золото всегда в global (по аккаунту), раньше лежало в корне/профилях
         if type(sv.gold) == "table" and not sv.global.gold then
                 sv.global.gold = sv.gold
         end
         sv.gold = nil
         if not (sv.profiles or sv.profileKeys) then
-                -- плоская структура старой версии: всё, кроме служебных ключей,
-                -- переносим в профиль Default
                 local flat = {}
                 for k, v in pairs(sv) do
                         if k ~= "global" and k ~= "profiles" and k ~= "profileKeys" then
@@ -147,7 +139,6 @@ local function InitDB()
                 sv.profiles = { Default = {} }
         end
         if type(sv.profileKeys) ~= "table" then sv.profileKeys = {} end
-        -- привязка к несуществующему профилю -> Default
         for ck, pk in pairs(sv.profileKeys) do
                 if type(pk) ~= "string" or sv.profiles[pk] == nil then
                         sv.profileKeys[ck] = "Default"
@@ -176,8 +167,6 @@ function LPS:onLoaded(name)
         if self._loaded then return end
         self._loaded = true
 
-    -- Язык аддона: переопределение из SavedVariables
-    -- (LPS.RegisterLocale / LPS.ApplyLocaleOverride в Locales/enUS.lua).
     if LPS.ApplyLocaleOverride then
         LPS.ApplyLocaleOverride(_G.LPS_DB and _G.LPS_DB.localeOverride)
     end

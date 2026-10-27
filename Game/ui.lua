@@ -10,8 +10,6 @@ local function ClampAngle(angle)
     return angle
 end
 
--- Форма миникарты: выбирается вручную в настройках
--- (db.show.minimap.shape = "round" / "square"), по умолчанию круг.
 local function IsMinimapSquare()
     local db = LPS:GetDB()
     local mm = db and db.show and db.show.minimap
@@ -128,12 +126,6 @@ function LPS:CreateMinimapButton()
         local db = LPS:GetDB()
         if not db or not db.show or not db.show.minimap then return end
 
-        -- Переводим курсор в координаты РОДИТЕЛЬСКОГО фрейма миникарты
-        -- (тот же отсчёт, что у Minimap:GetCenter). Так угол не зависит от
-        -- того, в каком фрейме висит карта и какой у неё собственный масштаб:
-        -- раньше курсор делился на масштаб UIParent, а центр брался в единицах
-        -- родительского фрейма — при кастомном UI эти системы не совпадали
-        -- и кнопка «прыгала» при привязке.
         local sx, sy = GetCursorPosition()
         local parent = Minimap:GetParent() or UIParent
         local pScale = parent:GetEffectiveScale()
@@ -151,8 +143,6 @@ function LPS:CreateMinimapButton()
     LPS:UpdateMinimapButton()
 end
 
--- Меняем масштаб/размер миникарты — сразу пересчитываем позицию кнопки,
--- иначе радиус, рассчитанный при старом размере, «зависает» в воздухе.
 if Minimap and not Minimap._lpsPosHooked then
     Minimap._lpsPosHooked = true
 
@@ -176,12 +166,10 @@ function LPS:SetMoveMode(enabled)
     f:SetFrameStrata(enabled and "DIALOG" or "HIGH")
     f:SetFrameLevel(enabled and 999 or 1)
 
-    -- создаем линии один раз
     if not f.grid then
         f.grid = LPS:CreateGuideLines()
     end
 
-    -- отключаем мышь у всех детей holder
     for _, child in ipairs({f:GetChildren()}) do
         child:EnableMouse(not enabled)
         child:EnableMouseWheel(not enabled)
@@ -269,7 +257,6 @@ function LPS:SetMoveMode(enabled)
                 if nearH < 1 then nearH = 1 elseif nearH > 9 then nearH = 9 end
             end
 
-            -- индекс активной (подсвеченной) линии или nil
             local activeV
             if stepX > 0 and nearV and math.abs(centerX - (stepX * nearV)) <= snapRange then
                 activeV = nearV
@@ -303,7 +290,6 @@ function LPS:SetMoveMode(enabled)
             end
         end)
     else
-        -- возвращаем holder в обычное состояние
         f:RegisterForDrag()
         f:SetScript("OnUpdate", nil)
         for _, line in ipairs(f.grid and f.grid.vLines or {}) do
@@ -319,7 +305,6 @@ function LPS:SetMoveMode(enabled)
         f:SetScript("OnMouseDown", nil)
         f:SetScript("OnMouseUp", nil)
 
-        -- восстанавливаем мышь у внутренних фреймов
         for _, child in ipairs({f:GetChildren()}) do
             child:EnableMouse(true)
             child:EnableMouseWheel(true)

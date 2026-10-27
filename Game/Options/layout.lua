@@ -783,6 +783,7 @@ function LPS.Options.BuildTree.tabs.layout()
                             desc = L.SET_BACKGROUND_COLOR,
                             order = 2.2,
                             hasAlpha = true,
+                            default = { r = 0, g = 0, b = 0, a = 0.6 },
                             get = function()
                             local c = OH:getDb().settings.colors.bg
                             return c[1], c[2], c[3], c[4]
@@ -801,6 +802,7 @@ function LPS.Options.BuildTree.tabs.layout()
                             desc = L.SET_BORDER_COLOR,
                             order = 3.3,
                             hasAlpha = true,
+                            default = { r = 0.3, g = 0.3, b = 0.3, a = 1 },
                             get = function()
                             local c = OH:getDb().settings.colors.border
                             return c[1], c[2], c[3], c[4]
@@ -840,6 +842,7 @@ function LPS.Options.BuildTree.tabs.layout()
                             name = L.TEXT_CUSTOM_COLOR,
                             desc = L.PICK_A_CUSTOM_COLOR_FOR_PANEL_TEXT,
                             type = "color",
+                            default = { r = 1, g = 1, b = 1 },
                             disabled = function() return OH:getDb().layout.customColor ~= 1 end,
                             get = function()
                             local c = OH:getDb().layout.userColor

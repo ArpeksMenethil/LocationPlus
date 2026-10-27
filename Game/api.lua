@@ -3,11 +3,6 @@ if not LPS then return end
 
 local cachedPlayerClass
 local function getClassColor()
-    -- Кэшируем ТОЛЬКО непустой classFile: первый вызов может случиться до
-    -- входа в мир (первый полный проход ApplyLayout на загрузке аддона),
-    -- где UnitClass("player") ещё не знает персонажа. Пустое/nil значение
-    -- иначе записалось бы в кэш навсегда, и цвет молча деградировал бы в
-    -- белый («цвет класса не работает»).
     if not cachedPlayerClass then
         local _, classFile = UnitClass("player")
         if classFile and classFile ~= "" then
@@ -15,9 +10,6 @@ local function getClassColor()
         end
     end
     if cachedPlayerClass then
-        -- Тот же подход, что в Theme.lua (GetClassColor): сначала современный
-        -- API, затем классический глобал. Прямой опрос RAID_CLASS_COLORS без
-        -- C_ClassColor мог молча не находить класс в некоторых сборках.
         local key = cachedPlayerClass:upper()
         if C_ClassColor and C_ClassColor.GetClassColor then
             local c = C_ClassColor.GetClassColor(key)
@@ -31,7 +23,6 @@ end
 
 local unpackFn = table.unpack or unpack
 
--- Кэш нормализованного layout'а (см. LPS:_NormalizeLayoutDB).
 local normalizedLayoutCache
 
 function LPS:_NormalizeLayoutDB(raw)
@@ -40,12 +31,6 @@ function LPS:_NormalizeLayoutDB(raw)
         local db = LPS:GetDB()
         if db then db.layout = raw end
     end
--- ВАЖНО: кэш нормализации не должен «съедать» изменения настроек.
--- AceDB может мутировать профиль in-place (та же таблица), поэтому
--- проверка «изменились ли значения» здесь ненадёжна и раньше приводила
--- к тому, что правки в табаке «Макет» (padding/minWidth/spacing) не
--- применялись. Нормализация дешёвая — выполняем её всегда; настоящая
--- защита от лишних перекладок — ключ ApplyLayout + InvalidateLayoutCache.
 local out = normalizedLayoutCache and normalizedLayoutCache.out or {}
     out.dtPaddingX  = tonumber(raw.dtPaddingX)
     out.dtPaddingY  = tonumber(raw.dtPaddingY)
@@ -53,8 +38,6 @@ local out = normalizedLayoutCache and normalizedLayoutCache.out or {}
     out.locPaddingX = tonumber(raw.locPaddingX)
     out.locPaddingY = tonumber(raw.locPaddingY)
     out.locMinWidth = tonumber(raw.locMinWidth)
-    -- spacingAuto == true — авторасстояние (жёстко 5, как в эталонной версии);
-    -- spacingAuto == false — ручное значение из spacingManual (дефолт из LPS.defaults).
     local defLayout = LPS.defaults and LPS.defaults.layout or {}
     if raw.spacingAuto == false then
         out.spacing = tonumber(raw.spacingManual) or tonumber(defLayout.spacingManual) or 20
@@ -65,8 +48,6 @@ local out = normalizedLayoutCache and normalizedLayoutCache.out or {}
         raw.dtshow = LPS.defaults.layout.dtshow
     end
     if raw.sideSlots == nil and LPS.defaults and LPS.defaults.layout then
-        -- КОПИЯ дефолтов, а не ссылка: при AceDB-наследовании запись в общую
-        -- таблицу дефолтов ломала бы все профили и сам источник дефолтов.
         local copy = {}
         for k, v in pairs(LPS.defaults.layout.sideSlots) do
             if type(v) == "table" then
@@ -127,14 +108,6 @@ local function applyPanelVisibility(frames, slotList, showDT)
         return false
     end
     local shownNow = {}
-    -- ЕДИНЫЙ цикл по ВСЕМ панелям. Раньше coords/time/gold/system обрабатывались
-    -- отдельными строками ДО этого цикла и исключались из него: после перевода
-    -- этих четырёх панелей на общий реестр RegisterDatatext их фреймы создаются
-    -- общим GetOrCreatePanelFrame (предпроход в ApplyLayout) и появляются в
-    -- frames[] уже ПОСЛЕ старых отдельных строк — SetShown для них не вызывался
-    -- вовсе, и gold/coords/system/time «вообще не отображались». Теперь здесь
-    -- показываются все панели одним кодом (служебные holder/location/minimapButton
-    -- пропускаются).
     for key, f in pairs(frames) do
         if key ~= "holder" and key ~= "location" and key ~= "minimapButton"
             and type(f) == "table" and f.SetShown and f.IsShown then
@@ -142,15 +115,10 @@ local function applyPanelVisibility(frames, slotList, showDT)
             if f:IsShown() then shownNow[#shownNow + 1] = f end
         end
     end
-    -- Принудительное первичное заполнение ТОЛЬКО что показанных панелей:
-    -- без этого скрытая при создании панель (hidden = true), показанная в этом
-    -- же проходе, оставалась пустой до первого события/тикера («выбрал Золото
-    -- — оно пустое, пока не обновлю»). Скрытые панели не трогаем.
     LPS._pendingPanelPrimes = shownNow
 end
 LPS._ApplyPanelVisibility = applyPanelVisibility -- общий для ApplyLayout и Apply*Visibility
 
--- Собирает строковое описание всех слотов (для кэш-ключа ApplyLayout)
 function LPS._CollectSlotKeys(sideSlots)
     local res = {}
     if type(sideSlots) ~= "table" then return res end
@@ -177,10 +145,6 @@ if not db or not frames then return end
 
 local layout = LPS:_NormalizeLayoutDB(db.layout)
 
--- Внутренний кэш-маркер: если ключ настроек не изменился с прошлого прохода,
--- ApplyLayout пропускает переанкеривание/перекраску (вызывается очень часто).
--- userColor мутируется колбэком ColorPicker "псевдо-на месте", поэтому его
--- компоненты входят в ключ отдельно от ссылки на таблицу.
 local user = layout.userColor
 local layoutKey = tostring(layout.dtPaddingX) .. "," .. tostring(layout.dtPaddingY) .. ","
 .. tostring(layout.dtMinWidth) .. "," .. tostring(layout.locPaddingX) .. ","
@@ -194,12 +158,7 @@ local layoutKey = tostring(layout.dtPaddingX) .. "," .. tostring(layout.dtPaddin
 .. tostring(db.settings and db.settings.fontSize or 12) .. ","
 .. tostring(layout.chainAnchor)
 
--- forcePass = первый полный проход после загрузки/сброса кэша. Раньше он
--- зависел от holder:IsShown(), который в момент инициализации ещё false, —
--- из-за этого флаг никогда не сбрасывался и часть пересчётов пропускалась.
 local forcePass = not (frames.holder and frames.holder._lpsEverApplied)
--- Принудительный полный проход после смены настроек (ScheduleRefresh), даже
--- если layoutKey формально совпал с предыдущим.
 if not forcePass and LPS._ConsumePendingRefresh() then forcePass = true end
 if not forcePass and frames.holder and frames.holder._lpsLastLayoutKey == layoutKey then
 return
@@ -209,13 +168,6 @@ if frames.holder then
 frames.holder._lpsLastLayoutKey = layoutKey
 end
 
--- Локальные имена layout-параметров (без них ниже шли nil-присваивания:
--- f._lpsPaddingX = locPaddingX записывал nil, а padding/minWidth/spacing
--- из таба «Макет» никогда не попадали во фреймы).
--- Значения из db.layout могут быть nil (битый SavedVariables / профиль до
--- миграции) — берём дефолты из LPS.defaults.layout, иначе произошло бы
--- `f._lpsPaddingX = nil` и авторазмер считался бы по жёстким полам, а
--- настройки «Макета» выглядели бы не работающими.
 local defaultsLayout = (LPS.defaults and LPS.defaults.layout) or {}
 local dtPaddingX  = tonumber(layout.dtPaddingX)  or tonumber(defaultsLayout.dtPaddingX)  or 20
 local dtPaddingY  = tonumber(layout.dtPaddingY)  or tonumber(defaultsLayout.dtPaddingY)  or 7
@@ -224,9 +176,6 @@ local locPaddingX = tonumber(layout.locPaddingX) or tonumber(defaultsLayout.locP
 local locPaddingY = tonumber(layout.locPaddingY) or tonumber(defaultsLayout.locPaddingY) or 9
 local locMinWidth = tonumber(layout.locMinWidth) or tonumber(defaultsLayout.locMinWidth) or 200
 local spacing     = tonumber(layout.spacing) or 5
--- Принудительный пересчёт габаритов на первом проходе (в т.ч. когда holder
--- ещё скрыт): иначе padding/minWidth из таба "Макет" не применяются до
--- первого изменения любой другой настройки.
 local firstPass = forcePass
 
 local function getLayoutTextColor(mode, userColor)
@@ -234,13 +183,9 @@ if mode == 1 then
 return (userColor and userColor.r) or 1, (userColor and userColor.g) or 1, (userColor and userColor.b) or 1
 end
 if mode == 2 then
--- getClassColor — единая file-level upvalue (без дублей и closure-аллокаций)
 return getClassColor()
 end
 if mode == 3 then
--- «По умолчанию» = цвет текста из настроек стиля (db.settings.colors.text),
--- а не цвет статуса зоны: у панели локации свой цвет по зоне всегда
--- (см. Modules/Frames/location.lua), здесь раскрашиваются остальные панели
 return LPS:GetColor("text")
 end
 return nil
@@ -251,17 +196,6 @@ local file, _, flags = GameFontNormalSmall:GetFont()
 return file, flags
 end
 
--- Принудительный пересчёт габаритов: вызывается из ApplyLayout при каждом
--- реальном проходе. Раньше фреймы пересчитывали размер только внутри своих
--- updateFunc (текст -> resizeToFit); если текст панели не менялся, SetSize
--- не вызывался вовсе и изменения отступов X/Y «не работали», пока не
--- приходило следующее событие с новым текстом.
--- ВАЖНО: здесь пересчитывается ТОЛЬКО размер (resizeToFit), без повторного
--- вызова update — полный проход ниже идёт уже после позиционирования и
--- показа панелей. Если бы мы дёргали updateFunc до positionChain, любая
--- запись текста меняла бы ширину фрейма ПОСЛЕ его якорения и панель
--- «прыгала»/перекрывала соседей; кроме того скрытые панели обновлялись
--- зря.
 local function forceResize(f)
     if not f then return end
     if f._lpsResizeToFit then f._lpsResizeToFit() end
@@ -296,7 +230,6 @@ end
 -- Собираем активные слоты в цепочки left[] / right[] (slotN1 — ближайший к локации)
 local leftChain, rightChain = {}, {}
 for _, side in ipairs({ "left", "right" }) do
-    -- сначала слот 1 (ближе к локации), затем 2, 3 — привязка идёт по цепочке
     for i = 1, math.max(tonumber(layout.slotCount) or 2, 2) do
         local cfg = sideSlots[side .. i]
         if cfg then
@@ -313,33 +246,16 @@ local slotList = {}
 for _, e in ipairs(leftChain) do slotList[#slotList + 1] = e end
 for _, e in ipairs(rightChain) do slotList[#slotList + 1] = e end
 
--- Все панели (в т.ч. coords/time/gold/system, переписанные на общий реестр
--- LPS:RegisterDatatext()) создаются одним конструктором GetOrCreatePanelFrame.
--- Раньше здесь были отдельные ветки `return frames.coords` и т.п.: после
--- перевода этих панелей в реестр их фреймы больше не создаются в
--- CreateAllFrames, а такие ветки возвращали nil — positionChain не ставил
--- панели в цепочку, applyPanelVisibility скрывал несуществующие фреймы, и
--- gold/coords/system/time «вообще не отображались».
 local function getFrameByKey(key)
     if LPS.GetOrCreatePanelFrame then return LPS:GetOrCreatePanelFrame(key) end
     return nil
 end
 
--- Гарантированно создаём фреймы всех занятых слотов ДО позиционирования и
--- до applyPanelVisibility (иначе SetShown вызывается для ещё не созданных
--- панелей и они остаются скрытыми до следующего прохода layout'а).
 for _, e in ipairs(slotList) do
     local f = getFrameByKey(e.key)
     if f then frames[e.key] = f end
 end
 
--- Цепочки боковых панелей:
--- ЛЕВЫЕ панели привязываются к ЛЕВОЙ стороне группы (первая — к левому краю
--- локации, каждая следующая — к левому краю предыдущей панели).
--- ПРАВЫЕ панели привязываются к ПРАВОЙ стороне группы (первая — к правому
--- краю локации, каждая следующая — к правому краю предыдущей панели).
--- Опция db.layout.chainAnchor = "location" меняет якорь ПЕРВОЙ панели цепочки
--- с края локации на край holder'а (внешний край всей сборки).
 local function useHolderAnchor()
     local db = LPS.GetDB and LPS:GetDB()
     local lay = db and db.layout
@@ -348,13 +264,9 @@ end
 
 local function positionChain(chain, side)
     local isLeft = (side == "LEFT")
-    -- ownPoint: для левых панелей это их RIGHT-край (он прижимается к левой
-    -- стороне группы), для правых — их LEFT-край (прижимается к правой стороне).
     local ownPoint = isLeft and "RIGHT" or "LEFT"
     local edgePoint = isLeft and "LEFT" or "RIGHT"
     local sign = isLeft and -1 or 1
-    -- Первая панель цепляется за левый/правый КРАЙ локации; при chainAnchor =
-    -- "location" — за соответствующий край holder'а (внешний край сборки).
     local anchorTo, anchorPoint = frames.location, edgePoint
     local seen = {}
     for idx = 1, #chain do
@@ -371,12 +283,8 @@ local function positionChain(chain, side)
                     local base = (frames.holder and frames.holder.IsShown and frames.holder:IsShown()) and frames.holder or frames.location
                     anchorTo, anchorPoint = base, edgePoint
                 end
-                -- Смещение sign*spacing; у первой панели offset не применяется
-                -- (панель стоит вплотную к краю локации), чтобы не было разрывов.
                 local dx = ((idx == 1) and 0 or (sign * spacing)) + ox
                 frame:SetPoint(ownPoint, anchorTo, anchorPoint, dx, oy)
-                -- Следующая панель цепляется за КРАЙ этой же стороны:
-                -- левые — за левый край предыдущей, правые — за правый.
                 anchorTo, anchorPoint = frame, edgePoint
             end
         end
@@ -386,13 +294,8 @@ end
 positionChain(leftChain, "LEFT")
 positionChain(rightChain, "RIGHT")
 
--- Показываем/скрываем панели строго по настройкам ("Показывать панели" и
--- занятым слотам). Без этого вызова фреймы, созданные без hidden = true
--- (coords/time/gold/system), оставались видимыми всегда.
 applyPanelVisibility(frames, slotList, showDT)
 
--- Первичное заполнение панелей, показанных в этом же проходе:
--- текст ставится сразу, без ожидания события/тикера.
 if LPS._pendingPanelPrimes then
     for _, f in ipairs(LPS._pendingPanelPrimes) do
         if f and f:IsShown() and f._lpsUpdateFunc then
@@ -418,11 +321,6 @@ local flags = defaultFlags or "NONE"
 local fontChanged = false
 local fontSizeChanged = false
 local fontKey = tostring(fontFile) .. "|" .. tostring(size) .. "|" .. tostring(flags)
--- Список стилизуемых панелей строится по КЛЮЧАМ frames[]. Раньше сюда
--- добавлялись frames.time/coords/gold/system напрямую: после перевода этих
--- панелей на общий реестр их фреймы могут ещё не существовать (создаются
--- лениво), и nil-элементы ломали цикл стилизации. location исключается —
--- у него собственный режим цвета (getLayoutTextColor/customColor).
 local styledFrames = {}
 for key, f in pairs(frames) do
 if key ~= "holder" and key ~= "minimapButton" and type(f) == "table" and f.text then
@@ -447,10 +345,7 @@ mode = 3
 end
 local r, g, b
 if f == LPS.frame.location then
--- Локация исключена из общей раскраски: её цвет всегда управляется
--- своим updateFunc по статусу зоны — см. Modules/Frames/location.lua
 elseif f._lpsForceWhite then
--- gold/time всегда белые; флаг ставится модулями панелей
 r, g, b = 1, 1, 1
 elseif mode == 3 then
 r, g, b = LPS:GetColor("text")
@@ -477,19 +372,11 @@ end
 end
 end
 
--- Первый проход (или смена layout-чисел при скрытом локации): гарантируем
--- пересчёт размеров локации и панелей даже если updateFuncы выше ничего
--- не поменяли (текст уже был актуален) — иначе настройки "Макета"
--- (padding / minWidth) выглядят "не работающими".
 if firstPass or layoutNumsChanged then
 local loc = frames.location
 if loc and loc._lpsUpdateFunc then
 loc._lpsUpdateFunc(loc)
 end
--- coords/time/gold/system теперь обычные панели реестра RegisterDatatext и
--- лежат в frames[] под своими ключами — отдельный список из четырёх
--- ipairs({frames.coords, ...}) устарел (он молча ничего не делал, когда
--- фреймы ещё не были созданы). Пересчитываем ВСЕ показанные панели.
 for key, f in pairs(frames) do
 if key ~= "holder" and key ~= "location" and key ~= "minimapButton"
 and type(f) == "table" and f._lpsUpdateFunc and f.IsShown and f:IsShown() then
@@ -578,23 +465,12 @@ function LPS:ApplyVisibility()
     holder:SetAlpha(1)
 end
 
--- Сброс настроек панелей БЕЗ опоры на LPS.defaults.panels (таблица удалена):
--- очищаем db.panels (все панели снова включены по умолчанию), вычищаем панели
--- из слотов layout.sideSlots (кроме зарезервированных) и закрываем созданные
--- фреймы инфотекстов, чтобы они пересоздались при следующем ApplyLayout.
 function LPS:ResetPanelsToDefaults()
         local db = self:GetDB()
         if not db then return end
 
         db.panels = nil
 
-        -- Сброс панелей = дефолтные слоты (left1="gold", right1="system").
-        -- Раньше здесь только «вычищали» незарезервированные панели, помечая
-        -- тронутые слоты в userTouched; после этого ApplyDefaults никогда не
-        -- возвращал дефолты и сборки оставались с пустыми слотами. Теперь слоты
-        -- полностью пересоздаются из копии LPS.defaults.layout.sideSlots, а
-        -- userTouched очищается — миграция в ApplyDefaults сама назначит
-        -- дефолтные панели в нетронутые слоты.
         if type(db.layout) == "table" then
                 local defSS = (LPS.defaults and LPS.defaults.layout and LPS.defaults.layout.sideSlots) or {}
                 local fresh = {}
@@ -607,10 +483,6 @@ function LPS:ResetPanelsToDefaults()
                 db.layout.sideSlots = fresh
         end
 
-        -- Закрываем созданные фреймы инфотекстов, чтобы они пересоздались.
-        -- ВАЖНО: `reserved` в этом файле не определена — раньше строка
-        -- `not reserved[k]` бросала "attempt to index a nil value" и весь
-        -- сброс панелей падал (что ощущалось как «настройки не применяются»).
         if LPS.frame then
                 for k, f in pairs(LPS.frame) do
                         if type(f) == "table" and k ~= "holder" and k ~= "location" and k ~= "minimapButton"
@@ -623,15 +495,10 @@ function LPS:ResetPanelsToDefaults()
                 end
         end
 
-        -- Слоты только что перезаписаны дефолтами; ApplyDefaults при следующем
-        -- запуске не должен вернуть старые userTouched-метки из наследуемой
-        -- таблицы AceDB — перестраховываемся явно.
         if db.layout and type(db.layout.sideSlots) == "table" then
                 db.layout.sideSlots.userTouched = {}
         end
 
-        -- Пересоздаём фреймы из актуального db.layout (отступы/minWidth),
-        -- затем принудительно перерисовываем layout с инвалидацией кэша.
         if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
         if LPS.ApplyAllSettings then LPS:ApplyAllSettings() end
         if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
@@ -640,18 +507,11 @@ function LPS:ResetPanelsToDefaults()
 end
 
 function LPS:ResetAllSettingsToDefaults()
-    -- Сброс без внешних библиотек: ResetProfile собственной БД (core.lua)
-    -- перезаписывает содержимое текущего профиля копией LPS.defaults. Объект
-    -- глобала LPS_DB не подменяется — WoW сериализует именно его, поэтому
-    -- настройки гарантированно сохраняются после /reload.
     if LPS.db and LPS.db.ResetProfile then
         pcall(function() LPS.db:ResetProfile() end)
     end
     if LPS.InvalidateDBCache then LPS:InvalidateDBCache() end
 
-    -- Сброс настроек должен вернуть и вид панелей: закрываем созданные фреймы
-    -- инфотекстов (кроме зарезервированных coords/time/gold/system), чтобы они
-    -- пересоздались с дефолтовыми значениями при следующем ApplyLayout
     if LPS.frame then
         for _, k in ipairs({ "bags", "combatIndicator",
             "difficulty", "durability", "experience", "friends", "guild", "itemLevel", "mail",
@@ -731,7 +591,7 @@ if not LPS.L then
 end
 local Locale = LPS.L
 
--- Выводит сообщение в чат с префиксом аддона и поддержкой локализации
+---
 --- @param msg string Сообщение
 --- @param isTranslate boolean Флаг перевода msg
 function LPS:Print(msg, isTranslate)
@@ -741,23 +601,13 @@ function LPS:Print(msg, isTranslate)
     print("|c"..LPS.addon.textColor..LPS.addon.name.."|r: " .. tostring(msg))
 end
 
--- Возвращает локализованную строку по ключу или сам ключ, если перевода нет
 
--- Принудительно инвалидирует кеши ссылок на БД. Вызывается при любой замене
--- глобала LPS_DB (миграция в onLoaded, сброс настроек), чтобы устаревшие
--- ссылки не приводили к записи настроек «в никуда» (симптом: значения
--- применяются, но после /reload исчезают, потому что WoW сериализует
--- совершенно другой объект SavedVariables).
 function LPS:InvalidateDBCache()
     self.profileDB = nil
     self.accountDB = nil
 end
 
 function LPS:GetProfileDB()
-    -- ВАЖНО: при наличии AceDB НЕ кешируем self.db.profile в self.profileDB.
-    -- Если LPS.db пересоздан или глобал LPS_DB заменён, кешеванная ссылка
-    -- остаётся на старую таблицу: set() из опций пишет в неё, а на логауте
-    -- сериализуется другой объект — настройки «не сохраняются».
     if self.db and self.db.profile then
         return self.db.profile
     end
@@ -805,12 +655,6 @@ function LPS:GetGoldRoot()
     return LPS_DB.global.gold
 end
 
--- Сбрасывает позицию основного фрейма к значениям по умолчанию.
--- ВАЖНО: сбрасывается ТОЛЬКО положение holder-фрейма (db.position ->
--- LPS.defaults.position). Смещения боковых панелей (sideSlots.offsetX/Y)
--- сюда трогать нельзя — для них есть /lps resetpanels и кнопка сброса
--- значений; раньше эта функция обнуляла ещё и offset'ы панелей, из-за
--- чего «сброс позиции» разбрасывал пользовательскую сборку панелей.
 function LPS:ResetFramePosition()
     local db = LPS:GetDB()
     local def = (LPS.defaults and LPS.defaults.position) or { point = "TOP", relativePoint = "TOP", x = 0, y = -10 }
@@ -826,7 +670,6 @@ function LPS:ResetFramePosition()
     LPS:Print("The frame position is reset")
 end
 
--- Включает или выключает режим перемещения фрейма
 function LPS:ToggleMoveMode()
     local holder = LPS.frame and LPS.frame.holder
     if not holder then return end
@@ -835,7 +678,6 @@ function LPS:ToggleMoveMode()
     holder.isMoving = not moving
 end
 
--- Возвращает ID континента, на котором находится игрок
 function LPS:GetContinentID()
     local mapID = C_Map.GetBestMapForUnit("player")
     if not mapID then return end
@@ -844,8 +686,6 @@ function LPS:GetContinentID()
 end
 
 
--- Единственная реализация имени континента: подъём по иерархии карт до
--- Continent/World (корректно и для зон, и для городов-анклавов).
 function LPS:GetContinentName()
     local currentMapID = C_Map.GetBestMapForUnit("player")
     if not currentMapID then
@@ -872,7 +712,6 @@ function LPS:GetContinentName()
     return continentName or UNKNOWN
 end
 
--- Возвращает статус зоны (PVP/мирная и т.п.), опционально цвет или цветной текст
 function LPS:GetZoneStatus(color)
     local status = ""
     local r, g, b = 1, 1, 0
@@ -901,7 +740,6 @@ function LPS:GetZoneStatus(color)
     return format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, status)
 end
 
--- Возвращает отформатированное игровое время с учетом CVar (12/24ч, локальное/серверное)
 local function rgbToHex(r, g, b)
     r = tonumber(r) or 1
     g = tonumber(g) or 1
@@ -912,6 +750,7 @@ local function rgbToHex(r, g, b)
     return string.format("%02x%02x%02x", rr, gg, bb)
 end
 
+--- Возвращает отформатированное игровое время с учетом CVar (12/24ч, локальное/серверное).
 function LPS:GetFormattedGameTime()
     local db = LPS:GetDB()
     local layout = db and db.layout or {}
@@ -929,7 +768,6 @@ function LPS:GetFormattedGameTime()
     elseif mode == 2 then
         r, g, b = getClassColor()
     else
-        -- режим «По умолчанию»: тот же цвет текста, что у остальных панелей
         r, g, b = LPS:GetColor("text")
     end
     local colon = "|cff" .. rgbToHex(r, g, b) .. ":|r"
@@ -961,15 +799,8 @@ function LPS:GetFormattedGameTime()
     end
 end
 
--- Применяет значения по умолчанию к таблице базы данных рекурсивно
 function LPS:ApplyDefaults(db, defaults)
     if type(db) ~= "table" then db = {} end
-    -- Защита от записи в источник дефолтов: если профиль ещё не содержит
-    -- ключа, AceDB-наследование может отдать В ТОЧНОСТИ таблицу из
-    -- LPS.defaults. Рекурсия ниже дописывала бы недостающие поля прямо в
-    -- defaults — после этого «дефолты» портились на весь аккаунт, а любые
-    -- последующие сбросы/смены профилей давали бы мусор («настройки не
-    -- сохраняются, всегда применяются default»). Заменяем ссылку копией.
     if rawequal(db, defaults) then
         local copy = {}
         for k, v in pairs(db) do copy[k] = v end
@@ -986,10 +817,6 @@ function LPS:ApplyDefaults(db, defaults)
 
     if defaults.layout and db.layout and type(db.layout) == "table" then
         local defL = defaults.layout
-        -- Guard: db.layout может быть ТО на таблице дефолтов (AceDB-
-        -- наследование). Записи ниже (dtshow/sideSlots/offsetX...) иначе
-        -- портили бы сам источник дефолтов — из-за этого gold/system
-        -- «исчезали навсегда».
         if rawequal(db.layout, defaults.layout) then
             local copy = {}
             for k, v in pairs(db.layout) do copy[k] = v end
@@ -1032,10 +859,6 @@ function LPS:ApplyDefaults(db, defaults)
         if type(db.layout.userColor) ~= "table" then db.layout.userColor = { r = 1, g = 1, b = 1 } end
         if type(db.layout.sideSlots) ~= "table" then db.layout.sideSlots = {} end
         local ss = db.layout.sideSlots
-        -- Защита от общей таблицы: если профиль по наследованию AceDB
-        -- указывает ТО на LPS.defaults.layout.sideSlots, делаем копию —
-        -- иначе миграция/дефолты записывались бы прямо в таблицу дефолтов
-        -- и «сжигали» left1/right1 для всех будущих профилей.
         if defL.sideSlots ~= nil and rawequal(ss, defL.sideSlots) then
             local copy = {}
             for k, v in pairs(ss) do
@@ -1051,11 +874,8 @@ function LPS:ApplyDefaults(db, defaults)
             db.layout.sideSlots = copy
             ss = db.layout.sideSlots
         end
-        -- Слоты, которые пользователь назначал/чистил вручную (не перетираем
-        -- дефолтами при миграции). Проставляется в set-функциях опций.
         if type(ss.userTouched) ~= "table" then ss.userTouched = {} end
 
-        -- Миграция со старой схемы {left, right} на нумерованные слоты {left1..left3, right1..right3}
         for _, side in ipairs({"left","right"}) do
             local oldSlot = ss[side]
             if type(oldSlot) == "table" then
@@ -1068,9 +888,6 @@ function LPS:ApplyDefaults(db, defaults)
                 ss[side] = nil
             end
         end
-        -- Удалённый фрейм «Задания» (quests): панель больше не регистрируется,
-        -- поэтому чистим слоты с ней при каждой загрузке профиля — иначе
-        -- ApplyLayout молча пропустит несуществующую панель.
         for _, slot in pairs(ss) do
             if type(slot) == "table" and slot.frame == "quests" then
                 slot.frame = "NONE"
@@ -1086,14 +903,7 @@ function LPS:ApplyDefaults(db, defaults)
                     ss[name] = s
                 end
                 local defS = defL.sideSlots and defL.sideSlots[name]
-                -- ВАЖНО: условие включает и "NONE": при AceDB-наследовании пустой профиль
-                -- может отдать в db.layout.sideSlots саму таблицу дефолтов (та же ссылка),
-                -- и предыдущие прогоды ApplyDefaults записывали в неё "NONE" — из-за этого
-                -- gold/system терялись навсегда («панели вообще не отображаются»).
                 if not ss.userTouched[name] and defS and (s.frame == nil or s.frame == "" or s.frame == "NONE") then
-                    -- слот ещё никогда не настраивался пользователем -> назначаем
-                    -- панель по умолчанию, чтобы первая группа фреймов была видима
-                    -- сразу после установки (или после сброса настроек).
                     s.frame = defS.frame
                 elseif s.frame == nil or s.frame == "" then
                     s.frame = "NONE"
@@ -1107,8 +917,6 @@ function LPS:ApplyDefaults(db, defaults)
     return db
 end
 
--- Возвращает цвет из настроек аддона по ключу
--- (unpackFn — единый upvalue в начале файла: table.unpack or unpack)
 function LPS:GetColor(key)
     local db = LPS:GetDB()
     local colors = db.settings and db.settings.colors
@@ -1121,16 +929,7 @@ function LPS:GetColor(key)
 end
 
 local refreshPending = false
--- Флаг «грязных» установок: ApplyLayout может завершиться раньше, чем что-либо
--- пересчитает (выход по совпадению layoutKey), а гонкая ScheduleRefresh
--- (0.05 с) способна слить несколько инвалидаций в один пропуск.
--- pendingRefresh гарантирует, что после ЛЮБОЙ смены настроек будет выполнен
--- хотя бы один полный проход ApplyLayout — иначе правки выглядели бы
--- неприменёнными («настройки не сохраняются»). ОБЪЯВЛЕН ДО
--- LPS._ConsumePendingRefresh, чтобы тот видел его как upvalue, а не nil-global.
 local pendingRefresh = false
--- Вызывается из ApplyLayout: возвращает true, если со времён последнего
--- полного прохода была запрошена смена настроек.
 function LPS._ConsumePendingRefresh()
 if pendingRefresh then
 pendingRefresh = false
@@ -1175,10 +974,6 @@ function LPS:ApplyStyle()
     local db = LPS:GetDB()
     local frames = LPS.frame
     if not frames then return end
-    -- Все панели (location и data-text панели реестра RegisterDatatext,
-    -- включая coords/time/gold/system) лежат в LPS.frame под своими ключами.
-    -- Жёстко заданный список из пяти фреймов не обновлял цвета остальных
-    -- панелей — итерируем весь реестр (holder и minimapButton — не панели).
     for key, f in pairs(frames) do
         if key ~= "holder" and key ~= "minimapButton"
             and type(f) == "table" and f.SetBackdropColor then
@@ -1231,7 +1026,6 @@ function LPS:ApplyAllSettings()
     LPS:ApplyVisibility()
 end
 
--- Возвращает координаты игрока на текущей карте
 function LPS:GetPlayerCoords()
     local mapID = C_Map.GetBestMapForUnit("player")
     if not mapID then return end
@@ -1243,7 +1037,6 @@ function LPS:GetPlayerCoords()
     end
 end
 
--- Обертка для Tourist:GetMapNameByIDAlt(mapID)
 function LPS:GetMapNameByIDAlt(mapID)
     if not Tourist then return end
     return Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN

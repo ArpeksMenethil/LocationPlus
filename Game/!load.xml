@@ -2,6 +2,7 @@
         <Include file='.\\init.lua'/>
         <Include file='.\\UI\\Theme.lua'/>
         <Include file='.\\UI\\Widgets.lua'/>
+        <Include file='.\\UI\\ColorPicker.lua'/>
         <Include file='.\\UI\\Builder.lua'/>
         <Include file='.\\UI\\Panel.lua'/>
         <Include file='.\\frames.lua'/>

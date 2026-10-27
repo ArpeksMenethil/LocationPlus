@@ -2,11 +2,6 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
 ---------------------------------------------------------------------------
--- Страница «Профили»: реализация страницы профилей.
--- Регистрируется в обход дерева настроек (см. Game/ui_options.lua):
--- заголовок секции, дропдаун активного профиля и сетка кнопок 2×N
--- New / Copy / Delete / Reset / Import / Export с попапами виджетов.
--- Профили привязаны только к персонажу (profileKeys в SavedVariables).
 ---------------------------------------------------------------------------
 local ROW_HEIGHT = 22
 local ROW_GAP = 6
@@ -93,8 +88,6 @@ function LPS.CreateProfilesPanelPage(container)
     buttonRow:SetPoint("TOPLEFT", content, "TOPLEFT", 0, y)
     buttonRow:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, y)
     local BTN_GAP = 6
-    -- Сетка 2×N: кнопки в один ряд не помещаются в окно (уезжают за
-    -- правый край), поэтому по две кнопки в ряду, ряды по центру.
     local newBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_NEW or "New")
     local copyBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_COPY or "Copy")
     local deleteBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_DELETE or "Delete")
@@ -114,8 +107,6 @@ function LPS.CreateProfilesPanelPage(container)
                 if tw > textMax then textMax = tw end
             end
         end
-        -- ширина по самой длинной подписи + двойной padding: соседние кнопки
-        -- получают гарантированный зазор и не перекрываются
         local width = math.max(80, textMax + BTN_GAP * 4)
         for _, btn in ipairs(buttons) do
             btn:SetWidth(width)
@@ -160,8 +151,6 @@ function LPS.CreateProfilesPanelPage(container)
             if item.value ~= "Default" then canDelete = true break end
         end
         SetButtonEnabled(deleteBtn, canDelete)
-        -- после применения шрифтов темы подписи могли стать шире —
-        -- пересчитываем одинаковую ширину кнопок и центрируем ряд заново
         self:LayoutButtons()
     end
 

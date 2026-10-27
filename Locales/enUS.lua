@@ -1,6 +1,6 @@
--- Базовая локализация (enUS). Константы вместо строковых ключей;
--- LPS.RegisterLocale / LPS.ApplyLocaleOverride.
--- namespace (второй параметр ...) — глобальная таблица LPS.
+---
+---
+---
 local _, LPS = ...
 
 local L = {
@@ -361,6 +361,15 @@ local L = {
     WINDOW_SCALE_DESC = "UI scale of the settings window.",
     RESET_APPEARANCE = "Reset appearance",
     RESET_APPEARANCE_DESC = "Restore theme, colors and scale to defaults.",
+    -- Color picker
+    CP_TITLE = "Color",
+    CP_OK = "OK",
+    CP_CANCEL = "Cancel",
+    CP_RESET = "Reset",
+    CP_DEFAULT = "Default",
+    CP_CLASS_COLOR = "Class color",
+    CP_COPY = "Copy",
+    CP_PASTE = "Paste",
     -- Вкладка About
     ABOUT = "About",
     ABOUT_THIS_ADDON = "About this addon",
@@ -369,8 +378,7 @@ local L = {
     VOLUME = "Volume",
 }
 
--- Публичная таблица переводов (LPS.L):
--- метатаблица __index = L даёт немедленные переводы и fallback на ключ.
+--- Публичная таблица переводов (LPS.L) с fallback на ключ.
 LPS.L = setmetatable({}, { __index = L })
 
 -- Базовая таблица (enUS) доступна для регистрации других локалей.

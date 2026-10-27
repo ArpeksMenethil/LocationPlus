@@ -182,9 +182,6 @@ end
 function Theme.GetAccentItems()
     local items = { { value = "default", text = L.THEME_COLOR_DEFAULT } }
     if LOCALIZED_CLASS_NAMES_MALE then
-        -- Классы берём напрямую из LOCALIZED_CLASS_NAMES_MALE:
-        -- ключ = токен (используется как ключ для цвета), значение = локализованное имя.
-        -- Оставляем только те, для которых есть цвет и которые не в списке исключений.
         local classes = {}
         for token, name in pairs(LOCALIZED_CLASS_NAMES_MALE) do
             if GetClassColor(token) and not IsExcludedAccent(token, name) then
@@ -206,8 +203,6 @@ local LEGACY_THEME_KEYS = { workbench = "modern", ledger = "vintage" }
 function Theme.Load()
     local db = LPS:GetDB()
     local ui = db and db.uiOptions
-    -- Чистим устаревшие настройки, удалённые из UI (галка «цвет класса»,
-    -- свой цвет акцента, группа «Цвет окна»).
     if ui then
         for _, k in ipairs(OBSOLETE_UI_KEYS) do ui[k] = nil end
     end

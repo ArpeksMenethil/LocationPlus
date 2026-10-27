@@ -13,8 +13,6 @@ local DEFAULT_HEIGHT = 520
 local NAV_WIDTH = 140
 local TITLE_HEIGHT = 32
 local CONTENT_PAD = 14
--- Внутренняя страница «Настройка окна» (как WINDOW_PAGE в исходном аддоне):
--- открывается кнопкой-шестерёнкой в заголовке, не видна в навигации.
 local WINDOW_PAGE = "window"
 local frame
 local pages = {}
@@ -302,7 +300,6 @@ local function CreateMainFrame()
     frame.minBtn:HookScript("OnLeave", function()
         GameTooltip:Hide()
     end)
-    -- Кнопка шестерёнки (как в исходном аддоне): открывает страницу «Настройка окна»
     if CS.Theme.key == "classic" then
         frame.gearBtn = CreateCircleButton(frame.titleBar, "icon_gear")
         frame.gearBtn.icon:SetSize(12, 12)
@@ -346,9 +343,6 @@ local function CreateMainFrame()
     frame.content = CreateFrame("Frame", nil, frame)
     frame.content:SetPoint("TOPLEFT", frame.nav, "TOPRIGHT", CONTENT_PAD, -CONTENT_PAD)
     frame.content:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -CONTENT_PAD, CONTENT_PAD)
-    -- при смене размера/показа окна пересинхронизируем ширину и высоту
-    -- скролл-контента всех созданных страниц (иначе строки могут остаться
-    -- невидимыми: width/height контента = 1)
     frame.content:SetScript("OnSizeChanged", function()
         Panel.SyncPagesGeometry()
     end)
@@ -371,7 +365,6 @@ local function CreateMainFrame()
     
     end)
     CS.Theme.ApplyFonts(frame)
-    -- Хук закрытия: выход из режима перемещения панелей (как у окон Ace3/Blizzard).
     if LPS.DisableMoveModeIfActive then
         frame:HookScript("OnHide", function()
             LPS:DisableMoveModeIfActive()
@@ -398,9 +391,6 @@ function Panel.OnThemeChanged()
         frame:ClearAllPoints()
         frame:SetPoint(point, relativeTo, relativePoint, x, y)
     end
-    -- Show() сам восстанавливает _activePage/_lastAddonPage (в т.ч. внутреннюю
-    -- «Настройка окна»): раньше страница терялась и при смене стиля окно
-    -- перебрасывало на «Основные»
     if page and pages[page] and frame._activePage ~= page then
         Panel.ShowPage(page)
         frame._lastAddonPage = lastAddonPage or frame._lastAddonPage
@@ -431,14 +421,11 @@ function Panel.ShowPage(key)
     end
     local container = GetPageFrame(key)
     container:Show()
-    -- до Refresh подгоняем геометрию скролла: если страница строилась,
-    -- когда окно было скрыто/свёрнуто, контент имел бы нулевые размеры
     Panel.SyncPagesGeometry()
     if container.page.Refresh then
         container.page:Refresh()
     end
     frame._activePage = key
-    -- запоминаем последнюю обычную вкладку, чтобы шестерёнка возвращалась на неё
     if key ~= WINDOW_PAGE then
         frame._lastAddonPage = key
     end
@@ -530,8 +517,6 @@ function Panel.Show()
     frame:Show()
     Panel.RefreshTheme()
     Panel.ShowPage(frame._activePage or (pageOrder[1] and pageOrder[1].key))
-    -- после Show размеры гарантированно валидны: финальная синхронизация
-    -- геометрии скролла и обновление контролов активной страницы
     Panel.SyncPagesGeometry()
     Panel.RefreshActivePage()
 end

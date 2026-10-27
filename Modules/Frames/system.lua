@@ -1,9 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
--- Панель «Система» (FPS/MS) переписана на общий реестр LPS:RegisterDatatext():
--- отступы больше не фиксируются при создании фрейма — их каждый раз
--- перечитывает конструктор CreateDatatextFrame из db.layout.
 
 LPS:RegisterDatatext({
     key = "system",
@@ -21,8 +18,6 @@ LPS:RegisterDatatext({
             f.text:SetText(string.format("FPS: %s MS: %s", fpsText, msText))
         end
     end,
-    -- Своя подсказка: билдер BuildSystemTooltip живёт в Modules/Tooltips/system_tt.lua,
-    -- но проверки видимости тултипов отличаются от общего tooltipGuard — оставляем customTooltip.
     customTooltip = true,
     buildTooltip = function(self)
         local d = LPS:GetDB()

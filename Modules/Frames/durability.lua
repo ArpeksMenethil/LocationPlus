@@ -10,13 +10,6 @@ do
         INVTYPE_WEAPONMAINHAND = 16, INVTYPE_WEAPONOFFHAND = 17, INVTYPE_RANGED = 18,
     }
 
-    -- Прочность берётся через C_Item (как это делает Blizzard InventoryUnitFrames):
-    -- Item:GetDurability() возвращает НЕ secret-значения и не тинтит код аддона.
-    -- Раньше использовался глобальный GetInventoryItemDurability() — в актуальных
-    -- клиентах WoW он отдаёт secret-числа; они «просачивались» в текст панели, а
-    -- затем в Blizzard_TextStatusBar (полоска прочности в окне персонажа), где
-    -- сравнение secret-числа вызывало ошибку:
-    -- "attempt to compare a secret number value (execution tainted by 'LocationPlus')".
     local function slotDurability(index)
         if C_Item and C_Item.Create then
             local item = C_Item:Create("player", index)
@@ -27,7 +20,6 @@ do
             end
             return nil
         end
-        -- Фолбэк для старых клиентов без C_Item.
         return GetInventoryItemDurability(index)
     end
 

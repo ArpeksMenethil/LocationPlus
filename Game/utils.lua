@@ -2,8 +2,6 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
 --------------------------------------------------------------------
--- Вспомогательные функции панелей-инфотекстов (LPS._DT)
--- Перенесены из Modules/datatexts.lua. Загружаются раньше Panels/*.lua.
 --------------------------------------------------------------------
 
 LPS._DT = LPS._DT or {}
@@ -60,17 +58,11 @@ LPS._DT.panelCfg = function(key)
     return db and db.panels and db.panels[key]
 end
 
--- Тултип-хелпер: стандартная проверка видимости подсказок
--- Панели с отдельным конфигом в db.tooltips.<key> (location/gold/system/time
--- и перенесённые на вкладку «Подсказка» friends/guild/experience/bags)
--- управляются этим конфигом; для остальных панелей — настройка panels[key].tooltip.
 local PANEL_TT_KEYS = {
     location = true, gold = true, system = true, time = true,
     friends = true, guild = true, experience = true, bags = true,
 }
 
--- Конфиг подсказки панели: для панелей с отдельным конфигом на вкладке
--- «Подсказка» (db.tooltips.<key>) берётся он, иначе — panels.<key>.
 LPS._DT.tooltipCfg = function(key)
     local d = LPS:GetDB()
     if not d then return nil end
@@ -106,7 +98,6 @@ LPS._DT.openTooltip = function(self, buildFunc)
     GameTooltip:Show()
 end
 
--- Меню через UIDropDownMenu (без зависимости от ElvUI EasyMenu)
 local menuFrame
 LPS._DT.showMenu = function(anchorFrame, list)
     if not menuFrame then
@@ -132,7 +123,6 @@ end
 
 --------------------------------------------------------------------
 
--- Округляет число до указанного количества знаков после запятой
 function LPS:Round(num, decimals)
     local mult = 10^(decimals or 0)
   return math.floor(num * mult + 0.5) / mult
