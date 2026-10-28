@@ -82,6 +82,8 @@ local A_Y = V_Y - TRACK_H - 10
 local CLASS_Y = HUE_Y - PREVIEW_H - 12
 local COPY_Y = CLASS_Y - 20 - 8
 local BOX_Y = 40
+local H_NOALPHA = 205
+local H_ALPHA = 222
 
 local ART = "Interface\\AddOns\\LocationPlus\\Media\\Art\\"
 
