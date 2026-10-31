@@ -379,6 +379,7 @@ function Widgets.CreateSlider(parent, opts)
     s:SetValue(opts.value or opts.min or 0, false)
     return s
 end
+local dropdownListCounter = 0 -- уникальные имена контроллеров Foundry.List
 function Widgets.CreateDropdown(parent, labelText, width, opts)
     opts = opts or {}
     local label = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -464,7 +465,6 @@ function Widgets.CreateDropdown(parent, labelText, width, opts)
         local menuWidth = dropdown:GetWidth()
         local maxHeight = 260
         local totalHeight = #items * (itemHeight + 2)
-        local needsScroll = totalHeight > maxHeight
         if not dropdown.overlay then
             dropdown.overlay = CreateFrame("Button", nil, UIParent)
             dropdown.overlay:SetFrameStrata("DIALOG")
@@ -478,137 +478,85 @@ function Widgets.CreateDropdown(parent, labelText, width, opts)
             dropdown.menu:SetClampedToScreen(true)
             dropdown.menu:EnableMouse(true)
             dropdown.menu.bg = CS.Theme.Box(dropdown.menu, "window", "border", Radius())
-            dropdown.menu.rows = {}
         end
-        local parent = dropdown.menu
-        local scrollBarWidth = 6
-        if needsScroll then
-            if not dropdown.menu.scroll then
-                local scroll = CreateFrame("ScrollFrame", nil, dropdown.menu)
-                scroll:SetPoint("TOPLEFT", 1, -1)
-                scroll:SetPoint("BOTTOMRIGHT", -scrollBarWidth - 3, 1)
-                dropdown.menu.scroll = scroll
-                local content = CreateFrame("Frame", nil, scroll)
-                scroll:SetScrollChild(content)
-                dropdown.menu.scrollContent = content
-                local track = dropdown.menu:CreateTexture(nil, "BACKGROUND", nil, 1)
-                track:SetPoint("TOPRIGHT", -1, -1)
-                track:SetPoint("BOTTOMRIGHT", -1, 1)
-                track:SetWidth(scrollBarWidth)
-                track:SetColorTexture(1, 1, 1, 1)
-                Paint(track, "line")
-                dropdown.menu.track = track
-                local thumb = CreateFrame("Button", nil, dropdown.menu)
-                thumb:SetWidth(scrollBarWidth)
-                thumb:SetPoint("TOPRIGHT", -1, -1)
-                thumb.tex = thumb:CreateTexture(nil, "ARTWORK")
-                thumb.tex:SetAllPoints()
-                thumb.tex:SetColorTexture(1, 1, 1, 1)
-                Paint(thumb.tex, "muted")
-                dropdown.menu.thumb = thumb
-                thumb:EnableMouse(true)
-                thumb:SetScript("OnMouseDown", function() thumb.dragging = true end)
-                thumb:SetScript("OnMouseUp", function() thumb.dragging = false end)
-                thumb:SetScript("OnUpdate", function(self)
-                    if self.dragging then
-                        local _, cursorY = GetCursorPosition()
-                        local scale = dropdown.menu:GetEffectiveScale()
-                        local top = dropdown.menu:GetTop() * scale - 1
-                        local trackH = (maxHeight - 2) * scale
-                        local thumbH = self:GetHeight() * scale
-                        local pct = 1 - ((cursorY - (top - trackH + thumbH/2)) / (trackH - thumbH))
-                        pct = math.max(0, math.min(1, pct))
-                        dropdown.menu.scroll:SetVerticalScroll(pct * (totalHeight - maxHeight + 2))
+        -- Список пунктов — Foundry.List на едином ScrollBox-API: рециклинг
+        -- строк, нативное колесо и нативный скроллбар (ручной track/thumb
+        -- больше не нужен). Контроллер создаётся один раз на dropdown,
+        -- SetData пересобирает строки при каждом открытии.
+        if not dropdown.list then
+            dropdownListCounter = dropdownListCounter + 1
+            dropdown.list = LPS.F.List:New({
+                name = "LPS.Dropdown." .. dropdownListCounter,
+                parent = dropdown.menu,
+                elementType = "Frame",
+                extent = itemHeight,
+                spacing = 2,
+                managedScrollBarVisibility = true,
+                initializer = function(row, item)
+                    local btn = row._btn
+                    if not btn then
+                        btn = Widgets.CreateFlatButton(row, 0, 0, "")
+                        btn:SetAllPoints()
+                        row._btn = btn
                     end
-                end)
-                scroll:EnableMouseWheel(true)
-                scroll:SetScript("OnMouseWheel", function(self, delta)
-                    local current = self:GetVerticalScroll()
-                    local newScroll = current - delta * itemHeight * 4
-                    newScroll = math.max(0, math.min(totalHeight - maxHeight + 2, newScroll))
-                    self:SetVerticalScroll(newScroll)
-                end)
+                    btn._isSelected = (item.value == dropdown._value)
+                    btn:SetText(item.text or item.value or "")
+                    if btn._isSelected then
+                        Widgets.ApplyFontColor(btn.text, "accentGold")
+                    else
+                        Widgets.ApplyFontColor(btn.text, "textMuted")
+                    end
+                    btn:SetScript("OnEnter", function(self)
+                        if self.bg then
+                            Paint(self.bg, "buttonHover")
+                        end
+                        Widgets.SetBorderColor(self, "accentGold", 0.95)
+                        if self._isSelected then
+                            Widgets.ApplyFontColor(self.text, "accentGold")
+                        else
+                            Widgets.ApplyFontColor(self.text, "textPrimary")
+                        end
+                    end)
+                    btn:SetScript("OnLeave", function(self)
+                        if self.bg then
+                            Paint(self.bg, "button")
+                        end
+                        Widgets.SetBorderColor(self, "border")
+                        if self._isSelected then
+                            Widgets.ApplyFontColor(self.text, "accentGold")
+                        else
+                            Widgets.ApplyFontColor(self.text, "textMuted")
+                        end
+                    end)
+                    btn:SetScript("OnClick", function()
+                        dropdown:SetValue(item.value, item.text)
+                        CloseMenu()
+                        if dropdown._onChange then
+                            dropdown._onChange(item.value, item.text)
+                        end
+                    end)
+                end,
+            })
+            if dropdown.list then
+                -- Место под скроллбар справа, чтобы строки не уезжали
+                -- под него.
+                local handles = dropdown.list:GetNativeHandles()
+                handles.scrollBox:SetPoint("TOPLEFT", 1, 0)
+                handles.scrollBox:SetPoint("BOTTOMRIGHT", -10, 0)
+                handles.scrollBar:SetPoint("TOPLEFT", handles.scrollBox, "TOPRIGHT", 4, 0)
+                handles.scrollBar:SetPoint("BOTTOMLEFT", handles.scrollBox, "BOTTOMRIGHT", 4, 0)
             end
-            dropdown.menu.scroll:Show()
-            dropdown.menu.track:Show()
-            dropdown.menu.thumb:Show()
-            dropdown.menu.scrollContent:SetSize(menuWidth - scrollBarWidth - 4, totalHeight)
-            dropdown.menu.scroll:SetVerticalScroll(0)
-            local thumbH = math.max(20, (maxHeight / totalHeight) * (maxHeight - 2))
-            dropdown.menu.thumb:SetHeight(thumbH)
-            dropdown.menu.scroll:SetScript("OnScrollRangeChanged", function() end)
-            dropdown.menu.scroll:SetScript("OnVerticalScroll", function(self, offset)
-                local maxScroll = totalHeight - maxHeight + 2
-                local pct = maxScroll > 0 and (offset / maxScroll) or 0
-                local trackH = maxHeight - 2
-                local thumbH = dropdown.menu.thumb:GetHeight()
-                dropdown.menu.thumb:SetPoint("TOPRIGHT", -1, -1 - pct * (trackH - thumbH))
-            end)
-            parent = dropdown.menu.scrollContent
-        elseif dropdown.menu.scroll then
-            dropdown.menu.scroll:Hide()
-            dropdown.menu.track:Hide()
-            dropdown.menu.thumb:Hide()
         end
-        local rowWidth = menuWidth - (needsScroll and (scrollBarWidth + 6) or 2)
-        for i, item in ipairs(items) do
-            local row = dropdown.menu.rows[i]
-            if not row then
-                row = Widgets.CreateFlatButton(parent, rowWidth, itemHeight, "")
-                dropdown.menu.rows[i] = row
-            end
-            row:SetParent(parent)
-            row:SetText(item.text or item.value or "")
-            row:ClearAllPoints()
-            row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, -(i-1) * (itemHeight + 2))
-            row:SetWidth(rowWidth)
-            row:Show()
-            row._isSelected = (item.value == dropdown._value)
-            if row._isSelected then
-                Widgets.ApplyFontColor(row.text, "accentGold")
-            else
-                Widgets.ApplyFontColor(row.text, "textMuted")
-            end
-            row:SetScript("OnEnter", function(self)
-                if self.bg then
-                    Paint(self.bg, "buttonHover")
-                end
-                Widgets.SetBorderColor(self, "accentGold", 0.95)
-                if self._isSelected then
-                    Widgets.ApplyFontColor(self.text, "accentGold")
-                else
-                    Widgets.ApplyFontColor(self.text, "textPrimary")
-                end
-            end)
-            row:SetScript("OnLeave", function(self)
-                if self.bg then
-                    Paint(self.bg, "button")
-                end
-                Widgets.SetBorderColor(self, "border")
-                if self._isSelected then
-                    Widgets.ApplyFontColor(self.text, "accentGold")
-                else
-                    Widgets.ApplyFontColor(self.text, "textMuted")
-                end
-            end)
-            row:SetScript("OnClick", function()
-                dropdown:SetValue(item.value, item.text)
-                CloseMenu()
-                if dropdown._onChange then
-                    dropdown._onChange(item.value, item.text)
-                end
-            end)
-        end
-        for i = #items + 1, #dropdown.menu.rows do
-            dropdown.menu.rows[i]:Hide()
-        end
-        CS.Theme.ApplyFonts(dropdown.menu)
-        local menuHeight = needsScroll and maxHeight or (totalHeight + 2)
+        local menuHeight = math.min(totalHeight + 2, maxHeight)
         dropdown.menu:SetScale(dropdown:GetEffectiveScale() / UIParent:GetEffectiveScale())
         dropdown.menu:SetSize(menuWidth, menuHeight)
         dropdown.menu:ClearAllPoints()
         dropdown.menu:SetPoint("TOPLEFT", dropdown, "BOTTOMLEFT", 0, -2)
         dropdown.menu:Show()
+        if dropdown.list then
+            dropdown.list:SetData(items)
+        end
+        CS.Theme.ApplyFonts(dropdown.menu)
         dropdown._open = true
         Widgets.SetBorderColor(dropdown, "accentGold", 0.95)
     end

@@ -65,11 +65,11 @@ do
             -- Foundry.Events: один контроллер на все события Friends-панели.
             -- create() вызывается вне боёвки (в бою ставится в очередь),
             -- поэтому регистрация событий безопасна.
-            -- События есть не на всех клиентах (BN_RECONNECT/BN_DISCONNECT —
-            -- только Retail): регистрируем только валидные для этого клиента.
+            -- Не все события валидны на каждом клиенте
+            -- (BN_RECONNECT/BN_DISCONNECT — только Retail):
+            -- фильтруем через IsEventValid.
             local function eventValid(ev)
-                return not (C_EventUtils and C_EventUtils.IsEventValid)
-                    or C_EventUtils.IsEventValid(ev)
+                return C_EventUtils.IsEventValid(ev)
             end
 
             local events = F.Events:New("LPS.Friends")

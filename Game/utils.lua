@@ -88,20 +88,16 @@ LPS._DT.tooltipGuard = function(key)
 end
 
 LPS._DT.openTooltip = function(self, buildFunc)
-    if GameTooltip.EasyTooltip_SetDefaultAnchor then
-        GameTooltip:EasyTooltip_SetDefaultAnchor(GameTooltip, self)
-    else
-        GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
-    end
+    GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
     GameTooltip:ClearLines()
     buildFunc(GameTooltip)
     GameTooltip:Show()
 end
 
 -------------------------------------------------
---- Контекстное меню. На клиентах с Blizzard_Menu (MenuUtil) — Foundry.Menu;
---- на старых клиентах — классический UIDropDownMenu.
---- Формат пунктов: {text, isTitle, disabled, notCheckable, func}.
+--- Контекстное меню — Foundry.Menu на едином API MenuUtil
+--- (есть на всех клиентах). Формат пунктов:
+--- {text, isTitle, disabled, notCheckable, func}.
 -------------------------------------------------
 
 local fMenuController
@@ -112,58 +108,31 @@ local function getFMenuController()
         return fMenuController
     end
     fMenuTried = true
-    if LPS.F and LPS.F.Menu then
-        fMenuController = LPS.F.Menu:New({
-            name = "LPS.Menu",
-            builder = function(owner, rootDescription, entries)
-                for _, entry in ipairs(entries or {}) do
-                    if entry.isTitle then
-                        rootDescription:CreateTitle(entry.text)
-                    elseif entry.disabled then
-                        local btn = rootDescription:CreateButton(entry.text, function() end)
-                        btn:SetEnabled(false)
-                    elseif entry.func then
-                        rootDescription:CreateButton(entry.text, function() entry.func() end)
-                    else
-                        rootDescription:CreateButton(entry.text, function() end)
-                    end
+    fMenuController = LPS.F.Menu:New({
+        name = "LPS.Menu",
+        builder = function(owner, rootDescription, entries)
+            for _, entry in ipairs(entries or {}) do
+                if entry.isTitle then
+                    rootDescription:CreateTitle(entry.text)
+                elseif entry.disabled then
+                    local btn = rootDescription:CreateButton(entry.text, function() end)
+                    btn:SetEnabled(false)
+                elseif entry.func then
+                    rootDescription:CreateButton(entry.text, function() entry.func() end)
+                else
+                    rootDescription:CreateButton(entry.text, function() end)
                 end
-            end,
-        })
-    end
-    return fMenuController
-end
-
-local legacyMenuFrame
-local function showLegacyMenu(anchorFrame, list)
-    if not legacyMenuFrame then
-        legacyMenuFrame = CreateFrame("Frame", "LPS_DTMenu", UIParent, "UIDropDownMenuTemplate")
-    end
-    UIDropDownMenu_Initialize(legacyMenuFrame, function(_, level)
-        for _, entry in ipairs(list) do
-            if level == 1 then
-                local info = UIDropDownMenu_CreateInfo()
-                info.text = entry.text
-                info.notCheckable = entry.notCheckable ~= false
-                info.isTitle = entry.isTitle
-                info.disabled = entry.disabled
-                if entry.func then
-                    info.func = function() entry.func() end
-                end
-                UIDropDownMenu_AddButton(info, level)
             end
-        end
-    end, "MENU")
-    ToggleDropDownMenu(1, nil, legacyMenuFrame, anchorFrame, 0, 0)
+        end,
+    })
+    return fMenuController
 end
 
 LPS._DT.showMenu = function(anchorFrame, list)
     local controller = getFMenuController()
     if controller then
         controller:CreateContextMenu(anchorFrame, list)
-        return
     end
-    showLegacyMenu(anchorFrame, list)
 end
 
 --------------------------------------------------------------------
