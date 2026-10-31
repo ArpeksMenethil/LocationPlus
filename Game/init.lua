@@ -8,6 +8,15 @@ _G.ArpeksLPS = _G.ArpeksLPS or {}
 _G.ArpeksLPS.LPS = LPS or {}
 LPS_DB = LPS_DB or {} -- SavedVariables
 
+-- Foundry-1.0: жёсткая зависимость в .toc, грузится раньше этого аддона.
+-- Страховка на случай, если Foundry отсутствует/отключена: явная ошибка
+-- запуска вместо молчаливого nil.
+local F = _G.Foundry_1_0
+if not F then
+    error("LocationPlus requires the Foundry-1.0 library. Please install or enable it.", 0)
+end
+LPS.F = F -- контроллеры Foundry (Commands, Lifecycle, Events, ...)
+
 
 LPS.wow = LPS.wow or {}
 LPS.wow.patch, LPS.wow.build, LPS.wow.date, LPS.wow.toc = GetBuildInfo()

@@ -1,6 +1,7 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local L = LPS.L
+local F = LPS.F
 LPS_DB = LPS_DB or {}
 
 LPS.addon.version = (
@@ -44,10 +45,11 @@ LPS.frame.holder:SetFrameStrata("HIGH")
 ----------------------------------------------------------------
 ---
 ----------------------------------------------------------------
-LPS.frame.holder:RegisterEvent("ADDON_LOADED")
-LPS.frame.holder:SetScript("OnEvent", function(self, event, name)
-        if name ~= LPS.addon.name then return end
-        if event == "ADDON_LOADED" then LPS:onLoaded(name) end
+-- Foundry.Lifecycle: ADDON_LOADED нашего аддона (фильтр по имени и
+-- ожидание готовности SV/имени персонажа делает Foundry).
+LPS.Lifecycle = F.Lifecycle:New(LPS, LPS.addon.name)
+LPS.Lifecycle:OnAddonLoaded(function()
+        LPS:onLoaded()
 end)
 
 ----------------------------------------------------------------
@@ -163,7 +165,7 @@ local function InitDB()
         LPS.db = db
 end
 
-function LPS:onLoaded(name)
+function LPS:onLoaded()
         if self._loaded then return end
         self._loaded = true
 
@@ -194,6 +196,11 @@ function LPS:onLoaded(name)
                 LPS:CreateMinimapButton()
         end
 
+        -- Категория в стандартном окне настроек (изображение + кнопка).
+        if LPS.RegisterSettingsCategory then
+                LPS:RegisterSettingsCategory()
+        end
+
         if LPS.Retail and db.general.is24H then
             SetCVar("timeMgrUseMilitaryTime", 1)
         end
@@ -202,10 +209,11 @@ function LPS:onLoaded(name)
                 LPS:UpdateFrameSize()
                 LPS:ApplyLayout()
         else
-                local f = CreateFrame("Frame")
-                f:RegisterEvent("PLAYER_ENTERING_WORLD")
-                f:SetScript("OnEvent", function(self)
-                        self:UnregisterAllEvents()
+                -- Foundry.Events: PLAYER_ENTERING_WORLD один раз, плюс
+                -- страховочный повтор через 1 с (данные зоны могут
+                -- запаздывать после логина).
+                LPS.coreEvents = F.Events:New("LPS.Core")
+                LPS.coreEvents:RegisterOnce("PLAYER_ENTERING_WORLD", function()
                         LPS:UpdateFrameSize()
                         LPS:ApplyLayout()
                 end)
@@ -220,28 +228,55 @@ function LPS:onLoaded(name)
         end
 end
 
-SLASH_LPS1 = "/lps"
-SlashCmdList["LPS"] = function(input)
-        local arg = (input or ""):gsub("^%s+", ""):gsub("%s+$", ""):lower()
-        if arg == "reset" then
+-- Foundry.Commands: /lps. Авто-help по /lps help, неизвестная команда
+-- объясняется (раньше молча открывала окно настроек).
+local cmd = F.Commands:New({
+        name = "LocationPlus",
+        slashes = { "/lps" },
+        description = L.CMD_DESCRIPTION,
+        defaultHandler = function()
+                LPS:ToggleOptions()
+        end,
+        unknownMessage = function(input)
+                return format(L.CMD_UNKNOWN, input)
+        end,
+})
+cmd:Register({
+        name = "reset",
+        help = L.RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES,
+        handler = function()
                 if LPS.ResetAllSettingsToDefaults then
                         LPS:ResetAllSettingsToDefaults()
                         LPS:Print(L.RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES)
                 end
-        elseif arg == "resetpanels" then
+        end,
+})
+cmd:Register({
+        name = "resetpanels",
+        help = L.RESET_VALUES,
+        handler = function()
                 if LPS.ResetPanelsToDefaults then
                         LPS:ResetPanelsToDefaults()
                         LPS:Print(L.PANEL_SETTINGS_HAVE_BEEN_RESET_TO_DEFAULTS)
                 end
-        elseif arg == "move" then
+        end,
+})
+cmd:Register({
+        name = "move",
+        help = L.TOGGLE_PANEL_MOVE_MODE,
+        handler = function()
                 if LPS.ToggleMoveMode then
                         LPS:ToggleMoveMode()
                 end
-        elseif arg == "resetpos" then
+        end,
+})
+cmd:Register({
+        name = "resetpos",
+        help = L.RESET_POSITION_DESC,
+        handler = function()
                 if LPS.ResetFramePosition then
                         LPS:ResetFramePosition()
                 end
-        else
-                LPS:ToggleOptions()
-        end
-end
+        end,
+})
+LPS.cmd = cmd

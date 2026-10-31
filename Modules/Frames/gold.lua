@@ -36,16 +36,6 @@ end
 local function getRealmKey() return LPS:GetGoldRealmKey() end
 local function getGoldRoot() return LPS:GetGoldRoot() end
 
-local goldMenuFrame
-
-local function ensureGoldMenuFrame()
-    if goldMenuFrame and goldMenuFrame.Initialize then
-        return goldMenuFrame
-    end
-    goldMenuFrame = CreateFrame("Frame", "LPS_GoldMenu", UIParent, "UIDropDownMenuTemplate")
-    return goldMenuFrame
-end
-
 local function getGoldRealmTable()
     local gold = getGoldRoot()
     gold.realms = gold.realms or {}
@@ -106,52 +96,35 @@ function LPS:ShowGoldResetMenu(owner)
     local realm, r = getGoldRealmTable()
     if not (realm and r and r.chars) then return end
 
-    local menu = ensureGoldMenuFrame()
-
     local names = {}
     for name in pairs(r.chars) do
         names[#names + 1] = name
     end
     table.sort(names)
 
-    UIDropDownMenu_Initialize(menu, function(_, level)
-        local info
-        if level ~= 1 then return end
-
-        info = UIDropDownMenu_CreateInfo()
-        info.isTitle = true
-        info.notCheckable = true
-        info.text = L.RESET_CHARACTER_DATA
-        UIDropDownMenu_AddButton(info, level)
-
-        info = UIDropDownMenu_CreateInfo()
-        info.notCheckable = true
-        info.text = L.RESET_VALUES
-        info.func = function()
-            LPS:ResetGoldAllCharacterData()
-            if owner._lpsUpdateFunc then owner._lpsUpdateFunc(owner) end
-        end
-        UIDropDownMenu_AddButton(info, level)
-
-        info = UIDropDownMenu_CreateInfo()
-        info.isTitle = true
-        info.notCheckable = true
-        info.text = L.CHARACTERS
-        UIDropDownMenu_AddButton(info, level)
-
-        for _, n in ipairs(names) do
-            info = UIDropDownMenu_CreateInfo()
-            info.notCheckable = true
-            info.text = n
-            info.func = function()
+    -- Общий контекстный меню-хелпер (Foundry.Menu / legacy UIDropDownMenu).
+    local list = {
+        { isTitle = true, text = L.RESET_CHARACTER_DATA },
+        {
+            text = L.RESET_VALUES,
+            func = function()
+                LPS:ResetGoldAllCharacterData()
+                if owner._lpsUpdateFunc then owner._lpsUpdateFunc(owner) end
+            end,
+        },
+        { isTitle = true, text = L.CHARACTERS },
+    }
+    for _, n in ipairs(names) do
+        list[#list + 1] = {
+            text = n,
+            func = function()
                 LPS:ResetGoldCharacterDataByName(n)
                 if owner._lpsUpdateFunc then owner._lpsUpdateFunc(owner) end
-            end
-            UIDropDownMenu_AddButton(info, level)
-        end
-    end, "MENU")
+            end,
+        }
+    end
 
-    ToggleDropDownMenu(1, nil, menu, "cursor", 0, 0)
+    LPS._DT.showMenu(owner, list)
 end
 
 local function ensureSession()

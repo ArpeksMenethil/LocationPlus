@@ -186,12 +186,12 @@ function LPS:SetMoveMode(enabled)
 
         local snapRange = 10
 
-        f:SetScript("OnMouseDown", function(self, button)
-            if button == "LeftButton" then self:StartMoving() end
-        end)
+        -- Перетаскивание само по себе владение Foundry.Window (OnDragStart/
+        -- OnDragStop, прицеплены при логине): он вызывает StartMoving/
+        -- StopMovingOrSizing и пишет позицию в таблицу геометрии. Здесь —
+        -- только магнитное смещение и сохранение (OnMouseUp срабатывает
+        -- после OnDragStop).
         f:SetScript("OnMouseUp", function(self)
-            self:StopMovingOrSizing()
-
             -- вычисляем магнитное смещение
             local left = self:GetLeft()
             local bottom = self:GetBottom()
@@ -222,15 +222,22 @@ function LPS:SetMoveMode(enabled)
                 end
             end
 
-            local point, relativeTo, relativePoint, x, y = self:GetPoint()
+            local point, _, relPoint, x, y = self:GetPoint()
             local p = LPS:GetDB().position
             p.point = point
-            p.relativePoint = relativePoint
+            p.relPoint = relPoint
             p.x = x + offsetX
             p.y = y + offsetY
 
             self:ClearAllPoints()
-            self:SetPoint(p.point, UIParent, p.relativePoint, p.x, p.y)
+            self:SetPoint(p.point, UIParent, p.relPoint, p.x, p.y)
+
+            -- Синхронизируем таблицу геометрии Foundry.Window.
+            local g = LPS.frame and LPS.frame._posGeometry
+            if g then
+                for k in pairs(g) do g[k] = nil end
+                g.point, g.relPoint, g.x, g.y = point, relPoint, p.x, p.y
+            end
         end)
 
         f:SetScript("OnUpdate", function(self)
@@ -290,6 +297,8 @@ function LPS:SetMoveMode(enabled)
             end
         end)
     else
+        -- Снимаем кнопку перетаскивания; скрипты OnDragStart/OnDragStop
+        -- принадлежат Foundry.Window — их не трогаем.
         f:RegisterForDrag()
         f:SetScript("OnUpdate", nil)
         for _, line in ipairs(f.grid and f.grid.vLines or {}) do
@@ -302,8 +311,10 @@ function LPS:SetMoveMode(enabled)
         local layout = db and db.layout
         f:SetFrameStrata((layout and layout.frameStrata) or "HIGH")
         f:SetFrameLevel(tonumber(layout and layout.frameLevel) or 1)
-        f:SetScript("OnMouseDown", nil)
         f:SetScript("OnMouseUp", nil)
+        -- Вне move-mode holder не должен перехватывать клики (Foundry
+        -- оставляет мышь включённой ещё с момента Attach).
+        f:EnableMouse(false)
 
         for _, child in ipairs({f:GetChildren()}) do
             child:EnableMouse(true)

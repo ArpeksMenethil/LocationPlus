@@ -373,4 +373,8 @@ LPS.RegisterLocale("ruRU", {
     CP_CLASS_COLOR = "Цвет класса",
     CP_COPY = "Копировать",
     CP_PASTE = "Вставить",
+    CMD_DESCRIPTION = "Location Plus: открыть настройки, сбросить значения, переместить группу панелей.",
+    CMD_UNKNOWN = 'Неизвестная команда: "%s" - введите /lps help, чтобы увидеть список команд.',
+    SETTINGS_OPEN_BUTTON = "Открыть настройки",
+    SETTINGS_CMD_HINT = "Настройки также можно открыть командой /lps.",
 })

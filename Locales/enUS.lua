@@ -376,6 +376,10 @@ local L = {
     AUTHOR = "Author",
     LINK_CURSEFORGE = "CurseForge",
     VOLUME = "Volume",
+    CMD_DESCRIPTION = "Location Plus: open settings, reset values, move the panel group.",
+    CMD_UNKNOWN = 'Unknown command: "%s" - type /lps help for the command list.',
+    SETTINGS_OPEN_BUTTON = "Open settings",
+    SETTINGS_CMD_HINT = "Settings can also be opened with the /lps command.",
 }
 
 --- Публичная таблица переводов (LPS.L) с fallback на ключ.

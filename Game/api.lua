@@ -656,17 +656,32 @@ function LPS:GetGoldRoot()
 end
 
 function LPS:ResetFramePosition()
-    local db = LPS:GetDB()
-    local def = (LPS.defaults and LPS.defaults.position) or { point = "TOP", relativePoint = "TOP", x = 0, y = -10 }
-    db.position = { point = def.point, relativePoint = def.relativePoint, x = def.x, y = def.y }
     local holder = LPS.frame and LPS.frame.holder
-    if holder and holder.isMoving then
+    if not holder then return end
+    if holder.isMoving then
         if LPS.SetMoveMode then
             LPS:SetMoveMode(false)
         end
         holder.isMoving = false
     end
-    LPS:ApplyHolderPosition()
+    -- Foundry.Window: очистить сохранённую геометрию и применить дефолтную
+    -- позицию — без /reload.
+    if LPS.frame._posGeometry then
+        LPS.F.Window:Reset(holder)
+    else
+        local def = (LPS.defaults and LPS.defaults.position) or { point = "TOP", relPoint = "TOP", x = 0, y = -10 }
+        local rp = def.relPoint or def.relativePoint
+        holder:ClearAllPoints()
+        holder:SetPoint(def.point, UIParent, rp, def.x, def.y)
+    end
+    -- Очистить сохранённую позицию текущего профиля in-place (таблица
+    -- геометрии — его копия, а не сама таблица профиля).
+    local p = LPS:GetDB().position
+    if type(p) == "table" then
+        for k in pairs(p) do
+            p[k] = nil
+        end
+    end
     LPS:Print("The frame position is reset")
 end
 

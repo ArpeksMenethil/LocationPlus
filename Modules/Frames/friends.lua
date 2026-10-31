@@ -1,6 +1,7 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local DT = LPS._DT
+local F = LPS.F
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
@@ -38,23 +39,18 @@ do
             local friendOffline = ERR_FRIEND_OFFLINE_S and (string.gsub(ERR_FRIEND_OFFLINE_S, '%%s', '')) or ''
             local friendOnline = ERR_FRIEND_ONLINE_SS and (string.gsub(ERR_FRIEND_ONLINE_SS, '|Hplayer:%%s|h%%[%%s%%]|h', '')) or nil
 
-            local bridge = CreateFrame('Frame')
-            bridge:RegisterEvent('PLAYER_ENTERING_WORLD')
-            bridge:RegisterEvent('FRIENDLIST_UPDATE')
-            bridge:RegisterEvent('BN_FRIEND_ACCOUNT_ONLINE')
-            bridge:RegisterEvent('BN_FRIEND_ACCOUNT_OFFLINE')
-            bridge:RegisterEvent('BN_FRIEND_INFO_CHANGED')
-            bridge:RegisterEvent('BN_RECONNECT')
-            bridge:RegisterEvent('BN_DISCONNECT')
-            bridge:RegisterEvent('MODIFIER_STATE_CHANGED')
-            bridge:RegisterEvent('CHAT_MSG_SYSTEM')
-            bridge:SetScript('OnEvent', function(_, event, arg1)
+            local function refresh()
+                local panel = LPS.frame and LPS.frame.friends
+                if panel and panel._lpsUpdateFunc and not IsAltKeyDown() then
+                    panel._lpsUpdateFunc(panel)
+                end
+            end
+
+            local function onFriendsEvent(event, arg1)
                 if event == 'CHAT_MSG_SYSTEM' then
-                    if type(arg1) == 'string' and friendOnline and (string.find(arg1, friendOnline, 1, true) or string.find(arg1, friendOffline, 1, true)) then
-                        local panel = LPS.frame and LPS.frame.friends
-                        if panel and panel._lpsUpdateFunc and not IsAltKeyDown() then
-                            panel._lpsUpdateFunc(panel)
-                        end
+                    if type(arg1) == 'string' and friendOnline
+                        and (string.find(arg1, friendOnline, 1, true) or string.find(arg1, friendOffline, 1, true)) then
+                        refresh()
                     end
                     return
                 end
@@ -63,11 +59,31 @@ do
                     return
                 end
 
-                local panel = LPS.frame and LPS.frame.friends
-                if panel and panel._lpsUpdateFunc and not IsAltKeyDown() then
-                    panel._lpsUpdateFunc(panel)
+                refresh()
+            end
+
+            -- Foundry.Events: один контроллер на все события Friends-панели.
+            -- create() вызывается вне боёвки (в бою ставится в очередь),
+            -- поэтому регистрация событий безопасна.
+            -- События есть не на всех клиентах (BN_RECONNECT/BN_DISCONNECT —
+            -- только Retail): регистрируем только валидные для этого клиента.
+            local function eventValid(ev)
+                return not (C_EventUtils and C_EventUtils.IsEventValid)
+                    or C_EventUtils.IsEventValid(ev)
+            end
+
+            local events = F.Events:New("LPS.Friends")
+            for _, ev in ipairs({
+                'PLAYER_ENTERING_WORLD', 'FRIENDLIST_UPDATE',
+                'BN_FRIEND_ACCOUNT_ONLINE', 'BN_FRIEND_ACCOUNT_OFFLINE',
+                'BN_FRIEND_INFO_CHANGED', 'BN_RECONNECT', 'BN_DISCONNECT',
+                'MODIFIER_STATE_CHANGED', 'CHAT_MSG_SYSTEM',
+            }) do
+                if eventValid(ev) then
+                    events:Register(ev, onFriendsEvent)
                 end
-            end)
+            end
+            LPS._friendsEvents = events
         end,
     })
 end

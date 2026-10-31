@@ -2,12 +2,71 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 LPS_DB = LPS_DB or {}
 
+-- Позиция holder по умолчанию (совпадает с LPS.defaults.position).
+local DEFAULT_POSITION = { "TOP", "TOP", 0, -10 }
+
+local function isValidPos(p)
+    return type(p) == "table"
+        and type(p.point) == "string"
+        and type(p.relPoint) == "string"
+        and type(p.x) == "number" and p.x == p.x
+        and type(p.y) == "number" and p.y == p.y
+end
+
+--- Старый ключ сохранённой позиции relativePoint → новый relPoint (Foundry.Window).
+local function migratePos(p)
+    if type(p) == "table" and p.relativePoint ~= nil then
+        p.relPoint = p.relativePoint
+        p.relativePoint = nil
+    end
+end
+
+local holderAttached = false
+
 function LPS:ApplyHolderPosition()
-    local db = LPS:GetDB()
-    db.position = db.position or { point = "TOP", relativePoint = "TOP", x = 0, y = -10 }
+    local holder = self.frame and self.frame.holder
+    if not holder then return end
+    local db = self:GetDB()
+    db.position = db.position or {}
+    migratePos(db.position)
+
+    if not holderAttached then
+        -- Таблица геометрии, которую держит Foundry.Window: в конце перетаскивания
+        -- он пишет в неё позицию, :Reset — очищает. Передаём копию (а не таблицу
+        -- профиля), чтобы при смене профилей модуль не затирал чужой профиль,
+        -- и держим её в синхроне с db.position текущего профиля.
+        local geometry = {}
+        for k, v in pairs(db.position) do
+            geometry[k] = v
+        end
+        self.frame._posGeometry = geometry
+        holderAttached = true
+        LPS.F.Window:Attach(holder, {
+            handle = holder,
+            geometry = geometry,
+            default = DEFAULT_POSITION,
+        })
+        -- Attach оставляет мышь на handle включённой; вне move-mode holder
+        -- не должен перехватывать клики.
+        if not holder.isMoving then
+            holder:EnableMouse(false)
+        end
+        return
+    end
+
+    -- Повторные вызовы (смена профиля / полный сброс): Foundry не
+    -- переподключает фрейм, поэтому синхронизируем таблицу геометрии и
+    -- применяем вручную — позицию текущего профиля либо дефолт.
     local p = db.position
-    self.frame.holder:ClearAllPoints()
-    self.frame.holder:SetPoint(p.point, UIParent, p.relativePoint, p.x, p.y)
+    local g = self.frame._posGeometry
+    for k in pairs(g) do g[k] = nil end
+    for k, v in pairs(p) do g[k] = v end
+    if isValidPos(g) then
+        holder:ClearAllPoints()
+        holder:SetPoint(g.point, UIParent, g.relPoint, g.x, g.y)
+    else
+        LPS.F.Window:Reset(holder)
+    end
 end
 
 local lastW, lastH

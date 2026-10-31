@@ -1,6 +1,7 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local L = LPS.L
+local F = LPS.F
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
@@ -165,15 +166,13 @@ end
 --------------------------------------------------------------------
 --------------------------------------------------------------------
 
-do
-    local f = CreateFrame("Frame")
-    f:RegisterEvent("PLAYER_ENTERING_WORLD")
-    f:SetScript("OnEvent", function(self)
-        self:UnregisterEvent("PLAYER_ENTERING_WORLD")
-        if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-        if LPS.ApplyLayout then LPS:ApplyLayout() end
-    end)
-end
+-- Foundry.Events: одноразовый PLAYER_ENTERING_WORLD (пересборка раскладки
+-- после входа в мир).
+LPS.datatextsEvents = F.Events:New("LPS.Datatexts")
+LPS.datatextsEvents:RegisterOnce("PLAYER_ENTERING_WORLD", function()
+    if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+    if LPS.ApplyLayout then LPS:ApplyLayout() end
+end)
 
 eventBridge:SetScript("OnEvent", function(self, event)
     if event ~= "PLAYER_REGEN_ENABLED" then return end
