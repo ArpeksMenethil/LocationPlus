@@ -206,7 +206,7 @@ function LPS:EncodeProfileData(profileName, settings)
         profile = profileName,
         data = LPS:DeepCopy(settings) or {},
     }
-    local ok, json = pcall(LPS.ProfileEncode, payload)
+    local ok, json = pcall(LPS.ProfileEncode, LPS, payload)
     if not ok then return nil, json end
     local compressed = ld:CompressDeflate(json)
     if not compressed then return nil, L.PROFILE_IO_COMPRESS_FAIL or "Compress failed." end
@@ -234,7 +234,7 @@ function LPS:DecodeProfileData(code)
     if not json then
         return nil, L.PROFILE_IO_DECODE_FAIL or "Invalid code: cannot decode."
     end
-    local ok, payload = pcall(LPS.ProfileDecode, json)
+    local ok, payload = pcall(LPS.ProfileDecode, LPS, json)
     if not ok or type(payload) ~= "table" then
         return nil, L.PROFILE_IO_FORMAT_FAIL or "Invalid code: unknown profile format."
     end
@@ -297,7 +297,7 @@ function LPS:ShowExportProfilePopup()
     
     if not (LPS:GetDB()) then return end
     local sourceName = LPS:SVGetCurrentProfile() or "Default"
-    local settings = LPS:DeepCopy(LPS:GetDB().profile) or {}
+    local settings = LPS:DeepCopy(LPS:GetDB()) or {}
     local code, err = LPS:EncodeProfileData(sourceName, settings)
     if not code then
         LPS:CreatePopup(
