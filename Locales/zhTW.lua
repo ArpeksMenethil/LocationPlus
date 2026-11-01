@@ -1,5 +1,10 @@
 local ADDON_NAME, LPS = ...
 
+-- Защита от повторной загрузки файла локали
+LPS._LOADED_LOCALES = LPS._LOADED_LOCALES or {}
+if LPS._LOADED_LOCALES["zhTW"] then return end
+LPS._LOADED_LOCALES["zhTW"] = true
+
 LPS.RegisterLocale("zhTW", {
 GENERAL = "常規",
 LOGIN_MESSAGE = "登入訊息",

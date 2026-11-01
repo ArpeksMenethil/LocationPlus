@@ -1,5 +1,10 @@
 local ADDON_NAME, LPS = ...
 
+-- Защита от повторной загрузки файла локали
+LPS._LOADED_LOCALES = LPS._LOADED_LOCALES or {}
+if LPS._LOADED_LOCALES["koKR"] then return end
+LPS._LOADED_LOCALES["koKR"] = true
+
 LPS.RegisterLocale("koKR", {
 GENERAL = "일반",
 LOGIN_MESSAGE = "로그인 메시지",

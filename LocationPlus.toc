@@ -15,14 +15,31 @@
 
 ## Notes: Addon adds location, extra panels and an info-rich tooltip
 ## Notes-ruRU: Аддон добавляет локацию, доп. панели и информативную подсказку
+## Notes-deDE: Fügt Standort, zusätzliche Panels und einen informativen Zusatzhinweis hinzu
+## Notes-frFR: Ajoute la localisation, des panneaux supplémentaires et une infobulle détaillée
+## Notes-ptBR: Adiciona localização, painéis extras e uma dica informativa
+## Notes-itIT: Aggiunge la posizione, i pannelli extra e un'infobox dettagliata
+## Notes-esES: Añade la ubicación, paneles extra y un mensaje emergente informativo
+## Notes-esMX: Añade la ubicación, paneles extra y un mensaje emergente informativo
+## Notes-koKR: 현재 위치, 추가 패널과 자세한 정보가 담긴 툴팁을 추가합니다
+## Notes-zhCN: 插件添加位置、附加面板和详细的提示框
+## Notes-zhTW: 外掛新增位置、附加面板與詳細資訊的訊息方塊
 
 ## Category: Addons Arpeks
 ## Category-ruRU: Аддоны Arpeks
+## Category-deDE: Addons von Arpeks
+## Category-frFR: Addons d'Arpeks
+## Category-ptBR: Addons do Arpeks
+## Category-itIT: Addons di Arpeks
+## Category-esES: Addons de Arpeks
+## Category-esMX: Addons de Arpeks
+## Category-koKR: Arpeks의 애드온
+## Category-zhCN: Arpeks 插件
+## Category-zhTW: Arpeks 外掛程式
 
 Libs/!load.xml
 
-Locales/enUS.lua
-Locales/[TextLocale].lua [AllowLoadTextLocale koKR, frFR, deDE, zhCN, esES, zhTW, esMX, ruRU, ptBR, itIT]
+Locales/[TextLocale].lua
 
 Game/!load.xml
 Modules/!load.xml
