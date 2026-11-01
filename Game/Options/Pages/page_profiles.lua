@@ -24,8 +24,9 @@ end
 
 --- Список имён профилей из собственной БД (core.lua, без Ace3).
 function LPS:GetProfileList()
-    local db = LPS.db
-    if db and db.GetProfilesList then return db:GetProfilesList() end
+    if LPS.SVGetProfilesList then
+        return LPS:SVGetProfilesList()
+    end
     return {}
 end
 
