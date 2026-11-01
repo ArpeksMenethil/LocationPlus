@@ -397,7 +397,9 @@ function LPS:BuildOptionPages()
                 pageKeys[key] = true
                 local create = LPS:CreateTreePage(node)
                 if node._pageId == "profiles" and LPS.CreateProfilesPanelPage then
-                    create = LPS.CreateProfilesPanelPage
+                    -- Panel вызывает def.create(container) как обычную функцию (без self),
+                    -- поэтому метод оборачиваем в замыкание, чтобы container не уходил в self.
+                    create = function(c) return LPS:CreateProfilesPanelPage(c) end
                 end
                 LPS:RegisterPanelPage(key, {
                     label = tostring(node.name or ""),
