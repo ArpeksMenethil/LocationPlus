@@ -339,11 +339,7 @@ function IO.ShowExportPopup()
         end
         self:SetHeight(CODE_H)
     end)
-    codeBox:SetScript("OnKeyDown", function(_, key)
-        if key == "C" and IsControlKeyDown() and type(CopyToClipboard) == "function" then
-            CopyToClipboard(code)
-        end
-    end)
+
     codeBox:SetScript("OnMouseDown", function()
         codeBox:HighlightText()
     end)

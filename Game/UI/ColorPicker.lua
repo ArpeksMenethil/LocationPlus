@@ -80,7 +80,6 @@ local S_Y = HUE_Y - HUE_H - 10
 local V_Y = S_Y - TRACK_H - 10
 local A_Y = V_Y - TRACK_H - 10
 local CLASS_Y = HUE_Y - PREVIEW_H - 12
-local COPY_Y = CLASS_Y - 20 - 8
 local BOX_Y = 40
 local H_NOALPHA = 205
 local H_ALPHA = 222
@@ -247,9 +246,6 @@ function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
     local cr, cg, cb = ClassColor()
     swatch:SetColorTexture(cr, cg, cb, 1)
 
-    local copyBtn = Widgets.CreateFlatButton(frame, 62, 20, L.CP_COPY or "Copy")
-    copyBtn:SetPoint("TOPLEFT", frame, "TOPLEFT", RX, COPY_Y)
-
     local boxR, boxG, boxB, boxA, hexBox
     local hexFocused = false
     local function FormatHex()
@@ -390,14 +386,6 @@ function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
         state.r, state.g, state.b = cr, cg, cb
         if hasAlpha then state.a = 1 end
         UpdateAll()
-    end)
-    -- Копирование: в WoW API есть только CopyToClipboard(text [, removeMarkup])
-    -- (SetClipboardText не существует). Чтение буфера обмена недоступно
-    -- вообще, поэтому кнопка Paste удалена — вводить hex можно вручную.
-    copyBtn:SetScript("OnClick", function()
-        if CopyToClipboard then
-            CopyToClipboard(FormatHex())
-        end
     end)
 
     local ref = CreateFrame("Frame", nil, UIParent)

@@ -365,7 +365,6 @@ local L = {
     CP_RESET = "Reset",
     CP_DEFAULT = "Default",
     CP_CLASS_COLOR = "Class color",
-    CP_COPY = "Copy",
     -- Вкладка About
     ABOUT = "About",
     ABOUT_THIS_ADDON = "About this addon",
