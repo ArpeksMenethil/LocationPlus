@@ -318,8 +318,8 @@ local function BuildControl(page, entry, row)
                 CP.Open(c.r or 1, c.g or 1, c.b or 1, c.a or 1,
                     function(r, g, b, a) write(r, g, b, a) end,
                     function(r, g, b, a) write(r, g, b, a) end,
-                    { hasAlpha = entry.alpha == true, title = entry.label,
-                      defaultColor = entry.default })
+                        { hasAlpha = entry.alpha == true, title = entry.label,
+                            defaultColor = entry.default })
             else
                 Widgets.OpenColorPicker(c.r or 1, c.g or 1, c.b or 1,
                     function(r, g, b) write(r, g, b) end,
@@ -609,11 +609,11 @@ function Builder.Build(parent, entries, opts)
                 SetRowTooltip(row, control, entry)
                 if (control.multiline and row:GetHeight() > height)
                     or (control.image and row:GetHeight() ~= height) then
-                    if not placedRight then
-                        y = y + height - row:GetHeight()
+                        if not placedRight then
+                            y = y + height - row:GetHeight()
+                        end
+                        height = row:GetHeight()
                     end
-                    height = row:GetHeight()
-                end
                 first = false
                 page.controls[#page.controls + 1] = control
             end

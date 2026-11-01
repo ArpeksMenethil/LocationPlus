@@ -15,9 +15,9 @@ do
             local item = C_Item:Create("player", index)
             if item and item.IsValid and item:IsValid()
                 and item.HasDurability and item:HasDurability() then
-                local cur, max = item:GetDurability()
-                if cur and max and max > 0 then return cur, max end
-            end
+                    local cur, max = item:GetDurability()
+                    if cur and max and max > 0 then return cur, max end
+                end
             return nil
         end
         return GetInventoryItemDurability(index)

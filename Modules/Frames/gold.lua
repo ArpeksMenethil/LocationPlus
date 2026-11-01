@@ -111,7 +111,7 @@ function LPS:ShowGoldResetMenu(owner)
                 if owner._lpsUpdateFunc then owner._lpsUpdateFunc(owner) end
             end,
         },
-        { isTitle = true, text = L.CHARACTERS },
+                    { isTitle = true, text = L.CHARACTERS },
     }
     for _, n in ipairs(names) do
         list[#list + 1] = {

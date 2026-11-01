@@ -131,7 +131,7 @@ end
 
 function LPS:Round(num, decimals)
     local mult = 10^(decimals or 0)
-  return math.floor(num * mult + 0.5) / mult
+    return math.floor(num * mult + 0.5) / mult
 end
 
 function LPS:ColorByThreshold(v, good, warn, invert)

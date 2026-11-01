@@ -129,45 +129,45 @@ local function BuildWindowEntries(L)
                 Theme.Set(value)
             end,
         },
-        { kind = "header", label = L.THEME_COLOR },
-        {
-            kind = "dropdown", key = "themeColor", label = L.THEME_COLOR,
-            tooltip = L.THEME_COLOR_DESC,
-            items = function() return Theme.GetAccentItems() end,
-            get = GetValidAccentValue,
-            set = function(v) UIOpts().themeColor = v end,
-            onChange = ApplyTheme,
-        },
-        { kind = "header", label = L.SIZE_AND_SCALE },
-        {
-            kind = "slider", key = "uiScale", label = L.WINDOW_SCALE,
-            tooltip = L.WINDOW_SCALE_DESC,
-            min = 0.5, max = 1.5, step = 0.05, format = "%.2f",
-            commitOnRelease = true,
-            get = function()
-                local db = LPS:GetDB()
-                local ui = db and db.uiOptions
-                return (ui and tonumber(ui.scale)) or 1.0
-            end,
-            set = function() end,
-            onChange = function(value)
-                Panel.SetWindowScale(value)
-            end,
-        },
-        {
-            kind = "button", key = "resetAppearance", label = L.RESET_APPEARANCE,
-            tooltip = L.RESET_APPEARANCE_DESC,
-            func = function()
-                local ui = UIOpts()
-                ui.theme = nil
-                ui.themeColor = nil
-                ui.scale = 1.0
-                if Theme.Set then Theme.Set("modern") else Theme.Load() end
-                Panel.SetWindowScale(1.0)
-                ApplyTheme()
-                Panel.RefreshActivePage()
-            end,
-        },
+                    { kind = "header", label = L.THEME_COLOR },
+                    {
+                        kind = "dropdown", key = "themeColor", label = L.THEME_COLOR,
+                        tooltip = L.THEME_COLOR_DESC,
+                        items = function() return Theme.GetAccentItems() end,
+                        get = GetValidAccentValue,
+                        set = function(v) UIOpts().themeColor = v end,
+                        onChange = ApplyTheme,
+                    },
+                            { kind = "header", label = L.SIZE_AND_SCALE },
+                            {
+                                kind = "slider", key = "uiScale", label = L.WINDOW_SCALE,
+                                tooltip = L.WINDOW_SCALE_DESC,
+                                min = 0.5, max = 1.5, step = 0.05, format = "%.2f",
+                                commitOnRelease = true,
+                                get = function()
+                                    local db = LPS:GetDB()
+                                    local ui = db and db.uiOptions
+                                    return (ui and tonumber(ui.scale)) or 1.0
+                                end,
+                                set = function() end,
+                                onChange = function(value)
+                                    Panel.SetWindowScale(value)
+                                end,
+                            },
+                                        {
+                                            kind = "button", key = "resetAppearance", label = L.RESET_APPEARANCE,
+                                            tooltip = L.RESET_APPEARANCE_DESC,
+                                            func = function()
+                                                local ui = UIOpts()
+                                                ui.theme = nil
+                                                ui.themeColor = nil
+                                                ui.scale = 1.0
+                                                if Theme.Set then Theme.Set("modern") else Theme.Load() end
+                                                Panel.SetWindowScale(1.0)
+                                                ApplyTheme()
+                                                Panel.RefreshActivePage()
+                                            end,
+                                        },
     }
 end
 

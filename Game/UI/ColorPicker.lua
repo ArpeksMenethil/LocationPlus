@@ -265,7 +265,7 @@ function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
         local full
         if #t == 3 then
             full = t:sub(1, 1) .. t:sub(1, 1) .. t:sub(2, 2) .. t:sub(2, 2)
-                .. t:sub(3, 3) .. t:sub(3, 3)
+            .. t:sub(3, 3) .. t:sub(3, 3)
         else
             full = (t .. "00000000"):sub(1, 8)
         end

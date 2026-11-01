@@ -9,13 +9,13 @@ local OH = LPS.OptionsHelper
 local function escStr(s)
     s = tostring(s)
     s = s:gsub("\\", "\\\\")
-          :gsub("\n", "\\n")
-          :gsub("\r", "\\r")
-          :gsub("|", "\\e")
-          :gsub(":", "\\c")
-          :gsub(",", "\\m")
-          :gsub("}", "\\b")
-          :gsub("{", "\\o")
+    :gsub("\n", "\\n")
+    :gsub("\r", "\\r")
+    :gsub("|", "\\e")
+    :gsub(":", "\\c")
+    :gsub(",", "\\m")
+    :gsub("}", "\\b")
+    :gsub("{", "\\o")
     return s
 end
 
@@ -56,8 +56,8 @@ encodeTable = function(t)
     for k, v in pairs(t) do
         if (type(k) == "number" or type(k) == "string")
             and v ~= nil and type(v) ~= "function" then
-            parts[#parts + 1] = encodeValue(k) .. ":" .. encodeValue(v)
-        end
+                parts[#parts + 1] = encodeValue(k) .. ":" .. encodeValue(v)
+            end
     end
     table.sort(parts)
     return "{" .. table.concat(parts, ",") .. "}"

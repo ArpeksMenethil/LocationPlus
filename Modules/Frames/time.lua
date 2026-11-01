@@ -14,9 +14,9 @@ LPS:RegisterDatatext({
     nameKey = "Time",
     ticker = 1,
     clicks = { "LeftButtonUp", "RightButtonUp", "MiddleButtonUp" },
-        create = function(f)
-                if f then f._lpsForceWhite = true end
-        end,
+    create = function(f)
+        if f then f._lpsForceWhite = true end
+    end,
     update = function(f)
         if f.text then
             local newText = LPS:GetFormattedGameTime()

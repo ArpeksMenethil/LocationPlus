@@ -32,16 +32,16 @@ function LPS:BuildGuildTooltip(GameTooltip)
                 tt:AddDoubleLine(
                     string.format("%s%d|r %s", DT.levelColorHex(level), level, name),
                     classLocal or "", 1, 1, 1,
-                    (function() local c = classFile and RAID_CLASS_COLORS[classFile]; return c and c.r or 1 end)(),
-                    (function() local c = classFile and RAID_CLASS_COLORS[classFile]; return c and c.g or 1 end)(),
-                    (function() local c = classFile and RAID_CLASS_COLORS[classFile]; return c and c.b or 1 end)()
+                        (function() local c = classFile and RAID_CLASS_COLORS[classFile]; return c and c.r or 1 end)(),
+                        (function() local c = classFile and RAID_CLASS_COLORS[classFile]; return c and c.g or 1 end)(),
+                        (function() local c = classFile and RAID_CLASS_COLORS[classFile]; return c and c.b or 1 end)()
                 )
             end
         end
     end
 
     if shown == 0 then
-            tt:AddLine(L.NO_MEMBERS_ONLINE, 0.65, 0.65, 0.65)
+        tt:AddLine(L.NO_MEMBERS_ONLINE, 0.65, 0.65, 0.65)
     end
 
     tt:AddLine(" ")

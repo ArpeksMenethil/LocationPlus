@@ -71,8 +71,8 @@ function LPS:RegisterSettingsCategory()
     if not (_G.Settings
         and type(_G.Settings.RegisterCanvasLayoutCategory) == "function"
         and type(_G.Settings.RegisterAddOnCategory) == "function") then
-        return
-    end
+            return
+        end
     local ok, controller = pcall(function()
         return F.Settings:New({
             title = getAddonTitle(),

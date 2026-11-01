@@ -13,7 +13,7 @@ do
             local has = HasNewMail and HasNewMail()
             if f.text then
                 f.text:SetText(has and ("|cFFFFFF00" .. (L.NEW_MAIL) .. "|r")
-                    or (L.NO_MAIL))
+                or (L.NO_MAIL))
             end
         end,
     })

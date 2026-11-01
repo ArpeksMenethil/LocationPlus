@@ -363,14 +363,14 @@ function LPS:BuildTimeTooltip()
                 local safeNumEncounters = tonumber(numEncounters) or 0
 
                 local left = string.format(
-                        "|T%s:16:16|t%d %s%s|r |cFFAAAAAA(%s, %d/%d)|r",
-                        icon,
-                        safeMaxPlayers,
-                        color,
-                        diffChar,
-                        safeName,
-                        safeEncounterProgress,
-                        safeNumEncounters
+                    "|T%s:16:16|t%d %s%s|r |cFFAAAAAA(%s, %d/%d)|r",
+                    icon,
+                    safeMaxPlayers,
+                    color,
+                    diffChar,
+                    safeName,
+                    safeEncounterProgress,
+                    safeNumEncounters
                 )
 
                 local right = LPS:FormatTime(reset)
@@ -387,7 +387,7 @@ function LPS:BuildTimeTooltip()
         if db.tooltips.time.raids and #raids > 0 then
             GameTooltip:AddLine(L.COOLDOWN_RAIDS, rY, gY, bY)
             for _, v in ipairs(raids) do
-                    GameTooltip:AddDoubleLine(v.left, v.right, r, g, b, rB, gB, bB)
+                GameTooltip:AddDoubleLine(v.left, v.right, r, g, b, rB, gB, bB)
             end
             GameTooltip:AddLine(" ")
         end
@@ -395,7 +395,7 @@ function LPS:BuildTimeTooltip()
         if db.tooltips.time.dungeons and #dungeons > 0 then
             GameTooltip:AddLine(L.COOLDOWN_DUNGEONS, rY, gY, bY)
             for _, v in ipairs(dungeons) do
-                    GameTooltip:AddDoubleLine(v.left, v.right, r, g, b, rB, gB, bB)
+                GameTooltip:AddDoubleLine(v.left, v.right, r, g, b, rB, gB, bB)
             end
             GameTooltip:AddLine(" ")
         end

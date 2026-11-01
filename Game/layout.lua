@@ -76,9 +76,9 @@ function LPS:UpdateFrameSize()
         if key ~= "holder" and key ~= "location" and key ~= "minimapButton"
             and type(f) == "table" and f.IsShown and f.GetWidth and f:GetParent() == LPS.frame.holder
             and f:IsShown() then
-            width = width + f:GetWidth()
-            height = math.max(height, f:GetHeight())
-        end
+                width = width + f:GetWidth()
+                height = math.max(height, f:GetHeight())
+            end
     end
     width = width + padding * 2 + 10
     height = height + 6

@@ -32,7 +32,7 @@ function LPS:_NormalizeLayoutDB(raw)
         local db = LPS:GetDB()
         if db then db.layout = raw end
     end
-local out = normalizedLayoutCache and normalizedLayoutCache.out or {}
+    local out = normalizedLayoutCache and normalizedLayoutCache.out or {}
     out.dtPaddingX  = tonumber(raw.dtPaddingX)
     out.dtPaddingY  = tonumber(raw.dtPaddingY)
     out.dtMinWidth  = tonumber(raw.dtMinWidth)
@@ -110,9 +110,9 @@ local function applyPanelVisibility(frames, slotList, showDT)
     for key, f in pairs(frames) do
         if key ~= "holder" and key ~= "location" and key ~= "minimapButton"
             and type(f) == "table" and f.SetShown and f.IsShown then
-            f:SetShown(showDT and isSelectedInSlots(key))
-            if f:IsShown() then shownNow[#shownNow + 1] = f end
-        end
+                f:SetShown(showDT and isSelectedInSlots(key))
+                if f:IsShown() then shownNow[#shownNow + 1] = f end
+            end
     end
     LPS._pendingPanelPrimes = shownNow
 end
@@ -138,256 +138,256 @@ function LPS._CollectSlotKeys(sideSlots)
 end
 
 function LPS:ApplyLayout()
-local db = LPS:GetDB()
-local frames = LPS.frame
-if not db or not frames then return end
+    local db = LPS:GetDB()
+    local frames = LPS.frame
+    if not db or not frames then return end
 
-local layout = LPS:_NormalizeLayoutDB(db.layout)
+    local layout = LPS:_NormalizeLayoutDB(db.layout)
 
-local user = layout.userColor
-local layoutKey = tostring(layout.dtPaddingX) .. "," .. tostring(layout.dtPaddingY) .. ","
-.. tostring(layout.dtMinWidth) .. "," .. tostring(layout.locPaddingX) .. ","
-.. tostring(layout.locPaddingY) .. "," .. tostring(layout.locMinWidth) .. ","
-.. tostring(layout.spacing) .. "," .. tostring(layout.dtshow) .. ","
-.. tostring(layout.frameStrata) .. "," .. tostring(layout.frameLevel) .. ","
-.. tostring(layout.customColor) .. ","
-.. tostring(user and user.r) .. "," .. tostring(user and user.g) .. "," .. tostring(user and user.b) .. ","
-.. tostring(layout.slotCount or 2) .. ","
-.. table.concat(LPS._CollectSlotKeys(layout.sideSlots), ";") .. ","
-.. tostring(db.settings and db.settings.fontSize or 12) .. ","
-.. tostring(layout.chainAnchor)
+    local user = layout.userColor
+    local layoutKey = tostring(layout.dtPaddingX) .. "," .. tostring(layout.dtPaddingY) .. ","
+        .. tostring(layout.dtMinWidth) .. "," .. tostring(layout.locPaddingX) .. ","
+        .. tostring(layout.locPaddingY) .. "," .. tostring(layout.locMinWidth) .. ","
+        .. tostring(layout.spacing) .. "," .. tostring(layout.dtshow) .. ","
+        .. tostring(layout.frameStrata) .. "," .. tostring(layout.frameLevel) .. ","
+        .. tostring(layout.customColor) .. ","
+        .. tostring(user and user.r) .. "," .. tostring(user and user.g) .. "," .. tostring(user and user.b) .. ","
+        .. tostring(layout.slotCount or 2) .. ","
+        .. table.concat(LPS._CollectSlotKeys(layout.sideSlots), ";") .. ","
+        .. tostring(db.settings and db.settings.fontSize or 12) .. ","
+        .. tostring(layout.chainAnchor)
 
-local forcePass = not (frames.holder and frames.holder._lpsEverApplied)
-if not forcePass and LPS._ConsumePendingRefresh() then forcePass = true end
-if not forcePass and frames.holder and frames.holder._lpsLastLayoutKey == layoutKey then
-return
-end
-local prevKey = frames.holder and frames.holder._lpsLastLayoutKey
-if frames.holder then
-frames.holder._lpsLastLayoutKey = layoutKey
-end
+    local forcePass = not (frames.holder and frames.holder._lpsEverApplied)
+    if not forcePass and LPS._ConsumePendingRefresh() then forcePass = true end
+    if not forcePass and frames.holder and frames.holder._lpsLastLayoutKey == layoutKey then
+        return
+    end
+    local prevKey = frames.holder and frames.holder._lpsLastLayoutKey
+    if frames.holder then
+        frames.holder._lpsLastLayoutKey = layoutKey
+    end
 
-local defaultsLayout = (LPS.defaults and LPS.defaults.layout) or {}
-local dtPaddingX  = tonumber(layout.dtPaddingX)  or tonumber(defaultsLayout.dtPaddingX)  or 20
-local dtPaddingY  = tonumber(layout.dtPaddingY)  or tonumber(defaultsLayout.dtPaddingY)  or 7
-local dtMinWidth  = tonumber(layout.dtMinWidth)  or tonumber(defaultsLayout.dtMinWidth)  or 100
-local locPaddingX = tonumber(layout.locPaddingX) or tonumber(defaultsLayout.locPaddingX) or 20
-local locPaddingY = tonumber(layout.locPaddingY) or tonumber(defaultsLayout.locPaddingY) or 9
-local locMinWidth = tonumber(layout.locMinWidth) or tonumber(defaultsLayout.locMinWidth) or 200
-local spacing     = tonumber(layout.spacing) or 5
-local firstPass = forcePass
+    local defaultsLayout = (LPS.defaults and LPS.defaults.layout) or {}
+    local dtPaddingX  = tonumber(layout.dtPaddingX)  or tonumber(defaultsLayout.dtPaddingX)  or 20
+    local dtPaddingY  = tonumber(layout.dtPaddingY)  or tonumber(defaultsLayout.dtPaddingY)  or 7
+    local dtMinWidth  = tonumber(layout.dtMinWidth)  or tonumber(defaultsLayout.dtMinWidth)  or 100
+    local locPaddingX = tonumber(layout.locPaddingX) or tonumber(defaultsLayout.locPaddingX) or 20
+    local locPaddingY = tonumber(layout.locPaddingY) or tonumber(defaultsLayout.locPaddingY) or 9
+    local locMinWidth = tonumber(layout.locMinWidth) or tonumber(defaultsLayout.locMinWidth) or 200
+    local spacing     = tonumber(layout.spacing) or 5
+    local firstPass = forcePass
 
-local function getLayoutTextColor(mode, userColor)
-if mode == 1 then
-return (userColor and userColor.r) or 1, (userColor and userColor.g) or 1, (userColor and userColor.b) or 1
-end
-if mode == 2 then
-return getClassColor()
-end
-if mode == 3 then
-return LPS:GetColor("text")
-end
-return nil
-end
+    local function getLayoutTextColor(mode, userColor)
+        if mode == 1 then
+            return (userColor and userColor.r) or 1, (userColor and userColor.g) or 1, (userColor and userColor.b) or 1
+        end
+        if mode == 2 then
+            return getClassColor()
+        end
+        if mode == 3 then
+            return LPS:GetColor("text")
+        end
+        return nil
+    end
 
-local function resolveFont()
-local file, _, flags = GameFontNormalSmall:GetFont()
-return file, flags
-end
+    local function resolveFont()
+        local file, _, flags = GameFontNormalSmall:GetFont()
+        return file, flags
+    end
 
-local function forceResize(f)
-    if not f then return end
-    if f._lpsResizeToFit then f._lpsResizeToFit() end
-end
+    local function forceResize(f)
+        if not f then return end
+        if f._lpsResizeToFit then f._lpsResizeToFit() end
+    end
 
-if frames.location then
-frames.location._lpsPaddingX = locPaddingX
-frames.location._lpsPaddingY = locPaddingY
-frames.location._lpsMinWidth = locMinWidth
-forceResize(frames.location)
-end
-for key, f in pairs(frames) do
-if key ~= "holder" and key ~= "location" and key ~= "minimapButton" and f then
-f._lpsPaddingX = dtPaddingX
-f._lpsPaddingY = dtPaddingY
-f._lpsMinWidth = dtMinWidth
-forceResize(f)
-end
-end
-
-local showDT = layout.dtshow ~= false
-
-local sideSlots = layout.sideSlots or {}
-
-local function normalizeSlotFrameKey(key)
-if not key or key == "" then return "NONE" end
-if key == "none" then return "NONE" end
-if key == "None" then return "NONE" end
-return key
-end
-
-local leftChain, rightChain = {}, {}
-for _, side in ipairs({ "left", "right" }) do
-    for i = 1, math.max(tonumber(layout.slotCount) or 2, 2) do
-        local cfg = sideSlots[side .. i]
-        if cfg then
-            local key = normalizeSlotFrameKey(cfg.frame)
-            if key ~= "NONE" then
-                local entry = { key = key, cfg = cfg, side = side }
-                if side == "left" then leftChain[#leftChain + 1] = entry
-                else rightChain[#rightChain + 1] = entry end
-            end
+    if frames.location then
+        frames.location._lpsPaddingX = locPaddingX
+        frames.location._lpsPaddingY = locPaddingY
+        frames.location._lpsMinWidth = locMinWidth
+        forceResize(frames.location)
+    end
+    for key, f in pairs(frames) do
+        if key ~= "holder" and key ~= "location" and key ~= "minimapButton" and f then
+            f._lpsPaddingX = dtPaddingX
+            f._lpsPaddingY = dtPaddingY
+            f._lpsMinWidth = dtMinWidth
+            forceResize(f)
         end
     end
-end
-local slotList = {}
-for _, e in ipairs(leftChain) do slotList[#slotList + 1] = e end
-for _, e in ipairs(rightChain) do slotList[#slotList + 1] = e end
 
-local function getFrameByKey(key)
-    if LPS.GetOrCreatePanelFrame then return LPS:GetOrCreatePanelFrame(key) end
-    return nil
-end
+    local showDT = layout.dtshow ~= false
 
-for _, e in ipairs(slotList) do
-    local f = getFrameByKey(e.key)
-    if f then frames[e.key] = f end
-end
+    local sideSlots = layout.sideSlots or {}
 
-local function useHolderAnchor()
-    local db = LPS.GetDB and LPS:GetDB()
-    local lay = db and db.layout
-    return lay ~= nil and lay.chainAnchor == "location" and true or false
-end
+    local function normalizeSlotFrameKey(key)
+        if not key or key == "" then return "NONE" end
+        if key == "none" then return "NONE" end
+        if key == "None" then return "NONE" end
+        return key
+    end
 
-local function positionChain(chain, side)
-    local isLeft = (side == "LEFT")
-    local ownPoint = isLeft and "RIGHT" or "LEFT"
-    local edgePoint = isLeft and "LEFT" or "RIGHT"
-    local sign = isLeft and -1 or 1
-    local anchorTo, anchorPoint = frames.location, edgePoint
-    local seen = {}
-    for idx = 1, #chain do
-        local entry = chain[idx]
-        local key = entry.key
-        if not seen[key] then
-            seen[key] = true
-            local frame = getFrameByKey(key)
-            if frame then
-                local ox = tonumber(entry.cfg.offsetX) or 0
-                local oy = tonumber(entry.cfg.offsetY) or 0
-                frame:ClearAllPoints()
-                if idx == 1 and useHolderAnchor() then
-                    local base = (frames.holder and frames.holder.IsShown and frames.holder:IsShown()) and frames.holder or frames.location
-                    anchorTo, anchorPoint = base, edgePoint
+    local leftChain, rightChain = {}, {}
+    for _, side in ipairs({ "left", "right" }) do
+        for i = 1, math.max(tonumber(layout.slotCount) or 2, 2) do
+            local cfg = sideSlots[side .. i]
+            if cfg then
+                local key = normalizeSlotFrameKey(cfg.frame)
+                if key ~= "NONE" then
+                    local entry = { key = key, cfg = cfg, side = side }
+                    if side == "left" then leftChain[#leftChain + 1] = entry
+                    else rightChain[#rightChain + 1] = entry end
                 end
-                local dx = ((idx == 1) and 0 or (sign * spacing)) + ox
-                frame:SetPoint(ownPoint, anchorTo, anchorPoint, dx, oy)
-                anchorTo, anchorPoint = frame, edgePoint
             end
         end
     end
-end
+    local slotList = {}
+    for _, e in ipairs(leftChain) do slotList[#slotList + 1] = e end
+    for _, e in ipairs(rightChain) do slotList[#slotList + 1] = e end
 
-positionChain(leftChain, "LEFT")
-positionChain(rightChain, "RIGHT")
+    local function getFrameByKey(key)
+        if LPS.GetOrCreatePanelFrame then return LPS:GetOrCreatePanelFrame(key) end
+        return nil
+    end
 
-applyPanelVisibility(frames, slotList, showDT)
+    for _, e in ipairs(slotList) do
+        local f = getFrameByKey(e.key)
+        if f then frames[e.key] = f end
+    end
 
-if LPS._pendingPanelPrimes then
-    for _, f in ipairs(LPS._pendingPanelPrimes) do
-        if f and f:IsShown() and f._lpsUpdateFunc then
-            f._lpsUpdateFunc(f)
-            if f._lpsResizeToFit then f._lpsResizeToFit() end
+    local function useHolderAnchor()
+        local db = LPS.GetDB and LPS:GetDB()
+        local lay = db and db.layout
+        return lay ~= nil and lay.chainAnchor == "location" and true or false
+    end
+
+    local function positionChain(chain, side)
+        local isLeft = (side == "LEFT")
+        local ownPoint = isLeft and "RIGHT" or "LEFT"
+        local edgePoint = isLeft and "LEFT" or "RIGHT"
+        local sign = isLeft and -1 or 1
+        local anchorTo, anchorPoint = frames.location, edgePoint
+        local seen = {}
+        for idx = 1, #chain do
+            local entry = chain[idx]
+            local key = entry.key
+            if not seen[key] then
+                seen[key] = true
+                local frame = getFrameByKey(key)
+                if frame then
+                    local ox = tonumber(entry.cfg.offsetX) or 0
+                    local oy = tonumber(entry.cfg.offsetY) or 0
+                    frame:ClearAllPoints()
+                    if idx == 1 and useHolderAnchor() then
+                        local base = (frames.holder and frames.holder.IsShown and frames.holder:IsShown()) and frames.holder or frames.location
+                        anchorTo, anchorPoint = base, edgePoint
+                    end
+                    local dx = ((idx == 1) and 0 or (sign * spacing)) + ox
+                    frame:SetPoint(ownPoint, anchorTo, anchorPoint, dx, oy)
+                    anchorTo, anchorPoint = frame, edgePoint
+                end
+            end
         end
     end
-    LPS._pendingPanelPrimes = nil
-end
 
-if frames.holder and not frames.holder.isMoving then
-if layout.frameStrata then
-frames.holder:SetFrameStrata(layout.frameStrata)
-end
-if layout.frameLevel then
-frames.holder:SetFrameLevel(tonumber(layout.frameLevel) or 1)
-end
-end
+    positionChain(leftChain, "LEFT")
+    positionChain(rightChain, "RIGHT")
 
-local fontFile, defaultFlags = resolveFont()
-local size = (db.settings and db.settings.fontSize) or 12
-local flags = defaultFlags or "NONE"
-local fontChanged = false
-local fontSizeChanged = false
-local fontKey = tostring(fontFile) .. "|" .. tostring(size) .. "|" .. tostring(flags)
-local styledFrames = {}
-for key, f in pairs(frames) do
-if key ~= "holder" and key ~= "minimapButton" and type(f) == "table" and f.text then
-styledFrames[#styledFrames + 1] = f
-end
-end
-for _, f in ipairs(styledFrames) do
-if f and f.text then
-if f._lpsAppliedFontKey ~= fontKey then
-f._lpsAppliedFontKey = fontKey
-f.text:SetFont(fontFile, size, flags)
-fontChanged = true
-fontSizeChanged = true
-elseif f._lpsAppliedFontSize ~= size then
-fontSizeChanged = true
-end
-f._lpsAppliedFontSize = size
-local mode = layout.customColor
-if mode == nil then
-mode = 3
-end
-local r, g, b
-if f == LPS.frame.location then
-elseif f._lpsForceWhite then
-r, g, b = 1, 1, 1
-elseif mode == 3 then
-r, g, b = LPS:GetColor("text")
-else
-r, g, b = getLayoutTextColor(mode, layout.userColor)
-end
-if r then
-local nr, ng, nb = f.text:GetTextColor()
-if math.abs(nr - r) > 0.001 or math.abs(ng - g) > 0.001 or math.abs(nb - b) > 0.001 then
-f.text:SetTextColor(r, g, b)
-fontChanged = true
-end
-end
-end
-end
+    applyPanelVisibility(frames, slotList, showDT)
 
-local layoutNumsChanged = ((prevKey ~= nil) and (prevKey ~= layoutKey)) or forcePass
-if fontChanged or fontSizeChanged or layoutNumsChanged or forcePass then
-for key, f in pairs(frames) do
-if key ~= "holder" and key ~= "minimapButton" and f and f._lpsUpdateFunc then
-f._lpsUpdateFunc(f)
-end
-end
-end
+    if LPS._pendingPanelPrimes then
+        for _, f in ipairs(LPS._pendingPanelPrimes) do
+            if f and f:IsShown() and f._lpsUpdateFunc then
+                f._lpsUpdateFunc(f)
+                if f._lpsResizeToFit then f._lpsResizeToFit() end
+            end
+        end
+        LPS._pendingPanelPrimes = nil
+    end
 
-if firstPass or layoutNumsChanged then
-local loc = frames.location
-if loc and loc._lpsUpdateFunc then
-loc._lpsUpdateFunc(loc)
-end
-for key, f in pairs(frames) do
-if key ~= "holder" and key ~= "location" and key ~= "minimapButton"
-and type(f) == "table" and f._lpsUpdateFunc and f.IsShown and f:IsShown() then
-f._lpsUpdateFunc(f)
-end
-end
-end
+    if frames.holder and not frames.holder.isMoving then
+        if layout.frameStrata then
+            frames.holder:SetFrameStrata(layout.frameStrata)
+        end
+        if layout.frameLevel then
+            frames.holder:SetFrameLevel(tonumber(layout.frameLevel) or 1)
+        end
+    end
 
-if LPS.UpdateFrameSize then
-LPS:ScheduleFrameSizeUpdate()
-end
+    local fontFile, defaultFlags = resolveFont()
+    local size = (db.settings and db.settings.fontSize) or 12
+    local flags = defaultFlags or "NONE"
+    local fontChanged = false
+    local fontSizeChanged = false
+    local fontKey = tostring(fontFile) .. "|" .. tostring(size) .. "|" .. tostring(flags)
+    local styledFrames = {}
+    for key, f in pairs(frames) do
+        if key ~= "holder" and key ~= "minimapButton" and type(f) == "table" and f.text then
+            styledFrames[#styledFrames + 1] = f
+        end
+    end
+    for _, f in ipairs(styledFrames) do
+        if f and f.text then
+            if f._lpsAppliedFontKey ~= fontKey then
+                f._lpsAppliedFontKey = fontKey
+                f.text:SetFont(fontFile, size, flags)
+                fontChanged = true
+                fontSizeChanged = true
+            elseif f._lpsAppliedFontSize ~= size then
+                fontSizeChanged = true
+            end
+            f._lpsAppliedFontSize = size
+            local mode = layout.customColor
+            if mode == nil then
+                mode = 3
+            end
+            local r, g, b
+            if f == LPS.frame.location then
+            elseif f._lpsForceWhite then
+                r, g, b = 1, 1, 1
+            elseif mode == 3 then
+                r, g, b = LPS:GetColor("text")
+            else
+                r, g, b = getLayoutTextColor(mode, layout.userColor)
+            end
+            if r then
+                local nr, ng, nb = f.text:GetTextColor()
+                if math.abs(nr - r) > 0.001 or math.abs(ng - g) > 0.001 or math.abs(nb - b) > 0.001 then
+                    f.text:SetTextColor(r, g, b)
+                    fontChanged = true
+                end
+            end
+        end
+    end
 
-if frames.holder then
-frames.holder._lpsEverApplied = true
-end
+    local layoutNumsChanged = ((prevKey ~= nil) and (prevKey ~= layoutKey)) or forcePass
+    if fontChanged or fontSizeChanged or layoutNumsChanged or forcePass then
+        for key, f in pairs(frames) do
+            if key ~= "holder" and key ~= "minimapButton" and f and f._lpsUpdateFunc then
+                f._lpsUpdateFunc(f)
+            end
+        end
+    end
+
+    if firstPass or layoutNumsChanged then
+        local loc = frames.location
+        if loc and loc._lpsUpdateFunc then
+            loc._lpsUpdateFunc(loc)
+        end
+        for key, f in pairs(frames) do
+            if key ~= "holder" and key ~= "location" and key ~= "minimapButton"
+                and type(f) == "table" and f._lpsUpdateFunc and f.IsShown and f:IsShown() then
+                    f._lpsUpdateFunc(f)
+                end
+        end
+    end
+
+    if LPS.UpdateFrameSize then
+        LPS:ScheduleFrameSizeUpdate()
+    end
+
+    if frames.holder then
+        frames.holder._lpsEverApplied = true
+    end
 end
 
 function LPS:ConvertRGBtoColorString(color)
@@ -403,18 +403,18 @@ function LPS:ConvertRGBtoColorString(color)
 end
 
 function LPS:ApplyDTVisibility()
-if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-LPS:ApplyLayout()
+    if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+    LPS:ApplyLayout()
 end
 
 function LPS:ApplyTimeVisibility()
-if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-LPS:ApplyLayout()
+    if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+    LPS:ApplyLayout()
 end
 
 function LPS:ApplyCoordsVisibility()
-if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-LPS:ApplyLayout()
+    if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+    LPS:ApplyLayout()
 end
 
 function LPS:ApplyVisibility()
@@ -461,44 +461,44 @@ function LPS:ApplyVisibility()
 end
 
 function LPS:ResetPanelsToDefaults()
-        local db = self:GetDB()
-        if not db then return end
+    local db = self:GetDB()
+    if not db then return end
 
-        db.panels = nil
+    db.panels = nil
 
-        if type(db.layout) == "table" then
-                local defSS = (LPS.defaults and LPS.defaults.layout and LPS.defaults.layout.sideSlots) or {}
-                local fresh = {}
-                for name, slot in pairs(defSS) do
-                        if name ~= "userTouched" and type(slot) == "table" then
-                                fresh[name] = { frame = slot.frame, offsetX = 0, offsetY = 0 }
-                        end
+    if type(db.layout) == "table" then
+        local defSS = (LPS.defaults and LPS.defaults.layout and LPS.defaults.layout.sideSlots) or {}
+        local fresh = {}
+        for name, slot in pairs(defSS) do
+            if name ~= "userTouched" and type(slot) == "table" then
+                fresh[name] = { frame = slot.frame, offsetX = 0, offsetY = 0 }
+            end
+        end
+        fresh.userTouched = {}
+        db.layout.sideSlots = fresh
+    end
+
+    if LPS.frame then
+        for k, f in pairs(LPS.frame) do
+            if type(f) == "table" and k ~= "holder" and k ~= "location" and k ~= "minimapButton"
+                and LPS.datatexts and LPS.datatexts[k] then
+                    f:Hide()
+                    if f.UnregisterAllEvents then f:UnregisterAllEvents() end
+                    if f._lpsTicker then f._lpsTicker:Cancel(); f._lpsTicker = nil end
+                    LPS.frame[k] = nil
                 end
-                fresh.userTouched = {}
-                db.layout.sideSlots = fresh
         end
+    end
 
-        if LPS.frame then
-                for k, f in pairs(LPS.frame) do
-                        if type(f) == "table" and k ~= "holder" and k ~= "location" and k ~= "minimapButton"
-                                and LPS.datatexts and LPS.datatexts[k] then
-                                f:Hide()
-                                if f.UnregisterAllEvents then f:UnregisterAllEvents() end
-                                if f._lpsTicker then f._lpsTicker:Cancel(); f._lpsTicker = nil end
-                                LPS.frame[k] = nil
-                        end
-                end
-        end
+    if db.layout and type(db.layout.sideSlots) == "table" then
+        db.layout.sideSlots.userTouched = {}
+    end
 
-        if db.layout and type(db.layout.sideSlots) == "table" then
-                db.layout.sideSlots.userTouched = {}
-        end
-
-        if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-        if LPS.ApplyAllSettings then LPS:ApplyAllSettings() end
-        if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-        if LPS.ApplyLayout then LPS:ApplyLayout() end
-        if LPS.UpdateFrameSize then LPS:UpdateFrameSize() end
+    if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+    if LPS.ApplyAllSettings then LPS:ApplyAllSettings() end
+    if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
+    if LPS.ApplyLayout then LPS:ApplyLayout() end
+    if LPS.UpdateFrameSize then LPS:UpdateFrameSize() end
 end
 
 function LPS:ResetAllSettingsToDefaults()
@@ -511,14 +511,14 @@ function LPS:ResetAllSettingsToDefaults()
         for _, k in ipairs({ "bags", "combatIndicator",
             "difficulty", "durability", "experience", "friends", "guild", "itemLevel", "mail",
             "microBar", "volume" }) do
-            local f = LPS.frame[k]
-            if f then
-                f:Hide()
-                if f.UnregisterAllEvents then f:UnregisterAllEvents() end
-                if f._lpsTicker then f._lpsTicker:Cancel(); f._lpsTicker = nil end
-                LPS.frame[k] = nil
+                local f = LPS.frame[k]
+                if f then
+                    f:Hide()
+                    if f.UnregisterAllEvents then f:UnregisterAllEvents() end
+                    if f._lpsTicker then f._lpsTicker:Cancel(); f._lpsTicker = nil end
+                    LPS.frame[k] = nil
+                end
             end
-        end
     end
     if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
     LPS:ApplyHolderPosition()
@@ -934,11 +934,11 @@ end
 local refreshPending = false
 local pendingRefresh = false
 function LPS._ConsumePendingRefresh()
-if pendingRefresh then
-pendingRefresh = false
-return true
-end
-return false
+    if pendingRefresh then
+        pendingRefresh = false
+        return true
+    end
+    return false
 end
 function LPS:ScheduleRefresh()
     pendingRefresh = true
@@ -980,22 +980,22 @@ function LPS:ApplyStyle()
     for key, f in pairs(frames) do
         if key ~= "holder" and key ~= "minimapButton"
             and type(f) == "table" and f.SetBackdropColor then
-            local bs = tonumber(db.settings.borderSize)
-            if not bs then bs = 2 end
-            bs = math.max(0, math.min(bs, 6))
-            f:SetBackdrop({
-                bgFile   = "Interface\\Buttons\\WHITE8x8",
-                edgeFile = (bs > 0 and "Interface\\Buttons\\WHITE8x8") or nil,
-                tile     = false,
-                edgeSize = bs,
-                insets   = {left=1,right=1,top=1,bottom=1},
-            })
-            if f._lpsUpdateFunc then
-                f._lpsUpdateFunc(f)
+                local bs = tonumber(db.settings.borderSize)
+                if not bs then bs = 2 end
+                bs = math.max(0, math.min(bs, 6))
+                f:SetBackdrop({
+                    bgFile   = "Interface\\Buttons\\WHITE8x8",
+                    edgeFile = (bs > 0 and "Interface\\Buttons\\WHITE8x8") or nil,
+                    tile     = false,
+                    edgeSize = bs,
+                    insets   = {left=1,right=1,top=1,bottom=1},
+                })
+                if f._lpsUpdateFunc then
+                    f._lpsUpdateFunc(f)
+                end
+                f:SetBackdropColor(LPS:GetColor("bg"))
+                f:SetBackdropBorderColor(LPS:GetColor("border"))
             end
-            f:SetBackdropColor(LPS:GetColor("bg"))
-            f:SetBackdropBorderColor(LPS:GetColor("border"))
-        end
     end
     if LPS.ApplyLayout then
         LPS:ApplyLayout()

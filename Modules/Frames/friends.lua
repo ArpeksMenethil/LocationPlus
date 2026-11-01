@@ -46,9 +46,9 @@ do
             local function onFriendsEvent(event, arg1)
                 if event == 'CHAT_MSG_SYSTEM' then
                     if type(arg1) == 'string' and friendOnline
-                        and (string.find(arg1, friendOnline, 1, true) or string.find(arg1, friendOffline, 1, true)) then
-                        refresh()
-                    end
+                and (string.find(arg1, friendOnline, 1, true) or string.find(arg1, friendOffline, 1, true)) then
+                    refresh()
+                end
                     return
                 end
 

@@ -85,7 +85,7 @@ function LPS:GetFishingLvl()
     else
         local db = LPS:GetDB()
         local lvls = LPS.GetLevelTable and LPS:GetLevelTable() or (db and db.levelTable)
-    local levelTable = lvls and uiMapID and lvls[uiMapID]
+        local levelTable = lvls and uiMapID and lvls[uiMapID]
 
         if levelTable and levelTable.minFish then
             minFish = levelTable.minFish
@@ -191,7 +191,7 @@ local function GetRecomZones(zone)
     GameTooltip:AddDoubleLine(
         zone..pvpRaidTag,
         format("|cff%02xff00%s|r", continentName == zContinent and 0 or 255, zContinent)
-        ..(" |cff%02x%02x%02x%s|r"):format(r *255, g *255, b *255,(low == high and low or ("%d-%d"):format(low, high))),
+            ..(" |cff%02x%02x%02x%s|r"):format(r *255, g *255, b *255,(low == high and low or ("%d-%d"):format(low, high))),
         1, 1, 1
     );
 
@@ -243,7 +243,7 @@ local function GetRecomDungeons(dungeon)
 
     GameTooltip:AddDoubleLine(
         name..instZone..GetDungeonCoords(dungeon)..pvpRaidTag,
-        ("|cff%02x%02x%02x%s|r"):format(r *255, g *255, b *255,(low == high and low or ("%d-%d"):format(low, high))),
+            ("|cff%02x%02x%02x%s|r"):format(r *255, g *255, b *255,(low == high and low or ("%d-%d"):format(low, high))),
         1, 1, 1
     )
 
