@@ -22,7 +22,7 @@
 Libs/!load.xml
 
 Locales/enUS.lua
-Locales/ruRU.lua
+Locales/[TextLocale].lua [AllowLoadTextLocale koKR, frFR, deDE, zhCN, esES, zhTW, esMX, ruRU, ptBR, itIT]
 
 Game/!load.xml
 Modules/!load.xml
