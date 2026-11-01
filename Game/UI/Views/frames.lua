@@ -83,10 +83,10 @@ function LPS:CreateFrame(params)
         insets   = (params.backdrop and params.backdrop.insets) or {left=1,right=1,top=1,bottom=1},
     })
     if params.bgColor then
-        f:SetBackdropColor(unpackFn(params.bgColor or {LPS:GetColor("bg")} or {1,1,1,1}))
+        f:SetBackdropColor(unpackFn(params.bgColor))
     end
     if params.borderColor then
-        f:SetBackdropBorderColor(unpackFn(params.borderColor or {LPS:GetColor("border")} or {0,0,0,1}))
+        f:SetBackdropBorderColor(unpackFn(params.borderColor))
     end
 
     if params.fontSize then

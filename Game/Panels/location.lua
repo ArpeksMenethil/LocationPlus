@@ -5,6 +5,8 @@ function LPS:CreateLocationFrame()
     local db = LPS:GetDB()
     if not db or not LPS.frame.holder then return end
 
+    local bgR, bgG, bgB, bgA = LPS:GetColor("bg")
+    local bdR, bdG, bdB, bdA = LPS:GetColor("border")
     ---@type LPSFrameParams
     local params = {
         name = "LPS_Location",
@@ -13,8 +15,8 @@ function LPS:CreateLocationFrame()
         anchor = {"CENTER", LPS.frame.holder, "CENTER", 0, 0},
         padding = {((db.layout and db.layout.locPaddingX) or 20), ((db.layout and db.layout.locPaddingY) or 9)},
         fontSize = db.settings.fontSize or 12,
-        bgColor = {LPS:GetColor("bg")},
-        borderColor = {LPS:GetColor("border")},
+        bgColor = {bgR, bgG, bgB, bgA},
+        borderColor = {bdR, bdG, bdB, bdA},
         updateFunc = function(f)
             local db2 = LPS:GetDB()
             local mapID = C_Map.GetBestMapForUnit("player")

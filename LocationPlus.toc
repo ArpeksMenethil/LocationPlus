@@ -27,19 +27,12 @@
 
 ## Category: Addons Arpeks
 ## Category-ruRU: Аддоны Arpeks
-## Category-deDE: Addons von Arpeks
-## Category-frFR: Addons d'Arpeks
-## Category-ptBR: Addons do Arpeks
-## Category-itIT: Addons di Arpeks
-## Category-esES: Addons de Arpeks
-## Category-esMX: Addons de Arpeks
-## Category-koKR: Arpeks의 애드온
-## Category-zhCN: Arpeks 插件
-## Category-zhTW: Arpeks 外掛程式
 
-Libs/!load.xml
+Libs/load.xml
+
 Game/init.lua
 Game/api.lua
+
 Locales/[TextLocale].lua
-Game/!load.xml
-Modules/!load.xml
+
+Game/load.xml

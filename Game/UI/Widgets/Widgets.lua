@@ -86,8 +86,7 @@ function LPS:RegisterAccentFontString(fs, alpha)
     if fs then accentFontStrings[fs] = alpha or 1 end
 end
 function LPS:RefreshAccentColors()
-    LPS:Load()
-    local c = LPS:GetColor("accentGold")
+    local c = LPS:GetWidgetColor("accentGold")
     for tex, alpha in pairs(accentTextures) do
         if tex and tex.SetColorTexture then
             tex:SetColorTexture(c.r, c.g, c.b, alpha)
@@ -103,19 +102,20 @@ function LPS:GetWidgetColor(key)
     local c = LPS:WidgetBaseColor(key)
     return { r = c[1], g = c[2], b = c[3] }
 end
+--- Цвета тем (не GetColor — он возвращает 4 числа из legacy-настроек).
 function LPS:ApplyFontColor(fs, colorKey, alpha)
     if not fs or not fs.SetTextColor then return end
-    local c = LPS:GetColor(colorKey)
+    local c = LPS:GetWidgetColor(colorKey)
     fs:SetTextColor(c.r, c.g, c.b, alpha or 1)
 end
 function LPS:ApplyTextureColor(tex, colorKey, alpha)
     if not tex or not tex.SetColorTexture then return end
-    local c = LPS:GetColor(colorKey)
+    local c = LPS:GetWidgetColor(colorKey)
     tex:SetColorTexture(c.r, c.g, c.b, alpha or 1)
 end
 function LPS:CreateBorder(frame, thickness)
     local t = thickness or 1
-    local c = LPS:GetColor("border")
+    local c = LPS:GetWidgetColor("border")
     local border = {}
     border.top = frame:CreateTexture(nil, "BORDER")
     border.top:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0)
@@ -142,7 +142,7 @@ function LPS:CreateBorder(frame, thickness)
 end
 function LPS:SetBorderColor(frame, colorKey, alpha)
     if not frame then return end
-    local c = LPS:GetColor(colorKey)
+    local c = LPS:GetWidgetColor(colorKey)
     local a = alpha or 1
     local edge = rawget(frame, "edge")
     if edge then
@@ -159,7 +159,7 @@ end
 function LPS:CreateFlatButton(parent, width, height, text)
     local btn = CreateFrame("Button", nil, parent)
     btn:SetSize(width or 80, height or 22)
-    btn.bg = LPS:Box(btn, "button", "buttonBorder", LPS:WidgetRadius())
+    btn.bg = LPS:ThemeBox(btn, "button", "buttonBorder", LPS:WidgetRadius())
     btn.text = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     btn.text.themeRole = "button"
     btn.text:SetPoint("CENTER")
@@ -388,7 +388,7 @@ function LPS:CreateDropdown(parent, labelText, width, opts)
     dropdown:SetSize(width or 150, 22)
     dropdown:EnableMouse(true)
     dropdown:RegisterForClicks("AnyUp")
-    dropdown.bg = LPS:Box(dropdown, "field", "border", LPS:WidgetRadius())
+    dropdown.bg = LPS:ThemeBox(dropdown, "field", "border", LPS:WidgetRadius())
     dropdown.text = dropdown:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     dropdown.text:SetPoint("LEFT", dropdown, "LEFT", 8, 0)
     dropdown.text:SetPoint("RIGHT", dropdown, "RIGHT", -20, 0)
@@ -476,7 +476,7 @@ function LPS:CreateDropdown(parent, labelText, width, opts)
             dropdown.menu:SetFrameStrata("TOOLTIP")
             dropdown.menu:SetClampedToScreen(true)
             dropdown.menu:EnableMouse(true)
-            dropdown.menu.bg = LPS:Box(dropdown.menu, "window", "border", LPS:WidgetRadius())
+            dropdown.menu.bg = LPS:ThemeBox(dropdown.menu, "window", "border", LPS:WidgetRadius())
         end
         if not dropdown.list then
             dropdownListCounter = dropdownListCounter + 1
@@ -549,7 +549,7 @@ function LPS:CreateDropdown(parent, labelText, width, opts)
         if dropdown.list then
             dropdown.list:SetData(items)
         end
-        LPS:ApplyFonts(dropdown.menu)
+        LPS:ThemeApplyFonts(dropdown.menu)
         dropdown._open = true
         LPS:SetBorderColor(dropdown, "accentGold", 0.95)
     end
@@ -823,7 +823,7 @@ function LPS:CreatePopup(title, body, onAccept, okText, cancelText)
     popup:SetPoint("CENTER")
     popup:SetClampedToScreen(true)
     popup:EnableMouse(true)
-    LPS:Box(popup, "window", "border", (LPS:ThemeGet()).windowRadius)
+    LPS:ThemeBox(popup, "window", "border", (LPS:ThemeGet()).windowRadius)
     local titleFs = popup:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     titleFs.themeRole = "heading"
     titleFs:SetPoint("TOPLEFT", 12, -12)
@@ -847,7 +847,7 @@ function LPS:CreatePopup(title, body, onAccept, okText, cancelText)
         LPS:CloseActivePopup()
     end)
     LPS:BindEscapeToClose(popup, function() LPS:CloseActivePopup() end)
-    LPS:ApplyFonts(popup)
+    LPS:ThemeApplyFonts(popup)
     activePopup = popup
     return popup
 end
@@ -859,7 +859,7 @@ function LPS:CreateInputPopup(title, body, defaultText, onAccept, okText, cancel
     popup:SetPoint("CENTER")
     popup:SetClampedToScreen(true)
     popup:EnableMouse(true)
-    LPS:Box(popup, "window", "border", (LPS:ThemeGet()).windowRadius)
+    LPS:ThemeBox(popup, "window", "border", (LPS:ThemeGet()).windowRadius)
     local titleFs = popup:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     titleFs.themeRole = "heading"
     titleFs:SetPoint("TOPLEFT", 12, -12)
@@ -876,8 +876,8 @@ function LPS:CreateInputPopup(title, body, defaultText, onAccept, okText, cancel
     editBox:SetPoint("TOPLEFT", 12, -60)
     editBox:SetAutoFocus(false)
     editBox:SetFontObject(GameFontHighlightSmall)
-    LPS:Box(editBox, "field", "border", LPS:WidgetRadius())
-    local fieldText = LPS:GetColor("text")
+    LPS:ThemeBox(editBox, "field", "border", LPS:WidgetRadius())
+    local fieldText = LPS:GetWidgetColor("text")
     editBox:SetTextColor(fieldText.r, fieldText.g, fieldText.b)
     editBox:SetTextInsets(6, 6, 0, 0)
     editBox:SetText(defaultText or "")
@@ -903,7 +903,7 @@ function LPS:CreateInputPopup(title, body, defaultText, onAccept, okText, cancel
         LPS:CloseActivePopup()
     end)
     LPS:BindEscapeToClose(popup, function() LPS:CloseActivePopup() end)
-    LPS:ApplyFonts(popup)
+    LPS:ThemeApplyFonts(popup)
     editBox:SetFocus()
     editBox:HighlightText()
     activePopup = popup
@@ -917,7 +917,7 @@ function LPS:CreateSelectPopup(title, body, items, defaultValue, onAccept, okTex
     popup:SetPoint("CENTER")
     popup:SetClampedToScreen(true)
     popup:EnableMouse(true)
-    LPS:Box(popup, "window", "border", (LPS:ThemeGet()).windowRadius)
+    LPS:ThemeBox(popup, "window", "border", (LPS:ThemeGet()).windowRadius)
     local titleFs = popup:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     titleFs.themeRole = "heading"
     titleFs:SetPoint("TOPLEFT", 12, -12)
@@ -958,7 +958,7 @@ function LPS:CreateSelectPopup(title, body, items, defaultValue, onAccept, okTex
         LPS:CloseActivePopup()
     end)
     LPS:BindEscapeToClose(popup, function() LPS:CloseActivePopup() end)
-    LPS:ApplyFonts(popup)
+    LPS:ThemeApplyFonts(popup)
     activePopup = popup
     return popup
 end

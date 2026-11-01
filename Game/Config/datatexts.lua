@@ -74,6 +74,8 @@ function LPS:CreateDatatextFrame(key)
     local pCfg = db.panels and db.panels[key]
     if pCfg and pCfg.enable == false then return nil end
 
+    local bgR, bgG, bgB, bgA = LPS:GetColor("bg")
+    local bdR, bdG, bdB, bdA = LPS:GetColor("border")
     ---@type LPSFrameParams
     local params = {
         name = "LPS_" .. key:gsub("^%l", string.upper),
@@ -83,8 +85,8 @@ function LPS:CreateDatatextFrame(key)
         hidden = true,
         padding = { ((db.layout and db.layout.dtPaddingX) or 20), ((db.layout and db.layout.dtPaddingY) or 7) },
         fontSize = db.settings.fontSize or 12,
-        bgColor = { LPS:GetColor("bg") },
-        borderColor = { LPS:GetColor("border") },
+        bgColor = { bgR, bgG, bgB, bgA },
+        borderColor = { bdR, bdG, bdB, bdA },
         updateFunc = function(f)
             local lay = LPS.GetDB and (LPS:GetDB().layout or {})
             local px = tonumber(lay and lay.dtPaddingX) or 20

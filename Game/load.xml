@@ -1,0 +1,11 @@
+<Ui xmlns='http://www.blizzard.com/wow/ui/' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' 
+    xsi:schemaLocation='http://www.blizzard.com/wow/ui/ C:\Blizzard\Interface\Frames\UI.xsd'>
+    <Include file='.\UI\Theme\load.xml'/>
+    <Include file='.\UI\Widgets\load.xml'/>
+    <Include file='.\Config\load.xml'/>
+    <Include file='.\UI\Views\load.xml'/>
+    <Include file='.\core.lua'/>
+    <Include file='.\Options\load.xml'/>
+    <Include file='.\Tooltips\load.xml'/>
+    <Include file='.\Panels\load.xml'/>
+</Ui>

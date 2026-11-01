@@ -1,0 +1,18 @@
+<Ui xmlns='http://www.blizzard.com/wow/ui/' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://www.blizzard.com/wow/ui/ C:\Blizzard\Interface\Frames\UI.xsd'>
+    <Include file='.\bags.lua'/>
+    <Include file='.\combatIndicator.lua'/>
+    <Include file='.\coords.lua'/>
+    <Include file='.\difficulty.lua'/>
+    <Include file='.\durability.lua'/>
+    <Include file='.\experience.lua'/>
+    <Include file='.\friends.lua'/>
+    <Include file='.\gold.lua'/>
+    <Include file='.\guild.lua'/>
+    <Include file='.\itemLevel.lua'/>
+    <Include file='.\location.lua'/>
+    <Include file='.\mail.lua'/>
+    <Include file='.\microBar.lua'/>
+    <Include file='.\system.lua'/>
+    <Include file='.\time.lua'/>
+    <Include file='.\volume.lua'/>
+</Ui>

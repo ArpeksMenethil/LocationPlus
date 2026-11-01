@@ -1,0 +1,10 @@
+<Ui xmlns='http://www.blizzard.com/wow/ui/' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://www.blizzard.com/wow/ui/ C:\Blizzard\Interface\Frames\UI.xsd'>
+    <Include file='.\about.lua'/>
+    <Include file='.\appearance.lua'/>
+    <Include file='.\general.lua'/>
+    <Include file='.\layout.lua'/>
+    <Include file='.\page_profiles.lua'/>
+    <Include file='.\profiles.lua'/>
+    <Include file='.\show.lua'/>
+    <Include file='.\tooltip.lua'/>
+</Ui>

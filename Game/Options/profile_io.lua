@@ -287,7 +287,7 @@ function LPS:CreateProfileFieldBox(popup, x, y, w, h)
     editBox:SetAutoFocus(false)
     editBox:SetFontObject(GameFontHighlightSmall)
     LPS:ThemeBox(editBox, "field", "border", (LPS:ThemeGet()).windowRadius)
-    local fieldText = LPS:GetColor("text")
+    local fieldText = LPS:GetWidgetColor("text")
     editBox:SetTextColor(fieldText.r, fieldText.g, fieldText.b)
     editBox:SetTextInsets(6, 6, 0, 0)
     return editBox
