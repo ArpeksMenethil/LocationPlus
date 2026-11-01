@@ -76,9 +76,7 @@ local function CreateRowLabel(row, text)
     CS.ConfigWidgets.ApplyFontColor(label, "textMuted")
     return label
 end
---- Тултип показывается на конкретном контроле (текст чекбокса, слайдер,
---- дропдаун, поле, кнопка, метка), а не на всей строке: иначе подсказка
---- всплывала при наведении на пустоту между элементами.
+
 local function AttachTooltip(target, entry)
     if not target then return end
     local tip = entry.tooltip or entry.desc
@@ -101,19 +99,14 @@ local function SetRowTooltip(row, control, entry)
     local kind = entry.kind
     if kind == "toggle" then
         AttachTooltip(control.toggle, entry)
-        AttachTooltip(control.toggle.text, entry)
     elseif kind == "slider" then
-        AttachTooltip(control.slider, entry)
         AttachTooltip(control.label, entry)
     elseif kind == "dropdown" then
         AttachTooltip(control.dropdown, entry)
-        AttachTooltip(control.label, entry)
     elseif kind == "color" then
         AttachTooltip(control.swatch, entry)
-        AttachTooltip(control.label, entry)
     elseif kind == "input" then
         AttachTooltip(control.edit, entry)
-        AttachTooltip(control.label, entry)
     elseif kind == "button" then
         AttachTooltip(control.button, entry)
     elseif kind == "label" then

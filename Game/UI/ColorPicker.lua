@@ -576,6 +576,42 @@ function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
     cancelBtn:SetScript("OnClick", DoCancel)
     Widgets.BindEscapeToClose(frame, DoCancel)
 
+    --- Подсказки на контролах пикера: название — короткая буква/название
+    --- (S, V, A, R, G, B), описание — что именно регулирует это поле.
+    --- Во время перетаскивания тултип не показываем, чтобы не перехватить
+    --- мышь у трека (dragFrame тогда покрывает экран).
+    local function Tip(target, title, desc)
+        if not target or type(target.SetScript) ~= "function" then return end
+        target:HookScript("OnEnter", function(self)
+            if dragFrame:IsShown() then return end
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            GameTooltip:AddLine(title, 1, 1, 1)
+            if desc then
+                GameTooltip:AddLine(desc, nil, nil, nil, true)
+            end
+            GameTooltip:Show()
+        end)
+        target:HookScript("OnLeave", function()
+            GameTooltip:Hide()
+        end)
+    end
+    Tip(hueStrip, L.CP_TIP_HUE or "Hue", L.CP_TIP_HUE_DESC)
+    Tip(satRow, L.CP_TIP_S or "S", L.CP_TIP_S_DESC)
+    Tip(valRow, L.CP_TIP_V or "V", L.CP_TIP_V_DESC)
+    if alphaRow then
+        Tip(alphaRow, L.CP_TIP_A or "A", L.CP_TIP_A_DESC)
+    end
+    Tip(boxR, "R", L.CP_TIP_RGB_DESC)
+    Tip(boxG, "G", L.CP_TIP_RGB_DESC)
+    Tip(boxB, "B", L.CP_TIP_RGB_DESC)
+    if boxA then
+        Tip(boxA, "A", L.CP_TIP_ALPHA_BOX_DESC)
+    end
+    Tip(hexBox, L.CP_TIP_HEX or "Hex", L.CP_TIP_HEX_DESC)
+    Tip(previewFrame, L.CP_TIP_PREVIEW or "Preview", L.CP_TIP_PREVIEW_DESC)
+    Tip(classBtn, L.CP_TIP_CLASS or "Class Color", L.CP_TIP_CLASS_DESC)
+    Tip(resetBtn, L.CP_RESET or "Reset", L.CP_RESET_DESC)
+
     UpdateAll()
     Theme.ApplyFonts(frame)
     frame:Show()

@@ -171,6 +171,7 @@ function LPS.Options.BuildTree.tabs.show()
                         order = 2,
                         type = "input",
                         name = L.CUSTOM_LABEL,
+                        desc = L.CUSTOM_LABEL_DESC,
                         disabled = function() return OH:getDb().show.bags.noLabel end,
                         get = function() return OH:getDb().show.bags.label or "" end,
                         set = function(_, v)
@@ -182,6 +183,7 @@ function LPS.Options.BuildTree.tabs.show()
                         order = 3,
                         type = "toggle",
                         name = L.HIDE_LABEL,
+                        desc = L.HIDE_LABEL_DESC,
                         get = function() return OH:getDb().show.bags.noLabel or false end,
                         set = function(_, v)
                             OH:getDb().show.bags.noLabel = v and true or false
