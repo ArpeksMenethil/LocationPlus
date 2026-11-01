@@ -1,0 +1,275 @@
+-- =====================================================================
+--  lps_types.lua
+--
+--  Типовые заглушки ТОЛЬКО для wowlua-ls (WoW Lua Language Server).
+--
+--  Объявляют:
+--   * SavedVariables:        LPS_DB
+--   * Внешние библиотеки:    LibStub, LibDeflate, Foundry_1_0
+--   * Собственную таблицу:   LPS (все LPS:X() / LPS.F.* / LPS.Tourist.*)
+--   * Корень аддона:         ArpeksLPS (_G.ArpeksLPS)
+--
+--  Благодаря этому LSP перестаёт светить «undefined-global» /
+--  «undefined-field» на коде, который реально существует.
+--
+--  ВАЖНО:
+--   * Файл НЕ добавлен в !load.xml — игра его НЕ загружает.
+--   * Всё содержимое — комментарии-аннотации (EmmyLua) и no-op
+--     самоназначения глобалов (X = X), поэтому даже при случайной
+--     загрузке он ни на что не влияет (значения не затираются).
+--   * Конфиг LSP — файл .wowluarc.json (ignore: Libs/, flavors: ...).
+--   * Добавили новый метод LPS:X() и LSP снова ругается
+--     «undefined-field»? Добавьте строку `--- @field X fun(self: LPS, <параметры>): <возврат>`
+--     в класс LPS ниже (раздел «методы») — с реальными параметрами и типом возврата, никаких `...`.
+-- =====================================================================
+
+--- @diagnostic disable: undefined-global, create-global, unused-local
+
+---------------------------------------------------------------------
+-- Класс Foundry (контроллеры Foundry-1.0). Поля-контроллеры
+-- намеренно any — это снимает warnings на LPS.F.Menu / .List / .Events ...
+---------------------------------------------------------------------
+--- @class Foundry
+--- @field Menu any
+--- @field List any
+--- @field Events any
+--- @field Commands any
+--- @field Lifecycle any
+--- @field Settings any
+--- @field Window any
+local _foundryClass = {}
+
+---------------------------------------------------------------------
+-- Ключи цветов (LPS:GetColor): что реально используется в коде.
+-- Внимание: colors.bgEnable — это флаг в БД (включён/выключен фон),
+-- а НЕ ключ GetColor.
+---------------------------------------------------------------------
+--- @alias LPSColorKey "text" | "bg" | "border" | "tooltip" | "tooltipSetting"
+
+---------------------------------------------------------------------
+-- Ключи панелей (слоты инфотекста). Набор = все def.key из
+-- RegisterDatatext (Modules/Frames/*.lua) + "location" (специальный
+-- ключ, обрабатывается в GetDatatextDisplayName отдельно).
+---------------------------------------------------------------------
+--- @alias LPSPanelKey "location" | "bags" | "combatIndicator" | "coords" | "difficulty" | "durability" | "experience" | "friends" | "gold" | "guild" | "itemLevel" | "mail" | "microBar" | "system" | "time" | "volume"
+
+---------------------------------------------------------------------
+-- Конфиг панели инфотекста для LPS:RegisterDatatext (см. Game/datatexts.lua)
+---------------------------------------------------------------------
+--- @class LPSDatatextDef
+--- @field key string Ключ панели (LPSPanelKey, например "gold")
+--- @field name string? Название (локализованное на момент загрузки)
+--- @field nameKey string? Ключ перевода в L.* (переводится при каждом обращении)
+--- @field events {string}? События, на которые обновлять панель
+--- @field ticker number? Интервал обновления в секундах (если events не задан)
+--- @field update fun(f: Frame)? Функция обновления текста панели
+--- @field onClick fun(self: Frame, button: string)? Обработчик клика
+--- @field clicks {string}? Кнопки для клика (по умолчанию {"LeftButtonUp", "RightButtonUp"})
+--- @field tooltip fun(tt: Frame)? Функция построения тултипа
+--- @field customTooltip boolean? Использовать buildTooltip вместо LPS:Build<Key>Tooltip
+--- @field buildTooltip fun(self: Frame)? Своя функция тултипа (с customTooltip)
+--- @field create fun()? Создание панели (вызывается один раз при создании фрейма)
+
+---------------------------------------------------------------------
+-- Пункт контекстного меню (LPS._DT.showMenu, Game/utils.lua)
+---------------------------------------------------------------------
+--- @class LPSMenuEntry
+--- @field text string Текст пункта
+--- @field isTitle boolean? Заголовок (разделитель)
+--- @field disabled boolean? Неактивный пункт
+--- @field notCheckable boolean? Не отмечаемый пункт
+--- @field func fun()? Вызов при клике
+
+---------------------------------------------------------------------
+-- LPS._DT — таблица вспомогательных функций (Game/utils.lua)
+---------------------------------------------------------------------
+--- @class LPSDT
+--- @field NotSecret fun(v: any): boolean Проверка на «секретность» значения
+--- @field shortValue fun(n: number?): string Короткое число (1.2M, 3k...)
+--- @field hexFromRGB fun(r: number?, g: number?, b: number?): string
+--- @field colorGradient fun(pct: number, r1: number, g1: number, b1: number, r2: number, g2: number, b2: number, r3: number, g3: number, b3: number): number, number, number
+--- @field classColorHex fun(classFile: string?): string
+--- @field levelColorHex fun(level: number): string
+--- @field panelCfg fun(key: LPSPanelKey): table? Конфиг панели из db.panels
+--- @field tooltipCfg fun(key: LPSPanelKey): table? Конфиг тултипа панели
+--- @field tooltipGuard fun(key: LPSPanelKey): boolean Разрешён ли тултип панели
+--- @field openTooltip fun(self: Frame, buildFunc: fun(tt: Frame)): nil Открыть GameTooltip с содержимым buildFunc
+--- @field showMenu fun(anchorFrame: Frame, list: {LPSMenuEntry}): nil Контекстное меню
+
+---------------------------------------------------------------------
+-- LPS — главная таблица аддона (поля / данные)
+---------------------------------------------------------------------
+--- @class LPS
+--- @field F Foundry
+--- @field Tourist any
+--- @field L any
+--- @field frame any
+--- @field addon any
+--- @field defaults any
+--- @field icons any
+--- @field wow any
+--- @field Options any
+--- @field OptionsHelper any
+--- @field ProfileIO any
+--- @field UI any
+--- @field UI_Options any
+--- @field sv any
+--- @field db any
+--- @field _DT LPSDT
+--- @field datatexts any
+--- @field datatextsEvents any
+--- @field coreEvents any
+--- @field _friendsEvents any
+--- @field MapInfo any
+--- @field _goldSession any
+--- @field _pendingPanelPrimes any
+--- @field _optionsCloseHooks any
+--- @field _fontTuples any
+--- @field _lpsMeasureFS any
+--- @field _addonCompartmentData any
+--- @field _addonMemCache any
+--- @field settingsCategory any
+--- @field levelTableConst any
+--- @field cmd any
+--- @field Lifecycle any
+--- @field Menu any
+--- @field Dropdown any
+--- @field Core any
+--- @field Friends any
+--- @field Datatexts any
+--- @field GAME_LOCALE any
+--- @field ACTIVE_LOCALE any
+--- @field _L_enUS any
+--- @field CreateProfilesPanelPage any
+--- @field RegisterLocale any
+--- @field PrintMsg any
+--- @field _ConsumePendingRefresh any
+--- @field _CollectSlotKeys any
+--- @field _ApplyPanelVisibility any
+--- @field ApplyLocaleOverride any
+--- @field Retail boolean
+--- @field Classic boolean
+--- @field TBC boolean
+--- @field Mists boolean
+--- @field Forever boolean
+--- @field DEBUG boolean
+--- @field ApplyAddonCompartmentRegistration fun(self: LPS): nil
+--- @field ApplyAllSettings fun(self: LPS): nil
+--- @field ApplyCoordsUpdateInterval fun(self: LPS): nil
+--- @field ApplyCoordsVisibility fun(self: LPS): nil
+--- @field ApplyDefaults fun(self: LPS, db: table, defaults: table): nil
+--- @field ApplyDTVisibility fun(self: LPS): nil
+--- @field ApplyHolderPosition fun(self: LPS): nil
+--- @field ApplyLayout fun(self: LPS): nil
+--- @field ApplyStyle fun(self: LPS): nil
+--- @field ApplyTimeFormat fun(self: LPS): nil
+--- @field ApplyTimeVisibility fun(self: LPS): nil
+--- @field ApplyVisibility fun(self: LPS): nil
+--- @field BuildBagsTooltip fun(self: LPS, tt: Frame): nil
+--- @field BuildDifficultyTooltip fun(self: LPS, tt: Frame): nil
+--- @field BuildDurabilityTooltip fun(self: LPS, tt: Frame): nil
+--- @field BuildExperienceTooltip fun(self: LPS, tt: Frame): boolean?
+--- @field BuildFriendsTooltip fun(self: LPS, tt: Frame): nil
+--- @field BuildGoldTooltip fun(self: LPS, tt: Frame): nil
+--- @field BuildGuildTooltip fun(self: LPS, tt: Frame): nil
+--- @field BuildLocationTooltip fun(self: LPS, tt: Frame): nil
+--- @field BuildMailTooltip fun(self: LPS, tt: Frame): nil
+--- @field BuildSystemTooltip fun(self: LPS, tt: Frame): nil
+--- @field BuildTimeTooltip fun(self: LPS): nil
+--- @field BuildVolumeTooltip fun(self: LPS, tt: Frame): nil
+--- @field CollectImages fun(self: LPS): nil
+--- @field ColorByThreshold fun(self: LPS, v: number, good: number, warn: number, invert: boolean?): string
+--- @field ConvertRGBtoColorString fun(self: LPS, color: {r: number, g: number, b: number}): string
+--- @field CreateDatatextFrame fun(self: LPS, key: LPSPanelKey): Frame?
+--- @field CreateFrame fun(self: LPS, params: LPSFrameParams): Frame?
+--- @field CreateGuideLines fun(self: LPS): {vLines: table, hLines: table}
+--- @field CreateLocationFrame fun(self: LPS): Frame?
+--- @field CreateMinimapButton fun(self: LPS): nil
+--- @field DisableMoveModeIfActive fun(self: LPS): nil
+--- @field EnsureOptionsCloseHooks fun(self: LPS): nil
+--- @field FormatMoney fun(self: LPS, money: number, keepEmptyUnits: boolean?): string
+--- @field FormatMoneySmart fun(self: LPS, amount: number): string
+--- @field FormatTime fun(self: LPS, seconds: number): string
+--- @field GetAccountDB fun(self: LPS): table?
+--- @field GetAddonNotes fun(self: LPS): string
+--- @field GetBattlePetLvl fun(self: LPS, zoneText: string?): string?
+--- @field GetColor fun(self: LPS, key: LPSColorKey): number, number, number, number
+--- @field GetContinentID fun(self: LPS): number?
+--- @field GetContinentName fun(self: LPS): string?
+--- @field GetDatatextDisplayName fun(self: LPS, key: LPSPanelKey): string
+--- @field GetDatatextName fun(self: LPS, key: LPSPanelKey): string
+--- @field GetDB fun(self: LPS): table?
+--- @field GetFishingLvl fun(self: LPS): number?, number?
+--- @field GetFormattedGameTime fun(self: LPS): string
+--- @field GetGoldRealmKey fun(self: LPS): string
+--- @field GetGoldRoot fun(self: LPS): table?
+--- @field GetGoldSessionData fun(self: LPS): table?
+--- @field GetInstanceImages fun(self: LPS, index: number, raid: boolean?): nil
+--- @field GetLevelRange fun(self: LPS, uiMapID: number?): number?, number?, string
+--- @field GetLevelTable fun(self: LPS): table
+--- @field GetMapNameByIDAlt fun(self: LPS, mapID: number): string?
+--- @field GetOrCreatePanelFrame fun(self: LPS, key: LPSPanelKey): Frame?
+--- @field GetPlayerCoords fun(self: LPS): number?, number?
+--- @field GetProfileDB fun(self: LPS): table?
+--- @field GetSlotKeyList fun(self: LPS): table
+--- @field GetZoneStatus fun(self: LPS, color: boolean?): any, number, number
+--- @field InvalidateDBCache fun(self: LPS): nil
+--- @field InvalidateLayoutCache fun(self: LPS): nil
+--- @field IsDatatextKey fun(self: LPS, key: string): boolean
+--- @field _NormalizeLayoutDB fun(self: LPS, raw: table?): table
+--- @field OnAceProfileChanged fun(self: LPS, oldName: string?, newName: string?): nil
+--- @field OnAceProfileCopied fun(self: LPS, src: string?, dst: string?): nil
+--- @field OnAceProfileReset fun(self: LPS, profileName: string?): nil
+--- @field onLoaded fun(self: LPS): nil
+--- @field OnPlayerMoney fun(self: LPS): nil
+--- @field Print fun(self: LPS, text: string, noPrefix: boolean?): nil
+--- @field RefreshAfterProfileChange fun(self: LPS): nil
+--- @field RegisterDatatext fun(self: LPS, def: LPSDatatextDef): nil
+--- @field RegisterSettingsCategory fun(self: LPS): table?
+--- @field ResetAllSettingsToDefaults fun(self: LPS): nil
+--- @field ResetFramePosition fun(self: LPS): nil
+--- @field ResetGoldAllCharacterData fun(self: LPS): nil
+--- @field ResetGoldCharacterData fun(self: LPS): nil
+--- @field ResetGoldCharacterDataByName fun(self: LPS, name: string): nil
+--- @field ResetGoldSession fun(self: LPS): nil
+--- @field ResetPanelsToDefaults fun(self: LPS): nil
+--- @field Round fun(self: LPS, num: number, decimals: number?): number
+--- @field ScheduleCollectImages fun(self: LPS): nil
+--- @field ScheduleFrameSizeUpdate fun(self: LPS): nil
+--- @field ScheduleRefresh fun(self: LPS): nil
+--- @field SetMoveMode fun(self: LPS, enabled: boolean): nil
+--- @field ShowGoldResetMenu fun(self: LPS, anchorFrame: Frame): nil
+--- @field ToggleMoveMode fun(self: LPS): nil
+--- @field ToggleNativeOptions fun(self: LPS): nil
+--- @field ToggleOptions fun(self: LPS): nil
+--- @field UpdateFrameSize fun(self: LPS): nil
+--- @field UpdateGoldCharacterData fun(self: LPS): nil
+--- @field UpdateMinimapButton fun(self: LPS): nil
+local _lpsClass = {}
+
+---------------------------------------------------------------------
+-- Корень аддона: _G.ArpeksLPS
+-- Каждый файл берёт  local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS,
+-- поэтому тип поля ArpeksLPS.LPS определяет тип локального LPS.
+-- Самоназначение (ArpeksLPS = ArpeksLPS) безопасно: не затирает значение.
+---------------------------------------------------------------------
+--- @class ArpeksLPS
+--- @field LPS LPS
+--- @field F Foundry
+--- @field Tourist any
+--- @type ArpeksLPS
+ArpeksLPS = ArpeksLPS
+
+---------------------------------------------------------------------
+-- Внешние глобалы: no-op самоназначение с явным @type — это ДЕКЛАРАЦИЯ
+-- глобальной переменной для LSP (не «create-global»), при этом
+-- реальное значение в рантайме не меняется (X = X — no-op).
+---------------------------------------------------------------------
+--- @type any
+LPS_DB = LPS_DB           -- SavedVariables
+--- @type any
+LibStub = LibStub         -- LibStub (get by name)
+--- @type any
+LibDeflate = LibDeflate
+--- @type any
+Foundry_1_0 = Foundry_1_0  -- Foundry-1.0

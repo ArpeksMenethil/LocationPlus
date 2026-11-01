@@ -187,7 +187,7 @@ function LPS:onLoaded()
         LPS:ApplyDefaults(db or {}, LPS.defaults)
         LPS:ApplyTimeFormat()
         LPS:ApplyHolderPosition()
-        LPS.frame.location = LPS.CreateLocationFrame()
+        LPS.frame.location = LPS:CreateLocationFrame()
         LPS:ApplyAllSettings()
         if LPS.ApplyAddonCompartmentRegistration then
                 LPS:ApplyAddonCompartmentRegistration()

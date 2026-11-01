@@ -13,7 +13,7 @@ end
 
 local AudioStreams = {
         { Name = MASTER_VOLUME, volume = "Sound_MasterVolume", enabled = "Sound_EnableAllSound" },
-        { Name = SOUND_VOLUME or FX_VOLUME, volume = "Sound_SFXVolume", enabled = "Sound_EnableSFX" },
+        { Name = FX_VOLUME, volume = "Sound_SFXVolume", enabled = "Sound_EnableSFX" },
         { Name = AMBIENCE_VOLUME, volume = "Sound_AmbienceVolume", enabled = "Sound_EnableAmbience" },
         { Name = DIALOG_VOLUME, volume = "Sound_DialogVolume", enabled = "Sound_EnableDialog" },
         { Name = MUSIC_VOLUME, volume = "Sound_MusicVolume", enabled = "Sound_EnableMusic" },

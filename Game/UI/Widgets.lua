@@ -40,11 +40,19 @@ end
 --- Ширина текста тем же шрифтом, что у fs (стабильно, без nil-GetFont).
 function Widgets.MeasureTextWidth(fs, text)
     local m = GetMeasureFontString()
-    local file, size, flags = fs and fs:GetFont() or nil
-    if not file then
-        local obj = fs and fs:GetFontObject()
-        file, size, flags = nil
-        if obj and obj.GetFont then file, size, flags = obj:GetFont() end
+    local file, size, flags
+    if fs and fs.GetFont then
+        file, size, flags = fs:GetFont()
+    end
+    if not file and fs and fs.GetFontObject then
+        -- Фолбэк через прокси FontObject: в рантайме тот же GetFont()
+        -- вернёт (file, size, flags), но LSP знает другую сигнатуру —
+        -- нормализуем значения через таблицу.
+        local obj = fs:GetFontObject()
+        if obj and obj.GetFont then
+            local r = { obj:GetFont() }
+            file, size, flags = r[1], r[2], r[3]
+        end
     end
     if file then m:SetFont(file, size, flags or "") end
     m:SetText(text or "")

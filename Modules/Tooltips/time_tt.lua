@@ -297,6 +297,12 @@ function LPS:GetInstanceImages(index, raid)
     end
 end
 
+-- ОБЪЯВЛЕНИЕ ДО функций: обе замыкания (ScheduleCollectImages и
+-- CollectImages) должны видеть ОДИН и тот же local (раньше local
+-- объявлялся ПОСЛЕ — замыкания оперировали глобальным collectedImages,
+-- и защита от повторного сбора не работала).
+local collectedImages = false
+
 function LPS:ScheduleCollectImages()
     if collectedImages then return end
     C_Timer.After(0, function()
@@ -305,8 +311,9 @@ function LPS:ScheduleCollectImages()
         end
     end)
 end
+
 LPS:ScheduleCollectImages()
-local collectedImages = false
+
 function LPS:CollectImages()
     local numTiers = (EJ_GetNumTiers() or 0)
     if numTiers > 0 then
@@ -340,48 +347,48 @@ function LPS:BuildTimeTooltip()
         local dungeons = {}
 
         if not collectedImages then
-                LPS:CollectImages()
+            LPS:CollectImages()
         end
 
         for i = 1, GetNumSavedInstances() do
-                local name, _, reset, difficulty, locked, _, _, isRaid, maxPlayers, _, numEncounters, encounterProgress, _ = GetSavedInstanceInfo(i)
+            local name, _, reset, difficulty, locked, _, _, isRaid, maxPlayers, _, numEncounters, encounterProgress, _ = GetSavedInstanceInfo(i)
 
-                if locked then
-                        local diffChar = difficultyLetter[difficulty] or "?"
-                        local color = difficultyColor[diffChar] or "|cFFFFFFFF"
-                        local icon = instanceIconByName[name]
-                        if not icon and type(name) == "string" then
-                            local baseName = name:match("^(.-):")
-                            if baseName and baseName ~= "" then
-                                icon = instanceIconByName[baseName]
-                            end
-                        end
-                        icon = icon or "Interface\\Icons\\INV_Misc_Map02"
-                        local safeName = tostring(name or "")
-                        local safeMaxPlayers = tonumber(maxPlayers) or 0
-                        local safeEncounterProgress = tonumber(encounterProgress) or 0
-                        local safeNumEncounters = tonumber(numEncounters) or 0
-
-                        local left = string.format(
-                                "|T%s:16:16|t%d %s%s|r |cFFAAAAAA(%s, %d/%d)|r",
-                                icon,
-                                safeMaxPlayers,
-                                color,
-                                diffChar,
-                                safeName,
-                                safeEncounterProgress,
-                                safeNumEncounters
-                        )
-
-                        local right = LPS:FormatTime(reset)
-                        local entry = {left = left, right = right}
-
-                        if isRaid then
-                                table.insert(raids, entry)
-                        else
-                                table.insert(dungeons, entry)
-                        end
+            if locked then
+                local diffChar = difficultyLetter[difficulty] or "?"
+                local color = difficultyColor[diffChar] or "|cFFFFFFFF"
+                local icon = instanceIconByName[name]
+                if not icon and type(name) == "string" then
+                    local baseName = name:match("^(.-):")
+                    if baseName and baseName ~= "" then
+                        icon = instanceIconByName[baseName]
+                    end
                 end
+                icon = icon or "Interface\\Icons\\INV_Misc_Map02"
+                local safeName = tostring(name or "")
+                local safeMaxPlayers = tonumber(maxPlayers) or 0
+                local safeEncounterProgress = tonumber(encounterProgress) or 0
+                local safeNumEncounters = tonumber(numEncounters) or 0
+
+                local left = string.format(
+                        "|T%s:16:16|t%d %s%s|r |cFFAAAAAA(%s, %d/%d)|r",
+                        icon,
+                        safeMaxPlayers,
+                        color,
+                        diffChar,
+                        safeName,
+                        safeEncounterProgress,
+                        safeNumEncounters
+                )
+
+                local right = LPS:FormatTime(reset)
+                local entry = {left = left, right = right}
+
+                if isRaid then
+                    table.insert(raids, entry)
+                else
+                    table.insert(dungeons, entry)
+                end
+            end
         end
 
         if db.tooltips.time.raids and #raids > 0 then

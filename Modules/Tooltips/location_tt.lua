@@ -13,11 +13,11 @@ local FISH_ICON = LPS.icons.Fish
 
 ---
 ---@param uiMapID number
----@return string playerMinLevel
----@return string playerMaxLevel
----@return string playerLevelColor
+---@return number? playerMinLevel
+---@return number? playerMaxLevel
+---@return string? playerLevelColor
 function LPS:GetLevelRange(uiMapID)
-    if not uiMapID then return end
+    if not uiMapID then return nil, nil, nil end
 
     local playerMinLevel, playerMaxLevel, playerLevelColor
     local zoneText, info

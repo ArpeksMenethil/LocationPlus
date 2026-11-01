@@ -32,7 +32,9 @@ local function unescStr(s)
 end
 
 local encodeValue
+--- @type fun(s: string, pos: number): any?, number?
 local decodeValue
+--- @type fun(s: string, pos: number): table?, number?
 local decodeTable
 local encodeTable
 
@@ -64,6 +66,10 @@ encodeTable = function(t)
 end
 
 local DECODE_BUF = {}
+
+--- @param s string
+--- @param pos number
+--- @return string, number
 local function decodeString(s, pos)
     local i, n = pos, #s
     local buf = DECODE_BUF
@@ -83,6 +89,9 @@ local function decodeString(s, pos)
     return unescStr(table.concat(buf)), n + 1
 end
 
+--- @param s string
+--- @param pos number
+--- @return table?, number?
 decodeTable = function(s, pos)
     if s:sub(pos, pos) ~= "{" then return nil, nil end
     local t = {}
@@ -107,6 +116,9 @@ decodeTable = function(s, pos)
     return nil, nil
 end
 
+--- @param s string
+--- @param pos number
+--- @return any?, number?
 decodeValue = function(s, pos)
     local code = s:sub(pos, pos)
     if code == "s" then

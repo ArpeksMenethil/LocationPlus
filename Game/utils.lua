@@ -6,11 +6,12 @@ if not LPS then return end
 
 LPS._DT = LPS._DT or {}
 
--- Проверка значения на «секретность» (WotLK Classic 3.4+ / Retail secret values)
+-- Проверка значения на «секретность» (WotLK Classic 3.4+ / Retail secret values).
+-- Клиент не предоставляет API для проверки restricted-таблиц
+-- (IsRestrictedTable в WoW API не существует), поэтому «секретным»
+-- считаем только nil — остальные значения доступны аддону как есть.
 LPS._DT.NotSecret = function(v)
-    if v == nil then return false end
-    if IsRestrictedTable and IsRestrictedTable(v) then return false end
-    return true
+    return v ~= nil
 end
 
 LPS._DT.shortValue = function(n)
@@ -108,23 +109,27 @@ local function getFMenuController()
         return fMenuController
     end
     fMenuTried = true
-    fMenuController = LPS.F.Menu:New({
-        name = "LPS.Menu",
-        builder = function(owner, rootDescription, entries)
-            for _, entry in ipairs(entries or {}) do
-                if entry.isTitle then
-                    rootDescription:CreateTitle(entry.text)
-                elseif entry.disabled then
-                    local btn = rootDescription:CreateButton(entry.text, function() end)
-                    btn:SetEnabled(false)
-                elseif entry.func then
-                    rootDescription:CreateButton(entry.text, function() entry.func() end)
-                else
-                    rootDescription:CreateButton(entry.text, function() end)
+    -- Страховка: если версия Foundry без контроллера Menu — просто не
+    -- создаём контроллер (showMenu молча ничего не покажет), а не крашим.
+    if LPS.F and LPS.F.Menu then
+        fMenuController = LPS.F.Menu:New({
+            name = "LPS.Menu",
+            builder = function(owner, rootDescription, entries)
+                for _, entry in ipairs(entries or {}) do
+                    if entry.isTitle then
+                        rootDescription:CreateTitle(entry.text)
+                    elseif entry.disabled then
+                        local btn = rootDescription:CreateButton(entry.text, function() end)
+                        btn:SetEnabled(false)
+                    elseif entry.func then
+                        rootDescription:CreateButton(entry.text, function() entry.func() end)
+                    else
+                        rootDescription:CreateButton(entry.text, function() end)
+                    end
                 end
-            end
-        end,
-    })
+            end,
+        })
+    end
     return fMenuController
 end
 

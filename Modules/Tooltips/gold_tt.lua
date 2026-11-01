@@ -175,8 +175,6 @@ function LPS:BuildGoldTooltip(tt)
             tokenPrice = C_WowTokenPublic.GetCurrentMarketPrice()
         elseif C_WowTokenPublic and C_WowTokenPublic.GetCurrentPrice then
             tokenPrice = C_WowTokenPublic.GetCurrentPrice()
-        elseif GetWowTokenMarketPrice then
-            tokenPrice = GetWowTokenMarketPrice()
         end
         
         if (not cfg or cfg.token ~= false) and tokenPrice and tonumber(tokenPrice) and tonumber(tokenPrice) > 0 then

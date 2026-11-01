@@ -181,6 +181,9 @@ local function BuildImage(row, entry)
     local tex = row:CreateTexture(nil, "ARTWORK")
     tex:SetTexture(entry.file)
     local tw, th = tex:GetWidth() or boxW, tex:GetHeight() or boxH
+    -- Game — опциональная API (есть не на всех клиентах), берём через _G
+    -- чтобы не ловить «undefined global» в LSP
+    local Game = _G.Game
     if Game and Game.GetTextureDimensions then
         local ok, w, h = pcall(Game.GetTextureDimensions, entry.file)
         if ok and w and h and w > 0 and h > 0 then

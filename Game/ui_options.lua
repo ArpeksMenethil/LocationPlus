@@ -57,7 +57,9 @@ local function readColor(entry)
             r, g, b, a = 1, 1, 1, 1
         end
     elseif entry.get ~= nil then
-        r, g, b, a = entry.get
+        -- Поле таблицы хранит ОДНО значение (табличная форма
+        -- {r,g,b,a} разобрана ниже, r,g,b,a из функции — через pcall).
+        r = entry.get
     end
     if type(r) == "table" then
         local v = r

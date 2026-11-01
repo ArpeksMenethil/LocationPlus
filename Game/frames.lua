@@ -1,6 +1,7 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
+---@type fun(...): ...
 local unpackFn = table.unpack or unpack
 
 local frameEventBridge
@@ -39,15 +40,15 @@ end
 ---@class LPSFrameParams
 ---@field name string Имя создаваемого фрейма (обязательное)
 ---@field parent table Родительский фрейм (обязательное)
----@field template? `Tp` | Template Шаблон фрейма. По умолчанию "BackdropTemplate"
----@field anchor table {point, relativeTo, relativePoint, x, y} Точка привязки фрейма
+---@field template? string Шаблон фрейма. По умолчанию "BackdropTemplate"
+---@field anchor? table {point, relativeTo, relativePoint, x, y} Точка привязки фрейма. По умолчанию CENTER от родителя
 ---@field size table? {width, height} Размер фрейма. Если не указан — включается авторазмер по тексту
 ---@field padding table? {x, y} Отступы для авторазмера текста. Используется только если size не указан
 ---@field fontSize number? Размер шрифта текста
 ---@field backdrop table? Настройки Backdrop (bgFile, edgeFile, edgeSize, insets)
 ---@field bgColor table? {r,g,b,a} Цвет фона фрейма
 ---@field borderColor table? {r,g,b,a} Цвет границы фрейма
----@field frameType? string Тип фрейма (например "Frame", "Button"). По умолчанию "Frame"
+---@field frameType? "Frame" | "Button" Тип фрейма. По умолчанию "Frame"
 ---@field updateFunc fun(f:table)? Функция обновления текста/состояния фрейма. Вызывается тикером или событием
 ---@field updateTicker table? {interval = number} Тикер для updateFunc (в секундах)
 ---@field updateEvent table? {events = {"EVENT1","EVENT2"}} События для updateFunc
@@ -55,13 +56,12 @@ end
 ---@field registerClicks table? {"LeftButtonUp","RightButtonUp"} Кнопки мыши для обработки клика
 ---@field tooltipFunc fun(self:table)? Функция тултипа (OnEnter)
 ---@field textAllPoints boolean? Если true, текст занимает весь фрейм (SetAllPoints). По умолчанию false
----@return table Созданный фрейм с возможным полем `.text` для текста
 
 --- Универсальная функция для создания фрейма
 ---@param params LPSFrameParams
----@return table f Созданный фрейм
+---@return table? f Созданный фрейм (или nil, если params.parent не задан)
 function LPS:CreateFrame(params)
-    if not params.parent then return end
+    if not params.parent then return nil end
 
     local f = CreateFrame(params.frameType or "Frame", params.name, params.parent, params.template or "BackdropTemplate")
     f:ClearAllPoints()

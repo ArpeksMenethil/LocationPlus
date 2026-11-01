@@ -249,8 +249,6 @@ function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
 
     local copyBtn = Widgets.CreateFlatButton(frame, 62, 20, L.CP_COPY or "Copy")
     copyBtn:SetPoint("TOPLEFT", frame, "TOPLEFT", RX, COPY_Y)
-    local pasteBtn = Widgets.CreateFlatButton(frame, 62, 20, L.CP_PASTE or "Paste")
-    pasteBtn:SetPoint("TOPLEFT", frame, "TOPLEFT", RX + 66, COPY_Y)
 
     local boxR, boxG, boxB, boxA, hexBox
     local hexFocused = false
@@ -289,10 +287,10 @@ function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
 
     local function UpdateAll()
         updating = true
-        boxR:SetText(math.floor(state.r * 255 + 0.5))
-        boxG:SetText(math.floor(state.g * 255 + 0.5))
-        boxB:SetText(math.floor(state.b * 255 + 0.5))
-        if boxA then boxA:SetText(math.floor(state.a * 100 + 0.5)) end
+        boxR:SetText(string.format("%d", math.floor(state.r * 255 + 0.5)))
+        boxG:SetText(string.format("%d", math.floor(state.g * 255 + 0.5)))
+        boxB:SetText(string.format("%d", math.floor(state.b * 255 + 0.5)))
+        if boxA then boxA:SetText(string.format("%d", math.floor(state.a * 100 + 0.5))) end
         if not hexFocused then
             hexBox:SetText(FormatHex())
         end
@@ -345,14 +343,14 @@ function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
     end
 
     updating = true
-    boxR = MakeNumBox(0, "R", math.floor(r * 255 + 0.5), 0, 255,
+    boxR = MakeNumBox(0, "R", string.format("%d", math.floor(r * 255 + 0.5)), 0, 255,
         function(v) state.r = v / 255; UpdateAll() end)
-    boxG = MakeNumBox(66, "G", math.floor(g * 255 + 0.5), 0, 255,
+    boxG = MakeNumBox(66, "G", string.format("%d", math.floor(g * 255 + 0.5)), 0, 255,
         function(v) state.g = v / 255; UpdateAll() end)
-    boxB = MakeNumBox(132, "B", math.floor(b * 255 + 0.5), 0, 255,
+    boxB = MakeNumBox(132, "B", string.format("%d", math.floor(b * 255 + 0.5)), 0, 255,
         function(v) state.b = v / 255; UpdateAll() end)
     if hasAlpha then
-        boxA = MakeNumBox(198, "A", math.floor(a * 100 + 0.5), 0, 100,
+        boxA = MakeNumBox(198, "A", string.format("%d", math.floor(a * 100 + 0.5)), 0, 100,
             function(v) state.a = v / 100; UpdateAll() end)
     end
 
@@ -393,20 +391,13 @@ function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
         if hasAlpha then state.a = 1 end
         UpdateAll()
     end)
+    -- Копирование: в WoW API есть только CopyToClipboard(text [, removeMarkup])
+    -- (SetClipboardText не существует). Чтение буфера обмена недоступно
+    -- вообще, поэтому кнопка Paste удалена — вводить hex можно вручную.
     copyBtn:SetScript("OnClick", function()
-        if SetClipboardText then
-            SetClipboardText(FormatHex())
+        if CopyToClipboard then
+            CopyToClipboard(FormatHex())
         end
-    end)
-    pasteBtn:SetScript("OnClick", function()
-        if not GetClipboardText then return end
-        local t = GetClipboardText()
-        t = t:gsub("%s", "")
-        if t:find("^#") then t = t:sub(2) end
-        t = t:gsub("[^0-9a-fA-F]", ""):sub(1, 8)
-        if #t < 3 then return end
-        ParseHex(t)
-        UpdateAll()
     end)
 
     local ref = CreateFrame("Frame", nil, UIParent)

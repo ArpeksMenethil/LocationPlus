@@ -21,6 +21,7 @@ local function getClassColor()
     return 1, 1, 1
 end
 
+---@type fun(...): ...
 local unpackFn = table.unpack or unpack
 
 local normalizedLayoutCache
@@ -593,7 +594,7 @@ local Locale = LPS.L
 
 ---
 --- @param msg string Сообщение
---- @param isTranslate boolean Флаг перевода msg
+--- @param isTranslate boolean? Флаг перевода msg
 function LPS:Print(msg, isTranslate)
     if isTranslate ~= false then
         msg = Locale[msg] or msg

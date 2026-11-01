@@ -69,7 +69,10 @@ do
             -- (BN_RECONNECT/BN_DISCONNECT — только Retail):
             -- фильтруем через IsEventValid.
             local function eventValid(ev)
-                return C_EventUtils.IsEventValid(ev)
+                -- C_EventUtils нет не на всех клиентах (например, Vanilla
+                -- Classic 3.3.5) — тогда регистрируем все события, как раньше.
+                return not (C_EventUtils and C_EventUtils.IsEventValid)
+                    or C_EventUtils.IsEventValid(ev)
             end
 
             local events = F.Events:New("LPS.Friends")

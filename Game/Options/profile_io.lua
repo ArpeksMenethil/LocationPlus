@@ -340,8 +340,8 @@ function IO.ShowExportPopup()
         self:SetHeight(CODE_H)
     end)
     codeBox:SetScript("OnKeyDown", function(_, key)
-        if key == "C" and IsControlKeyDown() and type(SetClipboardText) == "function" then
-            SetClipboardText(code)
+        if key == "C" and IsControlKeyDown() and type(CopyToClipboard) == "function" then
+            CopyToClipboard(code)
         end
     end)
     codeBox:SetScript("OnMouseDown", function()
@@ -385,11 +385,6 @@ function IO.ShowImportPopup()
     codeBox:EnableMouse(true)
     codeBox:SetScript("OnTextChanged", function(self)
         self:SetHeight(CODE_H)
-    end)
-    codeBox:SetScript("OnKeyDown", function(self, key)
-        if key == "V" and IsControlKeyDown() and type(GetClipboardText) == "function" then
-            self:SetText(GetClipboardText())
-        end
     end)
 
     local function BuildUniqueName(base)
