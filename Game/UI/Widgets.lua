@@ -45,9 +45,6 @@ function Widgets.MeasureTextWidth(fs, text)
         file, size, flags = fs:GetFont()
     end
     if not file and fs and fs.GetFontObject then
-        -- Фолбэк через прокси FontObject: в рантайме тот же GetFont()
-        -- вернёт (file, size, flags), но LSP знает другую сигнатуру —
-        -- нормализуем значения через таблицу.
         local obj = fs:GetFontObject()
         if obj and obj.GetFont then
             local r = { obj:GetFont() }
@@ -387,7 +384,7 @@ function Widgets.CreateSlider(parent, opts)
     s:SetValue(opts.value or opts.min or 0, false)
     return s
 end
-local dropdownListCounter = 0 -- уникальные имена контроллеров Foundry.List
+local dropdownListCounter = 0
 function Widgets.CreateDropdown(parent, labelText, width, opts)
     opts = opts or {}
     local label = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -487,10 +484,6 @@ function Widgets.CreateDropdown(parent, labelText, width, opts)
             dropdown.menu:EnableMouse(true)
             dropdown.menu.bg = CS.Theme.Box(dropdown.menu, "window", "border", Radius())
         end
-        -- Список пунктов — Foundry.List на едином ScrollBox-API: рециклинг
-        -- строк, нативное колесо и нативный скроллбар (ручной track/thumb
-        -- больше не нужен). Контроллер создаётся один раз на dropdown,
-        -- SetData пересобирает строки при каждом открытии.
         if not dropdown.list then
             dropdownListCounter = dropdownListCounter + 1
             dropdown.list = LPS.F.List:New({
@@ -546,8 +539,6 @@ function Widgets.CreateDropdown(parent, labelText, width, opts)
                 end,
             })
             if dropdown.list then
-                -- Место под скроллбар справа, чтобы строки не уезжали
-                -- под него.
                 local handles = dropdown.list:GetNativeHandles()
                 handles.scrollBox:SetPoint("TOPLEFT", 1, 0)
                 handles.scrollBox:SetPoint("BOTTOMRIGHT", -10, 0)

@@ -176,7 +176,7 @@ function LPS:BuildGoldTooltip(tt)
         elseif C_WowTokenPublic and C_WowTokenPublic.GetCurrentPrice then
             tokenPrice = C_WowTokenPublic.GetCurrentPrice()
         end
-        
+
         if (not cfg or cfg.token ~= false) and tokenPrice and tonumber(tokenPrice) and tonumber(tokenPrice) > 0 then
             tt:AddLine(" ")
             tt:AddDoubleLine(L.WOW_TOKEN..":", moneyText(tokenPrice), rB, gB, bB, whiteR, whiteG, whiteB)

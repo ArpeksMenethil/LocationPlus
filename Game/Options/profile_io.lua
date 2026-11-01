@@ -2,13 +2,9 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local L = LPS.L
 
----------------------------------------------------------------------------
----------------------------------------------------------------------------
 LPS.ProfileIO = LPS.ProfileIO or {}
 local IO = LPS.ProfileIO
 
----------------------------------------------------------------------------
----------------------------------------------------------------------------
 local MAX_DEPTH = 8
 
 local function EncodeValue(v, depth)
@@ -24,7 +20,6 @@ local function EncodeValue(v, depth)
     elseif t == "string" then
         return string.format("%q", v)
     elseif t == "table" and depth < MAX_DEPTH then
-        -- массив (сплошные числовые индексы) или объект
         local n = #v
         local isArray = true
         if n == 0 then
@@ -71,7 +66,7 @@ local function DecodeJSON(str)
     local ParseValue, ParseString, ParseArray, ParseObject
 
     local function ParseStringFn()
-        pos = pos + 1 -- открывающая кавычка
+        pos = pos + 1
         local out = {}
         while true do
             local c = str:sub(pos, pos)
@@ -187,8 +182,6 @@ function IO.Decode(json)
     return DecodeJSON(json)
 end
 
----------------------------------------------------------------------------
----------------------------------------------------------------------------
 local function GetLibDeflate()
     if LibStub and LibStub.GetLibrary then
         local lib = LibStub:GetLibrary("LibDeflate", true)
@@ -251,9 +244,6 @@ function IO.DecodeProfile(code)
     return payload
 end
 
----------------------------------------------------------------------------
----
----------------------------------------------------------------------------
 local function CreateBasePopup(width, height)
     local Widgets = LPS.UI.Widgets
     Widgets.CloseActivePopup()
@@ -303,8 +293,6 @@ local function CreateFieldBox(popup, x, y, w, h)
     return editBox
 end
 
----------------------------------------------------------------------------
----------------------------------------------------------------------------
 function IO.ShowExportPopup()
     local Widgets = LPS.UI.Widgets
     if not (LPS.db and LPS.db.GetCurrentProfile and LPS.db.profile) then return end
@@ -352,8 +340,6 @@ function IO.ShowExportPopup()
     return popup
 end
 
----------------------------------------------------------------------------
----------------------------------------------------------------------------
 function IO.ShowImportPopup()
     local Widgets = LPS.UI.Widgets
     if not (LPS.db and LPS.sv and LPS.sv.profiles) then return end
@@ -364,7 +350,6 @@ function IO.ShowImportPopup()
         L.POPUP_IMPORT_PROFILE_DESC or "Enter a name for the new profile and paste the exported code below:"
     )
 
-    -- Имя нового профиля
     local nameLabel = popup:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     nameLabel:SetPoint("TOPLEFT", 12, -64)
     nameLabel:SetText(L.PROFILE_NAME_LABEL or "Profile name")
@@ -432,4 +417,3 @@ function IO.ShowImportPopup()
     nameBox:SetFocus()
     return popup
 end
-

@@ -26,7 +26,6 @@ local function PositionMinimapButton(btn)
     local rad = math.rad(angle)
     local x, y
     if IsMinimapSquare() then
-        -- квадратная карта: цепляемся к её краям
         local dx, dy = math.cos(rad), math.sin(rad)
         local hw = (Minimap:GetWidth() / 2) + pad
         local hh = (Minimap:GetHeight() / 2) + pad
@@ -36,7 +35,6 @@ local function PositionMinimapButton(btn)
         x = dx * s
         y = dy * s
     else
-        -- круглая карта: идём по кругу
         local radius = (Minimap:GetWidth() / 2) + pad
         x = math.cos(rad) * radius
         y = math.sin(rad) * radius
@@ -186,13 +184,7 @@ function LPS:SetMoveMode(enabled)
 
         local snapRange = 10
 
-        -- Перетаскивание само по себе владение Foundry.Window (OnDragStart/
-        -- OnDragStop, прицеплены при логине): он вызывает StartMoving/
-        -- StopMovingOrSizing и пишет позицию в таблицу геометрии. Здесь —
-        -- только магнитное смещение и сохранение (OnMouseUp срабатывает
-        -- после OnDragStop).
         f:SetScript("OnMouseUp", function(self)
-            -- вычисляем магнитное смещение
             local left = self:GetLeft()
             local bottom = self:GetBottom()
             local width = self:GetWidth()
@@ -232,7 +224,6 @@ function LPS:SetMoveMode(enabled)
             self:ClearAllPoints()
             self:SetPoint(p.point, UIParent, p.relPoint, p.x, p.y)
 
-            -- Синхронизируем таблицу геометрии Foundry.Window.
             local g = LPS.frame and LPS.frame._posGeometry
             if g then
                 for k in pairs(g) do g[k] = nil end
@@ -297,8 +288,6 @@ function LPS:SetMoveMode(enabled)
             end
         end)
     else
-        -- Снимаем кнопку перетаскивания; скрипты OnDragStart/OnDragStop
-        -- принадлежат Foundry.Window — их не трогаем.
         f:RegisterForDrag()
         f:SetScript("OnUpdate", nil)
         for _, line in ipairs(f.grid and f.grid.vLines or {}) do
@@ -312,8 +301,6 @@ function LPS:SetMoveMode(enabled)
         f:SetFrameStrata((layout and layout.frameStrata) or "HIGH")
         f:SetFrameLevel(tonumber(layout and layout.frameLevel) or 1)
         f:SetScript("OnMouseUp", nil)
-        -- Вне move-mode holder не должен перехватывать клики (Foundry
-        -- оставляет мышь включённой ещё с момента Attach).
         f:EnableMouse(false)
 
         for _, child in ipairs({f:GetChildren()}) do

@@ -93,7 +93,6 @@ local L = {
     TEXT_CUSTOM_COLOR = "Text custom color",
     PICK_A_CUSTOM_COLOR_FOR_PANEL_TEXT = "Pick a custom color for panel text.",
     PROFILES = "Profiles",
-    -- Вкладка Profiles
     HEADER_PROFILES = "Profiles",
     LABEL_ACTIVE_PROFILE = "Active Profile",
     BTN_NEW = "New",
@@ -124,7 +123,6 @@ local L = {
     RESET_PROFILE_DESC = "Reset the current profile to default values.",
     DELETE_PROFILE = "Delete profile",
     DELETE_PROFILE_DESC = "Delete the current profile (characters are moved to Default).",
-    -- Экспорт/импорт профиля (LibDeflate)
     POPUP_EXPORT_PROFILE_TITLE = "Export Profile",
     POPUP_EXPORT_PROFILE_DESC = "Copy the code below (Ctrl+C) and paste it into Import on another client or game version.",
     PROFILE_NAME_LABEL = "Profile name",
@@ -333,7 +331,6 @@ local L = {
     THEME_CLASSIC_DESC = "The original classic look.",
     THEME_FROST = "Frost",
     THEME_FROST_DESC = "Cool navy depths with an icy accent.",
-    -- Вкладка Appearance (тема/цвет окна настроек)
     APPEARANCE = "Appearance",
     THEME = "Theme",
     THEME_STYLE = "Window theme",
@@ -358,14 +355,12 @@ local L = {
     WINDOW_SCALE_DESC = "UI scale of the settings window.",
     RESET_APPEARANCE = "Reset appearance",
     RESET_APPEARANCE_DESC = "Restore theme, colors and scale to defaults.",
-    -- Color picker
     CP_TITLE = "Color",
     CP_OK = "OK",
     CP_CANCEL = "Cancel",
     CP_RESET = "Reset",
     CP_DEFAULT = "Default",
     CP_CLASS_COLOR = "Class color",
-    -- Вкладка About
     ABOUT = "About",
     ABOUT_THIS_ADDON = "About this addon",
     AUTHOR = "Author",
@@ -380,7 +375,6 @@ local L = {
 --- Публичная таблица переводов (LPS.L) с fallback на ключ.
 LPS.L = setmetatable({}, { __index = L })
 
--- Базовая таблица (enUS) доступна для регистрации других локалей.
 LPS._L_enUS = L
 LPS.GAME_LOCALE = GetLocale()
 LPS.ACTIVE_LOCALE = LPS.GAME_LOCALE

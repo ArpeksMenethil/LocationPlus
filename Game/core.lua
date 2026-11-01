@@ -8,12 +8,12 @@ LPS.addon.version = (
         (C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(LPS.addon.name, "Version"))
                 or (GetAddOnMetadata and GetAddOnMetadata(LPS.addon.name, "Version"))
                 or "?.?.?"
-) -- Версия аддона
+)
 LPS.addon.title = (
         (C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(LPS.addon.name, "Title"))
                 or (GetAddOnMetadata and GetAddOnMetadata(LPS.addon.name, "Title"))
                 or "?.?.?"
-) -- Название аддона
+)
 
 --- Описание аддона: Notes из .toc для текущего языка клиента (fallback на enUS).
 function LPS:GetAddonNotes()
@@ -26,9 +26,6 @@ function LPS:GetAddonNotes()
         return (notes ~= "") and notes or ""
 end
 
-----------------------------------------------------------------
----
-----------------------------------------------------------------
 ---@type LPSFrameParams
 local params = {
         name = "LPS_Holder",
@@ -42,18 +39,11 @@ local params = {
 LPS.frame.holder = LPS:CreateFrame(params)
 LPS.frame.holder:SetFrameStrata("HIGH")
 
-----------------------------------------------------------------
----
-----------------------------------------------------------------
--- Foundry.Lifecycle: ADDON_LOADED нашего аддона (фильтр по имени и
--- ожидание готовности SV/имени персонажа делает Foundry).
 LPS.Lifecycle = F.Lifecycle:New(LPS, LPS.addon.name)
 LPS.Lifecycle:OnAddonLoaded(function()
         LPS:onLoaded()
 end)
 
-----------------------------------------------------------------
-----------------------------------------------------------------
 local svMeta = {}
 svMeta.__index = svMeta
 
@@ -196,7 +186,6 @@ function LPS:onLoaded()
                 LPS:CreateMinimapButton()
         end
 
-        -- Категория в стандартном окне настроек (изображение + кнопка).
         if LPS.RegisterSettingsCategory then
                 LPS:RegisterSettingsCategory()
         end
@@ -209,9 +198,6 @@ function LPS:onLoaded()
                 LPS:UpdateFrameSize()
                 LPS:ApplyLayout()
         else
-                -- Foundry.Events: PLAYER_ENTERING_WORLD один раз, плюс
-                -- страховочный повтор через 1 с (данные зоны могут
-                -- запаздывать после логина).
                 LPS.coreEvents = F.Events:New("LPS.Core")
                 LPS.coreEvents:RegisterOnce("PLAYER_ENTERING_WORLD", function()
                         LPS:UpdateFrameSize()
@@ -228,8 +214,6 @@ function LPS:onLoaded()
         end
 end
 
--- Foundry.Commands: /lps. Авто-help по /lps help, неизвестная команда
--- объясняется (раньше молча открывала окно настроек).
 local cmd = F.Commands:New({
         name = "LocationPlus",
         slashes = { "/lps" },

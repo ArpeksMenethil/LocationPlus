@@ -17,14 +17,14 @@ function LPS.Options.BuildTree.tabs.general()
                         left = {
                             order = 1,
                             name = " ",
-                            
+
                             args = {
                                 loginMessage = {
                                     order = 1,
                                     name = L.LOGIN_MESSAGE,
                                     desc = L.SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN,
                                     type = "toggle",
-                                    
+
                                     get = function() return OH:getDb().general.loginMessage end,
                                     set = function(_, v) OH:getDb().general.loginMessage = v end,
                                 },
@@ -38,7 +38,7 @@ function LPS.Options.BuildTree.tabs.general()
                                     name = L._24H_TIME_FORMAT,
                                     desc = L.USE_24_HOUR_TIME_FORMAT,
                                     order = 3,
-                                    
+
                                     get = function() return OH:getDb().general.is24H end,
                                     set = function(_, v)
                                     OH:getDb().general.is24H = v
@@ -52,7 +52,7 @@ function LPS.Options.BuildTree.tabs.general()
                                     name = L.SHOW_SECONDS,
                                     desc = L.SHOW_SECONDS_WHEN_USING_LOCAL_TIME,
                                     order = 4,
-                                    
+
                                     get = function() return OH:getDb().general.seconds end,
                                     set = function(_, v)
                                     OH:getDb().general.seconds = v
@@ -66,14 +66,14 @@ function LPS.Options.BuildTree.tabs.general()
                         right = {
                             order = 2,
                             name = " ",
-                            
+
                             args = {
                                 minimapIcon = {
                                     type = "toggle",
                                     name = L.MINIMAP_ICON,
                                     desc = L.SHOW_HIDE_MINIMAP_ICON,
                                     order = 1,
-                                    
+
                                     get = function()
                                     local mm = OH:getDb().show and OH:getDb().show.minimap
                                     return not (mm and mm.hide)
@@ -125,7 +125,7 @@ function LPS.Options.BuildTree.tabs.general()
                                     name = L.ADDON_COMPARTMENT,
                                     desc = L.SHOW_HIDE_ADDON_IN_THE_ADDON_COMPARTMENT,
                                     order = 2,
-                                    
+
                                     hidden = function() return not (LPS.Retail or LPS.Forever) end,
                                     disabled = function() return not (LPS.Retail or LPS.Forever) end,
                                     get = function() return OH:getDb().show.addonCompartment end,
@@ -146,7 +146,7 @@ function LPS.Options.BuildTree.tabs.general()
                                     name = L.COMBAT_HIDE,
                                     desc = L.SHOW_HIDE_ALL_PANELS_WHEN_IN_COMBAT,
                                     type = "toggle",
-                                    
+
                                     get = function() return OH:getDb().show.visibility.combat end,
                                     set = function(_, v)
                                     OH:getDb().show.visibility.combat = v

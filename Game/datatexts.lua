@@ -3,12 +3,8 @@ if not LPS then return end
 local L = LPS.L
 local F = LPS.F
 
---------------------------------------------------------------------
---------------------------------------------------------------------
-
 local registry = {}
 LPS.datatexts = registry
-
 
 local HIDDEN_SLOT_KEYS = { microBar = true }
 
@@ -59,10 +55,6 @@ function LPS:GetSlotKeyList()
     return sortedKeysCache
 end
 
---------------------------------------------------------------------
----
---------------------------------------------------------------------
-
 local eventBridge = CreateFrame("Frame")
 local datatextCreateQueueRegistered = false
 
@@ -80,7 +72,6 @@ function LPS:CreateDatatextFrame(key)
     if not def then return nil end
     local db = LPS:GetDB()
     if not db or not LPS.frame.holder or not LPS.frame.location then return nil end
-    -- панель с настройкой enable (временно отключённая) не создаётся
     local pCfg = db.panels and db.panels[key]
     if pCfg and pCfg.enable == false then return nil end
 
@@ -90,7 +81,7 @@ function LPS:CreateDatatextFrame(key)
         frameType = "Button",
         parent = LPS.frame.holder or LPS.frame.location,
         anchor = { "CENTER", LPS.frame.holder or UIParent, "CENTER", 0, 0 },
-        hidden = true, -- создаём скрытым: ApplyLayout позиционирует и показывает
+        hidden = true,
         padding = { ((db.layout and db.layout.dtPaddingX) or 20), ((db.layout and db.layout.dtPaddingY) or 7) },
         fontSize = db.settings.fontSize or 12,
         bgColor = { LPS:GetColor("bg") },
@@ -163,11 +154,6 @@ function LPS:CreateDatatextFrame(key)
     return f
 end
 
---------------------------------------------------------------------
---------------------------------------------------------------------
-
--- Foundry.Events: одноразовый PLAYER_ENTERING_WORLD (пересборка раскладки
--- после входа в мир).
 LPS.datatextsEvents = F.Events:New("LPS.Datatexts")
 LPS.datatextsEvents:RegisterOnce("PLAYER_ENTERING_WORLD", function()
     if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
@@ -192,10 +178,6 @@ eventBridge:SetScript("OnEvent", function(self, event)
         self:UnregisterEvent("PLAYER_REGEN_ENABLED")
     end
 end)
-
---------------------------------------------------------------------
----
---------------------------------------------------------------------
 
 function LPS:GetDatatextName(key)
     return LPS:GetDatatextDisplayName(key)

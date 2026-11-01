@@ -93,7 +93,6 @@ LPS.RegisterLocale("ruRU", {
     TEXT_CUSTOM_COLOR = "Свой цвет текста",
     PICK_A_CUSTOM_COLOR_FOR_PANEL_TEXT = "Выберите свой цвет для текста панели.",
     PROFILES = "Профиль",
-    -- Вкладка Profiles
     HEADER_PROFILES = "Профиль",
     LABEL_ACTIVE_PROFILE = "Активный профиль",
     BTN_NEW = "Новый",
@@ -124,7 +123,6 @@ LPS.RegisterLocale("ruRU", {
     RESET_PROFILE_DESC = "Сбросить текущий профиль к значениям по умолчанию.",
     DELETE_PROFILE = "Удалить профиль",
     DELETE_PROFILE_DESC = "Удалить текущий профиль (персонажи будут переведены на Default).",
-    -- Экспорт/импорт профиля (LibDeflate)
     POPUP_EXPORT_PROFILE_TITLE = "Экспорт профиля",
     POPUP_EXPORT_PROFILE_DESC = "Скопируйте код ниже (Ctrl+C) и вставьте его в Импорт на другом клиенте или версии игры.",
     PROFILE_NAME_LABEL = "Имя профиля",
@@ -332,7 +330,6 @@ LPS.RegisterLocale("ruRU", {
     THEME_CLASSIC_DESC = "Исходный классический вид.",
     THEME_FROST = "Ледяная",
     THEME_FROST_DESC = "Холодные тёмно-синие тона с ледяным акцентом.",
-    -- Вкладка Appearance (тема/цвет окна настроек)
     APPEARANCE = "Внешний вид",
     THEME = "Тема",
     THEME_STYLE = "Тема окна",
@@ -357,13 +354,11 @@ LPS.RegisterLocale("ruRU", {
     WINDOW_SCALE_DESC = "UI-масштаб окна настроек.",
     RESET_APPEARANCE = "Сбросить внешний вид",
     RESET_APPEARANCE_DESC = "Вернуть тему, цвета и масштаб по умолчанию.",
-    -- Вкладка About
     ABOUT = "О модификации",
     ABOUT_THIS_ADDON = "Об аддоне",
     AUTHOR = "Автор",
     LINK_CURSEFORGE = "CurseForge",
     VOLUME = "Громкость",
-    -- Пикер цвета
     CP_TITLE = "Цвет",
     CP_OK = "ОК",
     CP_CANCEL = "Отмена",

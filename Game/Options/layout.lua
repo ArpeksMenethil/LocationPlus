@@ -82,7 +82,7 @@ function LPS.Options.BuildTree.tabs.layout()
                             name = L.SHOW_PANELS,
                             desc = L.SHOW_HIDE_THE_EXTRA_PANELS_COORDS_AND_TIME,
                             type = "toggle",
-                            
+
                             get = function() return OH:getDb().layout.dtshow end,
                             set = function(_, v)
                             OH:getDb().layout.dtshow = v
@@ -92,7 +92,7 @@ function LPS.Options.BuildTree.tabs.layout()
                             LPS.Options:ApplyRefresh()
                             end,
                         },
-                        
+
                         spacer1_dtMinWidth = {
                             order = 0.6,
                             type = "description",

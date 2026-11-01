@@ -213,7 +213,6 @@ function Theme.Load()
     Theme.T = Theme.THEMES[key]
     local C = {}
     for k, v in pairs(Theme.T.colors) do C[k] = v end
-    -- акцент: цветовая тема (класс)
     local r, g, b = Theme.GetAccentColor()
     if r then
         C.accent = { r, g, b, 1 }

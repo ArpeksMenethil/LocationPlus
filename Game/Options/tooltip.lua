@@ -42,7 +42,7 @@ function LPS.Options.BuildTree.tabs.tooltip()
                             name = L.STATUS,
                             desc = L.ENABLE_DISABLE_STATUS_ON_TOOLTIP,
                             type = "toggle",
-                            
+
                             disabled = function() return not OH:getDb().tooltips.visibility.enable end,
                             get = function() return OH:getDb().tooltips.location.status end,
                             set = function(_, v) OH:getDb().tooltips.location.status = v LPS.Options:ApplyRefresh() end,
@@ -52,7 +52,7 @@ function LPS.Options.BuildTree.tabs.tooltip()
                             name = LPS.icons.Pet.." "..L.BATTLE_PET_LEVEL,
                             desc = L.ENABLE_DISABLE_BATTLE_PET_LEVEL_ON_THE_AREA,
                             type = "toggle",
-                            
+
                             disabled = function() return not OH:getDb().tooltips.visibility.enable or not (LPS.Retail or LPS.Mists) end,
                             hidden = function() return not (LPS.Retail or LPS.Mists) end,
                             get = function() return OH:getDb().tooltips.location.battlePets end,
@@ -63,7 +63,7 @@ function LPS.Options.BuildTree.tabs.tooltip()
                             name = LPS.icons.Level.." "..L.LEVEL_RANGE,
                             desc = L.ENABLE_DISABLE_LEVEL_RANGE_ON_TOOLTIP,
                             type = "toggle",
-                            
+
                             disabled = function() return not OH:getDb().tooltips.visibility.enable end,
                             get = function() return OH:getDb().tooltips.location.level end,
                             set = function(_, v) OH:getDb().tooltips.location.level = v LPS.Options:ApplyRefresh() end,
@@ -73,7 +73,7 @@ function LPS.Options.BuildTree.tabs.tooltip()
                             name = LPS.icons.Fish.." "..L.AREA_FISHING_LEVEL,
                             desc = L.ENABLE_DISABLE_FISHING_LEVEL_ON_THE_AREA,
                             type = "toggle",
-                            
+
                             disabled = function() return not OH:getDb().tooltips.visibility.enable or LPS.Retail or LPS.Mists end,
                             hidden = function() return LPS.Retail or LPS.Mists end,
                             get = function() return OH:getDb().tooltips.location.fish end,
@@ -89,7 +89,7 @@ function LPS.Options.BuildTree.tabs.tooltip()
                             name = L.PROFESSIONS,
                             desc = L.ENABLE_DISABLE_THE_PROFESSIONS_ON_TOOLTIP,
                             type = "toggle",
-                            
+
                             disabled = function() return not OH:getDb().tooltips.visibility.enable end,
                             get = function() return OH:getDb().tooltips.location.profession end,
                             set = function(_, v) OH:getDb().tooltips.location.profession = v LPS.Options:ApplyRefresh() end,
@@ -99,7 +99,7 @@ function LPS.Options.BuildTree.tabs.tooltip()
                             name = L.HIDE_CAPPED,
                             desc = L.HIDES_A_PROFESSION_WHEN_THE_PLAYER_REACHES_ITS_HIGHEST_LEVEL,
                             type = "toggle",
-                            
+
                             disabled = function()
                             return not OH:getDb().tooltips.visibility.enable or not OH:getDb().tooltips.location.profession
                             end,
@@ -151,7 +151,7 @@ function LPS.Options.BuildTree.tabs.tooltip()
                             name = L.MAX_ENTRIES,
                             desc = L.LIMIT_HOW_MANY_ENTRIES_ARE_SHOWN_IN_THIS_LIST,
                             type = "range",
-                            
+
                             min = 3,
                             max = 20,
                             step = 1,
@@ -170,7 +170,7 @@ function LPS.Options.BuildTree.tabs.tooltip()
                             name = L.ZONE_DUNGEONS,
                             desc = L.ENABLE_DISABLE_DUNGEONS_IN_THE_ZONE_ON_TOOLTIP,
                             type = "toggle",
-                            
+
                             hidden = function() return LPS.Forever end,
                             disabled = function() return not OH:getDb().tooltips.visibility.enable or LPS.Forever end,
                             get = function() return OH:getDb().tooltips.location.zoneDungeon end,
@@ -181,7 +181,7 @@ function LPS.Options.BuildTree.tabs.tooltip()
                             name = L.MAX_ENTRIES,
                             desc = L.LIMIT_HOW_MANY_ENTRIES_ARE_SHOWN_IN_THIS_LIST,
                             type = "range",
-                            
+
                             min = 3,
                             max = 20,
                             step = 1,
@@ -200,7 +200,7 @@ function LPS.Options.BuildTree.tabs.tooltip()
                             name = L.RECOMMENDED_DUNGEONS,
                             desc = L.ENABLE_DISABLE_RECOMMENDED_DUNGEONS_ON_TOOLTIP,
                             type = "toggle",
-                            
+
                             hidden = function() return LPS.Forever end,
                             disabled = function() return not OH:getDb().tooltips.visibility.enable or LPS.Forever end,
                             get = function() return OH:getDb().tooltips.location.recomDungeon end,
@@ -211,7 +211,7 @@ function LPS.Options.BuildTree.tabs.tooltip()
                             name = L.WITH_ENTRANCE_COORDS,
                             desc = L.ENABLE_DISABLE_THE_COORDS_FOR_AREA_DUNGEONS_AND_RECOMMENDED_DUNGEON_ENTRANCES_ON_TOOLTIP,
                             type = "toggle",
-                            
+
                             hidden = function() return LPS.Forever end,
                             disabled = function() return not OH:getDb().tooltips.visibility.enable or LPS.Forever or not (OH:getDb().tooltips.location.recomDungeon or OH:getDb().tooltips.location.zoneDungeon) end,
                             get = function() return OH:getDb().tooltips.location.recomDungeonCoords end,
@@ -222,7 +222,7 @@ function LPS.Options.BuildTree.tabs.tooltip()
                             name = L.MAX_ENTRIES,
                             desc = L.LIMIT_HOW_MANY_ENTRIES_ARE_SHOWN_IN_THIS_LIST,
                             type = "range",
-                            
+
                             min = 3,
                             max = 20,
                             step = 1,
@@ -320,7 +320,7 @@ function LPS.Options.BuildTree.tabs.tooltip()
                             name = L.CURRENCY,
                             desc = L.ENABLE_DISABLE_THE_CURRENCIES_ON_TOOLTIP,
                             type = "toggle",
-                            
+
                             hidden = function() return not LPS.Retail end,
                             disabled = function() return not OH:getDb().tooltips.visibility.enable or not OH:getDb().tooltips.gold.enable or not LPS.Retail end,
                             get = function() return OH:getDb().tooltips.gold.currency end,

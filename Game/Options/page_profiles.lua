@@ -1,8 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
----------------------------------------------------------------------------
----------------------------------------------------------------------------
 local ROW_HEIGHT = 22
 local ROW_GAP = 6
 
@@ -145,7 +143,6 @@ function LPS.CreateProfilesPanelPage(container)
         local active = (LPS.db and LPS.db.GetCurrentProfile and LPS.db:GetCurrentProfile()) or "Default"
         profileDrop:SetItems(items)
         profileDrop:SetValue(active, DisplayName(active))
-        -- Default и текущий профиль нельзя удалить
         local canDelete = false
         for _, item in ipairs(items) do
             if item.value ~= "Default" then canDelete = true break end
@@ -171,7 +168,6 @@ function LPS.CreateProfilesPanelPage(container)
             function(name)
                 if type(name) ~= "string" or name == "" then return false end
                 if not LPS.db or not LPS.db.SetProfile then return false end
-                -- создание через SetProfile: несуществующий профиль создаётся пустым
                 LPS.sv.profiles[name] = {}
                 LPS.db:SetProfile(name)
                 Panel.RefreshActivePage()
@@ -192,7 +188,6 @@ function LPS.CreateProfilesPanelPage(container)
             function(name)
                 if type(name) ~= "string" or name == "" or name == source then return false end
                 if not (LPS.db and LPS.db.CopyProfileFrom) then return false end
-                -- копируем src в новый профиль: временно переключаемся, затем обратно
                 LPS.sv.profiles[name] = {}
                 LPS.db:SetProfile(name)
                 LPS.db:CopyProfileFrom(source)

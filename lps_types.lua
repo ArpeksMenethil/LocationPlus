@@ -1,34 +1,6 @@
--- =====================================================================
---  lps_types.lua
---
---  Типовые заглушки ТОЛЬКО для wowlua-ls (WoW Lua Language Server).
---
---  Объявляют:
---   * SavedVariables:        LPS_DB
---   * Внешние библиотеки:    LibStub, LibDeflate, Foundry_1_0
---   * Собственную таблицу:   LPS (все LPS:X() / LPS.F.* / LPS.Tourist.*)
---   * Корень аддона:         ArpeksLPS (_G.ArpeksLPS)
---
---  Благодаря этому LSP перестаёт светить «undefined-global» /
---  «undefined-field» на коде, который реально существует.
---
---  ВАЖНО:
---   * Файл НЕ добавлен в !load.xml — игра его НЕ загружает.
---   * Всё содержимое — комментарии-аннотации (EmmyLua) и no-op
---     самоназначения глобалов (X = X), поэтому даже при случайной
---     загрузке он ни на что не влияет (значения не затираются).
---   * Конфиг LSP — файл .wowluarc.json (ignore: Libs/, flavors: ...).
---   * Добавили новый метод LPS:X() и LSP снова ругается
---     «undefined-field»? Добавьте строку `--- @field X fun(self: LPS, <параметры>): <возврат>`
---     в класс LPS ниже (раздел «методы») — с реальными параметрами и типом возврата, никаких `...`.
--- =====================================================================
 
 --- @diagnostic disable: undefined-global, create-global, unused-local
 
----------------------------------------------------------------------
--- Класс Foundry (контроллеры Foundry-1.0). Поля-контроллеры
--- намеренно any — это снимает warnings на LPS.F.Menu / .List / .Events ...
----------------------------------------------------------------------
 --- @class Foundry
 --- @field Menu any
 --- @field List any
@@ -39,23 +11,10 @@
 --- @field Window any
 local _foundryClass = {}
 
----------------------------------------------------------------------
--- Ключи цветов (LPS:GetColor): что реально используется в коде.
--- Внимание: colors.bgEnable — это флаг в БД (включён/выключен фон),
--- а НЕ ключ GetColor.
----------------------------------------------------------------------
 --- @alias LPSColorKey "text" | "bg" | "border" | "tooltip" | "tooltipSetting"
 
----------------------------------------------------------------------
--- Ключи панелей (слоты инфотекста). Набор = все def.key из
--- RegisterDatatext (Modules/Frames/*.lua) + "location" (специальный
--- ключ, обрабатывается в GetDatatextDisplayName отдельно).
----------------------------------------------------------------------
 --- @alias LPSPanelKey "location" | "bags" | "combatIndicator" | "coords" | "difficulty" | "durability" | "experience" | "friends" | "gold" | "guild" | "itemLevel" | "mail" | "microBar" | "system" | "time" | "volume"
 
----------------------------------------------------------------------
--- Конфиг панели инфотекста для LPS:RegisterDatatext (см. Game/datatexts.lua)
----------------------------------------------------------------------
 --- @class LPSDatatextDef
 --- @field key string Ключ панели (LPSPanelKey, например "gold")
 --- @field name string? Название (локализованное на момент загрузки)
@@ -70,9 +29,6 @@ local _foundryClass = {}
 --- @field buildTooltip fun(self: Frame)? Своя функция тултипа (с customTooltip)
 --- @field create fun()? Создание панели (вызывается один раз при создании фрейма)
 
----------------------------------------------------------------------
--- Пункт контекстного меню (LPS._DT.showMenu, Game/utils.lua)
----------------------------------------------------------------------
 --- @class LPSMenuEntry
 --- @field text string Текст пункта
 --- @field isTitle boolean? Заголовок (разделитель)
@@ -80,9 +36,6 @@ local _foundryClass = {}
 --- @field notCheckable boolean? Не отмечаемый пункт
 --- @field func fun()? Вызов при клике
 
----------------------------------------------------------------------
--- LPS._DT — таблица вспомогательных функций (Game/utils.lua)
----------------------------------------------------------------------
 --- @class LPSDT
 --- @field NotSecret fun(v: any): boolean Проверка на «секретность» значения
 --- @field shortValue fun(n: number?): string Короткое число (1.2M, 3k...)
@@ -96,9 +49,6 @@ local _foundryClass = {}
 --- @field openTooltip fun(self: Frame, buildFunc: fun(tt: Frame)): nil Открыть GameTooltip с содержимым buildFunc
 --- @field showMenu fun(anchorFrame: Frame, list: {LPSMenuEntry}): nil Контекстное меню
 
----------------------------------------------------------------------
--- LPS — главная таблица аддона (поля / данные)
----------------------------------------------------------------------
 --- @class LPS
 --- @field F Foundry
 --- @field Tourist any
@@ -247,12 +197,6 @@ local _foundryClass = {}
 --- @field UpdateMinimapButton fun(self: LPS): nil
 local _lpsClass = {}
 
----------------------------------------------------------------------
--- Корень аддона: _G.ArpeksLPS
--- Каждый файл берёт  local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS,
--- поэтому тип поля ArpeksLPS.LPS определяет тип локального LPS.
--- Самоназначение (ArpeksLPS = ArpeksLPS) безопасно: не затирает значение.
----------------------------------------------------------------------
 --- @class ArpeksLPS
 --- @field LPS LPS
 --- @field F Foundry
@@ -260,16 +204,11 @@ local _lpsClass = {}
 --- @type ArpeksLPS
 ArpeksLPS = ArpeksLPS
 
----------------------------------------------------------------------
--- Внешние глобалы: no-op самоназначение с явным @type — это ДЕКЛАРАЦИЯ
--- глобальной переменной для LSP (не «create-global»), при этом
--- реальное значение в рантайме не меняется (X = X — no-op).
----------------------------------------------------------------------
 --- @type any
-LPS_DB = LPS_DB           -- SavedVariables
+LPS_DB = LPS_DB
 --- @type any
-LibStub = LibStub         -- LibStub (get by name)
+LibStub = LibStub
 --- @type any
 LibDeflate = LibDeflate
 --- @type any
-Foundry_1_0 = Foundry_1_0  -- Foundry-1.0
+Foundry_1_0 = Foundry_1_0

@@ -13,14 +13,14 @@ function LPS.Options.BuildTree.tabs.show()
                 locationGroup = {
                     order = 1,
                     name = L.LOCATION,
-                    
+
                     args = {
                         zone = {
                             order = 1,
                             type = "toggle",
                             name = L.SHOW_ZONE,
                             desc = L.SHOW_ZONE_NAME_ON_THE_PANEL,
-                            
+
                             get = function() return OH:getDb().show.zone end,
                             set = function(_, v)
                             OH:getDb().show.zone = v
@@ -40,7 +40,7 @@ function LPS.Options.BuildTree.tabs.show()
                             name = L.CREST,
                             desc = L.SHOW_AN_ICON_NEXT_TO_THE_ADDITIONAL_INFO,
                             type = "toggle",
-                            
+
                             disabled = function() return OH:getDb().show.displayOther == "NONE" end,
                             get = function() return OH:getDb().show.showicon end,
                             set = function(_, v)
@@ -56,7 +56,7 @@ function LPS.Options.BuildTree.tabs.show()
                             name = L.OTHER,
                             desc = L.SHOW_ADDITIONAL_INFO_IN_THE_LOCATION_PANEL,
                             type = "select",
-                            
+
                             values = OH:getDisplayOtherValues(),
                             get = function() return OH:getDb().show.displayOther end,
                             set = function(_, v)
@@ -76,14 +76,14 @@ function LPS.Options.BuildTree.tabs.show()
                 coordsGroup = {
                     order = 2,
                     name = L.COORDS,
-                    
+
                     args = {
                         dig = {
                             order = 1,
                             name = L.DETAILED_COORDS,
                             desc = L.ADDS_2_DIGITS_IN_THE_COORDS,
                             type = "toggle",
-                            
+
                             get = function() return OH:getDb().show.dig end,
                             set = function(_, v)
                             OH:getDb().show.dig = v
@@ -98,7 +98,7 @@ function LPS.Options.BuildTree.tabs.show()
                             name = L.UPDATE_TIMER,
                             desc = L.ADJUST_COORDS_UPDATES_IN_SECONDS_TO_AVOID_CPU_LOAD,
                             type = "range",
-                            
+
                             min = 0.05,
                             max = 1,
                             step = 0.05,
@@ -115,7 +115,7 @@ function LPS.Options.BuildTree.tabs.show()
                 experienceGroup = {
                     order = 3,
                     name = L.EXPERIENCE,
-                    
+
                     args = {
                         experience = {
                             order = 1,
@@ -139,7 +139,7 @@ function LPS.Options.BuildTree.tabs.show()
                 bagsGroup = {
                     order = 4,
                     name = L.BAGS,
-                    
+
                     args = {
                         bags = {
                             order = 1,

@@ -6,17 +6,13 @@ end
 
 _G.ArpeksLPS = _G.ArpeksLPS or {}
 _G.ArpeksLPS.LPS = LPS or {}
-LPS_DB = LPS_DB or {} -- SavedVariables
+LPS_DB = LPS_DB or {}
 
--- Foundry-1.0: жёсткая зависимость в .toc, грузится раньше этого аддона.
--- Страховка на случай, если Foundry отсутствует/отключена: явная ошибка
--- запуска вместо молчаливого nil.
 local F = _G.Foundry_1_0
 if not F then
     error("LocationPlus requires the Foundry-1.0 library. Please install or enable it.", 0)
 end
-LPS.F = F -- контроллеры Foundry (Commands, Lifecycle, Events, ...)
-
+LPS.F = F
 
 LPS.wow = LPS.wow or {}
 LPS.wow.patch, LPS.wow.build, LPS.wow.date, LPS.wow.toc = GetBuildInfo()
@@ -46,7 +42,7 @@ LPS.icons.PathLogoModern = LPS.icons.PathLogoModern or "Interface\\AddOns\\"..LP
 LPS.DEBUG = false
 if BNGetInfo then
     local battleTag = select(2, BNGetInfo())
-    
+
     local function GetHash(str)
         local hash = 0
         for i = 1, #str do
@@ -54,71 +50,67 @@ if BNGetInfo then
         end
         return hash
     end
-    
+
     if type(battleTag) == "string" and GetHash(battleTag) == 237995138 then
         LPS.DEBUG = true
         print("|c"..LPS.addon.textColor..LPS.addon.name.."|r: Debug mode enabled")
     end
 end
 
-
 LPS.levelTableConst = {
 
-        -- Eastern Kingdoms
-        --[[Alterac Mountains]]        [1416] = {minLevel = 30,     maxLevel = 40,        minFish = "130",},
-        --[[Arathi Highlands]]        [1417] = {minLevel = 30,     maxLevel = 40,        minFish = "130",},
-        --[[Badlands]]                [1418] = {minLevel = 35,     maxLevel = 45,},
-        --[[Blasted Lands]]            [1419] = {minLevel = 45,     maxLevel = 55},
-        --[[Burning Steppes]]        [1428] = {minLevel = 50,     maxLevel = 58,        minFish = "330",},
-        --[[Deadwind Pass]]            [1430] = {minLevel = 55,     maxLevel = 60,        minFish = "330",},
-        --[[Dun Morogh]]            [1426] = {minLevel = 1,     maxLevel = 10,        minFish = "1",},
-        --[[Duskwood]]                [1431] = {minLevel = 18,     maxLevel = 30,        minFish = "55",},
-        --[[Eastern Plaguelands]]    [1423] = {minLevel = 53,     maxLevel = 60,        minFish = "330",},
-        --[[Elwynn Forest]]            [1429] = {minLevel = 1,     maxLevel = 10,        minFish = "1",},
-        --[[Hillsbrad Foothills]]    [1424] = {minLevel = 20,     maxLevel = 30,        minFish = "55",},
-        --[[Ironforge]]                [1455] = {minFish = 1,},
-        --[[Loch Modan]]            [1432] = {minLevel = 10,    maxLevel = 20,        minFish = "1",},
-        --[[Redridge Mountains]]    [1433] = {minLevel = 15,     maxLevel = 25,        minFish = "55",},
-        --[[Searing Gorge]]            [1427] = {minLevel = 43,     maxLevel = 50},
-        --[[Silverpine Forest]]        [1421] = {minLevel = 10,     maxLevel = 20,        minFish = "1",},
-        --[[Stormwind City]]        [1453] = {minFish = 1,},
-        --[[Stranglethorn Vale]]    [1434] = {minLevel = 30,     maxLevel = 45,        minFish = "130 (205)",},
-        --[[Swamp of Sorrows]]        [1435] = {minLevel = 35,     maxLevel = 45,        minFish = "130",},
-        --[[The Hinterlands]]        [1425] = {minLevel = 40,     maxLevel = 50,        minFish = "205",},
-        --[[Tirisfal Glades]]        [1420] = {minLevel = 1,     maxLevel = 10,        minFish = "1",},
-        --[[Undercity]]                [1458] = {minFish = 1,},
-        --[[Westfall]]                [1436] = {minLevel = 10,     maxLevel = 20,        minFish = "1",},
-        --[[Western Plaguelands]]    [1422] = {minLevel = 51,     maxLevel = 58,        minFish = "205",},
-        --[[Wetlands]]                [1437] = {minLevel = 20,     maxLevel = 30,        minFish = "55",},
+                [1416] = {minLevel = 30,     maxLevel = 40,        minFish = "130",},
+                [1417] = {minLevel = 30,     maxLevel = 40,        minFish = "130",},
+                        [1418] = {minLevel = 35,     maxLevel = 45,},
+                    [1419] = {minLevel = 45,     maxLevel = 55},
+                [1428] = {minLevel = 50,     maxLevel = 58,        minFish = "330",},
+                    [1430] = {minLevel = 55,     maxLevel = 60,        minFish = "330",},
+                    [1426] = {minLevel = 1,     maxLevel = 10,        minFish = "1",},
+                        [1431] = {minLevel = 18,     maxLevel = 30,        minFish = "55",},
+            [1423] = {minLevel = 53,     maxLevel = 60,        minFish = "330",},
+                    [1429] = {minLevel = 1,     maxLevel = 10,        minFish = "1",},
+            [1424] = {minLevel = 20,     maxLevel = 30,        minFish = "55",},
+                        [1455] = {minFish = 1,},
+                    [1432] = {minLevel = 10,    maxLevel = 20,        minFish = "1",},
+            [1433] = {minLevel = 15,     maxLevel = 25,        minFish = "55",},
+                    [1427] = {minLevel = 43,     maxLevel = 50},
+                [1421] = {minLevel = 10,     maxLevel = 20,        minFish = "1",},
+                [1453] = {minFish = 1,},
+            [1434] = {minLevel = 30,     maxLevel = 45,        minFish = "130 (205)",},
+                [1435] = {minLevel = 35,     maxLevel = 45,        minFish = "130",},
+                [1425] = {minLevel = 40,     maxLevel = 50,        minFish = "205",},
+                [1420] = {minLevel = 1,     maxLevel = 10,        minFish = "1",},
+                        [1458] = {minFish = 1,},
+                        [1436] = {minLevel = 10,     maxLevel = 20,        minFish = "1",},
+            [1422] = {minLevel = 51,     maxLevel = 58,        minFish = "205",},
+                        [1437] = {minLevel = 20,     maxLevel = 30,        minFish = "55",},
 
-        -- Kalimdor
-        --[[Ashenvale]]                [1440] = {minLevel = 18,     maxLevel = 30,        minFish = "55",},
-        --[[Azshara]]                [1447] = {minLevel = 45,     maxLevel = 55,        minFish = "205 (330)",},
-        --[[Darkshore]]                [1439] = {minLevel = 10,    maxLevel = 20,        minFish = "1",},
-        --[[Darnassus]]                [1457] = {minFish = 1,},
-        --[[Desolace]]                [1443] = {minLevel = 30,     maxLevel = 40,        minFish = "130",},
-        --[[Durotar]]                [1411] = {minLevel = 1,     maxLevel = 10,        minFish = "1",},
-        --[[Dustwallow Marsh]]        [1445] = {minLevel = 35,     maxLevel = 45,        minFish = "130",},
-        --[[Felwood]]                [1448] = {minLevel = 48,     maxLevel = 55,        minFish = "205",},
-        --[[Feralas]]                [1444] = {minLevel = 40,     maxLevel = 50,        minFish = "205 (330)",},
-        --[[Moonglade]]                [1450] = {minFish = 205,},
-        --[[Mulgore]]                [1412] = {minLevel = 1,     maxLevel = 10,        minFish = "1",},
-        --[[Orgrimmar]]                [1454] = {minFish = 1,},
-        --[[Silithus]]                [1451] = {minLevel = 55,     maxLevel = 60,        minFish = "330",},
-        --[[Stonetalon Mountains]]    [1442] = {minLevel = 15,     maxLevel = 27,        minFish = "55",},
-        --[[Tanaris]]                [1446] = {minLevel = 40,     maxLevel = 50,        minFish = "205",},
-        --[[Teldrassil]]            [1438] = {minLevel = 1,     maxLevel = 10,        minFish = "1",},
-        --[[The Barrens]]            [1413] = {minLevel = 10,     maxLevel = 25,        minFish = "1",},
-        --[[Thousand Needles]]        [1441] = {minLevel = 25,     maxLevel = 35,        minFish = "130",},
-        --[[Thunder Bluff]]            [1456] = {minFish = 1,},
-        --[[Un'Goro Crater]]        [1449] = {minLevel = 48,     maxLevel = 55,        minFish = "205",},
-        --[[Winterspring]]            [1452] = {minLevel = 55,     maxLevel = 60,        minFish = "330",},
+                        [1440] = {minLevel = 18,     maxLevel = 30,        minFish = "55",},
+                        [1447] = {minLevel = 45,     maxLevel = 55,        minFish = "205 (330)",},
+                        [1439] = {minLevel = 10,    maxLevel = 20,        minFish = "1",},
+                        [1457] = {minFish = 1,},
+                        [1443] = {minLevel = 30,     maxLevel = 40,        minFish = "130",},
+                        [1411] = {minLevel = 1,     maxLevel = 10,        minFish = "1",},
+                [1445] = {minLevel = 35,     maxLevel = 45,        minFish = "130",},
+                        [1448] = {minLevel = 48,     maxLevel = 55,        minFish = "205",},
+                        [1444] = {minLevel = 40,     maxLevel = 50,        minFish = "205 (330)",},
+                        [1450] = {minFish = 205,},
+                        [1412] = {minLevel = 1,     maxLevel = 10,        minFish = "1",},
+                        [1454] = {minFish = 1,},
+                        [1451] = {minLevel = 55,     maxLevel = 60,        minFish = "330",},
+            [1442] = {minLevel = 15,     maxLevel = 27,        minFish = "55",},
+                        [1446] = {minLevel = 40,     maxLevel = 50,        minFish = "205",},
+                    [1438] = {minLevel = 1,     maxLevel = 10,        minFish = "1",},
+                    [1413] = {minLevel = 10,     maxLevel = 25,        minFish = "1",},
+                [1441] = {minLevel = 25,     maxLevel = 35,        minFish = "130",},
+                    [1456] = {minFish = 1,},
+                [1449] = {minLevel = 48,     maxLevel = 55,        minFish = "205",},
+                    [1452] = {minLevel = 55,     maxLevel = 60,        minFish = "330",},
 
-        -- Forever
-        --[[Hyjal]]                    [2482] = {minLevel = 60,     maxLevel = 60,},
-        --[[Zephras Isle]]            [2521] = {minLevel = 1,     maxLevel = 12,},
-        --[[Riverglades]]            [2548] = {minLevel = 35,     maxLevel = 45,},
-        --[[Shen'dralas]]            [2652] = {minLevel = 35,     maxLevel = 45,},
+                            [2482] = {minLevel = 60,     maxLevel = 60,},
+                    [2521] = {minLevel = 1,     maxLevel = 12,},
+                    [2548] = {minLevel = 35,     maxLevel = 45,},
+                    [2652] = {minLevel = 35,     maxLevel = 45,},
 
 }
 

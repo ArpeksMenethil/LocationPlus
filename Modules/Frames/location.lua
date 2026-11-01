@@ -32,7 +32,7 @@ function LPS:CreateLocationFrame()
             else
                 zone = LPS:GetMapNameByIDAlt(mapID)
             end
-            
+
             local hasSub = sub and sub ~= "" and sub ~= zone
             local showZone = db2 and db2.show and db2.show.zone
 
@@ -52,7 +52,7 @@ function LPS:CreateLocationFrame()
             if other == "RLEVEL" then
                 playerMinLevel, playerMaxLevel, playerLevelColor = LPS:GetLevelRange(mapID)
                 extra = ""
-                
+
                 if playerMinLevel and playerMaxLevel and playerMinLevel ~= playerMaxLevel then
                     extra = playerLevelColor..playerMinLevel.."-"..playerMaxLevel..FONT_COLOR_CODE_CLOSE
                 elseif playerMinLevel and playerMinLevel ~= "" then

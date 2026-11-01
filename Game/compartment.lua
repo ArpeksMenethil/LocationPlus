@@ -2,9 +2,6 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local L = LPS.L
 
-----------------------------------------------------------------
----
-----------------------------------------------------------------
 local function OnAddonCompartmentClick(addonName, buttonName, menuButtonFrame)
     if buttonName == "RightButton" then
         LPS:ToggleOptions()

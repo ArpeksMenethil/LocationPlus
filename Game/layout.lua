@@ -2,7 +2,6 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 LPS_DB = LPS_DB or {}
 
--- Позиция holder по умолчанию (совпадает с LPS.defaults.position).
 local DEFAULT_POSITION = { "TOP", "TOP", 0, -10 }
 
 local function isValidPos(p)
@@ -31,10 +30,6 @@ function LPS:ApplyHolderPosition()
     migratePos(db.position)
 
     if not holderAttached then
-        -- Таблица геометрии, которую держит Foundry.Window: в конце перетаскивания
-        -- он пишет в неё позицию, :Reset — очищает. Передаём копию (а не таблицу
-        -- профиля), чтобы при смене профилей модуль не затирал чужой профиль,
-        -- и держим её в синхроне с db.position текущего профиля.
         local geometry = {}
         for k, v in pairs(db.position) do
             geometry[k] = v
@@ -46,17 +41,12 @@ function LPS:ApplyHolderPosition()
             geometry = geometry,
             default = DEFAULT_POSITION,
         })
-        -- Attach оставляет мышь на handle включённой; вне move-mode holder
-        -- не должен перехватывать клики.
         if not holder.isMoving then
             holder:EnableMouse(false)
         end
         return
     end
 
-    -- Повторные вызовы (смена профиля / полный сброс): Foundry не
-    -- переподключает фрейм, поэтому синхронизируем таблицу геометрии и
-    -- применяем вручную — позицию текущего профиля либо дефолт.
     local p = db.position
     local g = self.frame._posGeometry
     for k in pairs(g) do g[k] = nil end

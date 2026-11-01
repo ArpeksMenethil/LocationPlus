@@ -3,13 +3,10 @@ if not LPS then return end
 local L = LPS.L
 local DT = LPS._DT
 
---------------------------------------------------------------------
---------------------------------------------------------------------
-
 do
     local format, gsub, strmatch, tinsert, tremove =
         string.format, string.gsub, string.match, table.insert, table.remove
-    local wipe = table.clear or wipe -- WoW-глобалка (в т.ч. Classic Era); в чистом Lua 5.1 её нет
+    local wipe = table.clear or wipe
     local sort, next, ipairs, pairs = table.sort, next, ipairs, pairs
 
     local BNConnected = BNConnected
@@ -60,7 +57,6 @@ do
         end)
     end
 
-    -- Локальное имя класса -> ключ RAID_CLASS_COLORS (для цвета имени)
     local unlocalizedCache = {}
     local function UnlocalizedClassName(name)
         if not name then return nil end
@@ -236,7 +232,7 @@ do
                     elseif client == 'App' then
                         isAdded = (hasFocus and 2) or 1
                     else
-                        isAdded = 2 --swap data
+                        isAdded = 2
                     end
                 elseif bnInfo.client == 'App' then
                     if client == 'App' then
@@ -244,7 +240,7 @@ do
                     elseif client == 'BSAp' then
                         isAdded = (hasFocus and 2) or 1
                     else
-                        isAdded = 2 --swap data
+                        isAdded = 2
                     end
                 elseif bnInfo.client then
                     if client == 'BSAp' or client == 'App' then

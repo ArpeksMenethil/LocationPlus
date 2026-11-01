@@ -16,12 +16,10 @@ function LPS.Options.BuildTree.tabs.about()
     local version = tostring(LPS.addon.version or "")
     local author = LPS.Options.aboutAuthor or "Arpeks"
 
-    -- Описание: Notes из .toc для текущего языка клиента (с fallback на enUS)
     local notes = LPS:GetAddonNotes()
 
     local args = {
         aboutHeader = header(L.ABOUT_THIS_ADDON, 1),
-        -- Логотип аддона (тот же, что в заголовке окна настроек)
         aboutLogo = {
             order = 2,
             type = "image",
@@ -42,7 +40,6 @@ function LPS.Options.BuildTree.tabs.about()
                 L.AUTHOR, author,
                 L.VERSION_LABEL or "Version", version),
         },
-        -- Ссылка на CurseForge: статичный синий текст
         curseForgeLink = {
             order = 6,
             type = "link",

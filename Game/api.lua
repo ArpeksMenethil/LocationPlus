@@ -68,14 +68,12 @@ local out = normalizedLayoutCache and normalizedLayoutCache.out or {}
     out.frameLevel  = tonumber(raw.frameLevel)
     out.customColor = raw.customColor
     out.userColor   = raw.userColor
-    -- режим якоря цепочки ("chain" | "location") — входит в layoutKey ApplyLayout
     out.chainAnchor = raw.chainAnchor
     local function copySlots(slots)
         if type(slots) ~= "table" then return nil end
         local res = {}
         for side, s in pairs(slots) do
             if side == "userTouched" then
-                -- служебная таблица (не слот): сохраняем ссылку как есть
                 res[side] = s
             elseif type(s) == "table" then
                 res[side] = { frame = s.frame, offsetX = s.offsetX, offsetY = s.offsetY }
@@ -118,7 +116,7 @@ local function applyPanelVisibility(frames, slotList, showDT)
     end
     LPS._pendingPanelPrimes = shownNow
 end
-LPS._ApplyPanelVisibility = applyPanelVisibility -- общий для ApplyLayout и Apply*Visibility
+LPS._ApplyPanelVisibility = applyPanelVisibility
 
 function LPS._CollectSlotKeys(sideSlots)
     local res = {}
@@ -217,7 +215,7 @@ forceResize(f)
 end
 end
 
-local showDT = layout.dtshow ~= false -- layout.dtshow уже нормализован в bool (_NormalizeLayoutDB)
+local showDT = layout.dtshow ~= false
 
 local sideSlots = layout.sideSlots or {}
 
@@ -228,7 +226,6 @@ if key == "None" then return "NONE" end
 return key
 end
 
--- Собираем активные слоты в цепочки left[] / right[] (slotN1 — ближайший к локации)
 local leftChain, rightChain = {}, {}
 for _, side in ipairs({ "left", "right" }) do
     for i = 1, math.max(tonumber(layout.slotCount) or 2, 2) do
@@ -336,7 +333,6 @@ f.text:SetFont(fontFile, size, flags)
 fontChanged = true
 fontSizeChanged = true
 elseif f._lpsAppliedFontSize ~= size then
--- Размер мог измениться без смены файла/флагов шрифта — пересчитываем панель.
 fontSizeChanged = true
 end
 f._lpsAppliedFontSize = size
@@ -363,7 +359,6 @@ end
 end
 end
 
--- Re-run updates after font is applied so auto-sizing uses correct font metrics.
 local layoutNumsChanged = ((prevKey ~= nil) and (prevKey ~= layoutKey)) or forcePass
 if fontChanged or fontSizeChanged or layoutNumsChanged or forcePass then
 for key, f in pairs(frames) do
@@ -386,7 +381,6 @@ end
 end
 end
 
-
 if LPS.UpdateFrameSize then
 LPS:ScheduleFrameSizeUpdate()
 end
@@ -404,7 +398,7 @@ function LPS:ConvertRGBtoColorString(color)
     local g = color.g * 255;
     local b = color.b * 255;
     colorString = colorString..string.format("%02x%02x%02x", r, g, b);
-    
+
     return colorString;
 end
 
@@ -592,7 +586,6 @@ if not LPS.L then
 end
 local Locale = LPS.L
 
----
 --- @param msg string Сообщение
 --- @param isTranslate boolean? Флаг перевода msg
 function LPS:Print(msg, isTranslate)
@@ -601,7 +594,6 @@ function LPS:Print(msg, isTranslate)
     end
     print("|c"..LPS.addon.textColor..LPS.addon.name.."|r: " .. tostring(msg))
 end
-
 
 function LPS:InvalidateDBCache()
     self.profileDB = nil
@@ -665,8 +657,6 @@ function LPS:ResetFramePosition()
         end
         holder.isMoving = false
     end
-    -- Foundry.Window: очистить сохранённую геометрию и применить дефолтную
-    -- позицию — без /reload.
     if LPS.frame._posGeometry then
         LPS.F.Window:Reset(holder)
     else
@@ -675,8 +665,6 @@ function LPS:ResetFramePosition()
         holder:ClearAllPoints()
         holder:SetPoint(def.point, UIParent, rp, def.x, def.y)
     end
-    -- Очистить сохранённую позицию текущего профиля in-place (таблица
-    -- геометрии — его копия, а не сама таблица профиля).
     local p = LPS:GetDB().position
     if type(p) == "table" then
         for k in pairs(p) do
@@ -700,7 +688,6 @@ function LPS:GetContinentID()
     local mapInfo = C_Map.GetMapInfo(mapID)
     return mapInfo and mapInfo.parentMapID or nil
 end
-
 
 function LPS:GetContinentName()
     local currentMapID = C_Map.GetBestMapForUnit("player")

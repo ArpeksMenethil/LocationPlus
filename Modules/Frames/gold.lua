@@ -102,7 +102,6 @@ function LPS:ShowGoldResetMenu(owner)
     end
     table.sort(names)
 
-    -- Общий контекстный меню-хелпер (Foundry.Menu / legacy UIDropDownMenu).
     local list = {
         { isTitle = true, text = L.RESET_CHARACTER_DATA },
         {
@@ -205,7 +204,6 @@ function LPS:OnPlayerMoney()
     end
 end
 
-
 LPS:RegisterDatatext({
     key = "gold",
     create = function(f)
@@ -241,7 +239,6 @@ LPS:RegisterDatatext({
             end
         end
     end,
-    -- Своя подсказка (проверки visibility отличаются от общего tooltipGuard).
     customTooltip = true,
     buildTooltip = function(self)
         local d = LPS:GetDB()

@@ -146,7 +146,6 @@ local function BuildMultilineLabel(row, entry)
     ApplyLabelRole(text, str)
     text:SetText(str)
     CS.ConfigWidgets.ApplyFontColor(text, "textMuted")
-    -- верхняя оценка высоты; точная (с переносом слов) — в RelayoutMultiline
     local lines = 1 + select(2, str:gsub("\n", ""))
     local height = math.max(16, lines * 15 + 4)
     row:SetHeight(height)
@@ -181,8 +180,6 @@ local function BuildImage(row, entry)
     local tex = row:CreateTexture(nil, "ARTWORK")
     tex:SetTexture(entry.file)
     local tw, th = tex:GetWidth() or boxW, tex:GetHeight() or boxH
-    -- Game — опциональная API (есть не на всех клиентах), берём через _G
-    -- чтобы не ловить «undefined global» в LSP
     local Game = _G.Game
     if Game and Game.GetTextureDimensions then
         local ok, w, h = pcall(Game.GetTextureDimensions, entry.file)
@@ -393,7 +390,6 @@ local function BuildControl(page, entry, row)
             control.syncHeight = SyncInnerHeight
             return control
         end
-        -- Одиночная строка ввода: поле справа от подписи
         local edit = CreateFrame("EditBox", nil, row, "InputBoxTemplate")
         edit:SetAutoFocus(false)
         edit:SetPoint("LEFT", row, "CENTER", 8, 0)
@@ -500,7 +496,6 @@ local function LayoutButtonRow(buttons, row)
             if tw > textMax then textMax = tw end
         end
     end
-    -- та же формула ширины, что в page_profiles.lua (SizeButtons)
     local width = math.max(80, textMax + BUTTON_GAP * 4)
     local x = 0
     for i, btn in ipairs(buttons) do
@@ -548,7 +543,6 @@ function Builder.Build(parent, entries, opts)
                     height = entry.rowHeight or height
                 end end
 
-            -- группа кнопок: собираем до BUTTON_COLUMNS подряд идущих button-entry
             local btnGroup = nil
             if kind == "button" then
                 btnGroup = { entry }
@@ -592,7 +586,6 @@ function Builder.Build(parent, entries, opts)
             if opts.onRow then opts.onRow(row) end
 
             if btnGroup then
-                -- один общий row с N кнопками в стиле страницы «Профиль»
                 local groupControls = {}
                 for bi, bentry in ipairs(btnGroup) do
                     local control = BuildControl(page, bentry, row)

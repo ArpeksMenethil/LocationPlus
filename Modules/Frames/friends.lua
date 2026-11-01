@@ -3,8 +3,6 @@ if not LPS then return end
 local DT = LPS._DT
 local F = LPS.F
 
---------------------------------------------------------------------
---------------------------------------------------------------------
 do
     local format, select = string.format, select
 
@@ -19,7 +17,6 @@ do
         nameKey = "Friends",
         events = { 'BN_FRIEND_ACCOUNT_ONLINE', 'BN_FRIEND_ACCOUNT_OFFLINE', 'BN_FRIEND_INFO_CHANGED', 'FRIENDLIST_UPDATE', 'CHAT_MSG_SYSTEM' },
         update = function(f)
-            -- ElvUI OnEvent: счётчик = wow-онлайн + BNet-онлайн
             local onlineFriends = (CF_GetNumOnlineFriends and CF_GetNumOnlineFriends()) or 0
             local numBNetOnline = 0
             if BNGetNumFriends then
@@ -62,15 +59,7 @@ do
                 refresh()
             end
 
-            -- Foundry.Events: один контроллер на все события Friends-панели.
-            -- create() вызывается вне боёвки (в бою ставится в очередь),
-            -- поэтому регистрация событий безопасна.
-            -- Не все события валидны на каждом клиенте
-            -- (BN_RECONNECT/BN_DISCONNECT — только Retail):
-            -- фильтруем через IsEventValid.
             local function eventValid(ev)
-                -- C_EventUtils нет не на всех клиентах (например, Vanilla
-                -- Classic 3.3.5) — тогда регистрируем все события, как раньше.
                 return not (C_EventUtils and C_EventUtils.IsEventValid)
                     or C_EventUtils.IsEventValid(ev)
             end

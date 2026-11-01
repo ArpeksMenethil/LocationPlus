@@ -2,7 +2,6 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local L = LPS.L
 
-
 local function formatMem(kb)
     kb = tonumber(kb) or 0
     if kb >= 1024 then
@@ -42,7 +41,6 @@ local function getAddOnInfo(i)
     end
     return nil
 end
-
 
 function LPS:BuildSystemTooltip(tt)
     local db = LPS.GetDB and LPS:GetDB() or nil

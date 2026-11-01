@@ -2,12 +2,10 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local L = LPS.L
 
--------------------------------------------------
 --- Категория аддона в стандартном окне настроек: изображение, описание
 --- и кнопка, открывающая окно настроек аддона (плюс подсказка про /lps).
 --- На клиентах без Settings.* API категория не создаётся (тихо) —
 --- настройки остаются доступны через /lps и ПКМ по кнопке на мини-карте.
--------------------------------------------------
 
 local function getAddonTitle()
     return (LPS.addon.title and LPS.addon.title ~= "") and LPS.addon.title or "Location Plus"
@@ -18,22 +16,15 @@ local function buildCategoryFrame()
         return LPS.frame.settingsCategory
     end
 
-    -- Канвас-фрейм без родителя: его рисует система настроек сама.
-    -- Паттерн как в Foundry.Wiki/Settings: все элементы создаются
-    -- непосредственно на канвас-фрейме (без дочернего «content»).
     local panel = CreateFrame("Frame", "LPS_SettingsCategory")
     panel.name = getAddonTitle()
 
-    -- Изображение (логотип)
     local logo = panel:CreateTexture("ART")
     logo:SetSize(96, 96)
     logo:SetPoint("TOPLEFT", panel, "TOPLEFT", 48, -48)
     logo:SetTexture(LPS.icons.PathLogoModern)
 
-    -- Заголовок и версия
     local title = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    -- Самодиагностика: если CreateFontString вернул не FontString (чужой
-    -- патч, несовместимость), — понятная ошибка вместо «call a nil value».
     if type(title) ~= "table" or type(title.SetText) ~= "function" then
         error(("settings panel: CreateFontString returned %s (object: %s)")
             :format(tostring(title), title and title.GetObjectType and title:GetObjectType() or "?"), 0)
@@ -46,20 +37,17 @@ local function buildCategoryFrame()
     version:SetTextColor(0.6, 0.6, 0.6)
     version:SetText("v" .. tostring(LPS.addon.version))
 
-    -- Описание (Notes из .toc для локали клиента)
     local desc = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     desc:SetPoint("TOPLEFT", logo, "BOTTOMRIGHT", 24, 0)
     desc:SetWidth(460)
     desc:SetText(LPS:GetAddonNotes())
 
-    -- Подсказка: настройки можно открыть командой /lps
     local hint = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     hint:SetPoint("TOPLEFT", desc, "BOTTOMLEFT", 0, -10)
     hint:SetWidth(460)
     hint:SetTextColor(0.6, 0.6, 0.6)
     hint:SetText(L.SETTINGS_CMD_HINT)
 
-    -- Кнопка «Открыть настройки»
     local btn = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
     btn:SetPoint("TOPLEFT", hint, "BOTTOMLEFT", 0, -14)
     btn:SetSize(180, 24)
@@ -80,15 +68,11 @@ function LPS:RegisterSettingsCategory()
     if not (F and F.Settings) then
         return
     end
-    -- Foundry.Settings:New на клиентах без Settings.* API печатает dev-ошибку;
-    -- проверяем заранее и молча пропускаем.
     if not (_G.Settings
         and type(_G.Settings.RegisterCanvasLayoutCategory) == "function"
         and type(_G.Settings.RegisterAddOnCategory) == "function") then
         return
     end
-    -- pcall: сбой сборки панели не должен рвать весь addon-loaded хук
-    -- (минималка, команды, инициализация — идут после).
     local ok, controller = pcall(function()
         return F.Settings:New({
             title = getAddonTitle(),

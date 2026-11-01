@@ -5,13 +5,10 @@ LPS_DB = LPS_DB or {}
 
 local Tourist = LPS.Tourist
 
--- Icons on Location Panel
 local PET_ICON = LPS.icons.Pet
 local LEVEL_ICON = LPS.icons.Level
 local FISH_ICON = LPS.icons.Fish
 
-
----
 ---@param uiMapID number
 ---@return number? playerMinLevel
 ---@return number? playerMaxLevel
@@ -71,7 +68,7 @@ function LPS:GetLevelRange(uiMapID)
         playerMinLevel, playerMaxLevel = Tourist:GetLevel(zoneText)
         color.r, color.g, color.b = Tourist:GetLevelColor(zoneText)
     end
-    
+
     playerLevelColor = LPS:ConvertRGBtoColorString(color)
     return playerMinLevel, playerMaxLevel, playerLevelColor
 end
@@ -156,7 +153,6 @@ local function PvPorRaidFilter(zone)
 
     local db = LPS:GetDB()
     local isPvP, isRaid
-
 
     local isArena = false
     if not LPS.TBC then
@@ -254,7 +250,6 @@ local function GetRecomDungeons(dungeon)
     return true
 end
 
-
 function LPS:BuildLocationTooltip()
     local db = LPS:GetDB()
     local mapID = C_Map.GetBestMapForUnit("player")
@@ -293,7 +288,6 @@ function LPS:BuildLocationTooltip()
         battlePetLevel = LPS:GetBattlePetLvl(zoneText)
     end
 
-    -- Добавляем пробел, если будет дополнительная информация
     local willShowExtra = (levelMin or levelMax) or (fishMin or fishMax) or battlePetLevel
     if willShowExtra then
         GameTooltip:AddLine(" ")
@@ -301,7 +295,7 @@ function LPS:BuildLocationTooltip()
 
     if db.tooltips.location.level and levelMin then
         local zoneLevel
-                
+
         if levelMin ~= levelMax then
             zoneLevel = levelColor..levelMin.."-"..levelMax..FONT_COLOR_CODE_CLOSE
         else
@@ -353,7 +347,6 @@ function LPS:BuildLocationTooltip()
         end
     end
 
-    -- Recommended Instances
     local level = UnitLevel('player')
     if db.tooltips.location.recomDungeon and Tourist and Tourist.HasRecommendedInstances and Tourist:HasRecommendedInstances() and level >= 15 then
         GameTooltip:AddLine(" ")
@@ -370,7 +363,6 @@ function LPS:BuildLocationTooltip()
     end
 
     if LPS.Retail or LPS.Forever then
-        -- Professions
         local prof1, prof2, archy, fishing, cooking = GetProfessions()
         if db.tooltips.location.profession and (prof1 or prof2 or archy or fishing or cooking) then
             GameTooltip:AddLine(" ")
@@ -407,7 +399,6 @@ function LPS:BuildLocationTooltip()
         if db.tooltips.location.profession then
             local lines = {}
 
-            -- Список профессий, которые нужно показывать
             local professions = {
                 L.ALCHEMY, L.BLACKSMITHING, L.ENCHANTING, L.ENGINEERING, L.JEWELCRAFTING,
                 L.HERBALISM, L.LEATHERWORKING, L.MINING, L.SKINNING, L.TAILORING,

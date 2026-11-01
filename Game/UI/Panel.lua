@@ -282,7 +282,7 @@ local function CreateMainFrame()
     frame.closeBtn:SetScript("OnClick", function()
         Panel.Hide()
     end)
-    
+
     if CS.Theme.key == "classic" then
         frame.minBtn = CreateCircleButton(frame.titleBar, "icon_minus")
     else
@@ -362,7 +362,7 @@ local function CreateMainFrame()
     end)
     tinsert(UISpecialFrames, "ArpeksLPSConfigFrame")
     frame:SetScript("OnHide", function()
-    
+
     end)
     CS.Theme.ApplyFonts(frame)
     if LPS.DisableMoveModeIfActive then

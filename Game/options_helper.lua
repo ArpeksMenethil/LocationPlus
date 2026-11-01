@@ -6,8 +6,6 @@ local L = LPS.L
 LPS.OptionsHelper = {}
 local OH = LPS.OptionsHelper
 
----------------------------------------------------------------------------
----------------------------------------------------------------------------
 local function escStr(s)
     s = tostring(s)
     s = s:gsub("\\", "\\\\")
@@ -160,7 +158,6 @@ end
 --- Обратная операция к SerializeProfile; nil при битой строке.
 function OH:DeserializeProfile(str)
     if type(str) ~= "string" then return nil end
-    -- Допускаем переносы строк внутри поля ввода: просто убираем их.
     local s = str:gsub("[\r\n]", "")
     if s == "" then return nil end
     local t, epos = decodeValue(s, 1)

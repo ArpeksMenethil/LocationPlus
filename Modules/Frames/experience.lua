@@ -22,7 +22,6 @@ do
                 if f.text then f.text:SetText(L.MAX_LEVEL) end
                 return
             end
-            -- Настройка отображения живёт на вкладке Show: db.show.experience
             local d = LPS:GetDB()
             local cfg = (d and d.show and d.show.experience) or {}
             local pct = cur / max * 100

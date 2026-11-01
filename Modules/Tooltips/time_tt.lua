@@ -15,7 +15,7 @@ local function RemoveGrayParenthesesLine(tooltip)
             if text and text:match("|cffa8a8a8%(.-%)|r") then
                 leftText:SetText("")
                 leftText:Hide()
-                
+
                 local rightText = _G["GameTooltipTextRight" .. i]
                 if rightText then
                     rightText:SetText("")
@@ -27,7 +27,6 @@ local function RemoveGrayParenthesesLine(tooltip)
     end
 end
 
--- Таблица для перевода сложности в букву
 local difficultyLetter = {
     [1] = "О",
     [2] = "Г",
@@ -242,7 +241,7 @@ local ICON_EJ = {
 }
 
 local InstanceNameByID = {
-    [749] = C_Map.GetAreaInfo(3845) -- 'The Eye' -> 'Tempest Keep'
+    [749] = C_Map.GetAreaInfo(3845)
 }
 
 local difficultyColor = {
@@ -297,10 +296,6 @@ function LPS:GetInstanceImages(index, raid)
     end
 end
 
--- ОБЪЯВЛЕНИЕ ДО функций: обе замыкания (ScheduleCollectImages и
--- CollectImages) должны видеть ОДИН и тот же local (раньше local
--- объявлялся ПОСЛЕ — замыкания оперировали глобальным collectedImages,
--- и защита от повторного сбора не работала).
 local collectedImages = false
 
 function LPS:ScheduleCollectImages()
@@ -323,7 +318,6 @@ function LPS:CollectImages()
             LPS:GetInstanceImages(1, true)
         end
 
-        -- Set it back to the previous tier
         local currentTier = EJ_GetCurrentTier()
         if currentTier then
             EJ_SelectTier(currentTier)
@@ -338,7 +332,6 @@ function LPS:BuildTimeTooltip()
     local r, g, b = LPS:GetColor("text")
     local rB, gB, bB = LPS:GetColor("tooltipSetting")
     local rY, gY, bY = LPS:GetColor("tooltip")
-
 
     GameTooltip:ClearLines()
 
@@ -408,7 +401,6 @@ function LPS:BuildTimeTooltip()
         end
     end
 
-    -- таймеры внизу
     local dailySeconds = C_DateAndTime.GetSecondsUntilDailyReset()
     GameTooltip:AddDoubleLine(L.DAILY_RESET, LPS:FormatTime(dailySeconds), r, g, b, r, g, b)
 
@@ -418,7 +410,6 @@ function LPS:BuildTimeTooltip()
     local calTime = C_DateAndTime.GetCurrentCalendarTime()
     GameTooltip:AddDoubleLine(L.SERVER_TIME, string.format("%02d:%02d", calTime.hour, calTime.minute), r, g, b, r, g, b)
 
-    
     if brokerPlayedTime and db.tooltips.time.playedTime then
         GameTooltip:AddLine(" ")
         brokerPlayedTime.OnTooltipShow(GameTooltip)
@@ -432,7 +423,6 @@ function LPS:BuildTimeTooltip()
     if brokerPlayedTime and db.tooltips.time.playedTime then
         GameTooltip:AddDoubleLine(L.RMB, L.BROKER_TIME_SETTINGS, rB, gB, bB, rB, gB, bB)
     end
-    
 
     if ToggleCalendar then
         GameTooltip:AddDoubleLine(L.MMB, L.TOGGLE_CALENDAR, rB, gB, bB, rB, gB, bB)

@@ -1,9 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
--------------------------------------------------
----
--------------------------------------------------
 local UI = {}
 LPS.UI_Options = UI
 
@@ -57,8 +54,6 @@ local function readColor(entry)
             r, g, b, a = 1, 1, 1, 1
         end
     elseif entry.get ~= nil then
-        -- Поле таблицы хранит ОДНО значение (табличная форма
-        -- {r,g,b,a} разобрана ниже, r,g,b,a из функции — через pcall).
         r = entry.get
     end
     if type(r) == "table" then
@@ -331,7 +326,6 @@ local function createTreePage(group)
                 onChange = function() Panel.OnSettingChanged() end,
                 onRow = function(row) content.rows[#content.rows + 1] = row end,
             })
-            -- переносим состояние построенной страницы в этот ленивый контейнер
             page.controls = built.controls
             page.height = built.height
             page.onChange = built.onChange

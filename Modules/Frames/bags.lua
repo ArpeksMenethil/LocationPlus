@@ -30,7 +30,6 @@ do
         nameKey = "Bags",
         events = { "BAG_UPDATE_DELAYED", "BAG_CONTAINER_UPDATE" },
         update = function(f)
-            -- Настройка отображения живёт на вкладке Show: db.show.bags
             local d = LPS:GetDB()
             local cfg = (d and d.show and d.show.bags) or {}
             local free, total = freeTotal()
