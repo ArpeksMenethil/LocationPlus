@@ -1097,19 +1097,14 @@ function LPS:EnsureOptionsCloseHooks()
     hookOnHide(_G.InterfaceOptionsFrame, "InterfaceOptionsFrame")
 end
 
---- Переключить нативное окно настроек.
-function LPS:ToggleNativeOptions()
-    if LPS.UI_Options and LPS.UI_Options.Toggle then
-        LPS.UI_Options:Toggle()
-        return true
-    end
-    return false
-end
-
---- Главное переключение меню: всегда нативное окно (Game/UI/*), без Ace3.
---- Fallback — стандартные панели Blizzard.
+--- Главное переключение меню: нативное окно настроек
+--- (Game/UI/Views/Panel.lua + Game/Options/options_ui.lua → LPS:ToggleOptionWindow).
+--- Fallback — закрытие стандартных панелей Blizzard.
 function LPS:ToggleOptions()
-    if self:ToggleNativeOptions() then return end
+    if LPS.ToggleOptionWindow then
+        LPS:ToggleOptionWindow()
+        return
+    end
 
     if _G.SettingsPanel and _G.SettingsPanel.IsShown and _G.SettingsPanel:IsShown() then
         if LPS.DisableMoveModeIfActive then

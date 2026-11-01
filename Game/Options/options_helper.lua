@@ -267,7 +267,7 @@ function LPS:MakePanelOptionGroup(key, def, order)
                         db.panels[k] = p
                     end
                     p.display = v
-                    LPS.Options:ApplyRefresh()
+                    LPS:ApplyOptionsRefresh()
                 end,
             }
         end
@@ -314,7 +314,7 @@ function LPS:MakePanelOptionGroup(key, def, order)
                 local p = db.panels.bags
                 if type(p) ~= "table" then p = {}; db.panels.bags = p end
                 p.noLabel = v and true or false
-                LPS.Options:ApplyRefresh()
+                LPS:ApplyOptionsRefresh()
             end,
         }
         args.label = {
@@ -336,7 +336,7 @@ function LPS:MakePanelOptionGroup(key, def, order)
                 local p = db.panels.bags
                 if type(p) ~= "table" then p = {}; db.panels.bags = p end
                 p.label = v or ""
-                LPS.Options:ApplyRefresh()
+                LPS:ApplyOptionsRefresh()
             end,
         }
     end

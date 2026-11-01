@@ -13,6 +13,12 @@ local WINDOW_PAGE = "window"
 local frame
 local pages = {}
 local pageOrder = {}
+
+--- Подсистема нативного окна настроек доступна (проверяется
+--- BuildOptionPages при регистрации страниц).
+LPS.UI = LPS.UI or {}
+LPS.UI.Panel = true
+
 function LPS:RegisterPanelPage(key, def)
     def.key = key
     pages[key] = def
@@ -82,7 +88,7 @@ function LPS:GetValidAccentValue()
     local ui = db and db.uiOptions
     local v = ui and ui.themeColor
     if not v or v == "default" then return "default" end
-    for _, item in ipairs(LPS.LPS:GetThemeAccentItems()) do
+    for _, item in ipairs(LPS:GetThemeAccentItems()) do
         if item.value == v then return v end
     end
     return "default"
