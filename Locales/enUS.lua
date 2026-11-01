@@ -5,7 +5,7 @@ LPS._LOADED_LOCALES = LPS._LOADED_LOCALES or {}
 if LPS._LOADED_LOCALES["enUS"] then return end
 LPS._LOADED_LOCALES["enUS"] = true
 
-local L = {
+LPS:RegisterLocale("enUS", {
     GENERAL = "General",
     LOGIN_MESSAGE = "Login message",
     SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN = "Show a message in chat on login.",
@@ -118,6 +118,10 @@ local L = {
     POPUP_COPY_PROFILE_DESC = "Copy the current profile to a new one.",
     PROFILE_COPY_BASE = "Copy of %s",
     POPUP_DELETE_PROFILE_TITLE = "Delete Profile",
+    POPUP_RESET_PROFILE_TITLE = "Reset Profile",
+    POPUP_RESET_PROFILE_DESC = "Reset the current profile to default values?",
+    VERSION_LABEL = "Version",
+    TIP_WINDOW_SETTINGS = "Window Settings",
     POPUP_DELETE_NONE = "No profiles to delete. The Default profile cannot be deleted.",
     POPUP_DELETE_SELECT = "Select a profile to delete:",
     POPUP_RESET_PROFILES_TITLE = "Reset Profiles",
@@ -398,47 +402,4 @@ local L = {
     CMD_UNKNOWN = 'Unknown command: "%s" - type /lps help for the command list.',
     SETTINGS_OPEN_BUTTON = "Open settings",
     SETTINGS_CMD_HINT = "Settings can also be opened with the /lps command.",
-}
-
---- Публичная таблица переводов (LPS.L) с fallback на ключ.
-LPS.L = setmetatable({}, { __index = L })
-
-LPS._L_enUS = L
-LPS.GAME_LOCALE = GetLocale()
-LPS.ACTIVE_LOCALE = LPS.GAME_LOCALE
-local registered = {}
-
---- Регистрирует переводы локали; если код совпадает с языком клиента,
---- переводы сразу перекрывают базовые значения в LPS.L.
---- @param code string Код локали ("ruRU", "deDE", ...)
---- @param translations table<string,string> Переводы по константам
-function LPS.RegisterLocale(code, translations)
-    if code == LPS.GAME_LOCALE then
-        for k, v in pairs(translations) do
-            LPS.L[k] = v
-        end
-    end
-    if registered then
-        registered[code] = translations
-    end
-end
-
---- Применяет язык аддона: сохранённое переопределение из SavedVariables
---- (LPS_DB.localeOverride). Вызывается
---- один раз при ADDON_LOADED после регистрации всех локалей.
---- @param code string|nil Принудительный код локали
-function LPS.ApplyLocaleOverride(code)
-    local translations = code and registered and registered[code]
-    if code and code ~= LPS.GAME_LOCALE and (translations or code == "enUS") then
-        for k in pairs(LPS.L) do
-            LPS.L[k] = nil
-        end
-        if translations then
-            for k, v in pairs(translations) do
-                LPS.L[k] = v
-            end
-        end
-        LPS.ACTIVE_LOCALE = code
-    end
-    registered = nil
-end
+})

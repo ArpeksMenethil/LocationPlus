@@ -5,7 +5,7 @@ LPS._LOADED_LOCALES = LPS._LOADED_LOCALES or {}
 if LPS._LOADED_LOCALES["deDE"] then return end
 LPS._LOADED_LOCALES["deDE"] = true
 
-LPS.RegisterLocale("deDE", {
+LPS:RegisterLocale("deDE", {
 GENERAL = "Allgemein",
 LOGIN_MESSAGE = "Anmelde-Nachricht",
 SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN = "Eine Nachricht im Chat bei der Anmeldung anzeigen.",
@@ -118,6 +118,10 @@ POPUP_COPY_PROFILE_TITLE = "Profil kopieren",
 POPUP_COPY_PROFILE_DESC = "Aktuelles Profil in ein neues kopieren.",
 PROFILE_COPY_BASE = "Kopie von %s",
 POPUP_DELETE_PROFILE_TITLE = "Profil löschen",
+POPUP_RESET_PROFILE_TITLE = "Profil zurücksetzen",
+POPUP_RESET_PROFILE_DESC = "Aktuellen Profil auf Standardwerte zurücksetzen?",
+VERSION_LABEL = "Version",
+TIP_WINDOW_SETTINGS = "Fenster-Einstellungen",
 POPUP_DELETE_NONE = "Keine Profile zum Löschen. Das Standardprofil kann nicht gelöscht werden.",
 POPUP_DELETE_SELECT = "Profil zum Löschen auswählen:",
 POPUP_RESET_PROFILES_TITLE = "Profile zurücksetzen",

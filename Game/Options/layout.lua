@@ -2,10 +2,9 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local L = LPS.L
 
-local OH = LPS.OptionsHelper
 
 --- Возвращает вкладку "Layout" дерева настроек (внутренний формат дерева настроек).
-function LPS.Options.BuildTree.tabs.layout()
+LPS.Options.BuildTree.tabs.layout = function()
     return {
         name = L.LAYOUT,
         order = 4,
@@ -19,10 +18,10 @@ function LPS.Options.BuildTree.tabs.layout()
                     chain = L.LOCATION_PANEL_EDGES,
                     location = L.HOLDER_OUTER_EDGES,
                 },
-                get = function() return OH:getDb().layout.chainAnchor or "chain" end,
+                get = function() return LPS:GetOptionDB().layout.chainAnchor or "chain" end,
                 set = function(_, v)
-                    OH:getDb().layout.chainAnchor = v
-                    LPS.Options:ApplyRefresh()
+                    LPS:GetOptionDB().layout.chainAnchor = v
+                    LPS:ApplyOptionsRefresh()
                 end,
             },
             locpanel = {
@@ -37,10 +36,10 @@ function LPS.Options.BuildTree.tabs.layout()
                         min = 200,
                         max = 300,
                         step = 1,
-                        get = function() return OH:getDb().layout.locMinWidth end,
+                        get = function() return LPS:GetOptionDB().layout.locMinWidth end,
                         set = function(_, v)
-                            OH:getDb().layout.locMinWidth = v
-                            LPS.Options:ApplyRefresh()
+                            LPS:GetOptionDB().layout.locMinWidth = v
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     locPaddingX = {
@@ -51,10 +50,10 @@ function LPS.Options.BuildTree.tabs.layout()
                         min = 0,
                         max = 60,
                         step = 1,
-                        get = function() return OH:getDb().layout.locPaddingX end,
+                        get = function() return LPS:GetOptionDB().layout.locPaddingX end,
                         set = function(_, v)
-                            OH:getDb().layout.locPaddingX = v
-                            LPS.Options:ApplyRefresh()
+                            LPS:GetOptionDB().layout.locPaddingX = v
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     locPaddingY = {
@@ -65,10 +64,10 @@ function LPS.Options.BuildTree.tabs.layout()
                         min = 0,
                         max = 30,
                         step = 1,
-                        get = function() return OH:getDb().layout.locPaddingY end,
+                        get = function() return LPS:GetOptionDB().layout.locPaddingY end,
                         set = function(_, v)
-                            OH:getDb().layout.locPaddingY = v
-                            LPS.Options:ApplyRefresh()
+                            LPS:GetOptionDB().layout.locPaddingY = v
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                 },
@@ -83,13 +82,13 @@ function LPS.Options.BuildTree.tabs.layout()
                         desc = L.SHOW_HIDE_THE_EXTRA_PANELS_COORDS_AND_TIME,
                         type = "toggle",
 
-                        get = function() return OH:getDb().layout.dtshow end,
+                        get = function() return LPS:GetOptionDB().layout.dtshow end,
                         set = function(_, v)
-                            OH:getDb().layout.dtshow = v
+                            LPS:GetOptionDB().layout.dtshow = v
                             if LPS.ApplyDTVisibility then
                                 LPS:ApplyDTVisibility()
                             end
-                            LPS.Options:ApplyRefresh()
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
 
@@ -111,11 +110,11 @@ function LPS.Options.BuildTree.tabs.layout()
                         min = 100,
                         max = 200,
                         step = 1,
-                        disabled = function() return OH:getDb().layout.dtshow == false end,
-                        get = function() return OH:getDb().layout.dtMinWidth end,
+                        disabled = function() return LPS:GetOptionDB().layout.dtshow == false end,
+                        get = function() return LPS:GetOptionDB().layout.dtMinWidth end,
                         set = function(_, v)
-                            OH:getDb().layout.dtMinWidth = v
-                            LPS.Options:ApplyRefresh()
+                            LPS:GetOptionDB().layout.dtMinWidth = v
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     dtPaddingX = {
@@ -126,11 +125,11 @@ function LPS.Options.BuildTree.tabs.layout()
                         min = 0,
                         max = 60,
                         step = 1,
-                        disabled = function() return OH:getDb().layout.dtshow == false end,
-                        get = function() return OH:getDb().layout.dtPaddingX end,
+                        disabled = function() return LPS:GetOptionDB().layout.dtshow == false end,
+                        get = function() return LPS:GetOptionDB().layout.dtPaddingX end,
                         set = function(_, v)
-                            OH:getDb().layout.dtPaddingX = v
-                            LPS.Options:ApplyRefresh()
+                            LPS:GetOptionDB().layout.dtPaddingX = v
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     dtPaddingY = {
@@ -141,11 +140,11 @@ function LPS.Options.BuildTree.tabs.layout()
                         min = 0,
                         max = 30,
                         step = 1,
-                        disabled = function() return OH:getDb().layout.dtshow == false end,
-                        get = function() return OH:getDb().layout.dtPaddingY end,
+                        disabled = function() return LPS:GetOptionDB().layout.dtshow == false end,
+                        get = function() return LPS:GetOptionDB().layout.dtPaddingY end,
                         set = function(_, v)
-                            OH:getDb().layout.dtPaddingY = v
-                            LPS.Options:ApplyRefresh()
+                            LPS:GetOptionDB().layout.dtPaddingY = v
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                 },
@@ -169,7 +168,7 @@ function LPS.Options.BuildTree.tabs.layout()
                             return vals
                         end,
                         get = function()
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["left1"]
                             local v = (s and s.frame) or "NONE"
                             if v == "NONE" or v == "None" or v == "" or v == nil then
@@ -178,7 +177,7 @@ function LPS.Options.BuildTree.tabs.layout()
                             return v
                         end,
                         set = function(_, v)
-                            local db = OH:getDb()
+                            local db = LPS:GetOptionDB()
                             db.layout.sideSlots = db.layout.sideSlots or {}
                             local ss = db.layout.sideSlots
                             ss.left1 = ss.left1 or { offsetX = 0, offsetY = 0 }
@@ -192,10 +191,10 @@ function LPS.Options.BuildTree.tabs.layout()
                                 end
                             end
                             cur.frame = (v == "none") and "NONE" or v
-                            if v == "none" then OH:cascadeClearSlots(ss, "left", 1) end
+                            if v == "none" then LPS:CascadeClearSlots(ss, "left", 1) end
                             ss.userTouched = ss.userTouched or {}
                             ss.userTouched["left1"] = true
-                            LPS.Options:ApplyRefresh()
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     leftOffsetX1 = {
@@ -207,15 +206,15 @@ function LPS.Options.BuildTree.tabs.layout()
                         max = 200,
                         step = 1,
                         get = function()
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["left1"]
                             return tonumber(s and s.offsetX) or 0
                         end,
                         set = function(_, v)
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["left1"]
                             if s then s.offsetX = v end
-                            LPS.Options:ApplyRefresh()
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     leftOffsetY1 = {
@@ -227,15 +226,15 @@ function LPS.Options.BuildTree.tabs.layout()
                         max = 200,
                         step = 1,
                         get = function()
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["left1"]
                             return tonumber(s and s.offsetY) or 0
                         end,
                         set = function(_, v)
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["left1"]
                             if s then s.offsetY = v end
-                            LPS.Options:ApplyRefresh()
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     rightSlot1 = {
@@ -253,7 +252,7 @@ function LPS.Options.BuildTree.tabs.layout()
                             return vals
                         end,
                         get = function()
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["right1"]
                             local v = (s and s.frame) or "NONE"
                             if v == "NONE" or v == "None" or v == "" or v == nil then
@@ -262,7 +261,7 @@ function LPS.Options.BuildTree.tabs.layout()
                             return v
                         end,
                         set = function(_, v)
-                            local db = OH:getDb()
+                            local db = LPS:GetOptionDB()
                             db.layout.sideSlots = db.layout.sideSlots or {}
                             local ss = db.layout.sideSlots
                             ss.right1 = ss.right1 or { offsetX = 0, offsetY = 0 }
@@ -276,10 +275,10 @@ function LPS.Options.BuildTree.tabs.layout()
                                 end
                             end
                             cur.frame = (v == "none") and "NONE" or v
-                            if v == "none" then OH:cascadeClearSlots(ss, "right", 1) end
+                            if v == "none" then LPS:CascadeClearSlots(ss, "right", 1) end
                             ss.userTouched = ss.userTouched or {}
                             ss.userTouched["right1"] = true
-                            LPS.Options:ApplyRefresh()
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     rightOffsetX1 = {
@@ -291,15 +290,15 @@ function LPS.Options.BuildTree.tabs.layout()
                         max = 200,
                         step = 1,
                         get = function()
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["right1"]
                             return tonumber(s and s.offsetX) or 0
                         end,
                         set = function(_, v)
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["right1"]
                             if s then s.offsetX = v end
-                            LPS.Options:ApplyRefresh()
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     rightOffsetY1 = {
@@ -311,19 +310,19 @@ function LPS.Options.BuildTree.tabs.layout()
                         max = 200,
                         step = 1,
                         get = function()
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["right1"]
                             return tonumber(s and s.offsetY) or 0
                         end,
                         set = function(_, v)
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["right1"]
                             if s then s.offsetY = v end
-                            LPS.Options:ApplyRefresh()
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     leftSlot2 = {
-                        disabled = OH:makeSlotDisabledFunc("left", 2),
+                        disabled = LPS:MakeSlotDisabledFunc("left", 2),
                         order = 2.1,
                         name = L.LEFT_SLOT_2,
                         desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
@@ -338,7 +337,7 @@ function LPS.Options.BuildTree.tabs.layout()
                             return vals
                         end,
                         get = function()
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["left2"]
                             local v = (s and s.frame) or "NONE"
                             if v == "NONE" or v == "None" or v == "" or v == nil then
@@ -347,7 +346,7 @@ function LPS.Options.BuildTree.tabs.layout()
                             return v
                         end,
                         set = function(_, v)
-                            local db = OH:getDb()
+                            local db = LPS:GetOptionDB()
                             db.layout.sideSlots = db.layout.sideSlots or {}
                             local ss = db.layout.sideSlots
                             ss.left2 = ss.left2 or { offsetX = 0, offsetY = 0 }
@@ -361,14 +360,14 @@ function LPS.Options.BuildTree.tabs.layout()
                                 end
                             end
                             cur.frame = (v == "none") and "NONE" or v
-                            if v == "none" then OH:cascadeClearSlots(ss, "left", 2) end
+                            if v == "none" then LPS:CascadeClearSlots(ss, "left", 2) end
                             ss.userTouched = ss.userTouched or {}
                             ss.userTouched["left2"] = true
-                            LPS.Options:ApplyRefresh()
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     leftOffsetX2 = {
-                        disabled = OH:makeSlotDisabledFunc("left", 2),
+                        disabled = LPS:MakeSlotDisabledFunc("left", 2),
                         order = 2.11,
                         name = L.LEFT_OFFSET_X_2,
                         desc = L.SIDE_SLOT_OFFSET_X_DESC,
@@ -377,19 +376,19 @@ function LPS.Options.BuildTree.tabs.layout()
                         max = 200,
                         step = 1,
                         get = function()
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["left2"]
                             return tonumber(s and s.offsetX) or 0
                         end,
                         set = function(_, v)
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["left2"]
                             if s then s.offsetX = v end
-                            LPS.Options:ApplyRefresh()
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     leftOffsetY2 = {
-                        disabled = OH:makeSlotDisabledFunc("left", 2),
+                        disabled = LPS:MakeSlotDisabledFunc("left", 2),
                         order = 2.12,
                         name = L.LEFT_OFFSET_Y_2,
                         desc = L.SIDE_SLOT_OFFSET_Y_DESC,
@@ -398,19 +397,19 @@ function LPS.Options.BuildTree.tabs.layout()
                         max = 200,
                         step = 1,
                         get = function()
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["left2"]
                             return tonumber(s and s.offsetY) or 0
                         end,
                         set = function(_, v)
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["left2"]
                             if s then s.offsetY = v end
-                            LPS.Options:ApplyRefresh()
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     rightSlot2 = {
-                        disabled = OH:makeSlotDisabledFunc("right", 2),
+                        disabled = LPS:MakeSlotDisabledFunc("right", 2),
                         order = 2.2,
                         name = L.RIGHT_SLOT_2,
                         desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
@@ -425,7 +424,7 @@ function LPS.Options.BuildTree.tabs.layout()
                             return vals
                         end,
                         get = function()
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["right2"]
                             local v = (s and s.frame) or "NONE"
                             if v == "NONE" or v == "None" or v == "" or v == nil then
@@ -434,7 +433,7 @@ function LPS.Options.BuildTree.tabs.layout()
                             return v
                         end,
                         set = function(_, v)
-                            local db = OH:getDb()
+                            local db = LPS:GetOptionDB()
                             db.layout.sideSlots = db.layout.sideSlots or {}
                             local ss = db.layout.sideSlots
                             ss.right2 = ss.right2 or { offsetX = 0, offsetY = 0 }
@@ -448,14 +447,14 @@ function LPS.Options.BuildTree.tabs.layout()
                                 end
                             end
                             cur.frame = (v == "none") and "NONE" or v
-                            if v == "none" then OH:cascadeClearSlots(ss, "right", 2) end
+                            if v == "none" then LPS:CascadeClearSlots(ss, "right", 2) end
                             ss.userTouched = ss.userTouched or {}
                             ss.userTouched["right2"] = true
-                            LPS.Options:ApplyRefresh()
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     rightOffsetX2 = {
-                        disabled = OH:makeSlotDisabledFunc("right", 2),
+                        disabled = LPS:MakeSlotDisabledFunc("right", 2),
                         order = 2.21,
                         name = L.RIGHT_OFFSET_X_2,
                         desc = L.SIDE_SLOT_OFFSET_X_DESC,
@@ -464,19 +463,19 @@ function LPS.Options.BuildTree.tabs.layout()
                         max = 200,
                         step = 1,
                         get = function()
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["right2"]
                             return tonumber(s and s.offsetX) or 0
                         end,
                         set = function(_, v)
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["right2"]
                             if s then s.offsetX = v end
-                            LPS.Options:ApplyRefresh()
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     rightOffsetY2 = {
-                        disabled = OH:makeSlotDisabledFunc("right", 2),
+                        disabled = LPS:MakeSlotDisabledFunc("right", 2),
                         order = 2.22,
                         name = L.RIGHT_OFFSET_Y_2,
                         desc = L.SIDE_SLOT_OFFSET_Y_DESC,
@@ -485,19 +484,19 @@ function LPS.Options.BuildTree.tabs.layout()
                         max = 200,
                         step = 1,
                         get = function()
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["right2"]
                             return tonumber(s and s.offsetY) or 0
                         end,
                         set = function(_, v)
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["right2"]
                             if s then s.offsetY = v end
-                            LPS.Options:ApplyRefresh()
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     leftSlot3 = {
-                        disabled = OH:makeSlotDisabledFunc("left", 3),
+                        disabled = LPS:MakeSlotDisabledFunc("left", 3),
                         order = 3.1,
                         name = L.LEFT_SLOT_3,
                         desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
@@ -512,7 +511,7 @@ function LPS.Options.BuildTree.tabs.layout()
                             return vals
                         end,
                         get = function()
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["left3"]
                             local v = (s and s.frame) or "NONE"
                             if v == "NONE" or v == "None" or v == "" or v == nil then
@@ -521,7 +520,7 @@ function LPS.Options.BuildTree.tabs.layout()
                             return v
                         end,
                         set = function(_, v)
-                            local db = OH:getDb()
+                            local db = LPS:GetOptionDB()
                             db.layout.sideSlots = db.layout.sideSlots or {}
                             local ss = db.layout.sideSlots
                             ss.left3 = ss.left3 or { offsetX = 0, offsetY = 0 }
@@ -535,14 +534,14 @@ function LPS.Options.BuildTree.tabs.layout()
                                 end
                             end
                             cur.frame = (v == "none") and "NONE" or v
-                            local _ss = OH:getDb().layout.sideSlots
+                            local _ss = LPS:GetOptionDB().layout.sideSlots
                             _ss.userTouched = _ss.userTouched or {}
                             _ss.userTouched["left3"] = true
-                            LPS.Options:ApplyRefresh()
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     leftOffsetX3 = {
-                        disabled = OH:makeSlotDisabledFunc("left", 3),
+                        disabled = LPS:MakeSlotDisabledFunc("left", 3),
                         order = 3.11,
                         name = L.LEFT_OFFSET_X_3,
                         desc = L.SIDE_SLOT_OFFSET_X_DESC,
@@ -551,19 +550,19 @@ function LPS.Options.BuildTree.tabs.layout()
                         max = 200,
                         step = 1,
                         get = function()
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["left3"]
                             return tonumber(s and s.offsetX) or 0
                         end,
                         set = function(_, v)
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["left3"]
                             if s then s.offsetX = v end
-                            LPS.Options:ApplyRefresh()
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     leftOffsetY3 = {
-                        disabled = OH:makeSlotDisabledFunc("left", 3),
+                        disabled = LPS:MakeSlotDisabledFunc("left", 3),
                         order = 3.12,
                         name = L.LEFT_OFFSET_Y_3,
                         desc = L.SIDE_SLOT_OFFSET_Y_DESC,
@@ -572,19 +571,19 @@ function LPS.Options.BuildTree.tabs.layout()
                         max = 200,
                         step = 1,
                         get = function()
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["left3"]
                             return tonumber(s and s.offsetY) or 0
                         end,
                         set = function(_, v)
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["left3"]
                             if s then s.offsetY = v end
-                            LPS.Options:ApplyRefresh()
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     rightSlot3 = {
-                        disabled = OH:makeSlotDisabledFunc("right", 3),
+                        disabled = LPS:MakeSlotDisabledFunc("right", 3),
                         order = 3.2,
                         name = L.RIGHT_SLOT_3,
                         desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
@@ -599,7 +598,7 @@ function LPS.Options.BuildTree.tabs.layout()
                             return vals
                         end,
                         get = function()
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["right3"]
                             local v = (s and s.frame) or "NONE"
                             if v == "NONE" or v == "None" or v == "" or v == nil then
@@ -608,7 +607,7 @@ function LPS.Options.BuildTree.tabs.layout()
                             return v
                         end,
                         set = function(_, v)
-                            local db = OH:getDb()
+                            local db = LPS:GetOptionDB()
                             db.layout.sideSlots = db.layout.sideSlots or {}
                             local ss = db.layout.sideSlots
                             ss.right3 = ss.right3 or { offsetX = 0, offsetY = 0 }
@@ -622,14 +621,14 @@ function LPS.Options.BuildTree.tabs.layout()
                                 end
                             end
                             cur.frame = (v == "none") and "NONE" or v
-                            local _ss = OH:getDb().layout.sideSlots
+                            local _ss = LPS:GetOptionDB().layout.sideSlots
                             _ss.userTouched = _ss.userTouched or {}
                             _ss.userTouched["right3"] = true
-                            LPS.Options:ApplyRefresh()
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     rightOffsetX3 = {
-                        disabled = OH:makeSlotDisabledFunc("right", 3),
+                        disabled = LPS:MakeSlotDisabledFunc("right", 3),
                         order = 3.21,
                         name = L.RIGHT_OFFSET_X_3,
                         desc = L.SIDE_SLOT_OFFSET_X_DESC,
@@ -638,19 +637,19 @@ function LPS.Options.BuildTree.tabs.layout()
                         max = 200,
                         step = 1,
                         get = function()
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["right3"]
                             return tonumber(s and s.offsetX) or 0
                         end,
                         set = function(_, v)
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["right3"]
                             if s then s.offsetX = v end
-                            LPS.Options:ApplyRefresh()
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     rightOffsetY3 = {
-                        disabled = OH:makeSlotDisabledFunc("right", 3),
+                        disabled = LPS:MakeSlotDisabledFunc("right", 3),
                         order = 3.22,
                         name = L.RIGHT_OFFSET_Y_3,
                         desc = L.SIDE_SLOT_OFFSET_Y_DESC,
@@ -659,15 +658,15 @@ function LPS.Options.BuildTree.tabs.layout()
                         max = 200,
                         step = 1,
                         get = function()
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["right3"]
                             return tonumber(s and s.offsetY) or 0
                         end,
                         set = function(_, v)
-                            local ss = OH:getDb().layout.sideSlots
+                            local ss = LPS:GetOptionDB().layout.sideSlots
                             local s = ss and ss["right3"]
                             if s then s.offsetY = v end
-                            LPS.Options:ApplyRefresh()
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                 },
@@ -681,10 +680,10 @@ function LPS.Options.BuildTree.tabs.layout()
                         type = "toggle",
                         name = L.AUTO,
                         desc = L.AUTOMATICALLY_MANAGE_SPACING_BETWEEN_PANELS,
-                        get = function() return OH:getDb().layout.spacingAuto end,
+                        get = function() return LPS:GetOptionDB().layout.spacingAuto end,
                         set = function(_, v)
-                            OH:getDb().layout.spacingAuto = v
-                            LPS.Options:ApplyRefresh()
+                            LPS:GetOptionDB().layout.spacingAuto = v
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     spacingManual = {
@@ -695,11 +694,11 @@ function LPS.Options.BuildTree.tabs.layout()
                         min = 0,
                         max = 50,
                         step = 1,
-                        disabled = function() return OH:getDb().layout.spacingAuto end,
-                        get = function() return OH:getDb().layout.spacingManual end,
+                        disabled = function() return LPS:GetOptionDB().layout.spacingAuto end,
+                        get = function() return LPS:GetOptionDB().layout.spacingManual end,
                         set = function(_, v)
-                            OH:getDb().layout.spacingManual = v
-                            LPS.Options:ApplyRefresh()
+                            LPS:GetOptionDB().layout.spacingManual = v
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                 },
@@ -713,11 +712,11 @@ function LPS.Options.BuildTree.tabs.layout()
                         name = L.FRAME_STRATA,
                         desc = L.CONTROLS_HOW_HIGH_THE_LOCATIONPLUS_PANELS_ARE_DRAWN,
                         order = 0,
-                        values = OH:strataValues(),
-                        get = function() return OH:getDb().layout.frameStrata end,
+                        values = LPS:GetStrataValues(),
+                        get = function() return LPS:GetOptionDB().layout.frameStrata end,
                         set = function(_, v)
-                            OH:getDb().layout.frameStrata = v
-                            LPS.Options:ApplyRefresh()
+                            LPS:GetOptionDB().layout.frameStrata = v
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     frameLevel = {
@@ -728,10 +727,10 @@ function LPS.Options.BuildTree.tabs.layout()
                         min = 0,
                         max = 1000,
                         step = 1,
-                        get = function() return tonumber(OH:getDb().layout.frameLevel) or 1 end,
+                        get = function() return tonumber(LPS:GetOptionDB().layout.frameLevel) or 1 end,
                         set = function(_, v)
-                            OH:getDb().layout.frameLevel = v
-                            LPS.Options:ApplyRefresh()
+                            LPS:GetOptionDB().layout.frameLevel = v
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     spacer1_fontSize = {
@@ -747,9 +746,9 @@ function LPS.Options.BuildTree.tabs.layout()
                         min = 8,
                         max = 20,
                         step = 1,
-                        get = function() return OH:getDb().settings.fontSize end,
+                        get = function() return LPS:GetOptionDB().settings.fontSize end,
                         set = function(_, v)
-                            OH:getDb().settings.fontSize = v
+                            LPS:GetOptionDB().settings.fontSize = v
                             if LPS.ApplyStyle then
                                 LPS:ApplyStyle()
                             end
@@ -763,9 +762,9 @@ function LPS.Options.BuildTree.tabs.layout()
                         min = 0,
                         max = 6,
                         step = 1,
-                        get = function() return OH:getDb().settings.borderSize end,
+                        get = function() return LPS:GetOptionDB().settings.borderSize end,
                         set = function(_, v)
-                            OH:getDb().settings.borderSize = v
+                            LPS:GetOptionDB().settings.borderSize = v
                             if LPS.ApplyStyle then
                                 LPS:ApplyStyle()
                             end
@@ -781,9 +780,9 @@ function LPS.Options.BuildTree.tabs.layout()
                         name = L.ENABLE_BACKGROUND,
                         desc = L.TOGGLE_BACKGROUND_ON_THE_PANEL,
                         order = 2.1,
-                        get = function() return OH:getDb().settings.colors.bgEnable end,
+                        get = function() return LPS:GetOptionDB().settings.colors.bgEnable end,
                         set = function(_, v)
-                            OH:getDb().settings.colors.bgEnable = v
+                            LPS:GetOptionDB().settings.colors.bgEnable = v
                             if LPS.ApplyStyle then
                                 LPS:ApplyStyle()
                             end
@@ -797,11 +796,11 @@ function LPS.Options.BuildTree.tabs.layout()
                         hasAlpha = true,
                         default = { r = 0, g = 0, b = 0, a = 0.6 },
                         get = function()
-                            local c = OH:getDb().settings.colors.bg
+                            local c = LPS:GetOptionDB().settings.colors.bg
                             return c[1], c[2], c[3], c[4]
                         end,
                         set = function(_, r, g, b, a)
-                            local c = OH:getDb().settings.colors.bg
+                            local c = LPS:GetOptionDB().settings.colors.bg
                             c[1], c[2], c[3], c[4] = r, g, b, a
                             if LPS.ApplyStyle then
                                 LPS:ApplyStyle()
@@ -816,11 +815,11 @@ function LPS.Options.BuildTree.tabs.layout()
                         hasAlpha = true,
                         default = { r = 0.3, g = 0.3, b = 0.3, a = 1 },
                         get = function()
-                            local c = OH:getDb().settings.colors.border
+                            local c = LPS:GetOptionDB().settings.colors.border
                             return c[1], c[2], c[3], c[4]
                         end,
                         set = function(_, r, g, b, a)
-                            local c = OH:getDb().settings.colors.border
+                            local c = LPS:GetOptionDB().settings.colors.border
                             c[1], c[2], c[3], c[4] = r, g, b, a
                             if LPS.ApplyStyle then
                                 LPS:ApplyStyle()
@@ -843,10 +842,10 @@ function LPS.Options.BuildTree.tabs.layout()
                             [2] = L.CLASS_COLORS,
                             [3] = L.DEFAULT,
                         },
-                        get = function() return OH:getDb().layout.customColor end,
+                        get = function() return LPS:GetOptionDB().layout.customColor end,
                         set = function(_, v)
-                            OH:getDb().layout.customColor = v
-                            LPS.Options:ApplyRefresh()
+                            LPS:GetOptionDB().layout.customColor = v
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     userColor = {
@@ -855,19 +854,19 @@ function LPS.Options.BuildTree.tabs.layout()
                         desc = L.PICK_A_CUSTOM_COLOR_FOR_PANEL_TEXT,
                         type = "color",
                         default = { r = 1, g = 1, b = 1 },
-                        disabled = function() return OH:getDb().layout.customColor ~= 1 end,
+                        disabled = function() return LPS:GetOptionDB().layout.customColor ~= 1 end,
                         get = function()
-                            local c = OH:getDb().layout.userColor
+                            local c = LPS:GetOptionDB().layout.userColor
                             return (c and c.r) or 1, (c and c.g) or 1, (c and c.b) or 1
                         end,
                         set = function(_, r, g, b)
-                            local c = OH:getDb().layout.userColor
+                            local c = LPS:GetOptionDB().layout.userColor
                             if not c then
                                 c = { r = 1, g = 1, b = 1 }
-                                OH:getDb().layout.userColor = c
+                                LPS:GetOptionDB().layout.userColor = c
                             end
                             c.r, c.g, c.b = r, g, b
-                            LPS.Options:ApplyRefresh()
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                 },

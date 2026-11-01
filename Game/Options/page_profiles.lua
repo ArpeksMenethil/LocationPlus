@@ -5,17 +5,17 @@ local ROW_HEIGHT = 22
 local ROW_GAP = 6
 
 --- Отображаемое имя профиля (Default переводится локалью).
-local function DisplayName(name)
+function LPS:GetProfileDisplayName(name)
     if name == "Default" then
         return LPS.L.PROFILE_DEFAULT or "Default"
     end
     return name
 end
 
-local function SetButtonEnabled(btn, enabled)
+function LPS:SetButtonEnabled(btn, enabled)
     if enabled then
         btn:Enable()
-        LPS.UI.Widgets.ApplyFontColor(btn.text, "textMuted")
+        LPS:ApplyFontColor(btn.text, "textMuted")
     else
         btn:Disable()
         btn.text:SetTextColor(0.4, 0.4, 0.4)
@@ -23,16 +23,16 @@ local function SetButtonEnabled(btn, enabled)
 end
 
 --- Список имён профилей из собственной БД (core.lua, без Ace3).
-local function GetProfileList()
+function LPS:GetProfileList()
     local db = LPS.db
     if db and db.GetProfilesList then return db:GetProfilesList() end
     return {}
 end
 
 --- Уникальное имя на основе base ("New Profile 2", "New Profile 3", ...).
-local function BuildUniqueName(base)
+function LPS:BuildUniqueProfileName(base)
     local taken = {}
-    for _, name in ipairs(GetProfileList()) do
+    for _, name in ipairs(LPS:GetProfileList()) do
         taken[name:lower()] = true
     end
     local candidate = base
@@ -45,8 +45,8 @@ local function BuildUniqueName(base)
 end
 
 --- Строка с подписью слева и дропдауном справа (как в исходном аддоне).
-local function CreateDropdownRow(parent, labelText, y)
-    local Widgets = LPS.UI.Widgets
+function LPS:CreateProfileDropdownRow(parent, labelText, y)
+    
     local row = CreateFrame("Frame", nil, parent)
     row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
     row:SetPoint("TOPRIGHT", parent, "TOPRIGHT", 0, y)
@@ -56,8 +56,8 @@ local function CreateDropdownRow(parent, labelText, y)
     label:SetPoint("RIGHT", row, "CENTER", -8, 0)
     label:SetJustifyH("LEFT")
     label:SetText(labelText)
-    Widgets.ApplyFontColor(label, "textMuted")
-    local _, dropdown = Widgets.CreateDropdown(row, "", 150, { fixedWidth = true })
+    LPS:ApplyFontColor(label, "textMuted")
+    local _, dropdown = LPS:CreateDropdown(row, "", 150, { fixedWidth = true })
     dropdown:ClearAllPoints()
     dropdown:SetPoint("LEFT", row, "CENTER", 8, 0)
     dropdown:SetPoint("RIGHT", row, "RIGHT", 0, 0)
@@ -66,32 +66,32 @@ local function CreateDropdownRow(parent, labelText, y)
 end
 
 --- Создание страницы; вызывается из Panel.GetPageFrame (container — фрейм-родитель).
-function LPS.CreateProfilesPanelPage(container)
-    local Widgets = LPS.UI.Widgets
-    local Panel = LPS.UI.Panel
+function LPS:CreateProfilesPanelPage(container)
+    
+    
     local L = LPS.L
     local page = {}
-    local _, content = Panel.CreateScrollPage(container)
+    local _, content = LPS:PanelCreateScrollPage(container)
 
     local y = -4
-    local header = Widgets.CreateSectionHeader(content, L.HEADER_PROFILES or "Profiles")
+    local header = LPS:CreateSectionHeader(content, L.HEADER_PROFILES or "Profiles")
     header:SetPoint("TOPLEFT", content, "TOPLEFT", 0, y)
     header:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, y)
     y = y - 18 - ROW_GAP
 
-    local _, profileLabel, profileDrop = CreateDropdownRow(content, L.LABEL_ACTIVE_PROFILE or "Active Profile", y)
+    local _, profileLabel, profileDrop = LPS:CreateProfileDropdownRow(content, L.LABEL_ACTIVE_PROFILE or "Active Profile", y)
     y = y - ROW_HEIGHT - ROW_GAP
 
     local buttonRow = CreateFrame("Frame", nil, content)
     buttonRow:SetPoint("TOPLEFT", content, "TOPLEFT", 0, y)
     buttonRow:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, y)
     local BTN_GAP = 6
-    local newBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_NEW or "New")
-    local copyBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_COPY or "Copy")
-    local deleteBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_DELETE or "Delete")
-    local resetBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.RESET_PROFILE or "Reset profile")
-    local importBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_IMPORT or "Import")
-    local exportBtn = Widgets.CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_EXPORT or "Export")
+    local newBtn = LPS:CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_NEW or "New")
+    local copyBtn = LPS:CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_COPY or "Copy")
+    local deleteBtn = LPS:CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_DELETE or "Delete")
+    local resetBtn = LPS:CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.RESET_PROFILE or "Reset profile")
+    local importBtn = LPS:CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_IMPORT or "Import")
+    local exportBtn = LPS:CreateFlatButton(buttonRow, 80, ROW_HEIGHT, L.BTN_EXPORT or "Export")
     local buttons = { newBtn, copyBtn, deleteBtn, resetBtn, importBtn, exportBtn }
     local btnRows = math.ceil(#buttons / 2)
     buttonRow:SetHeight(ROW_HEIGHT * btnRows + BTN_GAP * (btnRows - 1))
@@ -137,40 +137,40 @@ function LPS.CreateProfilesPanelPage(container)
     --- Обновление списка профилей и состояния элементов.
     function page:Refresh()
         local items = {}
-        for _, name in ipairs(GetProfileList()) do
-            items[#items + 1] = { value = name, text = DisplayName(name) }
+        for _, name in ipairs(LPS:GetProfileList()) do
+            items[#items + 1] = { value = name, text = LPS:GetProfileDisplayName(name) }
         end
-        local active = (LPS.db and LPS.db.GetCurrentProfile and LPS.db:GetCurrentProfile()) or "Default"
+        local active = LPS:SVGetCurrentProfile() or "Default"
         profileDrop:SetItems(items)
-        profileDrop:SetValue(active, DisplayName(active))
+        profileDrop:SetValue(active, LPS:GetProfileDisplayName(active))
         local canDelete = false
         for _, item in ipairs(items) do
             if item.value ~= "Default" then canDelete = true break end
         end
-        SetButtonEnabled(deleteBtn, canDelete)
+        LPS:SetButtonEnabled(deleteBtn, canDelete)
         self:LayoutButtons()
     end
 
     profileDrop:SetOnChange(function(value)
-        if value and LPS.db and LPS.db.SetProfile then
-            LPS.db:SetProfile(value)
+        if value and LPS.db then
+            LPS:SVSetProfile(value)
         end
         if LPS.RefreshAfterProfileChange then LPS:RefreshAfterProfileChange() end
-        Panel.RefreshActivePage()
+        LPS:PanelRefreshActivePage()
         page:Refresh()
     end)
 
     newBtn:SetScript("OnClick", function()
-        Widgets.CreateInputPopup(
+        LPS:CreateInputPopup(
             L.POPUP_NEW_PROFILE_TITLE or "New Profile",
             L.POPUP_NEW_PROFILE_DESC or "Enter a name for the new profile.",
-            BuildUniqueName(L.PROFILE_NEW_BASE or "New Profile"),
+            LPS:BuildUniqueProfileName(L.PROFILE_NEW_BASE or "New Profile"),
             function(name)
                 if type(name) ~= "string" or name == "" then return false end
-                if not LPS.db or not LPS.db.SetProfile then return false end
+                if LPS.sv.profiles[name] ~= nil then return false end
                 LPS.sv.profiles[name] = {}
-                LPS.db:SetProfile(name)
-                Panel.RefreshActivePage()
+                LPS:SVSetProfile(name)
+                LPS:PanelRefreshActivePage()
                 page:Refresh()
                 return true
             end,
@@ -180,19 +180,18 @@ function LPS.CreateProfilesPanelPage(container)
     end)
 
     copyBtn:SetScript("OnClick", function()
-        local source = (LPS.db and LPS.db.GetCurrentProfile and LPS.db:GetCurrentProfile()) or "Default"
-        Widgets.CreateInputPopup(
+        local source = LPS:SVGetCurrentProfile() or "Default"
+        LPS:CreateInputPopup(
             L.POPUP_COPY_PROFILE_TITLE or "Copy Profile",
             L.POPUP_COPY_PROFILE_DESC or "Copy the current profile to a new one.",
-            BuildUniqueName(string.format(L.PROFILE_COPY_BASE or "Copy of %s", DisplayName(source))),
+            LPS:BuildUniqueProfileName(string.format(L.PROFILE_COPY_BASE or "Copy of %s", LPS:GetProfileDisplayName(source))),
             function(name)
                 if type(name) ~= "string" or name == "" or name == source then return false end
-                if not (LPS.db and LPS.db.CopyProfileFrom) then return false end
+                if LPS.sv.profiles[name] ~= nil then return false end
                 LPS.sv.profiles[name] = {}
-                LPS.db:SetProfile(name)
-                LPS.db:CopyProfileFrom(source)
-                LPS.db:SetProfile(source)
-                Panel.RefreshActivePage()
+                LPS:SVSetProfile(name)
+                LPS:SVCopyProfileFrom(source)
+                LPS:PanelRefreshActivePage()
                 page:Refresh()
                 return true
             end,
@@ -203,13 +202,13 @@ function LPS.CreateProfilesPanelPage(container)
 
     deleteBtn:SetScript("OnClick", function()
         local deletable = {}
-        for _, name in ipairs(GetProfileList()) do
+        for _, name in ipairs(LPS:GetProfileList()) do
             if name ~= "Default" then
-                deletable[#deletable + 1] = { value = name, text = DisplayName(name) }
+                deletable[#deletable + 1] = { value = name, text = LPS:GetProfileDisplayName(name) }
             end
         end
         if #deletable == 0 then
-            Widgets.CreatePopup(
+            LPS:CreatePopup(
                 L.POPUP_DELETE_PROFILE_TITLE or "Delete Profile",
                 L.POPUP_DELETE_NONE or "No profiles to delete.",
                 nil,
@@ -218,16 +217,16 @@ function LPS.CreateProfilesPanelPage(container)
             )
             return
         end
-        Widgets.CreateSelectPopup(
+        LPS:CreateSelectPopup(
             L.POPUP_DELETE_PROFILE_TITLE or "Delete Profile",
             L.POPUP_DELETE_SELECT or "Select a profile to delete:",
             deletable,
             deletable[1].value,
             function(name)
                 if not name or name == "Default" then return false end
-                if not (LPS.db and LPS.db.DeleteProfile) then return false end
-                LPS.db:DeleteProfile(name)
-                Panel.RefreshActivePage()
+                if LPS.sv.profiles[name] == nil then return false end
+                LPS:SVDeleteProfile(name)
+                LPS:PanelRefreshActivePage()
                 page:Refresh()
                 return true
             end,
@@ -237,15 +236,13 @@ function LPS.CreateProfilesPanelPage(container)
     end)
 
     resetBtn:SetScript("OnClick", function()
-        Widgets.CreatePopup(
+        LPS:CreatePopup(
             L.POPUP_RESET_PROFILE_TITLE or "Reset Profile",
             L.POPUP_RESET_PROFILE_DESC or "Reset the current profile to default values?",
             function()
-                if LPS.db and LPS.db.ResetProfile then
-                    LPS.db:ResetProfile()
-                end
+                LPS:SVResetProfile()
                 if LPS.RefreshAfterProfileChange then LPS:RefreshAfterProfileChange() end
-                Panel.RefreshActivePage()
+                LPS:PanelRefreshActivePage()
                 page:Refresh()
             end,
             L.BTN_RESET or "Reset",
@@ -254,15 +251,11 @@ function LPS.CreateProfilesPanelPage(container)
     end)
 
     importBtn:SetScript("OnClick", function()
-        if LPS.ProfileIO and LPS.ProfileIO.ShowImportPopup then
-            LPS.ProfileIO.ShowImportPopup()
-        end
+        LPS.ShowImportProfilePopup()
     end)
 
     exportBtn:SetScript("OnClick", function()
-        if LPS.ProfileIO and LPS.ProfileIO.ShowExportPopup then
-            LPS.ProfileIO.ShowExportPopup()
-        end
+        LPS.ShowExportProfilePopup()
     end)
 
     return page

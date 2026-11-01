@@ -5,7 +5,7 @@ LPS._LOADED_LOCALES = LPS._LOADED_LOCALES or {}
 if LPS._LOADED_LOCALES["frFR"] then return end
 LPS._LOADED_LOCALES["frFR"] = true
 
-LPS.RegisterLocale("frFR", {
+LPS:RegisterLocale("frFR", {
 GENERAL = "Général",
 LOGIN_MESSAGE = "Message de connexion",
 SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN = "Afficher un message dans la conversation à la connexion.",
@@ -118,6 +118,10 @@ POPUP_COPY_PROFILE_TITLE = "Copier le profil",
 POPUP_COPY_PROFILE_DESC = "Copier le profil courant vers un nouveau.",
 PROFILE_COPY_BASE = "Copie de %s",
 POPUP_DELETE_PROFILE_TITLE = "Supprimer le profil",
+POPUP_RESET_PROFILE_TITLE = "Réinitialiser le profil",
+POPUP_RESET_PROFILE_DESC = "Réinitialiser le profil actuel aux valeurs par défaut ?",
+VERSION_LABEL = "Version",
+TIP_WINDOW_SETTINGS = "Paramètres de fenêtre",
 POPUP_DELETE_NONE = "Aucun profil à supprimer. Le profil Par défaut ne peut pas être supprimé.",
 POPUP_DELETE_SELECT = "Sélectionner un profil à supprimer :",
 POPUP_RESET_PROFILES_TITLE = "Réinitialiser les profils",

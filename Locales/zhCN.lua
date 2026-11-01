@@ -5,7 +5,7 @@ LPS._LOADED_LOCALES = LPS._LOADED_LOCALES or {}
 if LPS._LOADED_LOCALES["zhCN"] then return end
 LPS._LOADED_LOCALES["zhCN"] = true
 
-LPS.RegisterLocale("zhCN", {
+LPS:RegisterLocale("zhCN", {
 GENERAL = "常规",
 LOGIN_MESSAGE = "登录信息",
 SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN = "登录时在聊天框中显示信息。",
@@ -118,6 +118,10 @@ POPUP_COPY_PROFILE_TITLE = "复制配置档",
 POPUP_COPY_PROFILE_DESC = "将当前配置档复制到新配置档。",
 PROFILE_COPY_BASE = "%s 副本",
 POPUP_DELETE_PROFILE_TITLE = "删除配置档",
+POPUP_RESET_PROFILE_TITLE = "重置配置档",
+POPUP_RESET_PROFILE_DESC = "将当前配置档重置为默认值？",
+VERSION_LABEL = "版本",
+TIP_WINDOW_SETTINGS = "窗口设置",
 POPUP_DELETE_NONE = "没有可删除的配置档。默认配置档无法删除。",
 POPUP_DELETE_SELECT = "选择要删除的配置档：",
 POPUP_RESET_PROFILES_TITLE = "重置所有配置档",

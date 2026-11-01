@@ -1,11 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 --- Автогенерация строк настроек из flat-описаний
-local Builder = {}
-LPS.UI = LPS.UI or {}
-LPS.UI.Builder = Builder
-local CS = LPS.UI
-CS.ConfigBuilder = Builder
 local ROW_GAP = 4
 local SECTION_GAP = 14
 local TOGGLE_GUTTER = 8
@@ -22,11 +17,8 @@ local ROW_HEIGHTS = {
     link = 16,
 }
 local DISABLED_TEXT = { r = 0.4, g = 0.4, b = 0.4 }
-local function GetDB()
-    return LPS:GetDB() or {}
-end
---- Чтение значения: через entry.get (путь в БД задаёт options.lua), иначе по entry.key.
-local function ReadValue(entry, db)
+
+function LPS:ReadEntryValue(entry, db)
     if entry.get then
         return entry.get()
     end
@@ -37,21 +29,21 @@ local function ReadValue(entry, db)
     end
 end
 --- Запись значения: через entry.set (путь в БД задаёт options.lua), иначе по entry.key.
-local function WriteValue(entry, value)
+function LPS:WriteEntryValue(entry, value)
     if not LPS:GetDB() then return end
     if entry.set then
         entry.set(value)
     elseif entry.key then
-        LPS.Options:SetByPath(entry.key, value)
+        LPS:SetOptionByPath(entry.key, value)
     end
 end
-local function ResolveItems(entry)
+function LPS:BuilderResolveItems(entry)
     if type(entry.items) == "function" then
         return entry.items()
     end
     return entry.items or {}
 end
-local function TextForValue(items, value)
+function LPS:TextForValue(items, value)
     for _, item in ipairs(items) do
         if item.value == value then
             return item.text
@@ -59,25 +51,25 @@ local function TextForValue(items, value)
     end
     return value ~= nil and tostring(value) or ""
 end
-local function SetLabelEnabled(label, enabled)
+function LPS:SetLabelEnabled(label, enabled)
     if not label then return end
     if enabled then
-        CS.ConfigWidgets.ApplyFontColor(label, "textMuted")
+        LPS:ApplyFontColor(label, "textMuted")
     else
         label:SetTextColor(DISABLED_TEXT.r, DISABLED_TEXT.g, DISABLED_TEXT.b)
     end
 end
-local function CreateRowLabel(row, text)
+function LPS:CreateRowLabel(row, text)
     local label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     label:SetPoint("LEFT", row, "LEFT", 0, 0)
     label:SetPoint("RIGHT", row, "CENTER", -8, 0)
     label:SetJustifyH("LEFT")
     label:SetText(text or "")
-    CS.ConfigWidgets.ApplyFontColor(label, "textMuted")
+    LPS:ApplyFontColor(label, "textMuted")
     return label
 end
 
-local function AttachTooltip(target, entry)
+function LPS:AttachRowTooltip(target, entry)
     if not target then return end
     local tip = entry.tooltip or entry.desc
     if not tip then return end
@@ -94,32 +86,32 @@ local function AttachTooltip(target, entry)
         GameTooltip:Hide()
     end)
 end
-local function SetRowTooltip(row, control, entry)
+function LPS:SetRowTooltip(row, control, entry)
     if not (entry.tooltip or entry.desc) then return end
     local kind = entry.kind
     if kind == "toggle" then
-        AttachTooltip(control.toggle, entry)
+        LPS:AttachRowTooltip(control.toggle, entry)
     elseif kind == "slider" then
-        AttachTooltip(control.label, entry)
+        LPS:AttachRowTooltip(control.label, entry)
     elseif kind == "dropdown" then
-        AttachTooltip(control.dropdown, entry)
+        LPS:AttachRowTooltip(control.dropdown, entry)
     elseif kind == "color" then
-        AttachTooltip(control.swatch, entry)
+        LPS:AttachRowTooltip(control.swatch, entry)
     elseif kind == "input" then
-        AttachTooltip(control.edit, entry)
+        LPS:AttachRowTooltip(control.edit, entry)
     elseif kind == "button" then
-        AttachTooltip(control.button, entry)
+        LPS:AttachRowTooltip(control.button, entry)
     elseif kind == "label" then
-        AttachTooltip(control.text or row, entry)
+        LPS:AttachRowTooltip(control.text or row, entry)
     elseif kind == "link" then
-        AttachTooltip(control.link or row, entry)
+        LPS:AttachRowTooltip(control.link or row, entry)
     else
-        AttachTooltip(row, entry)
+        LPS:AttachRowTooltip(row, entry)
     end
 end
 --- Подбирает тему шрифта многострочного label'а по содержимому: заголовки
 --- секций (без цвета/переносов строк) — heading, остальное — обычный текст.
-local function ApplyLabelRole(text, str)
+function LPS:ApplyLabelRole(text, str)
     if str:find("\n") or str:find("|c") then
         text.themeRole = "body"
     else
@@ -128,7 +120,7 @@ local function ApplyLabelRole(text, str)
 end
 --- Многострочный description (About-тексты): высота считается по строкам,
 --- иначе метка с \n обрезается фиксированной высотой строки 16px.
-local function BuildMultilineLabel(row, entry)
+function LPS:BuildMultilineLabel(row, entry)
     local text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     text:SetPoint("TOPLEFT", row, "TOPLEFT", 0, 0)
     text:SetPoint("TOPRIGHT", row, "TOPRIGHT", 0, 0)
@@ -136,9 +128,9 @@ local function BuildMultilineLabel(row, entry)
     text:SetJustifyV("TOP")
     text:SetWordWrap(true)
     local str = tostring(entry.label or "")
-    ApplyLabelRole(text, str)
+    LPS:ApplyLabelRole(text, str)
     text:SetText(str)
-    CS.ConfigWidgets.ApplyFontColor(text, "textMuted")
+    LPS:ApplyFontColor(text, "textMuted")
     local lines = 1 + select(2, str:gsub("\n", ""))
     local height = math.max(16, lines * 15 + 4)
     row:SetHeight(height)
@@ -146,7 +138,7 @@ local function BuildMultilineLabel(row, entry)
     return { entry = entry, row = row, text = text, multiline = true }
 end
 --- Точный пересчёт высоты многострочной метки после применения темы шрифта.
-local function RelayoutMultiline(control)
+function LPS:RelayoutMultiline(control)
     if not control.multiline then return end
     local text, row, entry = control.text, control.row, control.entry
     if not text or not row then return end
@@ -157,9 +149,9 @@ local function RelayoutMultiline(control)
     end
 end
 --- Фиксация текста многострочного поля (экспорт/импорт): вызывается при вводе.
-local function commitMultiline(self, entry, page)
+function LPS:CommitMultiline(self, entry, page)
     local text = self:GetText() or ""
-    WriteValue(entry, text)
+    LPS:WriteEntryValue(entry, text)
     if page and page.OnValueChanged then page:OnValueChanged(entry, text) end
 end
 
@@ -167,7 +159,7 @@ end
 --- прямоугольник boxW x boxH с сохранением пропорций. SetTexture сам
 --- подгоняет размер texture-фрейма под исходник; на современных клиентах
 --- размеры дополнительно доступны через Game.GetTextureDimensions.
-local function BuildImage(row, entry)
+function LPS:BuildImage(row, entry)
     local boxW = math.max(16, tonumber(entry.width) or 64)
     local boxH = math.max(16, tonumber(entry.height) or 64)
     local tex = row:CreateTexture(nil, "ARTWORK")
@@ -192,7 +184,7 @@ local function BuildImage(row, entry)
 end
 --- Строка-ссылка: статичный текст (подпись обычным цветом + URL синий),
 --- без кликов и копирования.
-local function BuildLink(row, entry)
+function LPS:BuildLink(row, entry)
     local url = tostring(entry.url or "")
     if url == "" then return nil end
     local text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -202,11 +194,10 @@ local function BuildLink(row, entry)
     local prefix = tostring(entry.label or "")
     local prefixPart = prefix ~= "" and prefix .. ": " or ""
     text:SetText(prefixPart .. "|cff4aa3ff" .. url .. "|r")
-    CS.ConfigWidgets.ApplyFontColor(text, "textMuted")
+    LPS:ApplyFontColor(text, "textMuted")
     return text
 end
-local function BuildControl(page, entry, row)
-    local Widgets = CS.ConfigWidgets
+function LPS:BuildControl(page, entry, row)
     if entry.available then
         local ok, v = pcall(entry.available)
         if ok and v == false then
@@ -217,11 +208,11 @@ local function BuildControl(page, entry, row)
     local control = { entry = entry, row = row }
     local kind = entry.kind
     if kind == "header" then
-        control.header = Widgets.CreateSectionHeader(row, entry.label)
+        control.header = LPS:CreateSectionHeader(row, entry.label)
         control.header:SetAllPoints(row)
     elseif kind == "label" then
         if entry.multiline then
-            return BuildMultilineLabel(row, entry)
+            return LPS:BuildMultilineLabel(row, entry)
         end
         local text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         text:SetPoint("LEFT", row, "LEFT", 0, 0)
@@ -229,14 +220,14 @@ local function BuildControl(page, entry, row)
         text:SetJustifyH("LEFT")
         text:SetWordWrap(true)
         text:SetText(entry.label or "")
-        CS.ConfigWidgets.ApplyFontColor(text, "textMuted")
+        LPS:ApplyFontColor(text, "textMuted")
         control.text = text
     elseif kind == "image" then
-        control.image = BuildImage(row, entry)
+        control.image = LPS:BuildImage(row, entry)
     elseif kind == "link" then
-        control.link = BuildLink(row, entry)
+        control.link = LPS:BuildLink(row, entry)
     elseif kind == "button" then
-        local btn = Widgets.CreateFlatButton(row, 90, ROW_HEIGHTS.button, entry.label)
+        local btn = LPS:CreateFlatButton(row, 90, ROW_HEIGHTS.button, entry.label)
         local textWidth = btn.text:GetStringWidth() or 0
         btn:SetWidth(math.max(90, textWidth + 24))
         btn:SetPoint("LEFT", row, "LEFT", 0, 0)
@@ -246,16 +237,16 @@ local function BuildControl(page, entry, row)
         control.button = btn
         control._btnAutoWidth = true
     elseif kind == "toggle" then
-        local toggle = Widgets.CreateToggle(row, entry.label)
+        local toggle = LPS:CreateToggle(row, entry.label)
         toggle:SetPoint("LEFT", row, "LEFT", 0, 0)
         toggle:SetOnClick(function(self)
-            WriteValue(entry, self:GetChecked())
+            LPS:WriteEntryValue(entry, self:GetChecked())
             page:OnValueChanged(entry, self:GetChecked())
         end)
         control.toggle = toggle
     elseif kind == "slider" then
-        control.label = CreateRowLabel(row, entry.label)
-        local slider = Widgets.CreateSlider(row, {
+        control.label = LPS:CreateRowLabel(row, entry.label)
+        local slider = LPS:CreateSlider(row, {
             min = entry.min,
             max = entry.max,
             step = entry.step,
@@ -264,7 +255,7 @@ local function BuildControl(page, entry, row)
             value = entry.min,
             commitOnRelease = entry.commitOnRelease,
             onChange = function(val)
-                WriteValue(entry, val)
+                LPS:WriteEntryValue(entry, val)
                 page:OnValueChanged(entry, val)
             end,
         })
@@ -281,47 +272,40 @@ local function BuildControl(page, entry, row)
         slider.valueText:SetJustifyH("LEFT")
         control.slider = slider
     elseif kind == "dropdown" then
-        control.label = CreateRowLabel(row, entry.label)
-        local _, dropdown = Widgets.CreateDropdown(row, "", 150, { fixedWidth = true })
+        control.label = LPS:CreateRowLabel(row, entry.label)
+        local _, dropdown = LPS:CreateDropdown(row, "", 150, { fixedWidth = true })
         dropdown:ClearAllPoints()
         dropdown:SetPoint("LEFT", row, "CENTER", 8, 0)
         dropdown:SetPoint("RIGHT", row, "RIGHT", 0, 0)
         dropdown:SetHeight(ROW_HEIGHTS.dropdown)
-        dropdown:SetItems(ResolveItems(entry))
+        dropdown:SetItems(LPS:BuilderResolveItems(entry))
         dropdown:SetOnChange(function(value)
-            WriteValue(entry, value)
+            LPS:WriteEntryValue(entry, value)
             page:OnValueChanged(entry, value)
         end)
         control.dropdown = dropdown
     elseif kind == "color" then
-        control.label = CreateRowLabel(row, entry.label)
-        local swatch = Widgets.CreateSwatch(row)
+        control.label = LPS:CreateRowLabel(row, entry.label)
+        local swatch = LPS:CreateSwatch(row)
         swatch:SetPoint("LEFT", row, "CENTER", 8, 0)
         swatch:SetScript("OnClick", function()
-            local db = GetDB()
-            local c = ReadValue(entry, db) or { r = 1, g = 1, b = 1 }
+            local db = LPS:GetDB() or {}
+            local c = LPS:ReadEntryValue(entry, db) or { r = 1, g = 1, b = 1 }
             local function write(r, g, b, a)
                 local v = { r = r, g = g, b = b }
                 if entry.alpha then v.a = a or 1 end
-                WriteValue(entry, v)
+                LPS:WriteEntryValue(entry, v)
                 page:OnValueChanged(entry)
             end
-            local CP = LPS.UI and LPS.UI.ColorPicker
-            if CP and CP.Open then
-                CP.Open(c.r or 1, c.g or 1, c.b or 1, c.a or 1,
-                    function(r, g, b, a) write(r, g, b, a) end,
-                    function(r, g, b, a) write(r, g, b, a) end,
-                        { hasAlpha = entry.alpha == true, title = entry.label,
-                            defaultColor = entry.default })
-            else
-                Widgets.OpenColorPicker(c.r or 1, c.g or 1, c.b or 1,
-                    function(r, g, b) write(r, g, b) end,
-                    function(r, g, b) write(r, g, b) end)
-            end
+            LPS:OpenColorPicker(c.r or 1, c.g or 1, c.b or 1, c.a or 1,
+                function(r, g, b, a) write(r, g, b, a) end,
+                function(r, g, b, a) write(r, g, b, a) end,
+                    { hasAlpha = entry.alpha == true, title = entry.label,
+                        defaultColor = entry.default })
         end)
         control.swatch = swatch
     elseif kind == "input" then
-        control.label = CreateRowLabel(row, entry.label)
+        control.label = LPS:CreateRowLabel(row, entry.label)
         if entry.multiline then
             local boxHeight = entry.rowHeight or math.min(220, 24 + (entry.multiline or 6) * 15)
             row:SetHeight(boxHeight)
@@ -356,7 +340,7 @@ local function BuildControl(page, entry, row)
                 SyncInnerHeight(self)
             end)
             edit:SetScript("OnEnterPressed", function(self)
-                commitMultiline(self, entry, page)
+                LPS:CommitMultiline(self, entry, page)
                 self:ClearFocus()
             end)
             edit:SetScript("OnEscapePressed", function(self)
@@ -391,7 +375,7 @@ local function BuildControl(page, entry, row)
         if edit.SetMaxLetters then edit:SetMaxLetters(200) end
         local function commit(self)
             local text = self:GetText() or ""
-            WriteValue(entry, text)
+            LPS:WriteEntryValue(entry, text)
             page:OnValueChanged(entry, text)
         end
         edit:SetScript("OnEnterPressed", function(self)
@@ -411,34 +395,34 @@ local function BuildControl(page, entry, row)
     end
     return control
 end
-local function RefreshControl(control, db)
+function LPS:RefreshControl(control, db)
     local entry = control.entry
     if control.hidden then return end
     if entry.kind == "header" then return end
-    local value = ReadValue(entry, db)
+    local value = LPS:ReadEntryValue(entry, db)
     local enabled = not (entry.disabled and entry.disabled(db))
     if control.toggle then
         control.toggle:SetChecked(value == true)
         control.toggle:EnableMouse(enabled)
-        SetLabelEnabled(control.toggle.text, enabled)
+        LPS:SetLabelEnabled(control.toggle.text, enabled)
         control.toggle:SetAlpha(enabled and 1 or 0.6)
     elseif control.slider then
         control.slider:SetValue(value, false)
         control.slider.hit:EnableMouse(enabled)
         control.slider:SetAlpha(enabled and 1 or 0.4)
-        SetLabelEnabled(control.label, enabled)
+        LPS:SetLabelEnabled(control.label, enabled)
     elseif control.dropdown then
-        local items = ResolveItems(entry)
+        local items = LPS:BuilderResolveItems(entry)
         if entry.dynamicItems then
             control.dropdown:SetItems(items)
         end
-        control.dropdown:SetValue(value, TextForValue(items, value))
+        control.dropdown:SetValue(value, LPS:TextForValue(items, value))
         if enabled then
             control.dropdown:Enable()
         else
             control.dropdown:Disable()
         end
-        SetLabelEnabled(control.label, enabled)
+        LPS:SetLabelEnabled(control.label, enabled)
     elseif control.swatch then
         local r, g, b, a
         if entry.displayColor then
@@ -450,7 +434,7 @@ local function RefreshControl(control, db)
         end
         control.swatch:SetColor(r, g, b, a)
         control.swatch:SetDisabled(not enabled)
-        SetLabelEnabled(control.label, enabled)
+        LPS:SetLabelEnabled(control.label, enabled)
     elseif control.button then
         if enabled then
             control.button:Enable()
@@ -468,7 +452,7 @@ local function RefreshControl(control, db)
         else
             control.edit:Disable()
         end
-        SetLabelEnabled(control.label, enabled)
+        LPS:SetLabelEnabled(control.label, enabled)
     end
 end
 --- Одноколоночная раскладка: строки идут одна под другой на всю ширину; только короткие чекбоксы
@@ -481,7 +465,7 @@ local BUTTON_COLUMNS = 3
 local BUTTON_GAP = 6
 
 --- Раскладка ряда кнопок: уравнивает ширины и ставит их слева направо.
-local function LayoutButtonRow(buttons, row)
+function LPS:LayoutButtonRow(buttons, row)
     local textMax = 0
     for _, btn in ipairs(buttons) do
         if btn.text then
@@ -503,7 +487,7 @@ local function LayoutButtonRow(buttons, row)
     end
 end
 
-function Builder.Build(parent, entries, opts)
+function LPS:BuildOptionPage(parent, entries, opts)
     opts = opts or {}
     local page = {
         controls = {},
@@ -581,15 +565,15 @@ function Builder.Build(parent, entries, opts)
             if btnGroup then
                 local groupControls = {}
                 for bi, bentry in ipairs(btnGroup) do
-                    local control = BuildControl(page, bentry, row)
-                    SetRowTooltip(row, control, bentry)
+                    local control = LPS:BuildControl(page, bentry, row)
+                    LPS:SetRowTooltip(row, control, bentry)
                     if control.button then
                         control.button.index = bi
                     end
                     groupControls[#groupControls + 1] = control
                     page.controls[#page.controls + 1] = control
                 end
-                LayoutButtonRow((function()
+                LPS:LayoutButtonRow((function()
                     local list = {}
                     for _, c in ipairs(groupControls) do
                         if c.button then list[#list + 1] = c.button end
@@ -598,8 +582,8 @@ function Builder.Build(parent, entries, opts)
                 end)(), row)
                 first = false
             else
-                local control = BuildControl(page, entry, row)
-                SetRowTooltip(row, control, entry)
+                local control = LPS:BuildControl(page, entry, row)
+                LPS:SetRowTooltip(row, control, entry)
                 if (control.multiline and row:GetHeight() > height)
                     or (control.image and row:GetHeight() ~= height) then
                         if not placedRight then
@@ -614,16 +598,16 @@ function Builder.Build(parent, entries, opts)
     end
     page.height = math.abs(y) + 8
     function page:Refresh()
-        Builder.RefreshPage(self)
+        LPS:RefreshOptionPage(self)
     end
     function page:OnValueChanged(entry, value)
-        local themeBefore = CS.Theme.key
+        local themeBefore = LPS:GetThemeKey()
         if entry.onChange then
             entry.onChange(value)
         elseif self.onChange then
             self.onChange(entry, value)
         end
-        if CS.Theme.key == themeBefore then
+        if LPS:GetThemeKey() == themeBefore then
             self:Refresh()
         end
     end
@@ -631,11 +615,10 @@ function Builder.Build(parent, entries, opts)
 end
 --- Публичный рефреш значений контролов страницы (используется и ленивыми
 --- страницами ui_options, и самим Builder при изменении значений).
-function Builder.RefreshPage(page)
+function LPS:RefreshOptionPage(page)
     if not page or not page.controls then return end
-    local db = GetDB()
+    local db = LPS:GetDB() or {}
     for _, control in ipairs(page.controls) do
-        RefreshControl(control, db)
+        LPS:RefreshControl(control, db)
     end
 end
-return Builder

@@ -5,7 +5,7 @@ LPS._LOADED_LOCALES = LPS._LOADED_LOCALES or {}
 if LPS._LOADED_LOCALES["esES"] then return end
 LPS._LOADED_LOCALES["esES"] = true
 
-LPS.RegisterLocale("esES", {
+LPS:RegisterLocale("esES", {
 GENERAL = "General",
 LOGIN_MESSAGE = "Mensaje de inicio de sesión",
 SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN = "Mostrar un mensaje en el chat al iniciar sesión.",
@@ -118,6 +118,10 @@ POPUP_COPY_PROFILE_TITLE = "Copiar perfil",
 POPUP_COPY_PROFILE_DESC = "Copiar el perfil actual a uno nuevo.",
 PROFILE_COPY_BASE = "Copia de %s",
 POPUP_DELETE_PROFILE_TITLE = "Eliminar perfil",
+POPUP_RESET_PROFILE_TITLE = "Restablecer perfil",
+POPUP_RESET_PROFILE_DESC = "¿Restablecer el perfil actual a los valores predeterminados?",
+VERSION_LABEL = "Versión",
+TIP_WINDOW_SETTINGS = "Ajustes de ventana",
 POPUP_DELETE_NONE = "No hay perfiles para eliminar. El perfil Predeterminado no se puede eliminar.",
 POPUP_DELETE_SELECT = "Seleccionar un perfil para eliminar:",
 POPUP_RESET_PROFILES_TITLE = "Restablecer perfiles",

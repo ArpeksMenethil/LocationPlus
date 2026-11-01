@@ -5,7 +5,7 @@ LPS._LOADED_LOCALES = LPS._LOADED_LOCALES or {}
 if LPS._LOADED_LOCALES["itIT"] then return end
 LPS._LOADED_LOCALES["itIT"] = true
 
-LPS.RegisterLocale("itIT", {
+LPS:RegisterLocale("itIT", {
 GENERAL = "Generale",
 LOGIN_MESSAGE = "Messaggio di accesso",
 SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN = "Mostra un messaggio in chat all'accesso.",
@@ -118,6 +118,10 @@ POPUP_COPY_PROFILE_TITLE = "Copia profilo",
 POPUP_COPY_PROFILE_DESC = "Copia il profilo attuale in uno nuovo.",
 PROFILE_COPY_BASE = "Copia di %s",
 POPUP_DELETE_PROFILE_TITLE = "Elimina profilo",
+POPUP_RESET_PROFILE_TITLE = "Reimposta profilo",
+POPUP_RESET_PROFILE_DESC = "Riporta il profilo attuale ai valori predefiniti?",
+VERSION_LABEL = "Versione",
+TIP_WINDOW_SETTINGS = "Impostazioni finestra",
 POPUP_DELETE_NONE = "Nessun profilo da eliminare. Il profilo Predefinito non può essere eliminato.",
 POPUP_DELETE_SELECT = "Seleziona un profilo da eliminare:",
 POPUP_RESET_PROFILES_TITLE = "Reimposta profili",

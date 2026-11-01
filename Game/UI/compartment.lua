@@ -2,13 +2,13 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local L = LPS.L
 
-local function OnAddonCompartmentClick(addonName, buttonName, menuButtonFrame)
+function LPS:OnAddonCompartmentClick(addonName, buttonName, menuButtonFrame)
     if buttonName == "RightButton" then
         LPS:ToggleOptions()
     end
 end
 
-local function OnAddonCompartmentEnter(addonName, menuButtonFrame)
+function LPS:OnAddonCompartmentEnter(addonName, menuButtonFrame)
     local r, g, b = LPS:GetColor("text")
     local ry, gy, by = LPS:GetColor("tooltip")
     local rb, gb, bb = LPS:GetColor("tooltipSetting")
@@ -23,11 +23,11 @@ local function OnAddonCompartmentEnter(addonName, menuButtonFrame)
     GameTooltip:Show()
 end
 
-local function OnAddonCompartmentLeave(addonName, menuButtonFrame)
+function LPS:OnAddonCompartmentLeave(addonName, menuButtonFrame)
     GameTooltip:Hide()
 end
 
-local function isRegisteredAddonCompartment(data)
+function LPS:IsRegisteredAddonCompartment(data)
     if not (AddonCompartmentFrame and AddonCompartmentFrame.registeredAddons) then return false end
     for i = 1, #AddonCompartmentFrame.registeredAddons do
         local entry = AddonCompartmentFrame.registeredAddons[i]
@@ -38,7 +38,7 @@ local function isRegisteredAddonCompartment(data)
     return false
 end
 
-local function unregisterAddonCompartment(data)
+function LPS:UnregisterAddonCompartment(data)
     if not (AddonCompartmentFrame and AddonCompartmentFrame.registeredAddons) then return end
     for i = #AddonCompartmentFrame.registeredAddons, 1, -1 do
         local entry = AddonCompartmentFrame.registeredAddons[i]
@@ -64,22 +64,22 @@ function LPS:ApplyAddonCompartmentRegistration()
         notCheckable = true,
         func = function(button, menuInputData, menu)
             local buttonName = menuInputData and menuInputData.buttonName
-            OnAddonCompartmentClick(LPS.addon.name, buttonName, button)
+            LPS:OnAddonCompartmentClick(LPS.addon.name, buttonName, button)
         end,
         funcOnEnter = function(button)
-            OnAddonCompartmentEnter(LPS.addon.name, button)
+            LPS:OnAddonCompartmentEnter(LPS.addon.name, button)
         end,
         funcOnLeave = function(button)
-            OnAddonCompartmentLeave(LPS.addon.name, button)
+            LPS:OnAddonCompartmentLeave(LPS.addon.name, button)
         end,
     }
 
     local data = LPS._addonCompartmentData
     if enabled then
-        if not isRegisteredAddonCompartment(data) then
+        if not LPS:IsRegisteredAddonCompartment(data) then
             AddonCompartmentFrame:RegisterAddon(data)
         end
     else
-        unregisterAddonCompartment(data)
+        LPS:UnregisterAddonCompartment(data)
     end
 end

@@ -5,7 +5,7 @@ LPS._LOADED_LOCALES = LPS._LOADED_LOCALES or {}
 if LPS._LOADED_LOCALES["koKR"] then return end
 LPS._LOADED_LOCALES["koKR"] = true
 
-LPS.RegisterLocale("koKR", {
+LPS:RegisterLocale("koKR", {
 GENERAL = "일반",
 LOGIN_MESSAGE = "로그인 메시지",
 SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN = "로그인 시 채트에 메시지 표시.",
@@ -118,6 +118,10 @@ POPUP_COPY_PROFILE_TITLE = "프로필 복제",
 POPUP_COPY_PROFILE_DESC = "현재 프로필을 새 프로필로 복제합니다.",
 PROFILE_COPY_BASE = "%s 복본",
 POPUP_DELETE_PROFILE_TITLE = "프로필 삭제",
+POPUP_RESET_PROFILE_TITLE = "프로필 초기화",
+POPUP_RESET_PROFILE_DESC = "현재 프로필을 기본값으로 초기화할까요?",
+VERSION_LABEL = "버전",
+TIP_WINDOW_SETTINGS = "창 설정",
 POPUP_DELETE_NONE = "삭제할 프로필이 없습니다. 기본 프로필은 삭제할 수 없습니다.",
 POPUP_DELETE_SELECT = "삭제할 프로필을 선택하세요:",
 POPUP_RESET_PROFILES_TITLE = "프로필 초기화",

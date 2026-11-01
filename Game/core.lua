@@ -6,19 +6,19 @@ LPS_DB = LPS_DB or {}
 
 LPS.addon.version = (
     (C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(LPS.addon.name, "Version"))
-    or (GetAddOnMetadata and GetAddOnMetadata(LPS.addon.name, "Version"))
+    or (LPS.GetAddOnMetadata and LPS.GetAddOnMetadata(LPS.addon.name, "Version"))
     or "?.?.?"
 )
 LPS.addon.title = (
     (C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(LPS.addon.name, "Title"))
-    or (GetAddOnMetadata and GetAddOnMetadata(LPS.addon.name, "Title"))
+    or (LPS.GetAddOnMetadata and LPS.GetAddOnMetadata(LPS.addon.name, "Title"))
     or "?.?.?"
 )
 
 --- Описание аддона: Notes из .toc для текущего языка клиента (fallback на enUS).
 function LPS:GetAddonNotes()
     local getMeta = (C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata)
-        or GetAddOnMetadata
+        or LPS.GetAddOnMetadata
     if not (getMeta and LPS.addon.name) then return "" end
     local locale = LPS.ACTIVE_LOCALE or GetLocale()
     local notes = getMeta(LPS.addon.name, "Notes-" .. tostring(locale))
@@ -44,66 +44,69 @@ LPS.Lifecycle:OnAddonLoaded(function()
     LPS:onLoaded()
 end)
 
-local svMeta = {}
-svMeta.__index = svMeta
-
-function svMeta:GetCurrentProfile()
-    return self.sv.profileKeys[self.charKey] or "Default"
+function LPS:SVGetCurrentProfile()
+    return self.db.sv.profileKeys[self.db.charKey] or "Default"
 end
 
---- Переключает текущий персонажа на профиль name (создаёт, если нет).
-function svMeta:SetProfile(name)
+--- Переключает текущего персонажа на профиль name (создаёт, если нет).
+--- @param name string
+function LPS:SVSetProfile(name)
+    local db = self.db
     if type(name) ~= "string" or name == "" then return end
-    if self.sv.profiles[name] == nil then self.sv.profiles[name] = {} end
-    self.sv.profileKeys[self.charKey] = name
-    self.profile = self.sv.profiles[name]
+    if db.sv.profiles[name] == nil then db.sv.profiles[name] = {} end
+    db.sv.profileKeys[db.charKey] = name
+    db.profile = db.sv.profiles[name]
     if LPS.InvalidateDBCache then LPS:InvalidateDBCache() end
     if LPS.RefreshAfterProfileChange then LPS:RefreshAfterProfileChange() end
 end
 
 --- Копирует настройки профиля srcName в ТЕКУЩИЙ профиль.
-function svMeta:CopyProfileFrom(srcName)
-    local src = self.sv.profiles[srcName]
+--- @param srcName string
+function LPS:SVCopyProfileFrom(srcName)
+    local db = self.db
+    local src = db.sv.profiles[srcName]
     if type(src) ~= "table" then return end
-    local dst = self.profile
+    local dst = db.profile
     for k in pairs(dst) do dst[k] = nil end
-    for k, v in pairs(src) do dst[k] = LPS.OptionsHelper:deepCopy(v) end
+    for k, v in pairs(src) do dst[k] = LPS:DeepCopy(v) end
     if LPS.InvalidateDBCache then LPS:InvalidateDBCache() end
     if LPS.RefreshAfterProfileChange then LPS:RefreshAfterProfileChange() end
 end
 
 --- Удаляет профиль name; привязанные персонажи переводятся на Default.
-function svMeta:DeleteProfile(name)
-    if name == "Default" or self.sv.profiles[name] == nil then return end
-    self.sv.profiles[name] = nil
-    for ck, pn in pairs(self.sv.profileKeys) do
-        if pn == name then self.sv.profileKeys[ck] = "Default" end
+--- @param name string
+function LPS:SVDeleteProfile(name)
+    local db = self.db
+    if name == "Default" or db.sv.profiles[name] == nil then return end
+    db.sv.profiles[name] = nil
+    for ck, pn in pairs(db.sv.profileKeys) do
+        if pn == name then db.sv.profileKeys[ck] = "Default" end
     end
-    self.profile = self.sv.profiles[self:GetCurrentProfile()]
+    db.profile = db.sv.profiles[LPS:SVGetCurrentProfile()]
     if LPS.InvalidateDBCache then LPS:InvalidateDBCache() end
     if LPS.RefreshAfterProfileChange then LPS:RefreshAfterProfileChange() end
 end
 
 --- Сбрасывает ТЕКУЩИЙ профиль к дефолтам (не подменяя объект SavedVariables).
-function svMeta:ResetProfile()
+function LPS:SVResetProfile()
     local fresh = CopyTable(LPS.defaults) or {}
     fresh.gold = nil
-    local dst = self.profile
+    local dst = self.db.profile
     for k in pairs(dst) do dst[k] = nil end
     for k, v in pairs(fresh) do dst[k] = v end
     if LPS.InvalidateDBCache then LPS:InvalidateDBCache() end
     if LPS.RefreshAfterProfileChange then LPS:RefreshAfterProfileChange() end
 end
 
-function svMeta:GetProfilesList()
+function LPS:SVGetProfilesList()
     local list = {}
-    for name in pairs(self.sv.profiles) do list[#list + 1] = name end
+    for name in pairs(self.db.sv.profiles) do list[#list + 1] = name end
     table.sort(list)
     return list
 end
 
 --- Миграция старых/плоских SavedVariables в профилевую структуру и создание БД.
-local function InitDB()
+function LPS:InitDB()
     local sv = _G.LPS_DB
     if type(sv) ~= "table" then sv = {}; _G.LPS_DB = sv end
     sv.global = sv.global or {}
@@ -145,14 +148,13 @@ local function InitDB()
     local profName = sv.profileKeys[charKey]
     if sv.profiles[profName] == nil then sv.profiles[profName] = {} end
 
-    local db = setmetatable({
+    LPS.sv = sv
+    LPS.db = {
         sv = sv,
         charKey = charKey,
         profile = sv.profiles[profName],
         global = sv.global,
-    }, svMeta)
-    LPS.sv = sv
-    LPS.db = db
+    }
 end
 
 function LPS:onLoaded()
@@ -160,10 +162,10 @@ function LPS:onLoaded()
     self._loaded = true
 
     if LPS.ApplyLocaleOverride then
-        LPS.ApplyLocaleOverride(_G.LPS_DB and _G.LPS_DB.localeOverride)
+        LPS:ApplyLocaleOverride(_G.LPS_DB and _G.LPS_DB.localeOverride)
     end
 
-    InitDB()
+    LPS:InitDB()
 
     if LPS.DEBUG then
         LPS:Print("WOW PATCH: "..LPS.wow.patch, false)

@@ -2,7 +2,7 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local L = LPS.L
 
-local function ClampAngle(angle)
+function LPS:ClampAngle(angle)
     angle = angle % 360
     if angle < 0 then
         angle = angle + 360
@@ -10,22 +10,22 @@ local function ClampAngle(angle)
     return angle
 end
 
-local function IsMinimapSquare()
+function LPS:IsMinimapSquare()
     local db = LPS:GetDB()
     local mm = db and db.show and db.show.minimap
     return mm and mm.shape == "square"
 end
 
-local function PositionMinimapButton(btn)
+function LPS:PositionMinimapButton(btn)
     local db = LPS:GetDB()
     if not db or not db.show or not db.show.minimap then return end
-    local angle = ClampAngle(tonumber(db.show.minimap.angle) or 220)
+    local angle = LPS:ClampAngle(tonumber(db.show.minimap.angle) or 220)
     db.show.minimap.angle = angle
 
     local pad = 8
     local rad = math.rad(angle)
     local x, y
-    if IsMinimapSquare() then
+    if LPS:IsMinimapSquare() then
         local dx, dy = math.cos(rad), math.sin(rad)
         local hw = (Minimap:GetWidth() / 2) + pad
         local hh = (Minimap:GetHeight() / 2) + pad
@@ -43,7 +43,7 @@ local function PositionMinimapButton(btn)
     btn:SetPoint("CENTER", Minimap, "CENTER", x, y)
 end
 
-local function FillMinimapTooltip(tt)
+function LPS:FillMinimapTooltip(tt)
     local d = LPS:GetDB()
     local vis = d and d.tooltips and d.tooltips.visibility
     if not vis or not vis.enable then return end
@@ -68,7 +68,7 @@ function LPS:UpdateMinimapButton()
         return
     end
     btn:Show()
-    PositionMinimapButton(btn)
+    LPS:PositionMinimapButton(btn)
 end
 
 function LPS:CreateMinimapButton()
@@ -101,7 +101,7 @@ function LPS:CreateMinimapButton()
 
     btn:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-        FillMinimapTooltip(GameTooltip)
+        LPS:FillMinimapTooltip(GameTooltip)
         GameTooltip:Show()
     end)
     btn:SetScript("OnLeave", function(self)
@@ -132,9 +132,9 @@ function LPS:CreateMinimapButton()
         local dx = sx / pScale - cx
         local dy = sy / pScale - cy
         if dx == 0 and dy == 0 then return end
-        local angle = ClampAngle(math.deg(math.atan2(dy, dx)))
+        local angle = LPS:ClampAngle(math.deg(math.atan2(dy, dx)))
         db.show.minimap.angle = angle
-        PositionMinimapButton(self)
+        LPS:PositionMinimapButton(self)
     end)
 
     LPS.frame.minimapButton = btn

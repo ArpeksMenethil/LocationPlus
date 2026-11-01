@@ -68,6 +68,14 @@ local _foundryClass = {}
 --- @field _DT LPSDT
 --- @field datatexts any
 --- @field datatextsEvents any
+--- @field datatextsHiddenSlotKeys table
+--- @field datatextsEventBridge any
+--- @field _datatextsSortedKeysCache table?
+--- @field _datatextsCreateQueueRegistered boolean
+--- @field _holderAttached boolean
+--- @field _lastPosW number?
+--- @field _lastPosH number?
+--- @field _sizeUpdatePending boolean
 --- @field coreEvents any
 --- @field _friendsEvents any
 --- @field MapInfo any
@@ -89,7 +97,8 @@ local _foundryClass = {}
 --- @field Datatexts any
 --- @field GAME_LOCALE any
 --- @field ACTIVE_LOCALE any
---- @field _L_enUS any
+--- @field _LOADED_LOCALES any
+--- @field _registeredLocales any
 --- @field CreateProfilesPanelPage any
 --- @field RegisterLocale any
 --- @field PrintMsg any
@@ -130,11 +139,13 @@ local _foundryClass = {}
 --- @field CollectImages fun(self: LPS): nil
 --- @field ColorByThreshold fun(self: LPS, v: number, good: number, warn: number, invert: boolean?): string
 --- @field ConvertRGBtoColorString fun(self: LPS, color: {r: number, g: number, b: number}): string
+--- @field ClampAngle fun(self: LPS, angle: number): number
 --- @field CreateDatatextFrame fun(self: LPS, key: LPSPanelKey): Frame?
 --- @field CreateFrame fun(self: LPS, params: LPSFrameParams): Frame?
 --- @field CreateGuideLines fun(self: LPS): {vLines: table, hLines: table}
 --- @field CreateLocationFrame fun(self: LPS): Frame?
 --- @field CreateMinimapButton fun(self: LPS): nil
+--- @field FillMinimapTooltip fun(self: LPS, tt: Frame): nil
 --- @field DisableMoveModeIfActive fun(self: LPS): nil
 --- @field EnsureOptionsCloseHooks fun(self: LPS): nil
 --- @field FormatMoney fun(self: LPS, money: number, keepEmptyUnits: boolean?): string
@@ -163,14 +174,20 @@ local _foundryClass = {}
 --- @field GetProfileDB fun(self: LPS): table?
 --- @field GetSlotKeyList fun(self: LPS): table
 --- @field GetZoneStatus fun(self: LPS, color: boolean?): any, number, number
+--- @field GetSettingsAddonTitle fun(self: LPS): string
 --- @field InvalidateDBCache fun(self: LPS): nil
+--- @field InvalidateDatatextsSortedKeys fun(self: LPS): nil
 --- @field InvalidateLayoutCache fun(self: LPS): nil
 --- @field IsDatatextKey fun(self: LPS, key: string): boolean
+--- @field IsMinimapSquare fun(self: LPS): boolean
+--- @field IsRegisteredAddonCompartment fun(self: LPS, data: table): boolean
 --- @field _NormalizeLayoutDB fun(self: LPS, raw: table?): table
---- @field OnAceProfileChanged fun(self: LPS, oldName: string?, newName: string?): nil
---- @field OnAceProfileCopied fun(self: LPS, src: string?, dst: string?): nil
---- @field OnAceProfileReset fun(self: LPS, profileName: string?): nil
 --- @field onLoaded fun(self: LPS): nil
+--- @field MigratePos fun(self: LPS, p: table): nil
+--- @field OnAddonCompartmentClick fun(self: LPS, addonName: string, buttonName: string?, menuButtonFrame: any): nil
+--- @field OnAddonCompartmentEnter fun(self: LPS, addonName: string, menuButtonFrame: any): nil
+--- @field OnAddonCompartmentLeave fun(self: LPS, addonName: string, menuButtonFrame: any): nil
+--- @field OptionHeader fun(self: LPS, nameText: string, order: number): table
 --- @field OnPlayerMoney fun(self: LPS): nil
 --- @field Print fun(self: LPS, text: string, noPrefix: boolean?): nil
 --- @field RefreshAfterProfileChange fun(self: LPS): nil
@@ -188,6 +205,7 @@ local _foundryClass = {}
 --- @field ScheduleFrameSizeUpdate fun(self: LPS): nil
 --- @field ScheduleRefresh fun(self: LPS): nil
 --- @field SetMoveMode fun(self: LPS, enabled: boolean): nil
+--- @field PositionMinimapButton fun(self: LPS, btn: Frame): nil
 --- @field ShowGoldResetMenu fun(self: LPS, anchorFrame: Frame): nil
 --- @field ToggleMoveMode fun(self: LPS): nil
 --- @field ToggleNativeOptions fun(self: LPS): nil
@@ -195,6 +213,9 @@ local _foundryClass = {}
 --- @field UpdateFrameSize fun(self: LPS): nil
 --- @field UpdateGoldCharacterData fun(self: LPS): nil
 --- @field UpdateMinimapButton fun(self: LPS): nil
+--- @field UnregisterAddonCompartment fun(self: LPS, data: table): nil
+--- @field IsValidPos fun(self: LPS, p: table?): boolean
+--- @field BuildSettingsCategoryFrame fun(self: LPS): Frame?
 local _lpsClass = {}
 
 --- @class ArpeksLPS

@@ -7,7 +7,7 @@ local L = LPS.L
 --- представлена пустым узлом: ui_options.lua
 --- зарегистрирует для неё нативную страницу Panel, а collectRows не выведет
 --- никаких сгенерированных строк.
-function LPS.Options.BuildTree.tabs.profiles()
+LPS.Options.BuildTree.tabs.profiles = function()
     return {
         name = L.PROFILES,
         order = 90,

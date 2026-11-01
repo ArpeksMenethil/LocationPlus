@@ -1,8 +1,58 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
+--- Регистрация переводов локали: enUS всегда базовый слой,
+--- локаль клиента перекрывает его. Вызывается файлами Locales/.
+--- @param code string Код локали ("enUS", "ruRU", ...)
+--- @param translations table<string, string> Переводы по константам
+function LPS:RegisterLocale(code, translations)
+    LPS.RegisteredLocales[code] = translations
+    if code == "enUS" or code == LPS.GAME_LOCALE then
+        for k, v in pairs(translations) do
+            LPS.L[k] = v
+        end
+    end
+end
+
+--- Применение переопределения языка (LPS_DB.localeOverride):
+--- LPS.L собирается заново как enUS + выбранная локаль.
+--- @param code string|nil Код локали
+function LPS:ApplyLocaleOverride(code)
+    if not code or code == LPS.ACTIVE_LOCALE then return end
+    local target = LPS.RegisteredLocales[code]
+    if not target then return end
+    for k in pairs(LPS.L) do
+        LPS.L[k] = nil
+    end
+    local base = LPS.RegisteredLocales["enUS"]
+    if base then
+        for k, v in pairs(base) do
+            LPS.L[k] = v
+        end
+    end
+    for k, v in pairs(target) do
+        LPS.L[k] = v
+    end
+    LPS.ACTIVE_LOCALE = code
+end
+
+--- @param classToken string? Токен класса ("DEATHKNIGHT", "Evoker"...)
+--- @return number?, number?, number?
+function LPS:GetClassColor(classToken)
+    if not classToken then return nil end
+    local key = classToken:upper()
+    if C_ClassColor and C_ClassColor.GetClassColor then
+        local c = C_ClassColor.GetClassColor(key)
+        if c then return c.r, c.g, c.b end
+    end
+    local c = RAID_CLASS_COLORS and RAID_CLASS_COLORS[key]
+    if c then return c.r, c.g, c.b end
+    return nil
+end
+
 local cachedPlayerClass
-local function getClassColor()
+--- @return number, number, number
+function LPS:GetPlayerClassColor()
     if not cachedPlayerClass then
         local _, classFile = UnitClass("player")
         if classFile and classFile ~= "" then
@@ -10,13 +60,8 @@ local function getClassColor()
         end
     end
     if cachedPlayerClass then
-        local key = cachedPlayerClass:upper()
-        if C_ClassColor and C_ClassColor.GetClassColor then
-            local c = C_ClassColor.GetClassColor(key)
-            if c then return c.r, c.g, c.b end
-        end
-        local c = RAID_CLASS_COLORS and RAID_CLASS_COLORS[key]
-        if c then return c.r, c.g, c.b end
+        local r, g, b = LPS:GetClassColor(cachedPlayerClass)
+        if r and g and b then return r, g, b end
     end
     return 1, 1, 1
 end
@@ -26,7 +71,7 @@ local unpackFn = table.unpack or unpack
 
 local normalizedLayoutCache
 
-function LPS:_NormalizeLayoutDB(raw)
+function LPS:NormalizeLayoutDB(raw)
     if not raw then
         raw = {}
         local db = LPS:GetDB()
@@ -69,21 +114,7 @@ function LPS:_NormalizeLayoutDB(raw)
     out.customColor = raw.customColor
     out.userColor   = raw.userColor
     out.chainAnchor = raw.chainAnchor
-    local function copySlots(slots)
-        if type(slots) ~= "table" then return nil end
-        local res = {}
-        for side, s in pairs(slots) do
-            if side == "userTouched" then
-                res[side] = s
-            elseif type(s) == "table" then
-                res[side] = { frame = s.frame, offsetX = s.offsetX, offsetY = s.offsetY }
-            else
-                res[side] = {}
-            end
-        end
-        return res
-    end
-    out.sideSlots   = copySlots(raw.sideSlots)
+    out.sideSlots   = LPS:CopyLayoutSlots(raw.sideSlots)
     normalizedLayoutCache = { raw = raw, out = out }
     return out
 end
@@ -94,31 +125,47 @@ function LPS:InvalidateLayoutCache()
     if holder then holder._lpsLastLayoutKey = nil end
 end
 
-local function applyPanelVisibility(frames, slotList, showDT)
+function LPS:NormalizeSlotFrameKey(key)
+    if not key or key == "" or key == "none" or key == "None" then return "NONE" end
+    return key
+end
+
+function LPS:SlotListContains(slotList, frameKey)
+    for _, slot in ipairs(slotList or {}) do
+        if LPS:NormalizeSlotFrameKey(slot.cfg and slot.cfg.frame) == frameKey then return true end
+    end
+    return false
+end
+
+function LPS:ApplyPanelVisibility(frames, slotList, showDT)
     if not frames then return end
-    local function normalizeSlotFrameKey(key)
-        if not key or key == "" or key == "none" or key == "None" then return "NONE" end
-        return key
-    end
-    local function isSelectedInSlots(frameKey)
-        for _, slot in ipairs(slotList or {}) do
-            if normalizeSlotFrameKey(slot.cfg and slot.cfg.frame) == frameKey then return true end
-        end
-        return false
-    end
     local shownNow = {}
     for key, f in pairs(frames) do
         if key ~= "holder" and key ~= "location" and key ~= "minimapButton"
             and type(f) == "table" and f.SetShown and f.IsShown then
-                f:SetShown(showDT and isSelectedInSlots(key))
+                f:SetShown(showDT and LPS:SlotListContains(slotList, key))
                 if f:IsShown() then shownNow[#shownNow + 1] = f end
             end
     end
     LPS._pendingPanelPrimes = shownNow
 end
-LPS._ApplyPanelVisibility = applyPanelVisibility
 
-function LPS._CollectSlotKeys(sideSlots)
+function LPS:CopyLayoutSlots(slots)
+    if type(slots) ~= "table" then return nil end
+    local res = {}
+    for side, s in pairs(slots) do
+        if side == "userTouched" then
+            res[side] = s
+        elseif type(s) == "table" then
+            res[side] = { frame = s.frame, offsetX = s.offsetX, offsetY = s.offsetY }
+        else
+            res[side] = {}
+        end
+    end
+    return res
+end
+
+function LPS:CollectSlotKeys(sideSlots)
     local res = {}
     if type(sideSlots) ~= "table" then return res end
     local names = {}
@@ -137,12 +184,74 @@ function LPS._CollectSlotKeys(sideSlots)
     return res
 end
 
+function LPS:LayoutTextColor(mode, userColor)
+    if mode == 1 then
+        return (userColor and userColor.r) or 1, (userColor and userColor.g) or 1, (userColor and userColor.b) or 1
+    end
+    if mode == 2 then
+        return LPS:GetPlayerClassColor()
+    end
+    if mode == 3 then
+        return LPS:GetColor("text")
+    end
+    return nil
+end
+
+function LPS:ResolveLayoutFont()
+    local file, _, flags = GameFontNormalSmall:GetFont()
+    return file, flags
+end
+
+function LPS:ForceResizeFrame(f)
+    if not f then return end
+    if f._lpsResizeToFit then f._lpsResizeToFit() end
+end
+
+function LPS:SlotGetFrameByKey(key)
+    return LPS:GetOrCreatePanelFrame(key)
+end
+
+function LPS:UseHolderAnchor()
+    local db = LPS:GetDB()
+    local lay = db and db.layout
+    return lay ~= nil and lay.chainAnchor == "location" and true or false
+end
+
+function LPS:PositionSlotChain(chain, side, frames, spacing)
+    local isLeft = (side == "LEFT")
+    local ownPoint = isLeft and "RIGHT" or "LEFT"
+    local edgePoint = isLeft and "LEFT" or "RIGHT"
+    local sign = isLeft and -1 or 1
+    local anchorTo, anchorPoint = frames.location, edgePoint
+    local seen = {}
+    for idx = 1, #chain do
+        local entry = chain[idx]
+        local key = entry.key
+        if not seen[key] then
+            seen[key] = true
+            local frame = LPS:SlotGetFrameByKey(key)
+            if frame then
+                local ox = tonumber(entry.cfg.offsetX) or 0
+                local oy = tonumber(entry.cfg.offsetY) or 0
+                frame:ClearAllPoints()
+                if idx == 1 and LPS:UseHolderAnchor() then
+                    local base = (frames.holder and frames.holder.IsShown and frames.holder:IsShown()) and frames.holder or frames.location
+                    anchorTo, anchorPoint = base, edgePoint
+                end
+                local dx = ((idx == 1) and 0 or (sign * spacing)) + ox
+                frame:SetPoint(ownPoint, anchorTo, anchorPoint, dx, oy)
+                anchorTo, anchorPoint = frame, edgePoint
+            end
+        end
+    end
+end
+
 function LPS:ApplyLayout()
     local db = LPS:GetDB()
     local frames = LPS.frame
     if not db or not frames then return end
 
-    local layout = LPS:_NormalizeLayoutDB(db.layout)
+    local layout = LPS:NormalizeLayoutDB(db.layout)
 
     local user = layout.userColor
     local layoutKey = tostring(layout.dtPaddingX) .. "," .. tostring(layout.dtPaddingY) .. ","
@@ -153,12 +262,12 @@ function LPS:ApplyLayout()
         .. tostring(layout.customColor) .. ","
         .. tostring(user and user.r) .. "," .. tostring(user and user.g) .. "," .. tostring(user and user.b) .. ","
         .. tostring(layout.slotCount or 2) .. ","
-        .. table.concat(LPS._CollectSlotKeys(layout.sideSlots), ";") .. ","
+        .. table.concat(LPS:CollectSlotKeys(layout.sideSlots), ";") .. ","
         .. tostring(db.settings and db.settings.fontSize or 12) .. ","
         .. tostring(layout.chainAnchor)
 
     local forcePass = not (frames.holder and frames.holder._lpsEverApplied)
-    if not forcePass and LPS._ConsumePendingRefresh() then forcePass = true end
+    if not forcePass and LPS:ConsumePendingRefresh() then forcePass = true end
     if not forcePass and frames.holder and frames.holder._lpsLastLayoutKey == layoutKey then
         return
     end
@@ -177,41 +286,18 @@ function LPS:ApplyLayout()
     local spacing     = tonumber(layout.spacing) or 5
     local firstPass = forcePass
 
-    local function getLayoutTextColor(mode, userColor)
-        if mode == 1 then
-            return (userColor and userColor.r) or 1, (userColor and userColor.g) or 1, (userColor and userColor.b) or 1
-        end
-        if mode == 2 then
-            return getClassColor()
-        end
-        if mode == 3 then
-            return LPS:GetColor("text")
-        end
-        return nil
-    end
-
-    local function resolveFont()
-        local file, _, flags = GameFontNormalSmall:GetFont()
-        return file, flags
-    end
-
-    local function forceResize(f)
-        if not f then return end
-        if f._lpsResizeToFit then f._lpsResizeToFit() end
-    end
-
     if frames.location then
         frames.location._lpsPaddingX = locPaddingX
         frames.location._lpsPaddingY = locPaddingY
         frames.location._lpsMinWidth = locMinWidth
-        forceResize(frames.location)
+        LPS:ForceResizeFrame(frames.location)
     end
     for key, f in pairs(frames) do
         if key ~= "holder" and key ~= "location" and key ~= "minimapButton" and f then
             f._lpsPaddingX = dtPaddingX
             f._lpsPaddingY = dtPaddingY
             f._lpsMinWidth = dtMinWidth
-            forceResize(f)
+            LPS:ForceResizeFrame(f)
         end
     end
 
@@ -219,19 +305,12 @@ function LPS:ApplyLayout()
 
     local sideSlots = layout.sideSlots or {}
 
-    local function normalizeSlotFrameKey(key)
-        if not key or key == "" then return "NONE" end
-        if key == "none" then return "NONE" end
-        if key == "None" then return "NONE" end
-        return key
-    end
-
     local leftChain, rightChain = {}, {}
     for _, side in ipairs({ "left", "right" }) do
         for i = 1, math.max(tonumber(layout.slotCount) or 2, 2) do
             local cfg = sideSlots[side .. i]
             if cfg then
-                local key = normalizeSlotFrameKey(cfg.frame)
+                local key = LPS:NormalizeSlotFrameKey(cfg.frame)
                 if key ~= "NONE" then
                     local entry = { key = key, cfg = cfg, side = side }
                     if side == "left" then leftChain[#leftChain + 1] = entry
@@ -244,55 +323,15 @@ function LPS:ApplyLayout()
     for _, e in ipairs(leftChain) do slotList[#slotList + 1] = e end
     for _, e in ipairs(rightChain) do slotList[#slotList + 1] = e end
 
-    local function getFrameByKey(key)
-        if LPS.GetOrCreatePanelFrame then return LPS:GetOrCreatePanelFrame(key) end
-        return nil
-    end
-
     for _, e in ipairs(slotList) do
-        local f = getFrameByKey(e.key)
+        local f = LPS:SlotGetFrameByKey(e.key)
         if f then frames[e.key] = f end
     end
 
-    local function useHolderAnchor()
-        local db = LPS.GetDB and LPS:GetDB()
-        local lay = db and db.layout
-        return lay ~= nil and lay.chainAnchor == "location" and true or false
-    end
+    LPS:PositionSlotChain(leftChain, "LEFT", frames, spacing)
+    LPS:PositionSlotChain(rightChain, "RIGHT", frames, spacing)
 
-    local function positionChain(chain, side)
-        local isLeft = (side == "LEFT")
-        local ownPoint = isLeft and "RIGHT" or "LEFT"
-        local edgePoint = isLeft and "LEFT" or "RIGHT"
-        local sign = isLeft and -1 or 1
-        local anchorTo, anchorPoint = frames.location, edgePoint
-        local seen = {}
-        for idx = 1, #chain do
-            local entry = chain[idx]
-            local key = entry.key
-            if not seen[key] then
-                seen[key] = true
-                local frame = getFrameByKey(key)
-                if frame then
-                    local ox = tonumber(entry.cfg.offsetX) or 0
-                    local oy = tonumber(entry.cfg.offsetY) or 0
-                    frame:ClearAllPoints()
-                    if idx == 1 and useHolderAnchor() then
-                        local base = (frames.holder and frames.holder.IsShown and frames.holder:IsShown()) and frames.holder or frames.location
-                        anchorTo, anchorPoint = base, edgePoint
-                    end
-                    local dx = ((idx == 1) and 0 or (sign * spacing)) + ox
-                    frame:SetPoint(ownPoint, anchorTo, anchorPoint, dx, oy)
-                    anchorTo, anchorPoint = frame, edgePoint
-                end
-            end
-        end
-    end
-
-    positionChain(leftChain, "LEFT")
-    positionChain(rightChain, "RIGHT")
-
-    applyPanelVisibility(frames, slotList, showDT)
+    LPS:ApplyPanelVisibility(frames, slotList, showDT)
 
     if LPS._pendingPanelPrimes then
         for _, f in ipairs(LPS._pendingPanelPrimes) do
@@ -313,7 +352,7 @@ function LPS:ApplyLayout()
         end
     end
 
-    local fontFile, defaultFlags = resolveFont()
+    local fontFile, defaultFlags = LPS:ResolveLayoutFont()
     local size = (db.settings and db.settings.fontSize) or 12
     local flags = defaultFlags or "NONE"
     local fontChanged = false
@@ -347,7 +386,7 @@ function LPS:ApplyLayout()
             elseif mode == 3 then
                 r, g, b = LPS:GetColor("text")
             else
-                r, g, b = getLayoutTextColor(mode, layout.userColor)
+                r, g, b = LPS:LayoutTextColor(mode, layout.userColor)
             end
             if r then
                 local nr, ng, nb = f.text:GetTextColor()
@@ -555,18 +594,6 @@ function LPS:RefreshAfterProfileChange()
     end
 end
 
-function LPS:OnAceProfileChanged()
-    self:RefreshAfterProfileChange()
-end
-
-function LPS:OnAceProfileCopied()
-    self:RefreshAfterProfileChange()
-end
-
-function LPS:OnAceProfileReset()
-    self:RefreshAfterProfileChange()
-end
-
 local Tourist
 if LibStub then
     if LPS.Retail and LibStub:GetLibrary("LibTourist-3.0", true) then
@@ -581,16 +608,11 @@ if LibStub then
 end
 LPS.Tourist = Tourist
 
-if not LPS.L then
-    LPS.L = setmetatable({}, { __index = function(_, k) return k end })
-end
-local Locale = LPS.L
-
 --- @param msg string Сообщение
 --- @param isTranslate boolean? Флаг перевода msg
 function LPS:Print(msg, isTranslate)
     if isTranslate ~= false then
-        msg = Locale[msg] or msg
+        msg = LPS.L[msg] or msg
     end
     print("|c"..LPS.addon.textColor..LPS.addon.name.."|r: " .. tostring(msg))
 end
@@ -743,7 +765,7 @@ function LPS:GetZoneStatus(color)
     return format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, status)
 end
 
-local function rgbToHex(r, g, b)
+function LPS:RGBToHex(r, g, b)
     r = tonumber(r) or 1
     g = tonumber(g) or 1
     b = tonumber(b) or 1
@@ -769,11 +791,11 @@ function LPS:GetFormattedGameTime()
         local user = layout.userColor
         r, g, b = (user and user.r) or 1, (user and user.g) or 1, (user and user.b) or 1
     elseif mode == 2 then
-        r, g, b = getClassColor()
+        r, g, b = LPS:GetPlayerClassColor()
     else
         r, g, b = LPS:GetColor("text")
     end
-    local colon = "|cff" .. rgbToHex(r, g, b) .. ":|r"
+    local colon = "|cff" .. LPS:RGBToHex(r, g, b) .. ":|r"
 
     local h, m, s
     if useLocal then
@@ -933,7 +955,7 @@ end
 
 local refreshPending = false
 local pendingRefresh = false
-function LPS._ConsumePendingRefresh()
+function LPS:ConsumePendingRefresh()
     if pendingRefresh then
         pendingRefresh = false
         return true
@@ -1105,3 +1127,207 @@ function LPS:ToggleOptions()
     end
 
 end
+
+--- @param v any
+--- @return boolean
+function LPS:IsNotSecret(v)
+    return v ~= nil
+end
+
+--- Короткое число (1.2M, 3k...)
+--- @param n number?
+--- @return string
+function LPS:ShortValue(n)
+    n = tonumber(n) or 0
+    if n >= 1e9 then return string.format("%.2fB", n / 1e9) end
+    if n >= 1e6 then return string.format("%.2fM", n / 1e6) end
+    if n >= 1e3 then return string.format("%.2fk", n / 1e3) end
+    return tostring(math.floor(n))
+end
+
+--- @param r number?
+--- @param g number?
+--- @param b number?
+--- @return string
+function LPS:HexFromRGB(r, g, b)
+    return string.format("|cff%02x%02x%02x", (r or 1) * 255, (g or 1) * 255, (b or 1) * 255)
+end
+
+--- Цвет по трёхточечному градиенту (pct 0..1)
+function LPS:ColorGradient(pct, r1, g1, b1, r2, g2, b2, r3, g3, b3)
+    pct = math.max(0, math.min(1, tonumber(pct) or 0))
+    local r, g, b
+    if pct < 0.5 then
+        local f = pct * 2
+        r, g, b = r1 + (r2 - r1) * f, g1 + (g2 - g1) * f, b1 + (b2 - b1) * f
+    else
+        local f = (pct - 0.5) * 2
+        r, g, b = r2 + (r3 - r2) * f, g2 + (g3 - g2) * f, b2 + (b3 - b2) * f
+    end
+    return r, g, b
+end
+
+--- @param classFile string?
+--- @return string
+function LPS:ClassColorHex(classFile)
+    local r, g, b = LPS:GetClassColor(classFile)
+    if r then return LPS:HexFromRGB(r, g, b) end
+    return "|cFFFFFFFF"
+end
+
+--- @param level number
+--- @return string
+function LPS:LevelColorHex(level)
+    level = tonumber(level) or 0
+    if GetQuestDifficultyColor then
+        local c = GetQuestDifficultyColor(level)
+        return LPS:HexFromRGB(c.r, c.g, c.b)
+    end
+    return "|cFFFFFFFF"
+end
+
+--- @param num number
+--- @param decimals number?
+--- @return number
+function LPS:Round(num, decimals)
+    local mult = 10^(decimals or 0)
+    return math.floor(num * mult + 0.5) / mult
+end
+
+function LPS:ColorByThreshold(v, good, warn, invert)
+    v = tonumber(v) or 0
+    local r, g, b
+    if invert then
+        if v <= good then
+            r, g, b = 0.1, 1, 0.1
+        elseif v <= warn then
+            r, g, b = 1, 0.82, 0
+        else
+            r, g, b = 1, 0.1, 0.1
+        end
+    else
+        if v >= good then
+            r, g, b = 0.1, 1, 0.1
+        elseif v >= warn then
+            r, g, b = 1, 0.82, 0
+        else
+            r, g, b = 1, 0.1, 0.1
+        end
+    end
+    return string.format("|cff%02x%02x%02x%d|r", r * 255, g * 255, b * 255, v)
+end
+
+local fMenuController
+local fMenuTried = false
+
+--- Контекстное меню — Foundry.Menu на едином API MenuUtil (есть на всех клиентах).
+--- Формат пунктов: {text, isTitle, disabled, notCheckable, func}.
+--- @return any?
+function LPS:GetFMenuController()
+    if fMenuTried then
+        return fMenuController
+    end
+    fMenuTried = true
+    if LPS.F and LPS.F.Menu then
+        fMenuController = LPS.F.Menu:New({
+            name = "LPS.Menu",
+            builder = function(owner, rootDescription, entries)
+                for _, entry in ipairs(entries or {}) do
+                    if entry.isTitle then
+                        rootDescription:CreateTitle(entry.text)
+                    elseif entry.disabled then
+                        local btn = rootDescription:CreateButton(entry.text, function() end)
+                        btn:SetEnabled(false)
+                    elseif entry.func then
+                        rootDescription:CreateButton(entry.text, function() entry.func() end)
+                    else
+                        rootDescription:CreateButton(entry.text, function() end)
+                    end
+                end
+            end,
+        })
+    end
+    return fMenuController
+end
+
+--- @param anchorFrame Frame
+--- @param list {LPSMenuEntry}
+function LPS:ShowMenu(anchorFrame, list)
+    local controller = LPS:GetFMenuController()
+    if controller then
+        controller:CreateContextMenu(anchorFrame, list)
+    end
+end
+
+--- @param self Frame
+--- @param buildFunc fun(tt: Frame)
+function LPS:OpenTooltip(self, buildFunc)
+    GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+    GameTooltip:ClearLines()
+    buildFunc(GameTooltip)
+    GameTooltip:Show()
+end
+
+------------------------------------------------------------
+-- Конфиги панелей/тултипов (перенесено из utils.lua)
+------------------------------------------------------------
+
+--- Панели, у которых есть собственные тултип-настройки (db.tooltips[key])
+local PANEL_TT_KEYS = {
+    location = true, gold = true, system = true, time = true,
+    friends = true, guild = true, experience = true, bags = true,
+}
+
+--- @param key string
+--- @return table?
+function LPS:PanelCfg(key)
+    local db = LPS:GetDB()
+    return db and db.panels and db.panels[key]
+end
+
+--- @param key string
+--- @return table?
+function LPS:TooltipCfg(key)
+    local d = LPS:GetDB()
+    if not d then return nil end
+    if PANEL_TT_KEYS[key] and d.tooltips and d.tooltips[key] then
+        return d.tooltips[key]
+    end
+    return LPS:PanelCfg(key)
+end
+
+--- @param key string
+--- @return boolean
+function LPS:TooltipGuard(key)
+    local d = LPS:GetDB()
+    if not d then return false end
+    if not (d.tooltips and d.tooltips.visibility and d.tooltips.visibility.enable) then return false end
+    if d.tooltips.visibility.combat and InCombatLockdown() then return false end
+    if PANEL_TT_KEYS[key] then
+        local tcfg = d.tooltips[key]
+        if tcfg and tcfg.enable == false then return false end
+    else
+        local cfg = LPS:PanelCfg(key)
+        if cfg and cfg.tooltip == false then return false end
+    end
+    return true
+end
+
+------------------------------------------------------------
+-- LPS._DT — совместимый слой для кода, написанного до рефакторинга
+-- (local DT = LPS._DT; DT.showMenu(...) и т.п.). Тонкие адаптеры
+-- к методам LPS:*, логика не дублируется.
+------------------------------------------------------------
+
+LPS._DT = LPS._DT or {}
+LPS._DT.NotSecret = function(v) return LPS:IsNotSecret(v) end
+LPS._DT.shortValue = function(n) return LPS:ShortValue(n) end
+LPS._DT.hexFromRGB = function(r, g, b) return LPS:HexFromRGB(r, g, b) end
+LPS._DT.colorGradient = function(...) return LPS:ColorGradient(...) end
+LPS._DT.classColorHex = function(classFile) return LPS:ClassColorHex(classFile) end
+LPS._DT.levelColorHex = function(level) return LPS:LevelColorHex(level) end
+LPS._DT.panelCfg = function(key) return LPS:PanelCfg(key) end
+LPS._DT.tooltipCfg = function(key) return LPS:TooltipCfg(key) end
+LPS._DT.tooltipGuard = function(key) return LPS:TooltipGuard(key) end
+LPS._DT.openTooltip = function(self, buildFunc) return LPS:OpenTooltip(self, buildFunc) end
+LPS._DT.showMenu = function(anchorFrame, list) return LPS:ShowMenu(anchorFrame, list) end

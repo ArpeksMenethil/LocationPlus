@@ -2,10 +2,9 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local L = LPS.L
 
-local OH = LPS.OptionsHelper
 
 --- Возвращает вкладку "Show" дерева настроек (внутренний формат дерева настроек).
-function LPS.Options.BuildTree.tabs.show()
+LPS.Options.BuildTree.tabs.show = function()
     return {
         name = L.DISPLAY,
         order = 2,
@@ -21,9 +20,9 @@ function LPS.Options.BuildTree.tabs.show()
                         name = L.SHOW_ZONE,
                         desc = L.SHOW_ZONE_NAME_ON_THE_PANEL,
 
-                        get = function() return OH:getDb().show.zone end,
+                        get = function() return LPS:GetOptionDB().show.zone end,
                         set = function(_, v)
-                            OH:getDb().show.zone = v
+                            LPS:GetOptionDB().show.zone = v
                             local f = LPS.frame and LPS.frame.location
                             if f and f._lpsUpdateFunc then
                                 f._lpsUpdateFunc(f)
@@ -41,10 +40,10 @@ function LPS.Options.BuildTree.tabs.show()
                         desc = L.SHOW_AN_ICON_NEXT_TO_THE_ADDITIONAL_INFO,
                         type = "toggle",
 
-                        disabled = function() return OH:getDb().show.displayOther == "NONE" end,
-                        get = function() return OH:getDb().show.showicon end,
+                        disabled = function() return LPS:GetOptionDB().show.displayOther == "NONE" end,
+                        get = function() return LPS:GetOptionDB().show.showicon end,
                         set = function(_, v)
-                            OH:getDb().show.showicon = v
+                            LPS:GetOptionDB().show.showicon = v
                             local f = LPS.frame and LPS.frame.location
                             if f and f._lpsUpdateFunc then
                                 f._lpsUpdateFunc(f)
@@ -57,14 +56,14 @@ function LPS.Options.BuildTree.tabs.show()
                         desc = L.SHOW_ADDITIONAL_INFO_IN_THE_LOCATION_PANEL,
                         type = "select",
 
-                        values = OH:getDisplayOtherValues(),
-                        get = function() return OH:getDb().show.displayOther end,
+                        values = LPS:GetDisplayOtherValues(),
+                        get = function() return LPS:GetOptionDB().show.displayOther end,
                         set = function(_, v)
-                            local values = OH:getDisplayOtherValues()
+                            local values = LPS:GetDisplayOtherValues()
                             if values[v] == nil then
                                 v = "RLEVEL"
                             end
-                            OH:getDb().show.displayOther = v
+                            LPS:GetOptionDB().show.displayOther = v
                             local f = LPS.frame and LPS.frame.location
                             if f and f._lpsUpdateFunc then
                                 f._lpsUpdateFunc(f)
@@ -84,9 +83,9 @@ function LPS.Options.BuildTree.tabs.show()
                         desc = L.ADDS_2_DIGITS_IN_THE_COORDS,
                         type = "toggle",
 
-                        get = function() return OH:getDb().show.dig end,
+                        get = function() return LPS:GetOptionDB().show.dig end,
                         set = function(_, v)
-                            OH:getDb().show.dig = v
+                            LPS:GetOptionDB().show.dig = v
                             local f = LPS.frame and LPS.frame.coords
                             if f and f._lpsUpdateFunc then
                                 f._lpsUpdateFunc(f)
@@ -102,9 +101,9 @@ function LPS.Options.BuildTree.tabs.show()
                         min = 0.05,
                         max = 1,
                         step = 0.05,
-                        get = function() return OH:getDb().general.coordsTimeUpdate end,
+                        get = function() return LPS:GetOptionDB().general.coordsTimeUpdate end,
                         set = function(_, v)
-                            OH:getDb().general.coordsTimeUpdate = v
+                            LPS:GetOptionDB().general.coordsTimeUpdate = v
                             if LPS.ApplyCoordsUpdateInterval then
                                 LPS:ApplyCoordsUpdateInterval()
                             end
@@ -128,10 +127,10 @@ function LPS.Options.BuildTree.tabs.show()
                             CUR = L.CURRENT,
                             REM = L.REMAINING,
                         },
-                        get = function() return OH:getDb().show.experience.display or "PERCENT" end,
+                        get = function() return LPS:GetOptionDB().show.experience.display or "PERCENT" end,
                         set = function(_, v)
-                            OH:getDb().show.experience.display = v
-                            LPS.Options:ApplyRefresh()
+                            LPS:GetOptionDB().show.experience.display = v
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                 },
@@ -151,10 +150,10 @@ function LPS.Options.BuildTree.tabs.show()
                             FREE = L.FREE_SLOTS,
                             USED = L.USED_SLOTS,
                         },
-                        get = function() return OH:getDb().show.bags.display or "USED_TOTAL" end,
+                        get = function() return LPS:GetOptionDB().show.bags.display or "USED_TOTAL" end,
                         set = function(_, v)
-                            OH:getDb().show.bags.display = v
-                            LPS.Options:ApplyRefresh()
+                            LPS:GetOptionDB().show.bags.display = v
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     spacer1_bags = {
@@ -172,11 +171,11 @@ function LPS.Options.BuildTree.tabs.show()
                         type = "input",
                         name = L.CUSTOM_LABEL,
                         desc = L.CUSTOM_LABEL_DESC,
-                        disabled = function() return OH:getDb().show.bags.noLabel end,
-                        get = function() return OH:getDb().show.bags.label or "" end,
+                        disabled = function() return LPS:GetOptionDB().show.bags.noLabel end,
+                        get = function() return LPS:GetOptionDB().show.bags.label or "" end,
                         set = function(_, v)
-                            OH:getDb().show.bags.label = v or ""
-                            LPS.Options:ApplyRefresh()
+                            LPS:GetOptionDB().show.bags.label = v or ""
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                     bagsNoLabel = {
@@ -184,10 +183,10 @@ function LPS.Options.BuildTree.tabs.show()
                         type = "toggle",
                         name = L.HIDE_LABEL,
                         desc = L.HIDE_LABEL_DESC,
-                        get = function() return OH:getDb().show.bags.noLabel or false end,
+                        get = function() return LPS:GetOptionDB().show.bags.noLabel or false end,
                         set = function(_, v)
-                            OH:getDb().show.bags.noLabel = v and true or false
-                            LPS.Options:ApplyRefresh()
+                            LPS:GetOptionDB().show.bags.noLabel = v and true or false
+                            LPS:ApplyOptionsRefresh()
                         end,
                     },
                 },

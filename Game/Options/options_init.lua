@@ -1,26 +1,25 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
-local OH = LPS.OptionsHelper
-
 LPS.Options = LPS.Options or {}
-LPS.Options.aceAppName = "LocationPlus"
 LPS.Options.BuildTree = LPS.Options.BuildTree or {}
 LPS.Options.BuildTree.tabs = LPS.Options.BuildTree.tabs or {}
 
 --- Единая точка применения настроек: инвалидация кэша, пересчёт layout,
---- обновление нативного окна опций (Ace3 больше не используется).
-function LPS.Options:ApplyRefresh()
+--- обновление нативного окна опций.
+function LPS:ApplyOptionsRefresh()
     if LPS.RefreshAfterProfileChange then
         LPS:RefreshAfterProfileChange()
     end
-    if LPS.UI_Options and LPS.UI_Options.RefreshActivePage then
-        LPS.UI_Options:RefreshActivePage()
+    if LPS.RefreshOptionWindowPage then
+        LPS:RefreshOptionWindowPage()
     end
 end
 
 --- Запись значения по «точечному» пути в БД ("general.is24H").
-function LPS.Options:SetByPath(path, value)
+--- @param path string
+--- @param value any
+function LPS:SetOptionByPath(path, value)
     local db = LPS:GetDB()
     if not db or type(path) ~= "string" then return end
     local cur, segs = db, {}
@@ -30,12 +29,12 @@ function LPS.Options:SetByPath(path, value)
         cur = cur[segs[i]]
     end
     cur[segs[#segs]] = value
-    self:ApplyRefresh()
+    LPS:ApplyOptionsRefresh()
 end
 
---- Собирает и возвращает полное дерево настроек (внутренний формат дерева настроек).
-function LPS.Options:GetTree()
-    local tabs = self.BuildTree.tabs
+--- Собирает и возвращает полное дерево настроек.
+function LPS:GetOptionsTree()
+    local tabs = LPS.Options.BuildTree.tabs
     return {
         name = LPS.addon.title .. " v" .. LPS.addon.version,
         childGroups = "tab",
@@ -51,8 +50,8 @@ function LPS.Options:GetTree()
 end
 
 local aboutAuthor = nil
-if GetAddOnMetadata and LPS.addon and LPS.addon.name then
-    aboutAuthor = GetAddOnMetadata(LPS.addon.name, "Author")
+if LPS.GetAddOnMetadata and LPS.addon and LPS.addon.name then
+    aboutAuthor = LPS.GetAddOnMetadata(LPS.addon.name, "Author")
 end
 if not aboutAuthor or aboutAuthor == "" then
     aboutAuthor = "Arpeks"

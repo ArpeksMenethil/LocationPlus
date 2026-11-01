@@ -5,7 +5,7 @@ LPS._LOADED_LOCALES = LPS._LOADED_LOCALES or {}
 if LPS._LOADED_LOCALES["ptBR"] then return end
 LPS._LOADED_LOCALES["ptBR"] = true
 
-LPS.RegisterLocale("ptBR", {
+LPS:RegisterLocale("ptBR", {
 GENERAL = "Geral",
 LOGIN_MESSAGE = "Mensagem de login",
 SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN = "Mostrar uma mensagem no chat ao fazer login.",
@@ -118,6 +118,10 @@ POPUP_COPY_PROFILE_TITLE = "Copiar perfil",
 POPUP_COPY_PROFILE_DESC = "Copiar o perfil atual para um novo.",
 PROFILE_COPY_BASE = "Cópia de %s",
 POPUP_DELETE_PROFILE_TITLE = "Excluir perfil",
+POPUP_RESET_PROFILE_TITLE = "Redefinir perfil",
+POPUP_RESET_PROFILE_DESC = "Redefinir o perfil atual para os valores padrão?",
+VERSION_LABEL = "Versão",
+TIP_WINDOW_SETTINGS = "Configurações da janela",
 POPUP_DELETE_NONE = "Nenhum perfil para excluir. O perfil Padrão não pode ser excluído.",
 POPUP_DELETE_SELECT = "Selecione um perfil para excluir:",
 POPUP_RESET_PROFILES_TITLE = "Redefinir perfis",

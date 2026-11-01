@@ -18,13 +18,9 @@ if not LPS then return end
 --- * «сбросить» (defaultColor, если передан — иначе исходный цвет);
 --- * OK / Cancel, ESC = отмена.
 local ColorPicker = {}
-LPS.UI = LPS.UI or {}
-LPS.UI.ColorPicker = ColorPicker
-local Widgets = LPS.UI.Widgets
-local Theme = LPS.UI.Theme
 local L = LPS.L
 
-local function RGBToHSV(r, g, b)
+function LPS:RGBToHSV(r, g, b)
     local max, min = math.max(r, g, b), math.min(r, g, b)
     if max == 0 then return 0, 0, 0 end
     local d = max - min
@@ -41,7 +37,7 @@ local function RGBToHSV(r, g, b)
     end
     return h / 6, s, max
 end
-local function HSVToRGB(h, s, v)
+function LPS:HSVToRGB(h, s, v)
     h = ((h % 1) + 1) % 1
     local i = math.floor(h * 6)
     local f = h * 6 - i
@@ -53,20 +49,7 @@ local function HSVToRGB(h, s, v)
     elseif i == 4 then return t, p, v
     else return v, p, q end
 end
-local function ClassColor()
-    local _, classFile = UnitClass("player")
-    if classFile then
-        local key = classFile:upper()
-        if C_ClassColor and C_ClassColor.GetClassColor then
-            local c = C_ClassColor.GetClassColor(key)
-            if c then return c.r, c.g, c.b end
-        end
-        local fallback = RAID_CLASS_COLORS and RAID_CLASS_COLORS[key]
-        if fallback then return fallback.r, fallback.g, fallback.b end
-    end
-    return 1, 1, 1
-end
-local function Clamp(v, lo, hi)
+function LPS:Clamp(v, lo, hi)
     return math.max(lo, math.min(hi, v or 0))
 end
 
@@ -87,7 +70,7 @@ local H_ALPHA = 222
 local ART = "Interface\\AddOns\\LocationPlus\\Media\\Art\\"
 
 --- Серые «шашечки» под прозрачными областями (превью, слайдер альфы).
-local function MakeCheckerboard(parent, w, h, cell, light, dark)
+function LPS:MakeCheckerboard(parent, w, h, cell, light, dark)
     for row = 0, math.ceil(h / cell) - 1 do
         for col = 0, math.ceil(w / cell) - 1 do
             local t = parent:CreateTexture(nil, "ARTWORK")
@@ -99,7 +82,7 @@ local function MakeCheckerboard(parent, w, h, cell, light, dark)
     end
 end
 
-local function MakeGradient(parent, w, h, count, colorFn)
+function LPS:MakeGradient(parent, w, h, count, colorFn)
     local strips = {}
     for i = 0, count - 1 do
         local t = parent:CreateTexture(nil, "BACKGROUND")
@@ -114,7 +97,7 @@ local function MakeGradient(parent, w, h, count, colorFn)
 end
 
 --- Маркер-полоска (2px белая на 4px тёмной подложке) для треков.
-local function MakeKnob(parent, h)
+function LPS:MakeKnob(parent, h)
     local bg = parent:CreateTexture(nil, "OVERLAY")
     bg:SetSize(4, h)
     bg:SetPoint("TOP", parent, "TOP", 0, 0)
@@ -136,13 +119,13 @@ end
 --- @param options table { hasAlpha = boolean, title = string,
 ---     defaultColor = { r, g, b, a } — значение для кнопки «Сбросить» }
 --- @return Frame фрейм пикера
-function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
+function LPS:OpenColorPicker(r, g, b, a, onChange, onCancel, options)
     if ColorPicker.frame then
         ColorPicker.frame:Hide()
         ColorPicker.frame = nil
     end
-    r, g, b = Clamp(r, 0, 1), Clamp(g, 0, 1), Clamp(b, 0, 1)
-    a = Clamp(a, 0, 1)
+    r, g, b = LPS:Clamp(r, 0, 1), LPS:Clamp(g, 0, 1), LPS:Clamp(b, 0, 1)
+    a = LPS:Clamp(a, 0, 1)
     options = options or {}
     local hasAlpha = options.hasAlpha == true
     local original = { r = r, g = g, b = b, a = a }
@@ -157,7 +140,7 @@ function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
     frame:SetClampedToScreen(true)
     frame:SetMovable(true)
     frame:EnableMouse(true)
-    Theme.Box(frame, "window", "border", (Theme.Get()).windowRadius)
+    LPS:ThemeBox(frame, "window", "border", (LPS:ThemeGet()).windowRadius)
 
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     title:SetPoint("TOP", frame, "TOP", 0, -10)
@@ -166,17 +149,17 @@ function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
     local hueStrip = CreateFrame("Frame", nil, frame)
     hueStrip:SetSize(TRACK_W, HUE_H)
     hueStrip:SetPoint("TOPLEFT", frame, "TOPLEFT", SLIDER_X, HUE_Y)
-    Theme.Box(hueStrip, "field", "border", 2)
+    LPS:ThemeBox(hueStrip, "field", "border", 2)
     local hueTex = hueStrip:CreateTexture(nil, "BACKGROUND")
     hueTex:SetAllPoints()
     hueTex:SetTexture(ART .. "grad_hue.png")
-    local hueMarkerBg, hueMarker = MakeKnob(hueStrip, HUE_H)
+    local hueMarkerBg, hueMarker = LPS:MakeKnob(hueStrip, HUE_H)
 
     local function MakeSlider(y, labelText, overlayFile)
         local row = CreateFrame("Frame", nil, frame)
         row:SetSize(TRACK_W, TRACK_H)
         row:SetPoint("TOPLEFT", frame, "TOPLEFT", SLIDER_X, y)
-        Theme.Box(row, "field", "border", 2)
+        LPS:ThemeBox(row, "field", "border", 2)
         local label = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         label:SetPoint("RIGHT", row, "LEFT", -4, 0)
         label:SetJustifyH("RIGHT")
@@ -189,7 +172,7 @@ function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
             ov:SetAllPoints()
             ov:SetTexture(ART .. overlayFile)
         end
-        local knobBg, knob = MakeKnob(row, TRACK_H)
+        local knobBg, knob = LPS:MakeKnob(row, TRACK_H)
         return row, base, knobBg, knob
     end
     local satRow, satBase, satKnobBg, satKnob = MakeSlider(S_Y, "S", "grad_white.png")
@@ -200,30 +183,30 @@ function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
         alphaRow = CreateFrame("Frame", nil, frame)
         alphaRow:SetSize(TRACK_W, TRACK_H)
         alphaRow:SetPoint("TOPLEFT", frame, "TOPLEFT", SLIDER_X, A_Y)
-        Theme.Box(alphaRow, "field", "border", 2)
+        LPS:ThemeBox(alphaRow, "field", "border", 2)
         local label = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         label:SetPoint("RIGHT", alphaRow, "LEFT", -4, 0)
         label:SetJustifyH("RIGHT")
         label:SetText("A")
-        MakeCheckerboard(alphaRow, TRACK_W, TRACK_H, 7,
+        LPS:MakeCheckerboard(alphaRow, TRACK_W, TRACK_H, 7,
             { 0.8, 0.8, 0.8, 0.35 }, { 0.45, 0.45, 0.45, 0.35 })
-        alphaStrips = MakeGradient(alphaRow, TRACK_W, TRACK_H, 64, function(p)
+        alphaStrips = LPS:MakeGradient(alphaRow, TRACK_W, TRACK_H, 64, function(p)
             return 0, 0, 0, p
         end)
-        alphaKnobBg, alphaKnob = MakeKnob(alphaRow, TRACK_H)
+        alphaKnobBg, alphaKnob = LPS:MakeKnob(alphaRow, TRACK_H)
     end
 
     local previewFrame = CreateFrame("Frame", nil, frame)
     previewFrame:SetSize(PREVIEW_W, PREVIEW_H)
     previewFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", RX, HUE_Y)
-    Theme.Box(previewFrame, "field", "border", 2)
+    LPS:ThemeBox(previewFrame, "field", "border", 2)
     local partW = math.floor(PREVIEW_W / 2)
     local previewCur
     for i = 0, 1 do
         local part = CreateFrame("Frame", nil, previewFrame)
         part:SetSize(partW, PREVIEW_H)
         part:SetPoint("TOPLEFT", previewFrame, "TOPLEFT", i * partW, 0)
-        MakeCheckerboard(part, partW, PREVIEW_H, 8,
+        LPS:MakeCheckerboard(part, partW, PREVIEW_H, 8,
             { 0.8, 0.8, 0.8, 0.35 }, { 0.45, 0.45, 0.45, 0.35 })
         local col = part:CreateTexture(nil, "OVERLAY")
         col:SetAllPoints()
@@ -238,12 +221,12 @@ function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
     sep:SetPoint("LEFT", previewFrame, "LEFT", partW, 0)
     sep:SetColorTexture(0.15, 0.15, 0.15, 1)
 
-    local classBtn = Widgets.CreateFlatButton(frame, PREVIEW_W, 20, L.CP_CLASS_COLOR or "Class Color")
+    local classBtn = LPS:CreateFlatButton(frame, PREVIEW_W, 20, L.CP_CLASS_COLOR or "Class Color")
     classBtn:SetPoint("TOPLEFT", frame, "TOPLEFT", RX, CLASS_Y)
     local swatch = classBtn:CreateTexture(nil, "OVERLAY")
     swatch:SetSize(12, 12)
     swatch:SetPoint("LEFT", classBtn, "LEFT", 6, 0)
-    local cr, cg, cb = ClassColor()
+    local cr, cg, cb = LPS:GetPlayerClassColor()
     swatch:SetColorTexture(cr, cg, cb, 1)
 
     local boxR, boxG, boxB, boxA, hexBox
@@ -290,7 +273,7 @@ function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
         if not hexFocused then
             hexBox:SetText(FormatHex())
         end
-        local h, s, v = RGBToHSV(state.r, state.g, state.b)
+        local h, s, v = LPS:RGBToHSV(state.r, state.g, state.b)
         local hx = math.floor(h * (TRACK_W - 2))
         hueMarkerBg:SetPoint("LEFT", hueStrip, "LEFT", hx - 1, 0)
         hueMarker:SetPoint("LEFT", hueStrip, "LEFT", hx, 0)
@@ -327,10 +310,10 @@ function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
         box:SetNumeric(true)
         box:SetText(value)
         box:SetFontObject("GameFontHighlightSmall")
-        Theme.Box(box, "field", "border", (Theme.Get()).buttonRadius or 0)
+        LPS:ThemeBox(box, "field", "border", (LPS:ThemeGet()).buttonRadius or 0)
         box:SetScript("OnTextChanged", function(self)
             if updating or self:GetText() == "" then return end
-            applyFn(Clamp(self:GetNumber(), min, max))
+            applyFn(LPS:Clamp(self:GetNumber(), min, max))
         end)
         box:SetScript("OnEnterPressed", function(self)
             self:ClearFocus()
@@ -356,7 +339,7 @@ function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
     hexBox:SetMaxLetters(9)
     hexBox:SetText(FormatHex())
     hexBox:SetFontObject("GameFontHighlightSmall")
-    Theme.Box(hexBox, "field", "border", (Theme.Get()).buttonRadius or 0)
+    LPS:ThemeBox(hexBox, "field", "border", (LPS:ThemeGet()).buttonRadius or 0)
     hexBox:SetScript("OnEditFocusGained", function()
         hexFocused = true
     end)
@@ -500,21 +483,21 @@ function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
         return t
     end
     MakeTrackTracker(hueStrip, function(value)
-        local _, s, v = RGBToHSV(state.r, state.g, state.b)
+        local _, s, v = LPS:RGBToHSV(state.r, state.g, state.b)
         if s < 0.01 then s = 1 end
         if v < 0.01 then v = 1 end
-        state.r, state.g, state.b = HSVToRGB(value, s, v)
+        state.r, state.g, state.b = LPS:HSVToRGB(value, s, v)
         UpdateAll()
     end)
     MakeTrackTracker(satRow, function(value)
-        local h, _, v = RGBToHSV(state.r, state.g, state.b)
+        local h, _, v = LPS:RGBToHSV(state.r, state.g, state.b)
         if v < 0.01 then v = 1 end
-        state.r, state.g, state.b = HSVToRGB(h, value, v)
+        state.r, state.g, state.b = LPS:HSVToRGB(h, value, v)
         UpdateAll()
     end)
     MakeTrackTracker(valRow, function(value)
-        local h, s = RGBToHSV(state.r, state.g, state.b)
-        state.r, state.g, state.b = HSVToRGB(h, s, value)
+        local h, s = LPS:RGBToHSV(state.r, state.g, state.b)
+        state.r, state.g, state.b = LPS:HSVToRGB(h, s, value)
         UpdateAll()
     end)
     if hasAlpha then
@@ -551,21 +534,21 @@ function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
     local dc = options.defaultColor
     if type(dc) == "table" and tonumber(dc.r) then
         resetColor = {
-            r = Clamp(dc.r, 0, 1),
-            g = Clamp(tonumber(dc.g) or dc.r, 0, 1),
-            b = Clamp(tonumber(dc.b) or dc.r, 0, 1),
-            a = hasAlpha and ((tonumber(dc.a) and Clamp(dc.a, 0, 1)) or 1) or original.a,
+            r = LPS:Clamp(dc.r, 0, 1),
+            g = LPS:Clamp(tonumber(dc.g) or dc.r, 0, 1),
+            b = LPS:Clamp(tonumber(dc.b) or dc.r, 0, 1),
+            a = hasAlpha and ((tonumber(dc.a) and LPS:Clamp(dc.a, 0, 1)) or 1) or original.a,
         }
     end
-    local resetBtn = Widgets.CreateFlatButton(frame, 80, 22, L.CP_RESET or "Reset")
+    local resetBtn = LPS:CreateFlatButton(frame, 80, 22, L.CP_RESET or "Reset")
     resetBtn:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", M, 12)
     resetBtn:SetScript("OnClick", function()
         state.r, state.g, state.b, state.a = resetColor.r, resetColor.g, resetColor.b, resetColor.a
         UpdateAll()
     end)
-    local okBtn = Widgets.CreateFlatButton(frame, 70, 22, L.CP_OK or "OK")
+    local okBtn = LPS:CreateFlatButton(frame, 70, 22, L.CP_OK or "OK")
     okBtn:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -M, 12)
-    local cancelBtn = Widgets.CreateFlatButton(frame, 80, 22, L.CP_CANCEL or "Cancel")
+    local cancelBtn = LPS:CreateFlatButton(frame, 80, 22, L.CP_CANCEL or "Cancel")
     cancelBtn:SetPoint("RIGHT", okBtn, "LEFT", -8, 0)
     okBtn:SetScript("OnClick", function()
         Close()
@@ -574,7 +557,7 @@ function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
         end
     end)
     cancelBtn:SetScript("OnClick", DoCancel)
-    Widgets.BindEscapeToClose(frame, DoCancel)
+    LPS:BindEscapeToClose(frame, DoCancel)
 
     --- Подсказки на контролах пикера: название — короткая буква/название
     --- (S, V, A, R, G, B), описание — что именно регулирует это поле.
@@ -613,7 +596,7 @@ function ColorPicker.Open(r, g, b, a, onChange, onCancel, options)
     Tip(resetBtn, L.CP_RESET or "Reset", L.CP_RESET_DESC)
 
     UpdateAll()
-    Theme.ApplyFonts(frame)
+    LPS:ThemeApplyFonts(frame)
     frame:Show()
     ColorPicker.frame = frame
     return frame

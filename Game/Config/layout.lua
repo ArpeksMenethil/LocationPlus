@@ -4,7 +4,7 @@ LPS_DB = LPS_DB or {}
 
 local DEFAULT_POSITION = { "TOP", "TOP", 0, -10 }
 
-local function isValidPos(p)
+function LPS:IsValidPos(p)
     return type(p) == "table"
         and type(p.point) == "string"
         and type(p.relPoint) == "string"
@@ -13,29 +13,29 @@ local function isValidPos(p)
 end
 
 --- Старый ключ сохранённой позиции relativePoint → новый relPoint (Foundry.Window).
-local function migratePos(p)
+function LPS:MigratePos(p)
     if type(p) == "table" and p.relativePoint ~= nil then
         p.relPoint = p.relativePoint
         p.relativePoint = nil
     end
 end
 
-local holderAttached = false
+LPS._holderAttached = false
 
 function LPS:ApplyHolderPosition()
     local holder = self.frame and self.frame.holder
     if not holder then return end
     local db = self:GetDB()
     db.position = db.position or {}
-    migratePos(db.position)
+    LPS:MigratePos(db.position)
 
-    if not holderAttached then
+    if not LPS._holderAttached then
         local geometry = {}
         for k, v in pairs(db.position) do
             geometry[k] = v
         end
         self.frame._posGeometry = geometry
-        holderAttached = true
+        LPS._holderAttached = true
         LPS.F.Window:Attach(holder, {
             handle = holder,
             geometry = geometry,
@@ -51,7 +51,7 @@ function LPS:ApplyHolderPosition()
     local g = self.frame._posGeometry
     for k in pairs(g) do g[k] = nil end
     for k, v in pairs(p) do g[k] = v end
-    if isValidPos(g) then
+    if LPS:IsValidPos(g) then
         holder:ClearAllPoints()
         holder:SetPoint(g.point, UIParent, g.relPoint, g.x, g.y)
     else
@@ -59,7 +59,7 @@ function LPS:ApplyHolderPosition()
     end
 end
 
-local lastW, lastH
+LPS._lastPosW, LPS._lastPosH = nil, nil
 function LPS:UpdateFrameSize()
     if not (LPS.frame and LPS.frame.holder) then return end
     local padding = 4
@@ -82,18 +82,18 @@ function LPS:UpdateFrameSize()
     end
     width = width + padding * 2 + 10
     height = height + 6
-    if width ~= lastW or height ~= lastH then
-        lastW, lastH = width, height
+    if width ~= LPS._lastPosW or height ~= LPS._lastPosH then
+        LPS._lastPosW, LPS._lastPosH = width, height
         LPS.frame.holder:SetSize(width, height)
     end
 end
 
-local sizeUpdatePending = false
+LPS._sizeUpdatePending = false
 function LPS:ScheduleFrameSizeUpdate()
-    if sizeUpdatePending then return end
-    sizeUpdatePending = true
+    if LPS._sizeUpdatePending then return end
+    LPS._sizeUpdatePending = true
     C_Timer.After(0.05, function()
-        sizeUpdatePending = false
+        LPS._sizeUpdatePending = false
         LPS:UpdateFrameSize()
     end)
 end

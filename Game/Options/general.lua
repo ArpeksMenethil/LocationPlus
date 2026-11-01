@@ -2,10 +2,9 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local L = LPS.L
 
-local OH = LPS.OptionsHelper
 
 --- Возвращает вкладку "General" дерева настроек (внутренний формат дерева настроек).
-function LPS.Options.BuildTree.tabs.general()
+LPS.Options.BuildTree.tabs.general = function()
     return {
         name = L.GENERAL,
         order = 1,
@@ -25,8 +24,8 @@ function LPS.Options.BuildTree.tabs.general()
                                 desc = L.SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN,
                                 type = "toggle",
 
-                                get = function() return OH:getDb().general.loginMessage end,
-                                set = function(_, v) OH:getDb().general.loginMessage = v end,
+                                get = function() return LPS:GetOptionDB().general.loginMessage end,
+                                set = function(_, v) LPS:GetOptionDB().general.loginMessage = v end,
                             },
                             spacer1_is24H = {
                                 order = 2.1,
@@ -39,9 +38,9 @@ function LPS.Options.BuildTree.tabs.general()
                                 desc = L.USE_24_HOUR_TIME_FORMAT,
                                 order = 3,
 
-                                get = function() return OH:getDb().general.is24H end,
+                                get = function() return LPS:GetOptionDB().general.is24H end,
                                 set = function(_, v)
-                                    OH:getDb().general.is24H = v
+                                    LPS:GetOptionDB().general.is24H = v
                                     if LPS.ApplyTimeFormat then
                                         LPS:ApplyTimeFormat()
                                     end
@@ -53,9 +52,9 @@ function LPS.Options.BuildTree.tabs.general()
                                 desc = L.SHOW_SECONDS_WHEN_USING_LOCAL_TIME,
                                 order = 4,
 
-                                get = function() return OH:getDb().general.seconds end,
+                                get = function() return LPS:GetOptionDB().general.seconds end,
                                 set = function(_, v)
-                                    OH:getDb().general.seconds = v
+                                    LPS:GetOptionDB().general.seconds = v
                                     if LPS.ApplyTimeFormat then
                                         LPS:ApplyTimeFormat()
                                     end
@@ -75,12 +74,12 @@ function LPS.Options.BuildTree.tabs.general()
                                 order = 1,
 
                                 get = function()
-                                    local mm = OH:getDb().show and OH:getDb().show.minimap
+                                    local mm = LPS:GetOptionDB().show and LPS:GetOptionDB().show.minimap
                                     return not (mm and mm.hide)
                                 end,
                                 set = function(_, v)
-                                    OH:getDb().show.minimap = OH:getDb().show.minimap or { hide = false, angle = 220 }
-                                    OH:getDb().show.minimap.hide = not v
+                                    LPS:GetOptionDB().show.minimap = LPS:GetOptionDB().show.minimap or { hide = false, angle = 220 }
+                                    LPS:GetOptionDB().show.minimap.hide = not v
                                     if v and LPS.CreateMinimapButton then
                                         LPS:CreateMinimapButton()
                                     end
@@ -100,20 +99,20 @@ function LPS.Options.BuildTree.tabs.general()
                                     SQUARE = L.MINIMAP_SHAPE_SQUARE,
                                 },
                                 disabled = function()
-                                    local mm = OH:getDb().show and OH:getDb().show.minimap
+                                    local mm = LPS:GetOptionDB().show and LPS:GetOptionDB().show.minimap
                                     return mm and mm.hide
                                 end,
                                 get = function()
-                                    local mm = OH:getDb().show and OH:getDb().show.minimap
+                                    local mm = LPS:GetOptionDB().show and LPS:GetOptionDB().show.minimap
                                     if mm and mm.shape == "square" then return "SQUARE" end
                                     return "ROUND"
                                 end,
                                 set = function(_, v)
-                                    OH:getDb().show.minimap = OH:getDb().show.minimap or { hide = false, angle = 220 }
+                                    LPS:GetOptionDB().show.minimap = LPS:GetOptionDB().show.minimap or { hide = false, angle = 220 }
                                     if v == "SQUARE" then
-                                        OH:getDb().show.minimap.shape = "square"
+                                        LPS:GetOptionDB().show.minimap.shape = "square"
                                     else
-                                        OH:getDb().show.minimap.shape = "round"
+                                        LPS:GetOptionDB().show.minimap.shape = "round"
                                     end
                                     if LPS.UpdateMinimapButton then
                                         LPS:UpdateMinimapButton()
@@ -128,9 +127,9 @@ function LPS.Options.BuildTree.tabs.general()
 
                                 hidden = function() return not (LPS.Retail or LPS.Forever) end,
                                 disabled = function() return not (LPS.Retail or LPS.Forever) end,
-                                get = function() return OH:getDb().show.addonCompartment end,
+                                get = function() return LPS:GetOptionDB().show.addonCompartment end,
                                 set = function(_, v)
-                                    OH:getDb().show.addonCompartment = v
+                                    LPS:GetOptionDB().show.addonCompartment = v
                                     if LPS.ApplyAddonCompartmentRegistration then
                                         LPS:ApplyAddonCompartmentRegistration()
                                     end
@@ -147,9 +146,9 @@ function LPS.Options.BuildTree.tabs.general()
                                 desc = L.SHOW_HIDE_ALL_PANELS_WHEN_IN_COMBAT,
                                 type = "toggle",
 
-                                get = function() return OH:getDb().show.visibility.combat end,
+                                get = function() return LPS:GetOptionDB().show.visibility.combat end,
                                 set = function(_, v)
-                                    OH:getDb().show.visibility.combat = v
+                                    LPS:GetOptionDB().show.visibility.combat = v
                                     if LPS.ApplyVisibility then
                                         LPS:ApplyVisibility()
                                     end
@@ -195,7 +194,7 @@ function LPS.Options.BuildTree.tabs.general()
                                 LPS:ResetAllSettingsToDefaults()
                             end
                             if LPS.Options and LPS.Options.ApplyRefresh then
-                                LPS.Options:ApplyRefresh()
+                                LPS:ApplyOptionsRefresh()
                             end
                         end,
                     },

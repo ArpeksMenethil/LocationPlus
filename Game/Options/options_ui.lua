@@ -2,7 +2,6 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
 local UI = {}
-LPS.UI_Options = UI
 
 local WIDGET_TYPE = {
     toggle = "toggle",
@@ -19,7 +18,7 @@ local WIDGET_TYPE = {
 }
 
 --- Вызов get-функции пункта (нативный рендерер передаёт uiInfo — аргумент сохранён для совместимости).
-local function callGet(entry)
+function LPS:OptionCallGet(entry)
     if type(entry.get) == "function" then
         local ok, v = pcall(entry.get, false)
         if ok then return v end
@@ -30,7 +29,7 @@ end
 
 --- Вызов set-функции пункта. Для color передаётся таблица {r,g,b,a}
 --- (разворачивается в r, g, b — сигнатура get/set одинакова в обоих UI).
-local function callSet(entry, value)
+function LPS:OptionCallSet(entry, value)
     if type(entry.set) == "function" then
         if type(value) == "table" and tonumber(value.r) then
             pcall(entry.set, false, value.r, value.g, value.b, value.a or 1)
@@ -45,7 +44,7 @@ end
 --- (например, userColor: return r, g, b), а callGet ловит только первое из
 --- них — из-за этого свотч был белым (одно число — не цвет). Здесь ловим
 --- все возвращаемые значения; табличная форма {r,g,b[,a]} тоже поддерживается.
-local function readColor(entry)
+function LPS:ReadOptionColor(entry)
     local r, g, b, a
     if type(entry.get) == "function" then
         local ok
@@ -75,7 +74,7 @@ end
 
 --- Дефолт color-пункта (entry.default): {r,g,b[,a]} или [1..4].
 --- Нужен пикеру для кнопки «сбросить» — сброс возвращает дефолт опции.
-local function readDefaultColor(entry)
+function LPS:ReadOptionDefaultColor(entry)
     local d = entry.default
     if type(d) == "table" then
         if tonumber(d.r) then
@@ -89,7 +88,7 @@ local function readDefaultColor(entry)
 end
 
 --- Обёртка над disabled-функцией пункта (для серых строк в нативном UI).
-local function makeDisabled(node)
+function LPS:MakeOptionDisabled(node)
     if not node.disabled then return nil end
     return function()
         local d = node.disabled
@@ -102,7 +101,7 @@ local function makeDisabled(node)
 end
 
 --- Текст всплывающей подсказки пункта (desc в дереве настроек).
-local function nodeTooltip(node)
+function LPS:NodeTooltip(node)
     local d = node.desc
     if type(d) == "function" then
         local ok, v = pcall(d, false)
@@ -112,7 +111,7 @@ local function nodeTooltip(node)
 end
 
 --- Список items для dropdown из поля values (таблица или функция).
-local function resolveItems(entry)
+function LPS:ResolveOptionItems(entry)
     local values = entry.values
     if type(values) == "function" then
         local ok, v = pcall(values, false)
@@ -154,7 +153,7 @@ end
 --- настроек не нужны: группа определяется наличием args, по умолчанию.
 --- additionalSortKeys — необязательный список доп. ключей сортировки
 --- (стабильный порядок при одинаковом order; см. actionsGroup в general.lua).
-local function collectRows(group, out, additionalSortKeys)
+function LPS:CollectOptionRows(group, out, additionalSortKeys)
     local args = group.args
     if type(args) == "function" then
         local ok, t = pcall(args, false)
@@ -196,12 +195,12 @@ local function collectRows(group, out, additionalSortKeys)
                 if not isSpacer then
                     out[#out + 1] = { kind = "header", label = groupName }
                 end
-                collectRows(node, out, node.sortKeys)
+                LPS:CollectOptionRows(node, out, node.sortKeys)
             elseif kind == "label" then
                 if node.name and node.name ~= " " and node.name ~= "" then
                     out[#out + 1] = {
                         kind = "label", label = tostring(node.name),
-                        tooltip = nodeTooltip(node),
+                        tooltip = LPS:NodeTooltip(node),
                         multiline = true,
                     }
                 end
@@ -218,7 +217,7 @@ local function collectRows(group, out, additionalSortKeys)
                     kind = "link",
                     label = tostring(node.name or ""),
                     url = tostring(node.url),
-                    tooltip = nodeTooltip(node),
+                    tooltip = LPS:NodeTooltip(node),
                 }
             elseif kind == "header" then
                 out[#out + 1] = { kind = "header", label = tostring(node.name or "") }
@@ -226,61 +225,61 @@ local function collectRows(group, out, additionalSortKeys)
                 out[#out + 1] = {
                     kind = "toggle", fullRow = not isTogglePair,
                     label = tostring(node.name or ""),
-                    tooltip = nodeTooltip(node),
-                    disabled = makeDisabled(node),
-                    get = function() return callGet(node) == true end,
-                    set = function(v) callSet(node, v and true or false) end,
+                    tooltip = LPS:NodeTooltip(node),
+                    disabled = LPS:MakeOptionDisabled(node),
+                    get = function() return LPS:OptionCallGet(node) == true end,
+                    set = function(v) LPS:OptionCallSet(node, v and true or false) end,
                 }
             elseif kind == "slider" and node.get then
                 out[#out + 1] = {
                     kind = "slider",
                     label = tostring(node.name or ""),
-                    tooltip = nodeTooltip(node),
+                    tooltip = LPS:NodeTooltip(node),
                     min = tonumber(node.min) or 0,
                     max = tonumber(node.max) or 100,
                     step = tonumber(node.bigStep) or tonumber(node.step) or 1,
                     format = (tonumber(node.step) or 1) % 1 == 0 and "%.0f" or "%.2f",
-                    disabled = makeDisabled(node),
-                    get = function() return tonumber(callGet(node)) or (tonumber(node.min) or 0) end,
-                    set = function(v) callSet(node, v) end,
+                    disabled = LPS:MakeOptionDisabled(node),
+                    get = function() return tonumber(LPS:OptionCallGet(node)) or (tonumber(node.min) or 0) end,
+                    set = function(v) LPS:OptionCallSet(node, v) end,
                 }
             elseif kind == "dropdown" and node.get then
                 out[#out + 1] = {
                     kind = "dropdown", dynamicItems = true,
                     label = tostring(node.name or ""),
-                    tooltip = nodeTooltip(node),
-                    disabled = makeDisabled(node),
-                    items = function() return resolveItems(node) end,
-                    get = function() return callGet(node) end,
-                    set = function(v) callSet(node, v) end,
+                    tooltip = LPS:NodeTooltip(node),
+                    disabled = LPS:MakeOptionDisabled(node),
+                    items = function() return LPS:ResolveOptionItems(node) end,
+                    get = function() return LPS:OptionCallGet(node) end,
+                    set = function(v) LPS:OptionCallSet(node, v) end,
                 }
             elseif kind == "input" and node.get then
                 out[#out + 1] = {
                     kind = "input",
                     label = tostring(node.name or ""),
-                    tooltip = nodeTooltip(node),
-                    disabled = makeDisabled(node),
+                    tooltip = LPS:NodeTooltip(node),
+                    disabled = LPS:MakeOptionDisabled(node),
                     multiline = tonumber(node.multiline),
-                    get = function() return tostring(callGet(node) or "") end,
-                    set = function(v) callSet(node, v) end,
+                    get = function() return tostring(LPS:OptionCallGet(node) or "") end,
+                    set = function(v) LPS:OptionCallSet(node, v) end,
                 }
             elseif kind == "color" and node.get then
                 out[#out + 1] = {
                     kind = "color",
                     label = tostring(node.name or ""),
-                    tooltip = nodeTooltip(node),
-                    disabled = makeDisabled(node),
+                    tooltip = LPS:NodeTooltip(node),
+                    disabled = LPS:MakeOptionDisabled(node),
                     alpha = node.alpha == true or node.hasAlpha == true,
-                    default = readDefaultColor(node),
-                    get = function() return readColor(node) end,
-                    set = function(c) callSet(node, c) end,
+                    default = LPS:ReadOptionDefaultColor(node),
+                    get = function() return LPS:ReadOptionColor(node) end,
+                    set = function(c) LPS:OptionCallSet(node, c) end,
                 }
             elseif kind == "button" and node.func then
                 out[#out + 1] = {
                     kind = "button",
                     label = tostring(node.name or ""),
-                    tooltip = nodeTooltip(node),
-                    disabled = makeDisabled(node),
+                    tooltip = LPS:NodeTooltip(node),
+                    disabled = LPS:MakeOptionDisabled(node),
                     func = function()
                         local ok = pcall(node.func, false)
                         if not ok and LPS.DEBUG then print("LPS options execute error: " .. tostring(node.name)) end
@@ -297,10 +296,9 @@ end
 --- Panel.ShowPage перед показом страницы). Если первая попытка дала пустой
 --- список строк (например, фабрика вкладки упала или дерево собралось до
 --- готовности БД), страница будет пересобрана при следующем открытии.
-local function createTreePage(group)
-    local Panel, Builder = LPS.UI.Panel, LPS.UI.Builder
+function LPS:CreateTreePage(group)
     return function(container)
-        local scroll, content = Panel.CreateScrollPage(container)
+        local scroll, content = LPS:PanelCreateScrollPage(container)
         local page = {
             controls = {},
             height = 0,
@@ -312,7 +310,7 @@ local function createTreePage(group)
         }
         function page:Build(force)
             if self._built and not force then return end
-            local entries = collectRows(self._group, {})
+            local entries = LPS:CollectOptionRows(self._group, {})
             if #entries == 0 then
                 self._built = false
                 return
@@ -322,8 +320,8 @@ local function createTreePage(group)
                 for _, row in ipairs(content.rows) do row:Hide(); row:ClearAllPoints() end
             end
             content.rows = {}
-            local built = Builder.Build(content, entries, {
-                onChange = function() Panel.OnSettingChanged() end,
+            local built = LPS:BuildOptionPage(content, entries, {
+                onChange = function() LPS:PanelOnSettingChanged() end,
                 onRow = function(row) content.rows[#content.rows + 1] = row end,
             })
             page.controls = built.controls
@@ -337,19 +335,19 @@ local function createTreePage(group)
         end
         function page:Refresh()
             self:Build()
-            Builder.RefreshPage(page)
+            LPS:RefreshOptionPage(page)
         end
         function page:OnValueChanged(entry, value)
             local built = self.controls[1] and self.controls[1].entry and true or false
             if not built then return end
-            local themeBefore = LPS.UI.Theme.key
+            local themeBefore = LPS:GetThemeKey()
             if entry.onChange then
                 entry.onChange(value)
             elseif self.onChange then
                 self.onChange(entry, value)
             end
-            if LPS.UI.Theme.key == themeBefore then
-                Builder.RefreshPage(self)
+            if LPS:GetThemeKey() == themeBefore then
+                LPS:RefreshOptionPage(self)
             end
         end
         if container then
@@ -366,16 +364,17 @@ local function createTreePage(group)
 end
 
 --- Ключ страницы в Panel для узла дерева (стабилен между пересборками).
-local function pageKeyFor(node)
+function LPS:PageKeyFor(node)
     return "tree_" .. tostring(node._pageId or node.name or "")
 end
 
 --- Построение/обновление списка страниц по текущему дереву опций.
 --- Идемпотентно: вызывается каждый раз при открытии окна, чтобы подтянуть
 --- свежие переводы/вкладки после смены языка или профиля.
-function UI.BuildPages()
-    if LPS.Options.GetTree then
-        LPS.Options.tree = LPS.Options:GetTree()
+local pageKeys = {}
+function LPS:BuildOptionPages()
+    if LPS.GetOptionsTree then
+        LPS.Options.tree = LPS:GetOptionsTree()
     end
     local tree = LPS.Options.tree
     if not tree or type(tree.args) ~= "table" then return end
@@ -393,14 +392,14 @@ function UI.BuildPages()
     end)
     for _, node in ipairs(nodes) do
         if node.args ~= nil then
-            local key = pageKeyFor(node)
-            if not UI._pageKeys[key] then
-                UI._pageKeys[key] = true
-                local create = createTreePage(node)
+            local key = LPS:PageKeyFor(node)
+            if not pageKeys[key] then
+                pageKeys[key] = true
+                local create = LPS:CreateTreePage(node)
                 if node._pageId == "profiles" and LPS.CreateProfilesPanelPage then
                     create = LPS.CreateProfilesPanelPage
                 end
-                Panel.RegisterPage(key, {
+                LPS:RegisterPanelPage(key, {
                     label = tostring(node.name or ""),
                     order = tonumber(node.order) or 99,
                     create = create,
@@ -410,30 +409,23 @@ function UI.BuildPages()
     end
 end
 
-UI._pageKeys = {}
-
---- Открыть/закрыть нативное окно (используется при отсутствии Ace3).
-function UI.Toggle()
-    local Panel = LPS.UI and LPS.UI.Panel
-    if not Panel then return end
-    UI.BuildPages()
-    Panel.Toggle()
+--- Открыть/закрыть нативное окно.
+function LPS:ToggleOptionWindow()
+    LPS:BuildOptionPages()
+    LPS:PanelToggle()
 end
 
-function UI.IsShown()
-    local Panel = LPS.UI and LPS.UI.Panel
-    return Panel and Panel.IsShown and Panel.IsShown()
+function LPS:IsOptionWindowShown()
+    return LPS:PanelIsShown()
 end
 
-function UI.Close()
-    local Panel = LPS.UI and LPS.UI.Panel
-    if Panel and Panel.Hide then Panel.Hide() end
+function LPS:CloseOptionWindow()
+    LPS:PanelHide()
 end
 
---- Обновить активную страницу (вызывается из LPS.Options:ApplyRefresh).
-function UI.RefreshActivePage()
-    local Panel = LPS.UI and LPS.UI.Panel
-    if Panel and Panel.RefreshActivePage and Panel.IsShown and Panel.IsShown() then
-        Panel.RefreshActivePage()
+--- Обновить активную страницу (вызывается из LPS:ApplyOptionsRefresh).
+function LPS:RefreshOptionWindowPage()
+    if LPS:PanelIsShown() then
+        LPS:PanelRefreshActivePage()
     end
 end

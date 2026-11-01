@@ -5,7 +5,7 @@ LPS._LOADED_LOCALES = LPS._LOADED_LOCALES or {}
 if LPS._LOADED_LOCALES["ruRU"] then return end
 LPS._LOADED_LOCALES["ruRU"] = true
 
-LPS.RegisterLocale("ruRU", {
+LPS:RegisterLocale("ruRU", {
     GENERAL = "Основные",
     LOGIN_MESSAGE = "Сообщение при входе",
     SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN = "Показывать сообщение в чате при входе.",
@@ -118,6 +118,10 @@ LPS.RegisterLocale("ruRU", {
     POPUP_COPY_PROFILE_DESC = "Копировать текущий профиль в новый.",
     PROFILE_COPY_BASE = "Копия %s",
     POPUP_DELETE_PROFILE_TITLE = "Удалить профиль",
+    POPUP_RESET_PROFILE_TITLE = "Сброс профиля",
+    POPUP_RESET_PROFILE_DESC = "Сбросить текущий профиль до значений по умолчанию?",
+    VERSION_LABEL = "Версия",
+    TIP_WINDOW_SETTINGS = "Настройки окна",
     POPUP_DELETE_NONE = "Нет профилей для удаления. Профиль по умолчанию удалить нельзя.",
     POPUP_DELETE_SELECT = "Выберите профиль для удаления:",
     POPUP_RESET_PROFILES_TITLE = "Сбросить профили",
@@ -277,6 +281,7 @@ LPS.RegisterLocale("ruRU", {
     RESTED = "Отдохнувший опыт:",
     AFK = "АФК",
     MOBILE = "Мобильный",
+    DND = "Не беспокоить",
     FRIENDS_LIST = "Список друзей",
     NO_FRIENDS_ONLINE = "Нет друзей в сети",
     OPEN_FRIENDS_LIST = "Открыть список друзей",

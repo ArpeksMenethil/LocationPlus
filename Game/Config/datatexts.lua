@@ -3,10 +3,9 @@ if not LPS then return end
 local L = LPS.L
 local F = LPS.F
 
-local registry = {}
-LPS.datatexts = registry
+LPS.datatexts = {}
 
-local HIDDEN_SLOT_KEYS = { microBar = true }
+LPS.datatextsHiddenSlotKeys = { microBar = true }
 
 --- Название панели для списков: ВСЕГДА актуально локализованное (язык
 --- клиента). Раньше имя замораживалось в момент загрузки файла
@@ -17,7 +16,7 @@ local HIDDEN_SLOT_KEYS = { microBar = true }
 --- при каждом обращении к имени.
 function LPS:GetDatatextDisplayName(key)
     if key == "location" then return L.LOCATION end
-    local def = registry[key]
+    local def = LPS.datatexts[key]
     if def then
         if def.nameKey then return L[def.nameKey] or def.nameKey end
         if def.name then return tostring(def.name) end
@@ -31,16 +30,16 @@ end
 --- ПОСЛЕ локализации: компаратор каждый раз берёт свежий перевод через
 --- GetDatatextDisplayName. Кэш сбрасывается при каждой новой регистрации
 --- панели.
-local sortedKeysCache
-local function invalidateSortedKeys()
-    sortedKeysCache = nil
+LPS._datatextsSortedKeysCache = LPS._datatextsSortedKeysCache
+function LPS:InvalidateDatatextsSortedKeys()
+    LPS._datatextsSortedKeysCache = nil
 end
 
 function LPS:GetSlotKeyList()
-    if not sortedKeysCache then
+    if not LPS._datatextsSortedKeysCache then
         local keys = {}
-        for key in pairs(registry) do
-            if not HIDDEN_SLOT_KEYS[key] then
+        for key in pairs(LPS.datatexts) do
+            if not LPS.datatextsHiddenSlotKeys[key] then
                 keys[#keys + 1] = key
             end
         end
@@ -50,25 +49,25 @@ function LPS:GetSlotKeyList()
             if na == nb then return a < b end
             return na < nb
         end)
-        sortedKeysCache = keys
+        LPS._datatextsSortedKeysCache = keys
     end
-    return sortedKeysCache
+    return LPS._datatextsSortedKeysCache
 end
 
-local eventBridge = CreateFrame("Frame")
-local datatextCreateQueueRegistered = false
+LPS.datatextsEventBridge = CreateFrame("Frame")
+LPS._datatextsCreateQueueRegistered = false
 
 --- Регистрирует панель инфотекста.
 ---@param def table { key, name, events, ticker, update(f), onClick(self,button), tooltip(tt), create(f) }
 function LPS:RegisterDatatext(def)
     assert(def and def.key and (def.name or def.nameKey), "LPS RegisterDatatext: bad definition")
-    registry[def.key] = def
-    invalidateSortedKeys()
+    LPS.datatexts[def.key] = def
+    LPS:InvalidateDatatextsSortedKeys()
 end
 
 --- Создаёт фрейм панели по её конфигу (вызывается из ApplyLayout при первом использовании слота)
 function LPS:CreateDatatextFrame(key)
-    local def = registry[key]
+    local def = LPS.datatexts[key]
     if not def then return nil end
     local db = LPS:GetDB()
     if not db or not LPS.frame.holder or not LPS.frame.location then return nil end
@@ -140,9 +139,9 @@ function LPS:CreateDatatextFrame(key)
     if f then
         if InCombatLockdown() then
             f._lpsPendingCreate = def.create
-            if not datatextCreateQueueRegistered then
-                datatextCreateQueueRegistered = true
-                eventBridge:RegisterEvent("PLAYER_REGEN_ENABLED")
+            if not LPS._datatextsCreateQueueRegistered then
+                LPS._datatextsCreateQueueRegistered = true
+                LPS.datatextsEventBridge:RegisterEvent("PLAYER_REGEN_ENABLED")
             end
         else
             runCreateCallback()
@@ -160,7 +159,7 @@ LPS.datatextsEvents:RegisterOnce("PLAYER_ENTERING_WORLD", function()
     if LPS.ApplyLayout then LPS:ApplyLayout() end
 end)
 
-eventBridge:SetScript("OnEvent", function(self, event)
+LPS.datatextsEventBridge:SetScript("OnEvent", function(self, event)
     if event ~= "PLAYER_REGEN_ENABLED" then return end
     local done = true
     for _, f in pairs(LPS.frame or {}) do
@@ -174,7 +173,7 @@ eventBridge:SetScript("OnEvent", function(self, event)
         end
     end
     if done then
-        datatextCreateQueueRegistered = false
+        LPS._datatextsCreateQueueRegistered = false
         self:UnregisterEvent("PLAYER_REGEN_ENABLED")
     end
 end)
@@ -187,7 +186,7 @@ end
 --- реализован выше через LPS:GetSlotKeyList().
 
 function LPS:IsDatatextKey(key)
-    return key ~= nil and registry[key] ~= nil
+    return key ~= nil and LPS.datatexts[key] ~= nil
 end
 
 --- Возвращает фрейм панели по ключу слота (создаёт при необходимости)

@@ -5,7 +5,7 @@ LPS._LOADED_LOCALES = LPS._LOADED_LOCALES or {}
 if LPS._LOADED_LOCALES["zhTW"] then return end
 LPS._LOADED_LOCALES["zhTW"] = true
 
-LPS.RegisterLocale("zhTW", {
+LPS:RegisterLocale("zhTW", {
 GENERAL = "常規",
 LOGIN_MESSAGE = "登入訊息",
 SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN = "登入時在對話方塊中顯示訊息。",
@@ -118,6 +118,10 @@ POPUP_COPY_PROFILE_TITLE = "複製配置檔",
 POPUP_COPY_PROFILE_DESC = "將目前配置檔複製到新的配置檔。",
 PROFILE_COPY_BASE = "%s 副本",
 POPUP_DELETE_PROFILE_TITLE = "刪除配置檔",
+POPUP_RESET_PROFILE_TITLE = "重設配置檔",
+POPUP_RESET_PROFILE_DESC = "將目前配置檔重設為預設值？",
+VERSION_LABEL = "版本",
+TIP_WINDOW_SETTINGS = "視窗設定",
 POPUP_DELETE_NONE = "沒有可刪除的配置檔。預設配置檔無法刪除。",
 POPUP_DELETE_SELECT = "選擇要刪除的配置檔：",
 POPUP_RESET_PROFILES_TITLE = "重設所有配置檔",

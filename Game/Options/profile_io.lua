@@ -2,12 +2,12 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local L = LPS.L
 
-LPS.ProfileIO = LPS.ProfileIO or {}
-local IO = LPS.ProfileIO
+
+
 
 local MAX_DEPTH = 8
 
-local function EncodeValue(v, depth)
+function LPS:ProfileEncodeValue(v, depth)
     if v == nil then return "null" end
     local t = type(v)
     if t == "boolean" then
@@ -32,7 +32,7 @@ local function EncodeValue(v, depth)
         local parts = {}
         if isArray then
             for i = 1, n do
-                parts[#parts + 1] = EncodeValue(v[i], depth + 1)
+                parts[#parts + 1] = LPS:ProfileEncodeValue(v[i], depth + 1)
             end
             return "[" .. table.concat(parts, ",") .. "]"
         else
@@ -43,7 +43,7 @@ local function EncodeValue(v, depth)
                 return type(a) < type(b)
             end)
             for _, k in ipairs(keys) do
-                parts[#parts + 1] = string.format("%q:%s", k, EncodeValue(v[k], depth + 1))
+                parts[#parts + 1] = string.format("%q:%s", k, LPS:ProfileEncodeValue(v[k], depth + 1))
             end
             return "{" .. table.concat(parts, ",") .. "}"
         end
@@ -51,12 +51,12 @@ local function EncodeValue(v, depth)
     return "null"
 end
 
-function IO.Encode(data)
-    return EncodeValue(data, 0)
+function LPS:ProfileEncode(data)
+    return LPS:ProfileEncodeValue(data, 0)
 end
 
 --- Мини-рекурсивный JSON-парсер (только типы, которые мы кодируем).
-local function DecodeJSON(str)
+function LPS:ProfileDecodeJSON(str)
     local pos = 1
 
     local function SkipSpaces()
@@ -178,11 +178,11 @@ local function DecodeJSON(str)
     return result
 end
 
-function IO.Decode(json)
-    return DecodeJSON(json)
+function LPS:ProfileDecode(json)
+    return LPS:ProfileDecodeJSON(json)
 end
 
-local function GetLibDeflate()
+function LPS:GetLibDeflate()
     if LibStub and LibStub.GetLibrary then
         local lib = LibStub:GetLibrary("LibDeflate", true)
         if lib then return lib end
@@ -196,17 +196,17 @@ end
 local CODE_PREFIX = "!LPS!"
 
 --- Собирает печатную строку переноса для настроек профиля.
-function IO.EncodeProfile(profileName, settings)
-    local ld = GetLibDeflate()
+function LPS:EncodeProfileData(profileName, settings)
+    local ld = LPS:GetLibDeflate()
     if not ld then return nil, L.PROFILE_IO_NO_LIB or "LibDeflate is not available." end
     local payload = {
         addon = LPS.addon.name,
         format = 1,
         version = LPS.addon.version,
         profile = profileName,
-        data = LPS.OptionsHelper:deepCopy(settings) or {},
+        data = LPS:DeepCopy(settings) or {},
     }
-    local ok, json = pcall(IO.Encode, payload)
+    local ok, json = pcall(LPS.ProfileEncode, payload)
     if not ok then return nil, json end
     local compressed = ld:CompressDeflate(json)
     if not compressed then return nil, L.PROFILE_IO_COMPRESS_FAIL or "Compress failed." end
@@ -216,8 +216,8 @@ function IO.EncodeProfile(profileName, settings)
 end
 
 --- Разбирает строку переноса в payload {addon, format, profile, data}.
-function IO.DecodeProfile(code)
-    local ld = GetLibDeflate()
+function LPS:DecodeProfileData(code)
+    local ld = LPS:GetLibDeflate()
     if not ld then return nil, L.PROFILE_IO_NO_LIB or "LibDeflate is not available." end
     local clean = tostring(code or ""):match("^%s*(.-)%s*$")
     if clean == "" then return nil, L.PROFILE_IO_EMPTY or "No code entered." end
@@ -234,7 +234,7 @@ function IO.DecodeProfile(code)
     if not json then
         return nil, L.PROFILE_IO_DECODE_FAIL or "Invalid code: cannot decode."
     end
-    local ok, payload = pcall(IO.Decode, json)
+    local ok, payload = pcall(LPS.ProfileDecode, json)
     if not ok or type(payload) ~= "table" then
         return nil, L.PROFILE_IO_FORMAT_FAIL or "Invalid code: unknown profile format."
     end
@@ -244,63 +244,63 @@ function IO.DecodeProfile(code)
     return payload
 end
 
-local function CreateBasePopup(width, height)
-    local Widgets = LPS.UI.Widgets
-    Widgets.CloseActivePopup()
+function LPS:CreateProfilePopupBase(width, height)
+    
+    LPS:CloseActivePopup()
     local popup = CreateFrame("Frame", nil, UIParent)
     popup:SetFrameStrata("FULLSCREEN_DIALOG")
     popup:SetSize(width, height)
     popup:SetPoint("CENTER")
     popup:SetClampedToScreen(true)
     popup:EnableMouse(true)
-    LPS.UI.Theme.Box(popup, "window", "border", (LPS.UI.Theme.Get()).windowRadius)
+    LPS:ThemeBox(popup, "window", "border", (LPS:ThemeGet()).windowRadius)
     local titleFs = popup:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     titleFs.themeRole = "heading"
     titleFs:SetPoint("TOPLEFT", 12, -12)
-    Widgets.ApplyFontColor(titleFs, "textPrimary")
+    LPS:ApplyFontColor(titleFs, "textPrimary")
     local bodyFs = popup:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     bodyFs:SetPoint("TOPLEFT", 12, -36)
     bodyFs:SetPoint("TOPRIGHT", -12, -36)
     bodyFs:SetJustifyH("LEFT")
     bodyFs:SetJustifyV("TOP")
-    Widgets.ApplyFontColor(bodyFs, "textMuted")
-    local okBtn = Widgets.CreateFlatButton(popup, 80, 22, L.BTN_OK or "OK")
+    LPS:ApplyFontColor(bodyFs, "textMuted")
+    local okBtn = LPS:CreateFlatButton(popup, 80, 22, L.BTN_OK or "OK")
     okBtn:SetPoint("BOTTOMRIGHT", -12, 12)
-    local cancelBtn = Widgets.CreateFlatButton(popup, 80, 22, L.BTN_CANCEL or "Cancel")
+    local cancelBtn = LPS:CreateFlatButton(popup, 80, 22, L.BTN_CANCEL or "Cancel")
     cancelBtn:SetPoint("RIGHT", okBtn, "LEFT", -8, 0)
     cancelBtn:SetScript("OnClick", function()
-        Widgets.CloseActivePopup()
+        LPS:CloseActivePopup()
     end)
-    Widgets.BindEscapeToClose(popup, function()
-        Widgets.CloseActivePopup()
+    LPS:BindEscapeToClose(popup, function()
+        LPS:CloseActivePopup()
     end)
-    LPS.UI.Theme.ApplyFonts(popup)
-    Widgets.SetActivePopup(popup)
+    LPS:ThemeApplyFonts(popup)
+    LPS:SetActivePopup(popup)
     return popup, titleFs, bodyFs, okBtn
 end
 
-local function CreateFieldBox(popup, x, y, w, h)
-    local Widgets = LPS.UI.Widgets
+function LPS:CreateProfileFieldBox(popup, x, y, w, h)
+    
     local editBox = CreateFrame("EditBox", nil, popup)
     editBox:SetSize(w, h)
     editBox:SetPoint("TOPLEFT", popup, "TOPLEFT", x, y)
     editBox:SetAutoFocus(false)
     editBox:SetFontObject(GameFontHighlightSmall)
-    LPS.UI.Theme.Box(editBox, "field", "border", (LPS.UI.Theme.Get()).windowRadius)
-    local fieldText = Widgets.GetColor("text")
+    LPS:ThemeBox(editBox, "field", "border", (LPS:ThemeGet()).windowRadius)
+    local fieldText = LPS:GetColor("text")
     editBox:SetTextColor(fieldText.r, fieldText.g, fieldText.b)
     editBox:SetTextInsets(6, 6, 0, 0)
     return editBox
 end
 
-function IO.ShowExportPopup()
-    local Widgets = LPS.UI.Widgets
-    if not (LPS.db and LPS.db.GetCurrentProfile and LPS.db.profile) then return end
-    local sourceName = LPS.db:GetCurrentProfile() or "Default"
-    local settings = LPS.OptionsHelper:deepCopy(LPS.db.profile) or {}
-    local code, err = IO.EncodeProfile(sourceName, settings)
+function LPS:ShowExportProfilePopup()
+    
+    if not (LPS:GetDB()) then return end
+    local sourceName = LPS:SVGetCurrentProfile() or "Default"
+    local settings = LPS:DeepCopy(LPS:GetDB().profile) or {}
+    local code, err = LPS:EncodeProfileData(sourceName, settings)
     if not code then
-        Widgets.CreatePopup(
+        LPS:CreatePopup(
             L.POPUP_EXPORT_PROFILE_TITLE or "Export Profile",
             err or "Failed to encode the profile.",
             nil,
@@ -310,14 +310,14 @@ function IO.ShowExportPopup()
         return
     end
 
-    local popup, titleFs, bodyFs, okBtn = CreateBasePopup(560, 320)
+    local popup, titleFs, bodyFs, okBtn = LPS:CreateProfilePopupBase(560, 320)
     titleFs:SetText(L.POPUP_EXPORT_PROFILE_TITLE or "Export Profile")
     bodyFs:SetText(
         L.POPUP_EXPORT_PROFILE_DESC or "Copy the code below and paste it into Import on another client or game version."
     )
 
     local CODE_H = 204
-    local codeBox = CreateFieldBox(popup, 12, -64, 536, CODE_H)
+    local codeBox = LPS:CreateProfileFieldBox(popup, 12, -64, 536, CODE_H)
     codeBox:SetMultiLine(true)
     codeBox:EnableMouse(true)
     codeBox:SetText(code)
@@ -333,18 +333,18 @@ function IO.ShowExportPopup()
     end)
 
     okBtn:SetScript("OnClick", function()
-        Widgets.CloseActivePopup()
+        LPS:CloseActivePopup()
     end)
     codeBox:SetFocus()
     codeBox:HighlightText()
     return popup
 end
 
-function IO.ShowImportPopup()
-    local Widgets = LPS.UI.Widgets
-    if not (LPS.db and LPS.sv and LPS.sv.profiles) then return end
+function LPS:ShowImportProfilePopup()
+    
+    if not LPS.db then return end
 
-    local popup, titleFs, bodyFs, okBtn = CreateBasePopup(560, 470)
+    local popup, titleFs, bodyFs, okBtn = LPS:CreateProfilePopupBase(560, 470)
     titleFs:SetText(L.POPUP_IMPORT_PROFILE_TITLE or "Import Profile")
     bodyFs:SetText(
         L.POPUP_IMPORT_PROFILE_DESC or "Enter a name for the new profile and paste the exported code below:"
@@ -353,39 +353,25 @@ function IO.ShowImportPopup()
     local nameLabel = popup:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     nameLabel:SetPoint("TOPLEFT", 12, -64)
     nameLabel:SetText(L.PROFILE_NAME_LABEL or "Profile name")
-    Widgets.ApplyFontColor(nameLabel, "textMuted")
-    local nameBox = CreateFieldBox(popup, 12, -82, 260, 22)
+    LPS:ApplyFontColor(nameLabel, "textMuted")
+    local nameBox = LPS:CreateProfileFieldBox(popup, 12, -82, 260, 22)
 
     local codeLabel = popup:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     codeLabel:SetPoint("TOPLEFT", 12, -114)
     codeLabel:SetText(L.LABEL_CODE or "Code")
-    Widgets.ApplyFontColor(codeLabel, "textMuted")
+    LPS:ApplyFontColor(codeLabel, "textMuted")
     local CODE_H = 296
-    local codeBox = CreateFieldBox(popup, 12, -132, 536, CODE_H)
+    local codeBox = LPS:CreateProfileFieldBox(popup, 12, -132, 536, CODE_H)
     codeBox:SetMultiLine(true)
     codeBox:EnableMouse(true)
     codeBox:SetScript("OnTextChanged", function(self)
         self:SetHeight(CODE_H)
     end)
 
-    local function BuildUniqueName(base)
-        local taken = {}
-        for name in pairs(LPS.sv.profiles) do
-            taken[name:lower()] = true
-        end
-        local candidate = base
-        local i = 2
-        while taken[candidate:lower()] do
-            candidate = base .. " " .. i
-            i = i + 1
-        end
-        return candidate
-    end
-
     okBtn:SetScript("OnClick", function()
-        local payload, err = IO.DecodeProfile(codeBox:GetText())
+        local payload, err = LPS:DecodeProfileData(codeBox:GetText())
         if not payload then
-            Widgets.CreatePopup(
+            LPS:CreatePopup(
                 L.POPUP_IMPORT_PROFILE_TITLE or "Import Profile",
                 err or "Invalid code.",
                 nil,
@@ -399,14 +385,12 @@ function IO.ShowImportPopup()
             name = payload.profile:match("^%s*(.-)%s*$") or ""
         end
         if name == "" then name = L.PROFILE_IMPORTED_BASE or "Imported Profile" end
-        local finalName = BuildUniqueName(name)
-        LPS.sv.profiles[finalName] = LPS.OptionsHelper:deepCopy(payload.data) or {}
-        if LPS.db and LPS.db.SetProfile then
-            LPS.db:SetProfile(finalName)
-        end
-        local Panel = LPS.UI.Panel
-        if Panel and Panel.RefreshActivePage then Panel.RefreshActivePage() end
-        Widgets.CreatePopup(
+        local finalName = LPS:BuildUniqueProfileName(name)
+        LPS.sv.profiles[finalName] = LPS:DeepCopy(payload.data) or {}
+        LPS:SVSetProfile(finalName)
+        
+        if LPS:PanelIsShown() then LPS:PanelRefreshActivePage() end
+        LPS:CreatePopup(
             L.POPUP_IMPORT_PROFILE_TITLE or "Import Profile",
             string.format(L.IMPORT_CREATED or "Profile \"%s\" created.", finalName),
             nil,

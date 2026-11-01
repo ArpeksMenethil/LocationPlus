@@ -1,8 +1,6 @@
 local addonName, LPS = ...
 
-if C_AddOns and C_AddOns.GetAddOnMetadata then
-    GetAddOnMetadata = C_AddOns.GetAddOnMetadata
-end
+LPS.GetAddOnMetadata = (C_AddOns and C_AddOns.GetAddOnMetadata) or _G.GetAddOnMetadata
 
 _G.ArpeksLPS = _G.ArpeksLPS or {}
 _G.ArpeksLPS.LPS = LPS or {}
@@ -25,6 +23,11 @@ do
     LPS.Forever = WOW_PROJECT_ID == WOW_PROJECT_CAMELOT
 end
 LPS.frame = LPS.frame or {}
+
+LPS.L = LPS.L or {}
+LPS.GAME_LOCALE = GetLocale()
+LPS.ACTIVE_LOCALE = LPS.GAME_LOCALE
+LPS.RegisteredLocales = LPS.RegisteredLocales or {}
 
 LPS.addon = LPS.addon or {}
 LPS.addon.textColor = LPS.addon.textColor or "ff1784d1"

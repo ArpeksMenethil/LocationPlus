@@ -7,17 +7,17 @@ local L = LPS.L
 --- На клиентах без Settings.* API категория не создаётся (тихо) —
 --- настройки остаются доступны через /lps и ПКМ по кнопке на мини-карте.
 
-local function getAddonTitle()
+function LPS:GetSettingsAddonTitle()
     return (LPS.addon.title and LPS.addon.title ~= "") and LPS.addon.title or "Location Plus"
 end
 
-local function buildCategoryFrame()
+function LPS:BuildSettingsCategoryFrame()
     if LPS.frame.settingsCategory then
         return LPS.frame.settingsCategory
     end
 
     local panel = CreateFrame("Frame", "LPS_SettingsCategory")
-    panel.name = getAddonTitle()
+    panel.name = LPS:GetSettingsAddonTitle()
 
     local logo = panel:CreateTexture("ART")
     logo:SetSize(96, 96)
@@ -30,7 +30,7 @@ local function buildCategoryFrame()
             :format(tostring(title), title and title.GetObjectType and title:GetObjectType() or "?"), 0)
     end
     title:SetPoint("TOPLEFT", logo, "TOPRIGHT", 24, 0)
-    title:SetText(getAddonTitle())
+    title:SetText(LPS:GetSettingsAddonTitle())
 
     local version = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     version:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -2)
@@ -75,9 +75,9 @@ function LPS:RegisterSettingsCategory()
         end
     local ok, controller = pcall(function()
         return F.Settings:New({
-            title = getAddonTitle(),
+            title = LPS:GetSettingsAddonTitle(),
             name = "LocationPlus",
-            frame = buildCategoryFrame(),
+            frame = LPS:BuildSettingsCategoryFrame(),
         })
     end)
     if not ok then

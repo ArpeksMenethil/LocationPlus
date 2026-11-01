@@ -38,10 +38,8 @@
 ## Category-zhTW: Arpeks 外掛程式
 
 Libs/!load.xml
-
+Game/init.lua
+Game/api.lua
 Locales/[TextLocale].lua
-
 Game/!load.xml
 Modules/!load.xml
-
-Game/compartment.lua
