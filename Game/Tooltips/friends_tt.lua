@@ -1,7 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local L = LPS.L
-local DT = LPS._DT
 
 do
     local format, gsub, strmatch, tinsert, tremove =
@@ -34,7 +33,6 @@ do
         DND = ' |cffFFFFFF[|r|cffFF3333' .. (L.DND) .. '|r|cffFFFFFF]|r',
     }
     local levelNameString = '|cff%02x%02x%02x%d|r |cff%02x%02x%02x%s|r'
-    local levelNameClassString = '|cff%02x%02x%02x%d|r %s%s%s'
     local tthead = { r = 0.4, g = 0.78, b = 1 }
     local activezone, inactivezone = { r = 0.3, g = 1.0, b = 0.3 }, { r = 0.65, g = 0.65, b = 0.65 }
 
@@ -75,10 +73,10 @@ do
         return result
     end
 
-    local function ClassColorHex(classFile)
-        local c = classFile and RAID_CLASS_COLORS and RAID_CLASS_COLORS[classFile]
-        if c then return DT.hexFromRGB(c.r, c.g, c.b) end
-        return nil
+    local function ClassColor(classFile)
+        local colors = RAID_CLASS_COLORS
+        if not colors then return nil end
+        return colors[classFile] or colors.PRIEST
     end
 
     local function InGroup(name, realmName)
@@ -362,13 +360,12 @@ do
             for _, info in ipairs(friendTable) do
                 if info.online then
                     if LPS.MapInfo and LPS.MapInfo.zoneText and (LPS.MapInfo.zoneText == info.zone) then zonec = activezone else zonec = inactivezone end
-                    classc = ClassColorHex(info.class)
+                    classc = ClassColor(info.class)
                     levelc = GetQuestDifficultyColor(info.level)
-                    if not classc then classc = DT.hexFromRGB(levelc.r, levelc.g, levelc.b) end
 
                     TooltipAddXLine(tt, true, characterFriend,
-                        format(levelNameClassString, levelc.r * 255, levelc.g * 255, levelc.b * 255, info.level, classc, info.name .. InGroup(info.name) .. info.status),
-                        info.zone, classc, zonec.r, zonec.g, zonec.b)
+                        format(levelNameString, levelc.r * 255, levelc.g * 255, levelc.b * 255, info.level, classc.r * 255, classc.g * 255, classc.b * 255, info.name .. InGroup(info.name) .. info.status),
+                        info.zone, classc.r, classc.g, classc.b, zonec.r, zonec.g, zonec.b)
                 end
             end
         end
@@ -390,16 +387,17 @@ do
                         local clientInfo = clientList[client]
                         local header = format('%s (%s)', battleNetString, info.classicText or (clientInfo and clientInfo.tag) or client)
                         if info.client and info.client == wowString then
-                            classc = ClassColorHex(info.className)
+                            classc = ClassColor(info.className)
+                            local line
                             if info.level and info.level ~= '' then
                                 levelc = GetQuestDifficultyColor(info.level)
+                                line = format(levelNameString, levelc.r * 255, levelc.g * 255, levelc.b * 255, info.level, classc.r * 255, classc.g * 255, classc.b * 255, info.characterName .. InGroup(info.characterName, info.realmName) .. status)
                             else
-                                classc, levelc = RAID_CLASS_COLORS.PRIEST, RAID_CLASS_COLORS.PRIEST
+                                line = format('|cff%02x%02x%02x%s|r', classc.r * 255, classc.g * 255, classc.b * 255, info.characterName .. InGroup(info.characterName, info.realmName) .. status)
                             end
-                            if not classc then classc = RAID_CLASS_COLORS.PRIEST end
 
                             TooltipAddXLine(tt, true, header,
-                                format(levelNameString .. '%s%s', levelc.r * 255, levelc.g * 255, levelc.b * 255, info.level, classc, info.characterName .. InGroup(info.characterName, info.realmName) .. status),
+                                line,
                                 info.accountName, 238, 238, 238, 238, 238, 238)
                             if shiftDown then
                                 if LPS.MapInfo and LPS.MapInfo.zoneText and (LPS.MapInfo.zoneText == info.zoneName) then zonec = activezone else zonec = inactivezone end
