@@ -196,20 +196,41 @@ function LPS:onLoaded()
         SetCVar("timeMgrUseMilitaryTime", 1)
     end
 
+    LPS.coreEvents = F.Events:New("LPS.Core")
+    -- The game's own UI layout cache (UIParent) restores a stale
+    -- right-edge point for this frame around login, overriding our
+    -- SetPoint (left = UIWidth - frameWidth no matter what x we set).
+    -- Re-assert the saved geometry on world entry and on a couple of
+    -- timers after load until the game's restore has settled; once our
+    -- canonical point sticks, SetUserPlaced(true) in ApplyHolderPosition
+    -- makes the game re-save it into its cache, overwriting the stale
+    -- entry (self-healing after the first reload cycle).
+    LPS.coreEvents:Register("PLAYER_ENTERING_WORLD", function()
+        LPS:UpdateFrameSize()
+        LPS:ApplyLayout()
+        LPS:ApplyHolderPosition()
+        LPS:DebugHolderState("PEW")
+    end)
+
     if IsLoggedIn and IsLoggedIn() then
         LPS:UpdateFrameSize()
         LPS:ApplyLayout()
-    else
-        LPS.coreEvents = F.Events:New("LPS.Core")
-        LPS.coreEvents:RegisterOnce("PLAYER_ENTERING_WORLD", function()
-            LPS:UpdateFrameSize()
-            LPS:ApplyLayout()
-        end)
-        C_Timer.After(1, function()
-            LPS:UpdateFrameSize()
-            LPS:ApplyLayout()
-        end)
+        LPS:ApplyHolderPosition()
     end
+    -- [LPS DEBUG] Состояние точек + ремонт кэша раскладки игры (UIParent).
+    C_Timer.After(0.2, function()
+        LPS:DebugHolderState("t=0.2s")
+    end)
+    C_Timer.After(1, function()
+        LPS:UpdateFrameSize()
+        LPS:ApplyLayout()
+        LPS:ApplyHolderPosition()
+        LPS:DebugHolderState("t=1s")
+    end)
+    C_Timer.After(5, function()
+        LPS:ApplyHolderPosition()
+        LPS:DebugHolderState("t=5s")
+    end)
 
     if db and db.general and db.general.loginMessage then
         LPS:Print(format(L.LOADED_CURRENT_VERSION.." |c%sv%s|r", LPS.addon.textColor, LPS.addon.version), false)

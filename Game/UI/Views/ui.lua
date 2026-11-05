@@ -174,6 +174,31 @@ function LPS:SetMoveMode(enabled)
     end
 
     if enabled then
+        -- DEBUG: текущие координаты в начале режима редактирования
+        do
+            local l, t = f:GetLeft(), f:GetTop()
+            local w, h = f:GetWidth(), f:GetHeight()
+            LPS:Print(string.format(
+                "[LPS DEBUG] Move mode: frame left=%s top=%s right=%s bottom=%s size=%s x %s, screen=%s x %s, scale=%s",
+                tostring(l), tostring(t), tostring(f:GetRight()), tostring(f:GetBottom()),
+                tostring(w), tostring(h),
+                tostring(UIParent:GetWidth()), tostring(UIParent:GetHeight()),
+                tostring(f:GetScale())), false)
+            local par = f:GetParent()
+            LPS:Print(string.format(
+                "[LPS DEBUG] Move mode: numPoints=%s, parent=%s (parent left=%s top=%s scale=%s)",
+                tostring(f:GetNumPoints()),
+                par and (par:GetName() or "(unnamed)") or "nil",
+                par and tostring(par:GetLeft()) or "nil",
+                par and tostring(par:GetTop()) or "nil",
+                par and tostring(par:GetScale()) or "nil"), false)
+            local sp = LPS:GetDB() and LPS:GetDB().position
+            LPS:Print(string.format(
+                "[LPS DEBUG] Move mode: saved in DB: point=%s relPoint=%s x=%s y=%s",
+                tostring(sp and sp.point), tostring(sp and sp.relPoint),
+                tostring(sp and sp.x), tostring(sp and sp.y)), false)
+        end
+
         for _, line in ipairs(f.grid.vLines or {}) do
             line:Show()
         end
@@ -191,24 +216,31 @@ function LPS:SetMoveMode(enabled)
         end)
 
         local function saveHolderPosition(self)
+            -- DEBUG: было ли реальное перетаскивание (для отчёта)
+            local wasDragging = f._lpsDragging or false
             -- Принудительно останавливаем перетаскивание (StopMovingOrSizing), иначе при
-            -- отпускании кнопки вне области фрейма координаты GetPoint() некорректны
+            -- отпускании кнопки вне области фрейма координаты некорректны
             -- и позиция не сохранялась.
             if f._lpsDragging then
                 self:StopMovingOrSizing()
                 f._lpsDragging = false
             end
-            local point, _, relPoint, x, y = self:GetPoint()
-            if not point or type(x) ~= "number" or type(y) ~= "number" then
+
+            -- Позицию храним как АБСОЛЮТНЫЙ offset от TOPLEFT родителя (UIParent),
+            -- а НЕ как кортеж GetPoint(). После StartMoving/StopMovingOrSizing
+            -- GetPoint() нормализует анкер в LEFT/RIGHT, и у краёв экрана это
+            -- приводило к "зеркальному" отражению фрейма после /reload.
+            -- GetLeft()/GetTop() детерминированы и не зависят от выбора анкера.
+            local left = self:GetLeft()
+            local top = self:GetTop()
+            if type(left) ~= "number" or type(top) ~= "number" then
                 return -- незавершённое перетаскивание: не сохраняем некорректные значения
             end
 
-            local left = self:GetLeft()
-            local bottom = self:GetBottom()
             local width = self:GetWidth()
             local height = self:GetHeight()
             local centerX = left + width/2
-            local centerY = bottom + height/2
+            local centerY = self:GetBottom() + height/2
             local screenW = UIParent:GetWidth()
             local screenH = UIParent:GetHeight()
             local stepX = screenW / 10
@@ -235,25 +267,49 @@ function LPS:SetMoveMode(enabled)
             local db = LPS:GetDB()
             db.position = db.position or {}
             local p = db.position
-            p.point = point
-            p.relPoint = relPoint
-            p.x = x + offsetX
-            p.y = y + offsetY
+            p.point = "TOPLEFT"
+            p.relPoint = "TOPLEFT"
+            -- Позицию храним как абсолютный offset якоря TOPLEFT от UIParent.
+            -- GetLeft() — расстояние левого края от левого края родителя: это и есть
+            -- x-offset для TOPLEFT (положительный = вправо).
+            -- GetTop() — расстояние ВЕРХНЕГО края от НИЗНЕГО края родителя, а y-offset
+            -- у TOPLEFT считается ОТ ВЕРХА (положительный = вниз), поэтому переводим:
+            --   y = (top - screenH)  -- top в "от низа" -> минус screenH = "от верха"
+            -- offsetX/offsetY вычислены в системе "от нижнего левого угла"
+            -- (offsetY > 0 = сдвиг вверх). В координатах TOPLEFT сдвиг вверх
+            -- УВЕЛИЧИВАЕТ y-offset (менее отрицательный), значит оба смещения
+            -- прибавляем как есть.
+            p.x = left + offsetX
+            p.y = (top - screenH) + offsetY
 
             self:ClearAllPoints()
-            self:SetPoint(p.point, UIParent, p.relPoint, p.x, p.y)
+            self:SetPoint("TOPLEFT", UIParent, "TOPLEFT", p.x, p.y)
+            -- Keep the frame user-placed with our canonical point, so the
+            -- game re-saves THIS position into its layout cache (UIParent)
+            -- on logout instead of the stale right-edge entry.
+            self:SetUserPlaced(true)
+
+            if wasDragging then
+                -- DEBUG: координаты в конце перетаскивания
+                LPS:Print(string.format(
+                    "[LPS DEBUG] Drag finished: left=%s top=%s right=%s bottom=%s size=%s x %s (snap offsetX=%s offsetY=%s)",
+                    tostring(self:GetLeft()), tostring(self:GetTop()),
+                    tostring(self:GetRight()), tostring(self:GetBottom()),
+                    tostring(self:GetWidth()), tostring(self:GetHeight()),
+                    tostring(offsetX), tostring(offsetY)), false)
+            end
 
             local g = LPS.frame and LPS.frame._posGeometry
             if g then
                 for k in pairs(g) do g[k] = nil end
-                g.point, g.relPoint, g.x, g.y = point, relPoint, p.x, p.y
+                g.point, g.relPoint, g.x, g.y = "TOPLEFT", "TOPLEFT", p.x, p.y
             end
         end
 
         f:SetScript("OnDragStop", saveHolderPosition)
         f:SetScript("OnMouseUp", saveHolderPosition)
 
-        f:SetScript("OnUpdate", function(self)
+        f:SetScript("OnUpdate", function(self, dt)
             local grid = f.grid
             if not grid then return end
             local left = self:GetLeft()
@@ -310,6 +366,17 @@ function LPS:SetMoveMode(enabled)
             end
         end)
     else
+        -- DEBUG: окончательные координаты при закрытии режима + значения, сохранённые в DB
+        do
+            local l, t = f:GetLeft(), f:GetTop()
+            local sp = LPS:GetDB() and LPS:GetDB().position
+            LPS:Print(string.format(
+                "[LPS DEBUG] Move mode OFF: frame left=%s top=%s size=%s x %s; DB: point=%s relPoint=%s x=%s y=%s",
+                tostring(l), tostring(t),
+                tostring(f:GetWidth()), tostring(f:GetHeight()),
+                tostring(sp and sp.point), tostring(sp and sp.relPoint),
+                tostring(sp and sp.x), tostring(sp and sp.y)), false)
+        end
         f:RegisterForDrag()
         f._lpsDragging = false
         f:SetScript("OnDragStart", nil)
