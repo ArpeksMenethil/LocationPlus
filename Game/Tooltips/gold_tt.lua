@@ -74,6 +74,13 @@ function LPS:BuildGoldTooltip(tt)
     local allyTotal, hordeTotal, realmTotal, accountTotal = 0, 0, 0, 0
     local currentName = UnitName("player")
 
+    if LPS.Forever then
+        local name, surname = UnitNameUnmodified("player")
+        if surname and surname ~= "" then
+        currentName = name .. " " .. surname
+        end
+    end
+
     local gold = getGoldRoot()
     if gold and gold.realms and realm ~= "" then
         local r = gold.realms[realm]

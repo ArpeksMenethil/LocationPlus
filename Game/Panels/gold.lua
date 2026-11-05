@@ -57,6 +57,13 @@ function LPS:UpdateGoldCharacterData()
     local name = UnitName("player")
     if not name then return end
 
+    if LPS.Forever then
+        local t_name, surname = UnitNameUnmodified("player")
+        if surname and surname ~= "" then
+            name = t_name .. " " .. surname
+        end
+    end
+
     local faction = UnitFactionGroup("player")
     local _, classFile = UnitClass("player")
     local money = GetMoney() or 0
@@ -74,6 +81,14 @@ function LPS:ResetGoldCharacterData()
     if not (r and r.chars) then return end
     local name = UnitName("player")
     if not name then return end
+
+    if LPS.Forever then
+        local t_name, surname = UnitNameUnmodified("player")
+        if surname and surname ~= "" then
+            name = t_name .. " " .. surname
+        end
+    end
+
     r.chars[name] = nil
 end
 
