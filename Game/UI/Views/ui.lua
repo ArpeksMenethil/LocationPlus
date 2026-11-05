@@ -183,8 +183,26 @@ function LPS:SetMoveMode(enabled)
         f:RegisterForDrag("LeftButton")
 
         local snapRange = 10
+        f._lpsDragging = false
 
-        f:SetScript("OnMouseUp", function(self)
+        f:SetScript("OnDragStart", function(self)
+            self._lpsDragging = true
+            self:StartMoving()
+        end)
+
+        local function saveHolderPosition(self)
+            -- Принудительно останавливаем перетаскивание (StopMovingOrSizing), иначе при
+            -- отпускании кнопки вне области фрейма координаты GetPoint() некорректны
+            -- и позиция не сохранялась.
+            if f._lpsDragging then
+                self:StopMovingOrSizing()
+                f._lpsDragging = false
+            end
+            local point, _, relPoint, x, y = self:GetPoint()
+            if not point or type(x) ~= "number" or type(y) ~= "number" then
+                return -- незавершённое перетаскивание: не сохраняем некорректные значения
+            end
+
             local left = self:GetLeft()
             local bottom = self:GetBottom()
             local width = self:GetWidth()
@@ -214,8 +232,9 @@ function LPS:SetMoveMode(enabled)
                 end
             end
 
-            local point, _, relPoint, x, y = self:GetPoint()
-            local p = LPS:GetDB().position
+            local db = LPS:GetDB()
+            db.position = db.position or {}
+            local p = db.position
             p.point = point
             p.relPoint = relPoint
             p.x = x + offsetX
@@ -229,7 +248,10 @@ function LPS:SetMoveMode(enabled)
                 for k in pairs(g) do g[k] = nil end
                 g.point, g.relPoint, g.x, g.y = point, relPoint, p.x, p.y
             end
-        end)
+        end
+
+        f:SetScript("OnDragStop", saveHolderPosition)
+        f:SetScript("OnMouseUp", saveHolderPosition)
 
         f:SetScript("OnUpdate", function(self)
             local grid = f.grid
@@ -289,6 +311,9 @@ function LPS:SetMoveMode(enabled)
         end)
     else
         f:RegisterForDrag()
+        f._lpsDragging = false
+        f:SetScript("OnDragStart", nil)
+        f:SetScript("OnDragStop", nil)
         f:SetScript("OnUpdate", nil)
         for _, line in ipairs(f.grid and f.grid.vLines or {}) do
             line:Hide()
