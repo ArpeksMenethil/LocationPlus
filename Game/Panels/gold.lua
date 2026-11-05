@@ -54,15 +54,8 @@ function LPS:UpdateGoldCharacterData()
     if realm == "" then return end
     gold.realms[realm] = gold.realms[realm] or { chars = {} }
 
-    local name = UnitName("player")
+    local name = LPS:GetPlayerFullName()
     if not name then return end
-
-    if LPS.Forever then
-        local t_name, surname = UnitNameUnmodified("player")
-        if surname and surname ~= "" then
-            name = t_name .. " " .. surname
-        end
-    end
 
     local faction = UnitFactionGroup("player")
     local _, classFile = UnitClass("player")
@@ -79,15 +72,8 @@ end
 function LPS:ResetGoldCharacterData()
     local _, r = getGoldRealmTable()
     if not (r and r.chars) then return end
-    local name = UnitName("player")
+    local name = LPS:GetPlayerFullName()
     if not name then return end
-
-    if LPS.Forever then
-        local t_name, surname = UnitNameUnmodified("player")
-        if surname and surname ~= "" then
-            name = t_name .. " " .. surname
-        end
-    end
 
     r.chars[name] = nil
 end

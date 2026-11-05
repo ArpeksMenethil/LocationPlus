@@ -66,6 +66,20 @@ function LPS:GetPlayerClassColor()
     return 1, 1, 1
 end
 
+--- Имя персонажа с учётом проекта: на Forever (Camelot) имя
+--- может быть дополнено фамилией (второе имя) из UnitNameUnmodified.
+--- @return string|nil
+function LPS:GetPlayerFullName()
+    local name = UnitName("player")
+    if LPS.Forever and UnitNameUnmodified then
+        local first, surname = UnitNameUnmodified("player")
+        if surname and surname ~= "" then
+            name = first .. " " .. surname
+        end
+    end
+    return name
+end
+
 ---@type fun(...): ...
 local unpackFn = table.unpack or unpack
 
