@@ -174,31 +174,6 @@ function LPS:SetMoveMode(enabled)
     end
 
     if enabled then
-        -- DEBUG: текущие координаты в начале режима редактирования
-        do
-            local l, t = f:GetLeft(), f:GetTop()
-            local w, h = f:GetWidth(), f:GetHeight()
-            LPS:Print(string.format(
-                "[LPS DEBUG] Move mode: frame left=%s top=%s right=%s bottom=%s size=%s x %s, screen=%s x %s, scale=%s",
-                tostring(l), tostring(t), tostring(f:GetRight()), tostring(f:GetBottom()),
-                tostring(w), tostring(h),
-                tostring(UIParent:GetWidth()), tostring(UIParent:GetHeight()),
-                tostring(f:GetScale())), false)
-            local par = f:GetParent()
-            LPS:Print(string.format(
-                "[LPS DEBUG] Move mode: numPoints=%s, parent=%s (parent left=%s top=%s scale=%s)",
-                tostring(f:GetNumPoints()),
-                par and (par:GetName() or "(unnamed)") or "nil",
-                par and tostring(par:GetLeft()) or "nil",
-                par and tostring(par:GetTop()) or "nil",
-                par and tostring(par:GetScale()) or "nil"), false)
-            local sp = LPS:GetDB() and LPS:GetDB().position
-            LPS:Print(string.format(
-                "[LPS DEBUG] Move mode: saved in DB: point=%s relPoint=%s x=%s y=%s",
-                tostring(sp and sp.point), tostring(sp and sp.relPoint),
-                tostring(sp and sp.x), tostring(sp and sp.y)), false)
-        end
-
         for _, line in ipairs(f.grid.vLines or {}) do
             line:Show()
         end
@@ -216,8 +191,6 @@ function LPS:SetMoveMode(enabled)
         end)
 
         local function saveHolderPosition(self)
-            -- DEBUG: было ли реальное перетаскивание (для отчёта)
-            local wasDragging = f._lpsDragging or false
             -- Принудительно останавливаем перетаскивание (StopMovingOrSizing), иначе при
             -- отпускании кнопки вне области фрейма координаты некорректны
             -- и позиция не сохранялась.
@@ -289,16 +262,6 @@ function LPS:SetMoveMode(enabled)
             -- on logout instead of the stale right-edge entry.
             self:SetUserPlaced(true)
 
-            if wasDragging then
-                -- DEBUG: координаты в конце перетаскивания
-                LPS:Print(string.format(
-                    "[LPS DEBUG] Drag finished: left=%s top=%s right=%s bottom=%s size=%s x %s (snap offsetX=%s offsetY=%s)",
-                    tostring(self:GetLeft()), tostring(self:GetTop()),
-                    tostring(self:GetRight()), tostring(self:GetBottom()),
-                    tostring(self:GetWidth()), tostring(self:GetHeight()),
-                    tostring(offsetX), tostring(offsetY)), false)
-            end
-
             local g = LPS.frame and LPS.frame._posGeometry
             if g then
                 for k in pairs(g) do g[k] = nil end
@@ -366,17 +329,6 @@ function LPS:SetMoveMode(enabled)
             end
         end)
     else
-        -- DEBUG: окончательные координаты при закрытии режима + значения, сохранённые в DB
-        do
-            local l, t = f:GetLeft(), f:GetTop()
-            local sp = LPS:GetDB() and LPS:GetDB().position
-            LPS:Print(string.format(
-                "[LPS DEBUG] Move mode OFF: frame left=%s top=%s size=%s x %s; DB: point=%s relPoint=%s x=%s y=%s",
-                tostring(l), tostring(t),
-                tostring(f:GetWidth()), tostring(f:GetHeight()),
-                tostring(sp and sp.point), tostring(sp and sp.relPoint),
-                tostring(sp and sp.x), tostring(sp and sp.y)), false)
-        end
         f:RegisterForDrag()
         f._lpsDragging = false
         f:SetScript("OnDragStart", nil)

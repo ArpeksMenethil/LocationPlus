@@ -209,7 +209,7 @@ function LPS:onLoaded()
         LPS:UpdateFrameSize()
         LPS:ApplyLayout()
         LPS:ApplyHolderPosition()
-        LPS:DebugHolderState("PEW")
+        LPS:RepairHolderLayoutCache()
     end)
 
     if IsLoggedIn and IsLoggedIn() then
@@ -217,19 +217,17 @@ function LPS:onLoaded()
         LPS:ApplyLayout()
         LPS:ApplyHolderPosition()
     end
-    -- [LPS DEBUG] Состояние точек + ремонт кэша раскладки игры (UIParent).
-    C_Timer.After(0.2, function()
-        LPS:DebugHolderState("t=0.2s")
-    end)
+    -- Ремонт кэша раскладки игры (UIParent): на случай, если игра ещё
+    -- применила/применит старую запись после нашего re-apply.
     C_Timer.After(1, function()
         LPS:UpdateFrameSize()
         LPS:ApplyLayout()
         LPS:ApplyHolderPosition()
-        LPS:DebugHolderState("t=1s")
+        LPS:RepairHolderLayoutCache()
     end)
     C_Timer.After(5, function()
         LPS:ApplyHolderPosition()
-        LPS:DebugHolderState("t=5s")
+        LPS:RepairHolderLayoutCache()
     end)
 
     if db and db.general and db.general.loginMessage then
