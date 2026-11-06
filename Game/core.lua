@@ -226,6 +226,10 @@ function LPS:onLoaded()
         LPS:RepairHolderLayoutCache()
     end)
     C_Timer.After(5, function()
+        -- Игра может применить кэшированный размер holder'а (w/h из кэша
+        -- раскладки UIParent) уже после PEW-поправки: повторяем и размер,
+        -- и позицию, чтобы гигантский holder не остался навсегда.
+        LPS:UpdateFrameSize()
         LPS:ApplyHolderPosition()
         LPS:RepairHolderLayoutCache()
     end)

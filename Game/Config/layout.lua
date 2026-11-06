@@ -95,6 +95,13 @@ function LPS:RepairHolderLayoutCache()
                 e.relPoint = "TOPLEFT"
                 e.x = p.x
                 e.y = p.y
+                -- Кэш раскладки хранит и РАЗМЕР user-placed фреймов (w/h).
+                -- Если туда попала неправильная величина (например, до
+                -- первого авторазмера в неизвестной зоне), игра восстанавливает
+                -- её на каждом логине ПОСЛЕ нашей поправки в PEW — и holder
+                -- остаётся огромным. Перезаписываем актуальным размером.
+                e.w = holder:GetWidth()
+                e.h = holder:GetHeight()
             end
         end
     end
@@ -123,6 +130,12 @@ function LPS:UpdateFrameSize()
     end
     width = width + padding * 2 + 10
     height = height + 6
+    -- Страховка: holder никогда не может быть больше экрана. Иначе при
+    -- рассинхроне размеров детей (например, локация не получена и панель
+    -- ещё не пересобрана по тексту) холдер растягивает весь UI.
+    local uiW, uiH = UIParent:GetWidth(), UIParent:GetHeight()
+    if uiW > 100 then width = math.min(width, uiW - 10) end
+    if uiH > 100 then height = math.min(height, uiH - 10) end
     if width ~= LPS._lastPosW or height ~= LPS._lastPosH then
         LPS._lastPosW, LPS._lastPosH = width, height
         LPS.frame.holder:SetSize(width, height)

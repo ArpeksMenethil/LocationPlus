@@ -44,7 +44,10 @@ function LPS:CreateLocationFrame()
             else
                 baseText = hasSub and sub or zone
             end
-            baseText = baseText or ""
+            -- Если локация не получена (нет карты и нет имени зоны),
+            -- показываем «Неизвестно», а не пустую строку: панель всегда
+            -- содержит текст и имеет стабильный размер.
+            baseText = baseText or UNKNOWN
 
             local playerMinLevel, playerMaxLevel, playerLevelColor, extra
             local icon = ""
