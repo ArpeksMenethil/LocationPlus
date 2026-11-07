@@ -118,6 +118,17 @@ LPS.levelTableConst = {
         --[[Riverglades]]			[2548] = {minLevel = 35, 	maxLevel = 45,},
         --[[Shen'dralas]]			[2652] = {minLevel = 35, 	maxLevel = 45,},
 
+    -- Dungeons and Raids
+        --[[Stratholme]]			[2017] = {minLevel = 46, 	maxLevel = 60,		minFish = 225,},
+        --[[Maraudon]]				[2100] = {minLevel = 30, 	maxLevel = 50,		minFish = 130,},
+        --[[Zul'Gurub]]				[1977] = {minLevel = 50, 	maxLevel = 60,		minFish = 225,},
+        --[[Sunken Temple]]			[1477] = {minLevel = 40, 	maxLevel = 50,		minFish = 175,},
+        --[[Scarlet Monastery]]		[796]  = {minLevel = 26, 	maxLevel = 45,		minFish = 75,},
+        --[[Deadmines]]				[1581] = {minLevel = 17, 	maxLevel = 26,		minFish = 50,},
+        --[[Wailing Caverns]]		[718]  = {minLevel = 15, 	maxLevel = 25,		minFish = 50,},
+        --[[Blackfathom Deeps]]		[719]  = {minLevel = 20, 	maxLevel = 32,		minFish = 75,},
+        --[[Naxxramas]]				[3456] = {minLevel = 60, 	maxLevel = 60,		minFish = 300,},
+
 }
 
 function LPS:GetLevelTable()
