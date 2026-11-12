@@ -53,15 +53,18 @@ do
                     end
                 end
             end,
-            -- Тултип брокера (у WIM — "WIM <версия>" + уведомления)
+            -- Тултип брокера (у WIM — "WIM <версия>" + уведомления).
+            -- Если у брокера нет/сломан OnTooltipShow — показываем имя
+            -- панели, а не молча прячем тултип.
             tooltip = function(tt)
                 if type(obj.OnTooltipShow) == "function" then
-                    local ok = pcall(obj.OnTooltipShow, obj, tt)
-                    if not ok then
-                        tt:Hide()
-                        return false
+                    local ok, err = pcall(obj.OnTooltipShow, obj, tt)
+                    if ok then
+                        return true
                     end
-                    return true
+                    if LPS.Print then
+                        LPS:Print(displayName .. " OnTooltipShow: " .. tostring(err))
+                    end
                 end
                 tt:AddLine(displayName)
                 return true
