@@ -907,6 +907,9 @@ function LPS:ApplyDefaults(db, defaults)
         if db.layout.spacingAuto == nil then db.layout.spacingAuto = defL.spacingAuto end
         if db.layout.customColor == nil then db.layout.customColor = defL.customColor end
         if db.layout.frameStrata == nil or db.layout.frameStrata == "" then db.layout.frameStrata = defL.frameStrata end
+        -- Старые профили могли иметь DIALOG/TOOLTIP — понижаем, чтобы окно
+        -- настроек (DIALOG) всегда было поверх панелей.
+        if db.layout.frameStrata == "DIALOG" or db.layout.frameStrata == "TOOLTIP" then db.layout.frameStrata = "HIGH" end
         if type(db.layout.userColor) ~= "table" then db.layout.userColor = { r = 1, g = 1, b = 1 } end
         if type(db.layout.sideSlots) ~= "table" then db.layout.sideSlots = {} end
         local ss = db.layout.sideSlots

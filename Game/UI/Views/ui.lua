@@ -161,8 +161,17 @@ function LPS:SetMoveMode(enabled)
     local f = LPS.frame.holder
     f:SetMovable(enabled)
     f:EnableMouse(enabled)
-    f:SetFrameStrata(enabled and "DIALOG" or "HIGH")
-    f:SetFrameLevel(enabled and 999 or 1)
+    if enabled then
+        -- Во время перемещения держим хольдер поверх всего; при выходе
+        -- восстанавливаем strata/level из настроек.
+        f:SetFrameStrata("DIALOG")
+        f:SetFrameLevel(999)
+    else
+        local db = LPS:GetDB()
+        local layout = db and db.layout
+        f:SetFrameStrata((layout and layout.frameStrata) or "HIGH")
+        f:SetFrameLevel(tonumber(layout and layout.frameLevel) or 1)
+    end
 
     if not f.grid then
         f.grid = LPS:CreateGuideLines()

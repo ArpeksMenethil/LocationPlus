@@ -363,14 +363,14 @@ function LPS:GetDisplayOtherValues()
 end
 
 --- Список значений frame strata.
+--- Ограничено HIGH: окно настроек находится в DIALOG, панели не должны
+--- рисоваться поверх настроек.
 function LPS:GetStrataValues()
     return {
         ["BACKGROUND"] = "BACKGROUND",
         ["LOW"] = "LOW",
         ["MEDIUM"] = "MEDIUM",
         ["HIGH"] = "HIGH",
-        ["DIALOG"] = "DIALOG",
-        ["TOOLTIP"] = "TOOLTIP",
     }
 end
 
