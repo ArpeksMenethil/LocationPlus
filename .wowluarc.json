@@ -1,6 +1,6 @@
 {
     "ignore": [
-        "Libs/", "lps_types.lua", "*.toc"
+        "Libs/", "*.toc"
     ],
     "globals": {
         "write": [

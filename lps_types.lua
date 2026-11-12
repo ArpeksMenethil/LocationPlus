@@ -216,10 +216,214 @@ local _foundryClass = {}
 --- @field UnregisterAddonCompartment fun(self: LPS, data: table): nil
 --- @field IsValidPos fun(self: LPS, p: table?): boolean
 --- @field BuildSettingsCategoryFrame fun(self: LPS): Frame?
+--- @field ApplyFontColor fun(self: LPS, fs: any, colorKey: any, alpha: any): any
+--- @field ApplyLabelRole fun(self: LPS, text: any, str: any): any
+--- @field ApplyOptionsRefresh fun(self: LPS): any
+--- @field ApplyPanelVisibility fun(self: LPS, frames: any, slotList: any, showDT: any): any
+--- @field ApplyTextureColor fun(self: LPS, tex: any, colorKey: any, alpha: any): any
+--- @field ApplyThemeFont fun(self: LPS, fs: any, T: any): any
+--- @field AttachRowTooltip fun(self: LPS, target: any, entry: any): any
+--- @field BindEscapeToClose fun(self: LPS, popup: any, onEscape: any): any
+--- @field BuildControl fun(self: LPS, page: any, entry: any, row: any): any
+--- @field BuildImage fun(self: LPS, row: any, entry: any): any
+--- @field BuildLink fun(self: LPS, row: any, entry: any): any
+--- @field BuildMultilineLabel fun(self: LPS, row: any, entry: any): any
+--- @field BuildOptionPage fun(self: LPS, parent: any, entries: any, opts: any): any
+--- @field BuildOptionPages fun(self: LPS): any
+--- @field BuildUniqueProfileName fun(self: LPS, base: any): any
+--- @field BuildWindowEntries fun(self: LPS, L: any): any
+--- @field BuilderResolveItems fun(self: LPS, entry: any): any
+--- @field CascadeClearSlots fun(self: LPS, ss: any, side: any, n: any): any
+--- @field Clamp fun(self: LPS, v: any, lo: any, hi: any): any
+--- @field ClassColorHex fun(self: LPS, classFile: any): any
+--- @field ClassExists fun(self: LPS, classToken: any): any
+--- @field CloseActivePopup fun(self: LPS): any
+--- @field CloseOptionWindow fun(self: LPS): any
+--- @field CollectOptionRows fun(self: LPS, group: any, out: any, additionalSortKeys: any): any
+--- @field CollectSlotKeys fun(self: LPS, sideSlots: any): any
+--- @field ColorGradient fun(self: LPS, pct: any, r1: any, g1: any, b1: any, r2: any, g2: any, b2: any, r3: any, g3: any, b3: any): any
+--- @field CommitMultiline fun(self: LPS, self: any, entry: any, page: any): any
+--- @field ConsumePendingRefresh fun(self: LPS): any
+--- @field CopyLayoutSlots fun(self: LPS, slots: any): any
+--- @field CreateBorder fun(self: LPS, frame: any, thickness: any): any
+--- @field CreateCircleButton fun(self: LPS, parent: any, iconName: any, isClose: any): any
+--- @field CreateDropdown fun(self: LPS, parent: any, labelText: any, width: any, opts: any): any
+--- @field CreateFlatButton fun(self: LPS, parent: any, width: any, height: any, text: any): any
+--- @field CreateInputPopup fun(self: LPS, title: any, body: any, defaultText: any, onAccept: any, okText: any, cancelText: any): any
+--- @field CreateMainFrame fun(self: LPS): any
+--- @field CreateNavButton fun(self: LPS, parent: any, text: any): any
+--- @field CreatePopup fun(self: LPS, title: any, body: any, onAccept: any, okText: any, cancelText: any): any
+--- @field CreateProfileDropdownRow fun(self: LPS, parent: any, labelText: any, y: any): any
+--- @field CreateProfileFieldBox fun(self: LPS, popup: any, x: any, y: any, w: any, h: any): any
+--- @field CreateProfilePopupBase fun(self: LPS, width: any, height: any): any
+--- @field CreateRowLabel fun(self: LPS, row: any, text: any): any
+--- @field CreateScrollFrame fun(self: LPS, parent: any): any
+--- @field CreateSectionHeader fun(self: LPS, parent: any, text: any, unthemed: any): any
+--- @field CreateSelectPopup fun(self: LPS, title: any, body: any, items: any, defaultValue: any, onAccept: any, okText: any, cancelText: any): any
+--- @field CreateSlider fun(self: LPS, parent: any, opts: any): any
+--- @field CreateStatRow fun(self: LPS, parent: any, index: any, height: any): any
+--- @field CreateSwatch fun(self: LPS, parent: any): any
+--- @field CreateToggle fun(self: LPS, parent: any, labelText: any): any
+--- @field CreateTreePage fun(self: LPS, group: any): any
+--- @field DecodeProfileData fun(self: LPS, code: any): any
+--- @field DecodeString fun(self: LPS, s: any, pos: any): any
+--- @field DecodeTable fun(self: LPS, s: any, pos: any): any
+--- @field DecodeValue fun(self: LPS, s: any, pos: any): any
+--- @field DeepCopy fun(self: LPS, v: any): any
+--- @field DeserializeProfile fun(self: LPS, str: any): any
+--- @field EncodeProfileData fun(self: LPS, profileName: any, settings: any): any
+--- @field EncodeTable fun(self: LPS, t: any): any
+--- @field EncodeValue fun(self: LPS, v: any): any
+--- @field EscStr fun(self: LPS, s: any): any
+--- @field ForceResizeFrame fun(self: LPS, f: any): any
+--- @field GetAddOnMetadata any
+--- @field GetClassColor fun(self: LPS, classToken: any): any
+--- @field GetDefaultAccentColor fun(self: LPS): any
+--- @field GetDisplayOtherValues fun(self: LPS): any
+--- @field GetFMenuController fun(self: LPS): any
+--- @field GetFontFlagValues fun(self: LPS): any
+--- @field GetLibDeflate fun(self: LPS): any
+--- @field GetMeasureFontString fun(self: LPS): any
+--- @field GetOptionDB fun(self: LPS): any
+--- @field GetOptionsTree fun(self: LPS): any
+--- @field GetPageFrame fun(self: LPS, key: any): any
+--- @field GetPlayerClassColor fun(self: LPS): any
+--- @field GetPlayerFullName fun(self: LPS): any
+--- @field GetProfileDisplayName fun(self: LPS, name: any): any
+--- @field GetProfileList fun(self: LPS): any
+--- @field GetStrataValues fun(self: LPS): any
+--- @field GetThemeAccentColor fun(self: LPS): any
+--- @field GetThemeAccentItems fun(self: LPS): any
+--- @field GetThemeArt fun(self: LPS): any
+--- @field GetThemeDescription fun(self: LPS, key: any): any
+--- @field GetThemeKey fun(self: LPS): any
+--- @field GetThemeName fun(self: LPS, key: any): any
+--- @field GetThemeOrder fun(self: LPS): any
+--- @field GetValidAccentValue fun(self: LPS): any
+--- @field GetWidgetColor fun(self: LPS, key: any): any
+--- @field HSVToRGB fun(self: LPS, h: any, s: any, v: any): any
+--- @field HexFromRGB fun(self: LPS, r: any, g: any, b: any): any
+--- @field HexToColor fun(self: LPS, value: any, alpha: any): any
+--- @field InitDB fun(self: LPS): any
+--- @field IsExcludedAccent fun(self: LPS, token: any, name: any): any
+--- @field IsNotSecret fun(self: LPS, v: any): any
+--- @field IsOptionWindowShown fun(self: LPS): any
+--- @field LayoutButtonRow fun(self: LPS, buttons: any, row: any): any
+--- @field LayoutTextColor fun(self: LPS, mode: any, userColor: any): any
+--- @field LevelColorHex fun(self: LPS, level: any): any
+--- @field MakeCheckerboard fun(self: LPS, parent: any, w: any, h: any, cell: any, light: any, dark: any): any
+--- @field MakeGradient fun(self: LPS, parent: any, w: any, h: any, count: any, colorFn: any): any
+--- @field MakeKnob fun(self: LPS, parent: any, h: any): any
+--- @field MakeOptionDisabled fun(self: LPS, node: any): any
+--- @field MakePanelOptionGroup fun(self: LPS, key: any, def: any, order: any): any
+--- @field MakeSlotDisabledFunc fun(self: LPS, side: any, n: any): any
+--- @field MeasureTextWidth fun(self: LPS, fs: any, text: any): any
+--- @field MuteColor fun(self: LPS, r: any, g: any, b: any, amount: any): any
+--- @field NodeTooltip fun(self: LPS, node: any): any
+--- @field NormalizeButtonWidths fun(self: LPS, buttons: any, padding: any): any
+--- @field NormalizeLayoutDB fun(self: LPS, raw: any): any
+--- @field NormalizeSlotFrameKey fun(self: LPS, key: any): any
+--- @field OpenBlizzardColorPicker fun(self: LPS, r: any, g: any, b: any, onChange: any, onCancel: any): any
+--- @field OpenColorPicker fun(self: LPS, r: any, g: any, b: any, a: any, onChange: any, onCancel: any, options: any): any
+--- @field OpenTooltip fun(self: LPS, self: any, buildFunc: any): any
+--- @field OptionCallGet fun(self: LPS, entry: any): any
+--- @field OptionCallSet fun(self: LPS, entry: any, value: any): any
+--- @field PageKeyFor fun(self: LPS, node: any): any
+--- @field PaintWidgetTexture fun(self: LPS, tex: any, key: any, alpha: any): any
+--- @field PanelCfg fun(self: LPS, key: any): any
+--- @field PanelCreateScrollPage fun(self: LPS, container: any): any
+--- @field PanelGetFrame fun(self: LPS): any
+--- @field PanelHide fun(self: LPS): any
+--- @field PanelIsShown fun(self: LPS): any
+--- @field PanelOnSettingChanged fun(self: LPS): any
+--- @field PanelOnThemeChanged fun(self: LPS): any
+--- @field PanelOpen fun(self: LPS): any
+--- @field PanelRefreshActivePage fun(self: LPS): any
+--- @field PanelRefreshTheme fun(self: LPS): any
+--- @field PanelSaveFrameSize fun(self: LPS): any
+--- @field PanelSetMinimized fun(self: LPS, on: any): any
+--- @field PanelSetWindowScale fun(self: LPS, scale: any): any
+--- @field PanelShow fun(self: LPS): any
+--- @field PanelShowPage fun(self: LPS, key: any): any
+--- @field PanelSyncPagesGeometry fun(self: LPS): any
+--- @field PanelToggle fun(self: LPS): any
+--- @field PanelToggleWindowSettings fun(self: LPS): any
+--- @field PinTopLeft fun(self: LPS): any
+--- @field PositionSlotChain fun(self: LPS, chain: any, side: any, frames: any, spacing: any): any
+--- @field ProfileDecode fun(self: LPS, json: any): any
+--- @field ProfileDecodeJSON fun(self: LPS, str: any): any
+--- @field ProfileEncode fun(self: LPS, data: any): any
+--- @field ProfileEncodeValue fun(self: LPS, v: any, depth: any): any
+--- @field RGBToHSV fun(self: LPS, r: any, g: any, b: any): any
+--- @field RGBToHex fun(self: LPS, r: any, g: any, b: any): any
+--- @field ReadEntryValue fun(self: LPS, entry: any, db: any): any
+--- @field ReadOptionColor fun(self: LPS, entry: any): any
+--- @field ReadOptionDefaultColor fun(self: LPS, entry: any): any
+--- @field RedrawFontString fun(self: LPS, fs: any): any
+--- @field RefreshAccentColors fun(self: LPS): any
+--- @field RefreshControl fun(self: LPS, control: any, db: any): any
+--- @field RefreshOptionPage fun(self: LPS, page: any): any
+--- @field RefreshOptionWindowPage fun(self: LPS): any
+--- @field RegisterAccentFontString fun(self: LPS, fs: any, alpha: any): any
+--- @field RegisterAccentTexture fun(self: LPS, tex: any, alpha: any): any
+--- @field RegisterPanelPage fun(self: LPS, key: any, def: any): any
+--- @field RegisteredLocales any
+--- @field RelayoutMultiline fun(self: LPS, control: any): any
+--- @field RepairHolderLayoutCache fun(self: LPS): any
+--- @field ResolveLayoutFont fun(self: LPS): any
+--- @field ResolveOptionItems fun(self: LPS, entry: any): any
+--- @field RetryThemeFonts fun(self: LPS): any
+--- @field SVCopyProfileFrom fun(self: LPS, srcName: any): any
+--- @field SVDeleteProfile fun(self: LPS, name: any): any
+--- @field SVGetCurrentProfile fun(self: LPS): any
+--- @field SVGetProfilesList fun(self: LPS): any
+--- @field SVResetProfile fun(self: LPS): any
+--- @field SVSetProfile fun(self: LPS, name: any): any
+--- @field SerializeProfile fun(self: LPS, tbl: any): any
+--- @field SetActivePopup fun(self: LPS, popup: any): any
+--- @field SetBorderColor fun(self: LPS, frame: any, colorKey: any, alpha: any): any
+--- @field SetButtonEnabled fun(self: LPS, btn: any, enabled: any): any
+--- @field SetLabelEnabled fun(self: LPS, label: any, enabled: any): any
+--- @field SetOptionByPath fun(self: LPS, path: any, value: any): any
+--- @field SetRowTooltip fun(self: LPS, row: any, control: any, entry: any): any
+--- @field ShortValue fun(self: LPS, n: any): any
+--- @field ShowExportProfilePopup fun(self: LPS): any
+--- @field ShowImportProfilePopup fun(self: LPS): any
+--- @field ShowMenu fun(self: LPS, anchorFrame: any, list: any): any
+--- @field SlotGetFrameByKey fun(self: LPS, key: any): any
+--- @field SlotIsFilled fun(self: LPS, side: any, n: any): any
+--- @field SlotListContains fun(self: LPS, slotList: any, frameKey: any): any
+--- @field TextForValue fun(self: LPS, items: any, value: any): any
+--- @field ThemeApplyFonts fun(self: LPS, root: any): any
+--- @field ThemeBox fun(self: LPS, frame: any, fillKey: any, borderKey: any, radius: any, sublevel: any): any
+--- @field ThemeCloseButton fun(self: LPS, parent: any, size: any): any
+--- @field ThemeCornerFill fun(self: LPS, frame: any, colorKey: any, radius: any, layer: any, sublevel: any): any
+--- @field ThemeCycle fun(self: LPS): any
+--- @field ThemeFontFor fun(self: LPS, role: any): any
+--- @field ThemeGet fun(self: LPS): any
+--- @field ThemeIconButton fun(self: LPS, parent: any, size: any, iconName: any): any
+--- @field ThemeItems fun(self: LPS): any
+--- @field ThemeLoad fun(self: LPS): any
+--- @field ThemeOnChange fun(self: LPS, fn: any): any
+--- @field ThemeSet fun(self: LPS, key: any): any
+--- @field ThemeSetFont fun(self: LPS, fs: any, file: any, size: any, flags: any): any
+--- @field ThemeSetTitle fun(self: LPS, fs: any, text: any): any
+--- @field ThemeShape fun(self: LPS, tex: any, radius: any): any
+--- @field ThemeTint fun(self: LPS, tex: any, c: any, alpha: any): any
+--- @field ThemeWindow fun(self: LPS, frame: any, headerHeight: any, noRing: any): any
+--- @field ToggleOptionWindow fun(self: LPS): any
+--- @field TooltipCfg fun(self: LPS, key: any): any
+--- @field TooltipGuard fun(self: LPS, key: any): any
+--- @field UnescStr fun(self: LPS, s: any): any
+--- @field UseGameFont fun(self: LPS): any
+--- @field UseHolderAnchor fun(self: LPS): any
+--- @field WidgetBaseColor fun(self: LPS, key: any): any
+--- @field WidgetRadius fun(self: LPS): any
+--- @field WriteEntryValue fun(self: LPS, entry: any, value: any): any
 local _lpsClass = {}
 
 --- @class LPSLDB
---- @field RegisterCallback fun(addon: table, eventName: string, method: fun(self: any, ...: any): any): nil
+--- @field RegisterCallback fun(addon: any, eventName: string, method: fun(self: any, ...: any): any): nil
 --- @field DataObjectIterator fun(self: LPSLDB): fun(): string, table
 --- @field GetDataObjectByName fun(self: LPSLDB, name: string): table?
 local _ldbClass = {}

@@ -90,9 +90,13 @@ do
     --- не найдена (WIM регистрирует свой объект именно на ADDON_LOADED,
     --- если библиотека появилась позже).
     local bridge
+    ---@return any
+    local function getLDB()
+        return LibStub and LibStub:GetLibrary("LibDataBroker-1.1", true)
+    end
     local function init()
         if LDB then return end
-        LDB = LibStub and LibStub:GetLibrary("LibDataBroker-1.1", true)
+        LDB = getLDB()
         if not LDB then return end
 
         LDB.RegisterCallback(bridge, "LibDataBroker_DataObjectCreated", function(_, name, obj)
