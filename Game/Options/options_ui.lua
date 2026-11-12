@@ -142,10 +142,6 @@ function LPS:ResolveOptionItems(entry)
     else
         for k, name in pairs(values) do add(k, name) end
     end
-    -- Явный порядок: entry.sorting (таблица или функция, возвращающая
-    -- список ключей). Строго сохраняется — без сортировки по имени.
-    -- (Дропдаун без sorting сортирует ключи по алфавиту — LDB_* и "none"
-    -- оказываются не там, где нужно.)
     local sorting = entry.sorting
     if type(sorting) == "function" then
         local ok, v = pcall(sorting, false)
@@ -424,8 +420,6 @@ function LPS:BuildOptionPages()
                 pageKeys[key] = true
                 local create = LPS:CreateTreePage(node)
                 if node._pageId == "profiles" and LPS.CreateProfilesPanelPage then
-                    -- Panel вызывает def.create(container) как обычную функцию (без self),
-                    -- поэтому метод оборачиваем в замыкание, чтобы container не уходил в self.
                     create = function(c) return LPS:CreateProfilesPanelPage(c) end
                 end
                 LPS:RegisterPanelPage(key, {

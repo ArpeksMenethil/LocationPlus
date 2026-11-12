@@ -163,18 +163,11 @@ function LPS:CreateFrame(params)
             local py = tonumber(f._lpsPaddingY) or 0
             local minW = tonumber(f._lpsMinWidth) or 60
             local text = f.text:GetText() or ""
-            -- Пустой текст (например, локация не получена): НЕ сохраняем
-            -- прежние габариты — иначе панель «застревает» на размере
-            -- предыдущей зоны (или на дефолтных 100x100 после создания).
-            -- Идём в минимальный размер.
             local hasText = text:find("%S") ~= nil
             local w, h = measureText(text)
             if hasText then
                 if w <= 0 then w = lastFitW or 0 end
                 if h <= 0 then h = lastFitH or 0 end
-                -- Страховка от аномального замера (шрифт ещё не загружен и
-                -- т.п.): панели однострочные, размер не может превышать
-                -- экрана по ширине и 80px по высоте.
                 local screenW = (UIParent and UIParent:GetWidth()) or 1024
                 w = math.min(w, math.max(100, screenW - 100))
                 h = math.min(h, 80)

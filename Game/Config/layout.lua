@@ -47,9 +47,6 @@ function LPS:ApplyHolderPosition()
         if not holder.isMoving then
             holder:EnableMouse(false)
         end
-        -- Mark user-placed so the game re-saves our canonical point into
-        -- its layout cache (UIParent) on logout, overwriting the stale
-        -- right-edge entry that makes the frame "fly away" on /reload.
         holder:SetUserPlaced(true)
         return
     end
@@ -62,8 +59,6 @@ function LPS:ApplyHolderPosition()
         if not holder.isMoving then
             holder:ClearAllPoints()
             holder:SetPoint(g.point, UIParent, g.relPoint, g.x, g.y)
-            -- Same as on attach: let the game re-save our canonical point
-            -- into its layout cache so the stale entry gets overwritten.
             holder:SetUserPlaced(true)
         end
     else
@@ -95,11 +90,6 @@ function LPS:RepairHolderLayoutCache()
                 e.relPoint = "TOPLEFT"
                 e.x = p.x
                 e.y = p.y
-                -- Кэш раскладки хранит и РАЗМЕР user-placed фреймов (w/h).
-                -- Если туда попала неправильная величина (например, до
-                -- первого авторазмера в неизвестной зоне), игра восстанавливает
-                -- её на каждом логине ПОСЛЕ нашей поправки в PEW — и holder
-                -- остаётся огромным. Перезаписываем актуальным размером.
                 e.w = holder:GetWidth()
                 e.h = holder:GetHeight()
             end
@@ -130,9 +120,6 @@ function LPS:UpdateFrameSize()
     end
     width = width + padding * 2 + 10
     height = height + 6
-    -- Страховка: holder никогда не может быть больше экрана. Иначе при
-    -- рассинхроне размеров детей (например, локация не получена и панель
-    -- ещё не пересобрана по тексту) холдер растягивает весь UI.
     local uiW, uiH = UIParent:GetWidth(), UIParent:GetHeight()
     if uiW > 100 then width = math.min(width, uiW - 10) end
     if uiH > 100 then height = math.min(height, uiH - 10) end

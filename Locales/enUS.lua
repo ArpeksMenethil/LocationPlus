@@ -1,6 +1,5 @@
 local _, LPS = ...
 
--- Защита от повторной загрузки файла локали
 LPS._LOADED_LOCALES = LPS._LOADED_LOCALES or {}
 if LPS._LOADED_LOCALES["enUS"] then return end
 LPS._LOADED_LOCALES["enUS"] = true

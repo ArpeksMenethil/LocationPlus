@@ -143,11 +143,6 @@ end
 
 LPS.defaults = {
     position = {
-        -- NOTE: key is `relPoint` (Foundry.Window geometry). Do NOT use the
-        -- legacy `relativePoint` key here: ApplyDefaults injects missing
-        -- keys from these defaults into every profile, and a stray
-        -- `relativePoint` entry would be migrated on top of the real
-        -- `relPoint`, silently corrupting saved positions.
         point = "TOP",
         relPoint = "TOP",
         x = 0,

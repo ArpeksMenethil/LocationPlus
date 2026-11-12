@@ -197,14 +197,6 @@ function LPS:onLoaded()
     end
 
     LPS.coreEvents = F.Events:New("LPS.Core")
-    -- The game's own UI layout cache (UIParent) restores a stale
-    -- right-edge point for this frame around login, overriding our
-    -- SetPoint (left = UIWidth - frameWidth no matter what x we set).
-    -- Re-assert the saved geometry on world entry and on a couple of
-    -- timers after load until the game's restore has settled; once our
-    -- canonical point sticks, SetUserPlaced(true) in ApplyHolderPosition
-    -- makes the game re-save it into its cache, overwriting the stale
-    -- entry (self-healing after the first reload cycle).
     LPS.coreEvents:Register("PLAYER_ENTERING_WORLD", function()
         LPS:UpdateFrameSize()
         LPS:ApplyLayout()
@@ -217,8 +209,6 @@ function LPS:onLoaded()
         LPS:ApplyLayout()
         LPS:ApplyHolderPosition()
     end
-    -- Ремонт кэша раскладки игры (UIParent): на случай, если игра ещё
-    -- применила/применит старую запись после нашего re-apply.
     C_Timer.After(1, function()
         LPS:UpdateFrameSize()
         LPS:ApplyLayout()
@@ -226,9 +216,6 @@ function LPS:onLoaded()
         LPS:RepairHolderLayoutCache()
     end)
     C_Timer.After(5, function()
-        -- Игра может применить кэшированный размер holder'а (w/h из кэша
-        -- раскладки UIParent) уже после PEW-поправки: повторяем и размер,
-        -- и позицию, чтобы гигантский holder не остался навсегда.
         LPS:UpdateFrameSize()
         LPS:ApplyHolderPosition()
         LPS:RepairHolderLayoutCache()

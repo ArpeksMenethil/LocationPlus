@@ -162,8 +162,6 @@ function LPS:SetMoveMode(enabled)
     f:SetMovable(enabled)
     f:EnableMouse(enabled)
     if enabled then
-        -- Во время перемещения держим хольдер поверх всего; при выходе
-        -- восстанавливаем strata/level из настроек.
         f:SetFrameStrata("DIALOG")
         f:SetFrameLevel(999)
     else
@@ -200,23 +198,15 @@ function LPS:SetMoveMode(enabled)
         end)
 
         local function saveHolderPosition(self)
-            -- Принудительно останавливаем перетаскивание (StopMovingOrSizing), иначе при
-            -- отпускании кнопки вне области фрейма координаты некорректны
-            -- и позиция не сохранялась.
             if f._lpsDragging then
                 self:StopMovingOrSizing()
                 f._lpsDragging = false
             end
 
-            -- Позицию храним как АБСОЛЮТНЫЙ offset от TOPLEFT родителя (UIParent),
-            -- а НЕ как кортеж GetPoint(). После StartMoving/StopMovingOrSizing
-            -- GetPoint() нормализует анкер в LEFT/RIGHT, и у краёв экрана это
-            -- приводило к "зеркальному" отражению фрейма после /reload.
-            -- GetLeft()/GetTop() детерминированы и не зависят от выбора анкера.
             local left = self:GetLeft()
             local top = self:GetTop()
             if type(left) ~= "number" or type(top) ~= "number" then
-                return -- незавершённое перетаскивание: не сохраняем некорректные значения
+                return
             end
 
             local width = self:GetWidth()
@@ -251,24 +241,11 @@ function LPS:SetMoveMode(enabled)
             local p = db.position
             p.point = "TOPLEFT"
             p.relPoint = "TOPLEFT"
-            -- Позицию храним как абсолютный offset якоря TOPLEFT от UIParent.
-            -- GetLeft() — расстояние левого края от левого края родителя: это и есть
-            -- x-offset для TOPLEFT (положительный = вправо).
-            -- GetTop() — расстояние ВЕРХНЕГО края от НИЗНЕГО края родителя, а y-offset
-            -- у TOPLEFT считается ОТ ВЕРХА (положительный = вниз), поэтому переводим:
-            --   y = (top - screenH)  -- top в "от низа" -> минус screenH = "от верха"
-            -- offsetX/offsetY вычислены в системе "от нижнего левого угла"
-            -- (offsetY > 0 = сдвиг вверх). В координатах TOPLEFT сдвиг вверх
-            -- УВЕЛИЧИВАЕТ y-offset (менее отрицательный), значит оба смещения
-            -- прибавляем как есть.
             p.x = left + offsetX
             p.y = (top - screenH) + offsetY
 
             self:ClearAllPoints()
             self:SetPoint("TOPLEFT", UIParent, "TOPLEFT", p.x, p.y)
-            -- Keep the frame user-placed with our canonical point, so the
-            -- game re-saves THIS position into its layout cache (UIParent)
-            -- on logout instead of the stale right-edge entry.
             self:SetUserPlaced(true)
 
             local g = LPS.frame and LPS.frame._posGeometry

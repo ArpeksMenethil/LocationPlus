@@ -192,8 +192,6 @@ LPS.Options.BuildTree.tabs.layout = function()
                             end
                             return vals
                         end,
-                        -- Явный порядок (Dropdown-ElvUI без "sorting" сортирует
-                        -- ключи по алфавиту): "none" -> собственные -> LDB
                         sorting = function()
                             if LPS.GetSlotKeyList then
                                 return LPS:GetSlotKeyList()
@@ -291,8 +289,6 @@ LPS.Options.BuildTree.tabs.layout = function()
                             end
                             return vals
                         end,
-                        -- Явный порядок (Dropdown-ElvUI без "sorting" сортирует
-                        -- ключи по алфавиту): "none" -> собственные -> LDB
                         sorting = function()
                             if LPS.GetSlotKeyList then
                                 return LPS:GetSlotKeyList()
@@ -391,8 +387,6 @@ LPS.Options.BuildTree.tabs.layout = function()
                             end
                             return vals
                         end,
-                        -- Явный порядок (Dropdown-ElvUI без "sorting" сортирует
-                        -- ключи по алфавиту): "none" -> собственные -> LDB
                         sorting = function()
                             if LPS.GetSlotKeyList then
                                 return LPS:GetSlotKeyList()
@@ -493,8 +487,6 @@ LPS.Options.BuildTree.tabs.layout = function()
                             end
                             return vals
                         end,
-                        -- Явный порядок (Dropdown-ElvUI без "sorting" сортирует
-                        -- ключи по алфавиту): "none" -> собственные -> LDB
                         sorting = function()
                             if LPS.GetSlotKeyList then
                                 return LPS:GetSlotKeyList()
@@ -595,8 +587,6 @@ LPS.Options.BuildTree.tabs.layout = function()
                             end
                             return vals
                         end,
-                        -- Явный порядок (Dropdown-ElvUI без "sorting" сортирует
-                        -- ключи по алфавиту): "none" -> собственные -> LDB
                         sorting = function()
                             if LPS.GetSlotKeyList then
                                 return LPS:GetSlotKeyList()
@@ -697,8 +687,6 @@ LPS.Options.BuildTree.tabs.layout = function()
                             end
                             return vals
                         end,
-                        -- Явный порядок (Dropdown-ElvUI без "sorting" сортирует
-                        -- ключи по алфавиту): "none" -> собственные -> LDB
                         sorting = function()
                             if LPS.GetSlotKeyList then
                                 return LPS:GetSlotKeyList()

@@ -242,17 +242,8 @@ function LPS:CreateMainFrame()
     frame:SetSize(math.max(savedWidth or DEFAULT_WIDTH, MIN_WIDTH), math.max(savedHeight or DEFAULT_HEIGHT, MIN_HEIGHT))
     frame:SetPoint("CENTER")
     frame:SetMovable(true)
-    frame:SetResizable(true)
+    frame:SetResizable(false)
     frame:SetClampedToScreen(true)
-    -- DIALOG: окно настроек всегда на переднем плане (не перекрывается
-    -- другими окнами аддонов — ElvUI, чаты и т.п. из MEDIUM/HIGH).
-    -- Уровень 150 — выше всего DIALOG-диапазона (50–99) и любых детей
-    -- DIALOG-окон (дети прибавляют свой относительный уровень к родителю,
-    -- например кнопка закрытия журнала: 99 + ~10): Blizzard-окна
-    -- (журнал подземелий и т.п.) тоже DIALOG и поднимают свой уровень при
-    -- каждом открытии. 150 < 200 (TOOLTIP) — наши тултипы и dropdown-меню
-    -- остаются поверх. Поля окна — дети фрейма, их уровни относительные
-    -- и поднимаются вместе с родителем.
     frame:SetFrameStrata("DIALOG")
     frame:SetFrameLevel(150)
     frame:EnableMouse(true)
@@ -516,10 +507,6 @@ function LPS:PanelShow()
         return
     end
     LPS:CreateMainFrame()
-    -- При каждом открытии фиксируем окно на верхушке DIALOG-страта:
-    -- пока открыты настройки, Blizzard-окна (журнал подземелий и т.п.),
-    -- открытые раньше, должны остаться под ним (вместе со своими
-    -- дочерними фреймами — кнопками закрытия и т.п.).
     frame:SetFrameStrata("DIALOG")
     frame:SetFrameLevel(150)
     frame:SetScript("OnUpdate", nil)

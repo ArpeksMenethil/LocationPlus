@@ -572,7 +572,6 @@ function LPS:ResetAllSettingsToDefaults()
                     LPS.frame[k] = nil
                 end
             end
-        -- LDB-панели регистрируются динамически (ключи "LDB_...")
         for k in pairs(LPS.datatexts) do
             if k:sub(1, 4) == "LDB_" then
                 local f = LPS.frame[k]
@@ -907,8 +906,6 @@ function LPS:ApplyDefaults(db, defaults)
         if db.layout.spacingAuto == nil then db.layout.spacingAuto = defL.spacingAuto end
         if db.layout.customColor == nil then db.layout.customColor = defL.customColor end
         if db.layout.frameStrata == nil or db.layout.frameStrata == "" then db.layout.frameStrata = defL.frameStrata end
-        -- Старые профили могли иметь DIALOG/TOOLTIP — понижаем, чтобы окно
-        -- настроек (DIALOG) всегда было поверх панелей.
         if db.layout.frameStrata == "DIALOG" or db.layout.frameStrata == "TOOLTIP" then db.layout.frameStrata = "HIGH" end
         if type(db.layout.userColor) ~= "table" then db.layout.userColor = { r = 1, g = 1, b = 1 } end
         if type(db.layout.sideSlots) ~= "table" then db.layout.sideSlots = {} end
@@ -1292,10 +1289,6 @@ function LPS:OpenTooltip(self, buildFunc)
     GameTooltip:Show()
 end
 
-------------------------------------------------------------
--- Конфиги панелей/тултипов (перенесено из utils.lua)
-------------------------------------------------------------
-
 --- Панели, у которых есть собственные тултип-настройки (db.tooltips[key])
 local PANEL_TT_KEYS = {
     location = true, gold = true, system = true, time = true,
@@ -1336,12 +1329,6 @@ function LPS:TooltipGuard(key)
     end
     return true
 end
-
-------------------------------------------------------------
--- LPS._DT — совместимый слой для кода, написанного до рефакторинга
--- (local DT = LPS._DT; DT.showMenu(...) и т.п.). Тонкие адаптеры
--- к методам LPS:*, логика не дублируется.
-------------------------------------------------------------
 
 LPS._DT = LPS._DT or {}
 LPS._DT.NotSecret = function(v) return LPS:IsNotSecret(v) end
