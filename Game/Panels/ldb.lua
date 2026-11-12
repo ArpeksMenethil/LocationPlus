@@ -53,20 +53,52 @@ do
                     end
                 end
             end,
-            -- Тултип брокера (у WIM — "WIM <версия>" + уведомления).
-            -- Если у брокера нет/сломан OnTooltipShow — показываем имя
-            -- панели, а не молча прячем тултип.
+            -- Тултип: все известные API LDB-объектов (ElvUI DataTexts поддерживает тот же набор):
+            -- 1) obj.tooltip.show — стандартный LDB 1.1 (таблица функций),
+            -- 2) obj.OnTooltipShow(tooltip) — WIM и подобная,
+            -- 3) obj.OnEnter(frame) — объект сам якорит и показывает GameTooltip (Ara XP и подобная),
+            -- 4) если ничего не сработало — строка с именем панели.
             tooltip = function(tt)
-                if type(obj.OnTooltipShow) == "function" then
-                    local ok, err = pcall(obj.OnTooltipShow, obj, tt)
-                    if ok then
-                        return true
-                    end
+                local shown = false
+                local logError = function(msg)
                     if LPS.Print then
-                        LPS:Print(displayName .. " OnTooltipShow: " .. tostring(err))
+                        LPS:Print(displayName .. " " .. msg)
                     end
                 end
-                tt:AddLine(displayName)
+                local hasLines = function()
+                    return tt:NumLines() > 0
+                end
+
+                local t = obj.tooltip
+                if type(t) == "table" and type(t.show) == "function" then
+                    local ok, err = pcall(t.show, obj, tt)
+                    shown = ok and hasLines()
+                    if not ok then
+                        logError("tooltip.show: " .. tostring(err))
+                    end
+                end
+
+                if not shown and type(obj.OnTooltipShow) == "function" then
+                    local ok, err = pcall(obj.OnTooltipShow, obj, tt)
+                    shown = ok and hasLines()
+                    if not ok then
+                        logError("OnTooltipShow: " .. tostring(err))
+                    end
+                end
+
+                local f = LPS.frame and LPS.frame[key]
+                if not shown and type(obj.OnEnter) == "function" and f then
+                    local ok, err = pcall(obj.OnEnter, f)
+                    shown = ok and hasLines()
+                    if not ok then
+                        logError("OnEnter: " .. tostring(err))
+                    end
+                end
+
+                if not shown then
+                    -- лучше имя панели, чем молча прятать тултип
+                    tt:AddLine(displayName)
+                end
                 return true
             end,
         })
