@@ -218,6 +218,12 @@ local _foundryClass = {}
 --- @field BuildSettingsCategoryFrame fun(self: LPS): Frame?
 local _lpsClass = {}
 
+--- @class LPSLDB
+--- @field RegisterCallback fun(addon: table, eventName: string, method: fun(self: any, ...: any): any): nil
+--- @field DataObjectIterator fun(self: LPSLDB): fun(): string, table
+--- @field GetDataObjectByName fun(self: LPSLDB, name: string): table?
+local _ldbClass = {}
+
 --- @class ArpeksLPS
 --- @field LPS LPS
 --- @field F Foundry

@@ -2,7 +2,7 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 
 do
-    ---@type table?
+    ---@type LPSLDB?
     local LDB
 
     --- Регистрирует панель для одного LDB-объекта
