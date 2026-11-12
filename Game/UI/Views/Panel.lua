@@ -244,9 +244,15 @@ function LPS:CreateMainFrame()
     frame:SetMovable(true)
     frame:SetResizable(true)
     frame:SetClampedToScreen(true)
-    -- DIALOG: окно настроек всегда на переднем крае (не перекрывается
-    -- другими окнами аддонов — ElvUI, чаты и т.п. из MEDIUM/HIGH)
+    -- DIALOG: окно настроек всегда на переднем плане (не перекрывается
+    -- другими окнами аддонов — ElvUI, чаты и т.п. из MEDIUM/HIGH).
+    -- Уровень фиксируем на верхушке DIALOG-страта (99 = последний уровень
+    -- до FULLSCREEN): Blizzard-окна (журнал подземелий и т.п.) тоже DIALOG
+    -- и поднимают свой уровень при каждом открытии — без явного SetFrameLevel
+    -- такое окно оказывается поверх нашего. Поля окна — дети фрейма, их
+    -- уровни относительные и поднимаются вместе с родителем.
     frame:SetFrameStrata("DIALOG")
+    frame:SetFrameLevel(99)
     frame:EnableMouse(true)
     if frame.SetResizeBounds then
         frame:SetResizeBounds(MIN_WIDTH, MIN_HEIGHT)
@@ -508,6 +514,11 @@ function LPS:PanelShow()
         return
     end
     LPS:CreateMainFrame()
+    -- При каждом открытии фиксируем окно на верхушке DIALOG-страта:
+    -- пока открыты настройки, Blizzard-окна (журнал подземелий и т.п.),
+    -- открытые раньше, должны остаться под ним.
+    frame:SetFrameStrata("DIALOG")
+    frame:SetFrameLevel(99)
     frame:SetScript("OnUpdate", nil)
     local db = LPS:GetDB()
     frame:SetScale((db and db.uiOptions and db.uiOptions.scale) or 1.0)
