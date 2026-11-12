@@ -18,3 +18,19 @@
 ## Конвенции
 - Язык: Lua, стандартный формат WoW-аддона (.toc + каталоги Game/, Libs/, Locales/, Media/).
 - При разработке LocationPlus правь только исходники в /home/arpeks/Projects/WoW_Addons/Addon_LocationPlus/LocationPlus; в Interface/AddOns есть ссылка на данную папку.
+
+## Источники данных: уровни зон и рыбалка (из других аддонов)
+При работе с уровнями локаций/рыбалки обращаться к этим файлам (только чтение, они не в нашем репо):
+
+### Leatrix_Maps (единофайловый аддон)
+- Файл: /mnt/M21Tb/BlizzardGames/World of Warcraft/_forever_/Interface/AddOns/Leatrix_Maps/Leatrix_Maps.lua
+- Таблица `local mapTable` — строки 7420–7478 (~43 записи), создаётся в блоке "Show zone levels" (опция `LeaMapsLC["ShowZoneLevels"] == "On"`).
+- Формат: `[uiMapID] = {minLevel = N, maxLevel = N, minFish = "N"},` — например `--[[Alterac Mountains]] [1416] = {minLevel = 30, maxLevel = 40, minFish = "130"},`
+- Использование: строки ~7523–7548 — `mapTable[positionMapInfo.mapID]["minLevel"/"maxLevel"/"minFish"]`, название зоны берётся из `C_Map.GetMapInfoAtPosition(...).name`.
+
+### OpenMap (данные по отдельным файлам)
+- Корень: /mnt/M21Tb/BlizzardGames/World of Warcraft/_forever_/Interface/AddOns/OpenMap/Data/<расширение>/ — для этого клиента (WoW Forever) — каталог `Forever/`:
+  - Levels.lua — `ns.MapLevels = { [uiMapID] = { min, max } }` (зоны + WoW Forever: Riverglades 2548, Zephras Isle 2521; источник уровней — Warcraft Wiki "Zones by level (original)").
+  - Fishing.lua — `ns.MapFishing = { [uiMapID] = базовый_уровень_рыбалки }` (включая города; отрицательные значения = рыбалка ниже 1; источник — cMaNGOS classic-db skill_fishing_base_level).
+- Оба файла: `local _, ns = ...`, данные вешаются в неймспейс аддона.
+- uiMapID классики совпадают в обоих аддонах (1411–1458: Восточные Королевства 1416–1437, Кал'imдор 1411–1413/1438–1452, города 1453–1458).

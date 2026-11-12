@@ -35,9 +35,13 @@ do
             -- 1-секундным OnUpdate-фреймом (как и его LDB-иконка)
             ticker = 1,
             update = function(f)
+                if not f.text then return end
                 local text = obj.text
-                if not text or text == "" then return end
-                if f.text then
+                -- Если брокер не передал текст (nil/пусто) — не оставляем
+                -- панель пустой: показываем имя брокера
+                if not text or text == "" then
+                    f.text:SetText(displayName)
+                else
                     f.text:SetText(tostring(text))
                 end
             end,
