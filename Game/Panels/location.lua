@@ -73,11 +73,11 @@ function LPS:CreateLocationFrame()
                     icon = ""
                 end
             elseif other == "PFISH" and not LPS.Retail then
-                local minFish, maxFish = LPS:GetFishingLvl()
-                if minFish and maxFish then
-                    extra = format("|cff%02x%02x%02x%d-%d|r", 255, 255, 255, minFish, maxFish)
-                elseif minFish and not maxFish then
-                    extra = format("|cff%02x%02x%02x%d|r", 255, 255, 255, minFish)
+                local fishing, maxFish = LPS:GetFishingLvl()
+                if fishing and maxFish then
+                    extra = format("|cff%02x%02x%02x%d-%d|r", 255, 255, 255, fishing, maxFish)
+                elseif fishing and not maxFish then
+                    extra = format("|cff%02x%02x%02x%d|r", 255, 255, 255, fishing)
                 end
                 if showIcon then
                     icon = " " .. LPS.icons.Fish

@@ -1,0 +1,20 @@
+# Справочник путей проекта (World of Warcraft аддон LocationPlus)
+
+## Пути
+- Исходники аддона LocationPlus (рабочая директория): /home/arpeks/Projects/WoW_Addons/Addon_LocationPlus/LocationPlus
+  - Game/ — основная логика (core.lua, api.lua, init.lua, Config/, Options/, Panels/, Tooltips/, UI/)
+  - Libs/ — внешние библиотеки
+  - Locales/ — локализации
+  - Media/ — иконки и другие ресурсы
+  - LocationPlus.toc — манифест аддона
+  - lps_types.lua — типы/схемы данных
+  - backup/ — бэкапы, .tmp_chunks/ — временные файлы
+- Установка аддонов в игре (основная инсталляция): /mnt/M21Tb/BlizzardGames/World of Warcraft/_forever_/Interface/AddOns
+  - LocationPlus устанавливается в /mnt/M21Tb/BlizzardGames/World of Warcraft/_forever_/Interface/AddOns/LocationPlus
+- Вторая инсталляция WoW (retail): /mnt/M21Tb/BlizzardGames/World of Warcraft/_retail_/Interface/AddOns
+- Настройки аккаунта / SavedVariables (_forever_): /mnt/M21Tb/BlizzardGames/World of Warcraft/_forever_/WTF
+- Источник ElvUI: /home/arpeks/Projects/WoW_Addons/ElvUI (содержит ElvUI, ElvUI_Libraries, ElvUI_Options)
+
+## Конвенции
+- Язык: Lua, стандартный формат WoW-аддона (.toc + каталоги Game/, Libs/, Locales/, Media/).
+- При разработке LocationPlus правь только исходники в /home/arpeks/Projects/WoW_Addons/Addon_LocationPlus/LocationPlus; в Interface/AddOns есть ссылка на данную папку.

@@ -77,23 +77,25 @@ function LPS:GetFishingLvl()
     if LPS.Retail then return end
 
     local uiMapID = C_Map.GetBestMapForUnit("player")
-    local minFish, maxFish
+    local fishing, maxFish
 
     if Tourist then
         local zoneText = Tourist:GetMapNameByIDAlt(uiMapID) or UNKNOWN
-        minFish, maxFish = Tourist:GetFishingLevel(zoneText)
+        fishing, maxFish = Tourist:GetFishingLevel(zoneText)
     else
         local db = LPS:GetDB()
         local lvls = LPS.GetLevelTable and LPS:GetLevelTable() or (db and db.levelTable)
         local levelTable = lvls and uiMapID and lvls[uiMapID]
 
-        if levelTable and levelTable.minFish then
-            minFish = levelTable.minFish
+        if levelTable and levelTable.fishing then
+            fishing = levelTable.fishing
+        else
+            fishing = 1
         end
     end
 
-    if minFish then
-        return minFish, maxFish
+    if fishing then
+        return fishing, maxFish
     else
         return
     end
