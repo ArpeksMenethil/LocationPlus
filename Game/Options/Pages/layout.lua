@@ -2,6 +2,24 @@ local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local L = LPS.L
 
+--- Фреймы, уже назначенные в ДРУГИХ слотах (для пометки в выпадающем
+--- списке, чтобы не назначать один и тот же фрейм повторно).
+local function framesUsedInOtherSlots(slotKey)
+    local used = {}
+    local ss = LPS:GetOptionDB().layout.sideSlots
+    if type(ss) == "table" then
+        for k, s in pairs(ss) do
+            if type(s) == "table" and k ~= slotKey then
+                local f = s.frame
+                if f and f ~= "NONE" and f ~= "None" and f ~= "none" and f ~= "" then
+                    used[f] = true
+                end
+            end
+        end
+    end
+    return used
+end
+
 
 --- Возвращает вкладку "Layout" дерева настроек (внутренний формат дерева настроек).
 LPS.Options.BuildTree.tabs.layout = function()
@@ -161,11 +179,26 @@ LPS.Options.BuildTree.tabs.layout = function()
                         values = function()
                             local vals = { none = L.NONE }
                             if LPS.GetSlotKeyList then
+                                local used = framesUsedInOtherSlots("left1")
                                 for _, k in ipairs(LPS:GetSlotKeyList()) do
-                                    vals[k] = LPS:GetDatatextName(k)
+                                    if k ~= "none" then
+                                        local name = LPS:GetDatatextName(k)
+                                        if used[k] and L.FRAME_USED then
+                                            name = name .. "  (" .. L.FRAME_USED .. ")"
+                                        end
+                                        vals[k] = name
+                                    end
                                 end
                             end
                             return vals
+                        end,
+                        -- Явный порядок (Dropdown-ElvUI без "sorting" сортирует
+                        -- ключи по алфавиту): "none" -> собственные -> LDB
+                        sorting = function()
+                            if LPS.GetSlotKeyList then
+                                return LPS:GetSlotKeyList()
+                            end
+                            return { "none" }
                         end,
                         get = function()
                             local ss = LPS:GetOptionDB().layout.sideSlots
@@ -245,11 +278,26 @@ LPS.Options.BuildTree.tabs.layout = function()
                         values = function()
                             local vals = { none = L.NONE }
                             if LPS.GetSlotKeyList then
+                                local used = framesUsedInOtherSlots("right1")
                                 for _, k in ipairs(LPS:GetSlotKeyList()) do
-                                    vals[k] = LPS:GetDatatextName(k)
+                                    if k ~= "none" then
+                                        local name = LPS:GetDatatextName(k)
+                                        if used[k] and L.FRAME_USED then
+                                            name = name .. "  (" .. L.FRAME_USED .. ")"
+                                        end
+                                        vals[k] = name
+                                    end
                                 end
                             end
                             return vals
+                        end,
+                        -- Явный порядок (Dropdown-ElvUI без "sorting" сортирует
+                        -- ключи по алфавиту): "none" -> собственные -> LDB
+                        sorting = function()
+                            if LPS.GetSlotKeyList then
+                                return LPS:GetSlotKeyList()
+                            end
+                            return { "none" }
                         end,
                         get = function()
                             local ss = LPS:GetOptionDB().layout.sideSlots
@@ -330,11 +378,26 @@ LPS.Options.BuildTree.tabs.layout = function()
                         values = function()
                             local vals = { none = L.NONE }
                             if LPS.GetSlotKeyList then
+                                local used = framesUsedInOtherSlots("left2")
                                 for _, k in ipairs(LPS:GetSlotKeyList()) do
-                                    vals[k] = LPS:GetDatatextName(k)
+                                    if k ~= "none" then
+                                        local name = LPS:GetDatatextName(k)
+                                        if used[k] and L.FRAME_USED then
+                                            name = name .. "  (" .. L.FRAME_USED .. ")"
+                                        end
+                                        vals[k] = name
+                                    end
                                 end
                             end
                             return vals
+                        end,
+                        -- Явный порядок (Dropdown-ElvUI без "sorting" сортирует
+                        -- ключи по алфавиту): "none" -> собственные -> LDB
+                        sorting = function()
+                            if LPS.GetSlotKeyList then
+                                return LPS:GetSlotKeyList()
+                            end
+                            return { "none" }
                         end,
                         get = function()
                             local ss = LPS:GetOptionDB().layout.sideSlots
@@ -417,11 +480,26 @@ LPS.Options.BuildTree.tabs.layout = function()
                         values = function()
                             local vals = { none = L.NONE }
                             if LPS.GetSlotKeyList then
+                                local used = framesUsedInOtherSlots("right2")
                                 for _, k in ipairs(LPS:GetSlotKeyList()) do
-                                    vals[k] = LPS:GetDatatextName(k)
+                                    if k ~= "none" then
+                                        local name = LPS:GetDatatextName(k)
+                                        if used[k] and L.FRAME_USED then
+                                            name = name .. "  (" .. L.FRAME_USED .. ")"
+                                        end
+                                        vals[k] = name
+                                    end
                                 end
                             end
                             return vals
+                        end,
+                        -- Явный порядок (Dropdown-ElvUI без "sorting" сортирует
+                        -- ключи по алфавиту): "none" -> собственные -> LDB
+                        sorting = function()
+                            if LPS.GetSlotKeyList then
+                                return LPS:GetSlotKeyList()
+                            end
+                            return { "none" }
                         end,
                         get = function()
                             local ss = LPS:GetOptionDB().layout.sideSlots
@@ -504,11 +582,26 @@ LPS.Options.BuildTree.tabs.layout = function()
                         values = function()
                             local vals = { none = L.NONE }
                             if LPS.GetSlotKeyList then
+                                local used = framesUsedInOtherSlots("left3")
                                 for _, k in ipairs(LPS:GetSlotKeyList()) do
-                                    vals[k] = LPS:GetDatatextName(k)
+                                    if k ~= "none" then
+                                        local name = LPS:GetDatatextName(k)
+                                        if used[k] and L.FRAME_USED then
+                                            name = name .. "  (" .. L.FRAME_USED .. ")"
+                                        end
+                                        vals[k] = name
+                                    end
                                 end
                             end
                             return vals
+                        end,
+                        -- Явный порядок (Dropdown-ElvUI без "sorting" сортирует
+                        -- ключи по алфавиту): "none" -> собственные -> LDB
+                        sorting = function()
+                            if LPS.GetSlotKeyList then
+                                return LPS:GetSlotKeyList()
+                            end
+                            return { "none" }
                         end,
                         get = function()
                             local ss = LPS:GetOptionDB().layout.sideSlots
@@ -591,11 +684,26 @@ LPS.Options.BuildTree.tabs.layout = function()
                         values = function()
                             local vals = { none = L.NONE }
                             if LPS.GetSlotKeyList then
+                                local used = framesUsedInOtherSlots("right3")
                                 for _, k in ipairs(LPS:GetSlotKeyList()) do
-                                    vals[k] = LPS:GetDatatextName(k)
+                                    if k ~= "none" then
+                                        local name = LPS:GetDatatextName(k)
+                                        if used[k] and L.FRAME_USED then
+                                            name = name .. "  (" .. L.FRAME_USED .. ")"
+                                        end
+                                        vals[k] = name
+                                    end
                                 end
                             end
                             return vals
+                        end,
+                        -- Явный порядок (Dropdown-ElvUI без "sorting" сортирует
+                        -- ключи по алфавиту): "none" -> собственные -> LDB
+                        sorting = function()
+                            if LPS.GetSlotKeyList then
+                                return LPS:GetSlotKeyList()
+                            end
+                            return { "none" }
                         end,
                         get = function()
                             local ss = LPS:GetOptionDB().layout.sideSlots

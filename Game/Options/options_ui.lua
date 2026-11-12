@@ -142,6 +142,33 @@ function LPS:ResolveOptionItems(entry)
     else
         for k, name in pairs(values) do add(k, name) end
     end
+    -- Явный порядок: entry.sorting (таблица или функция, возвращающая
+    -- список ключей). Строго сохраняется — без сортировки по имени.
+    -- (Дропдаун без sorting сортирует ключи по алфавиту — LDB_* и "none"
+    -- оказываются не там, где нужно.)
+    local sorting = entry.sorting
+    if type(sorting) == "function" then
+        local ok, v = pcall(sorting, false)
+        sorting = ok and v or nil
+    end
+    if type(sorting) == "table" then
+        local ordered = {}
+        local seenOrdered = {}
+        for _, value in ipairs(sorting) do
+            if values[value] ~= nil and not seenOrdered[value] then
+                seenOrdered[value] = true
+                ordered[#ordered + 1] = { value = value, text = tostring(values[value] or value) }
+            end
+        end
+        local seen = {}
+        for _, item in ipairs(ordered) do seen[item.value] = true end
+        for _, item in ipairs(items) do
+            if not seen[item.value] then
+                ordered[#ordered + 1] = item
+            end
+        end
+        return ordered
+    end
     table.sort(items, function(a, b)
         return tostring(a.text):lower() < tostring(b.text):lower()
     end)

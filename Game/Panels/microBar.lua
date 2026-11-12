@@ -7,7 +7,7 @@ local DT = LPS._DT
 do
     LPS:RegisterDatatext({
         key = "microBar",
-        nameKey = "Micro Bar",
+        nameKey = "MICRO_BAR",
         update = function(f)
             if f.text then f.text:SetText(L.GAME_MENU) end
         end,

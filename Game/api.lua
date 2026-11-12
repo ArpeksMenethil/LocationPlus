@@ -572,6 +572,18 @@ function LPS:ResetAllSettingsToDefaults()
                     LPS.frame[k] = nil
                 end
             end
+        -- LDB-панели регистрируются динамически (ключи "LDB_...")
+        for k in pairs(LPS.datatexts) do
+            if k:sub(1, 4) == "LDB_" then
+                local f = LPS.frame[k]
+                if f then
+                    f:Hide()
+                    if f.UnregisterAllEvents then f:UnregisterAllEvents() end
+                    if f._lpsTicker then f._lpsTicker:Cancel(); f._lpsTicker = nil end
+                    LPS.frame[k] = nil
+                end
+            end
+        end
     end
     if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
     LPS:ApplyHolderPosition()

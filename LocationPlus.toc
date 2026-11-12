@@ -3,7 +3,7 @@
 ## Author: Arpeks
 ## Version: 2.1.3
 ## SavedVariables: LPS_DB
-## OptionalDeps: LibStub, LibDeflate, Broker_PlayedTime
+## OptionalDeps: LibStub, LibDeflate, Broker_PlayedTime, LibDataBroker-1.1
 ## IconTexture: Interface\AddOns\LocationPlus\Media\Logo.png
 ## X-Curse-Project-ID: 1444011
 

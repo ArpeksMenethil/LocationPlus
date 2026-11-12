@@ -25,7 +25,7 @@ do
 
     LPS:RegisterDatatext({
         key = "durability",
-        nameKey = "Durability",
+        nameKey = "DURABILITY",
         events = { "UPDATE_INVENTORY_DURABILITY", "UNIT_INVENTORY_CHANGED" },
         update = function(f)
             local minPct = 100

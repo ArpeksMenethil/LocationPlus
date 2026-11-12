@@ -7,7 +7,7 @@ local DT = LPS._DT
 do
     LPS:RegisterDatatext({
         key = "experience",
-        nameKey = "Experience",
+        nameKey = "EXPERIENCE",
         events = { "PLAYER_XP_UPDATE", "DISABLE_XP_GAIN", "ENABLE_XP_GAIN", "UPDATE_EXHAUSTION", "PLAYER_LEVEL_UP" },
         update = function(f)
             if not UnitXP or not UnitXPMax then return end

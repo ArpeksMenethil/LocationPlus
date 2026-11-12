@@ -52,6 +52,8 @@ LPS:RegisterLocale("enUS", {
     LEFT_SLOT_1 = "Left Slot 1",
     SELECT_A_PANEL_FOR_THIS_SLOT = "Select a panel for this slot.",
     NONE = "None",
+    FRAME_USED = "in use",
+
     LEFT_OFFSET_X_1 = "Left Offset X 1",
     LEFT_OFFSET_Y_1 = "Left Offset Y 1",
     RIGHT_SLOT_1 = "Right Slot 1",
@@ -335,9 +337,6 @@ LPS:RegisterLocale("enUS", {
     DURABILITY = "Durability",
     ITEM_LEVEL = "Item Level",
     MAIL = "Mail",
-    MICRO_BAR = "Micro Bar",
-    THEME_MODERN = "Modern",
-    THEME_MODERN_DESC = "Flat charcoal with a green accent.",
     THEME_VINTAGE = "Vintage",
     THEME_VINTAGE_DESC = "Walnut and brass with engraved headings.",
     THEME_CLASSIC = "Classic",

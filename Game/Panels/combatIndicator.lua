@@ -7,7 +7,7 @@ local DT = LPS._DT
 do
     LPS:RegisterDatatext({
         key = "combatIndicator",
-        nameKey = "Combat Indicator",
+        nameKey = "COMBAT_INDICATOR",
         events = { "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED" },
         update = function(f)
             local inCombat = UnitAffectingCombat and UnitAffectingCombat("player")

@@ -24,12 +24,12 @@ function LPS:GetDatatextDisplayName(key)
     return key
 end
 
---- Список ключей панелей для слотов: все зарегистрированные панели,
---- отсортированные по названию на языке клиента (русский клиент — по
---- русским названиям, enUS — по английским). Сортировка выполняется
---- ПОСЛЕ локализации: компаратор каждый раз берёт свежий перевод через
---- GetDatatextDisplayName. Кэш сбрасывается при каждой новой регистрации
---- панели.
+--- Список ключей панелей для слотов страницы макета.
+--- Порядок: сначала "none" (не выбран фрейм), затем собственные панели
+--- аддона, затем LDB-панели (префикс "LDB_"). В каждой группе — по
+--- названию на языке клиента: сортировка выполняется ПОСЛЕ локализации,
+--- компаратор каждый раз берёт свежий перевод через GetDatatextDisplayName.
+--- Кэш сбрасывается при каждой новой регистрации панели.
 LPS._datatextsSortedKeysCache = LPS._datatextsSortedKeysCache
 function LPS:InvalidateDatatextsSortedKeys()
     LPS._datatextsSortedKeysCache = nil
@@ -37,21 +37,36 @@ end
 
 function LPS:GetSlotKeyList()
     if not LPS._datatextsSortedKeysCache then
-        local keys = {}
+        local own, ldb = {}, {}
         for key in pairs(LPS.datatexts) do
             if not LPS.datatextsHiddenSlotKeys[key] then
-                keys[#keys + 1] = key
+                if key:sub(1, 4) == "LDB_" then
+                    ldb[#ldb + 1] = key
+                else
+                    own[#own + 1] = key
+                end
             end
         end
-        table.sort(keys, function(a, b)
-            local na = tostring(LPS:GetDatatextDisplayName(a)):lower()
-            local nb = tostring(LPS:GetDatatextDisplayName(b)):lower()
-            if na == nb then return a < b end
-            return na < nb
-        end)
+        local sortByName = function(arr)
+            table.sort(arr, function(a, b)
+                local na = tostring(LPS:GetDatatextDisplayName(a)):lower()
+                local nb = tostring(LPS:GetDatatextDisplayName(b)):lower()
+                if na == nb then return a < b end
+                return na < nb
+            end)
+        end
+        sortByName(own)
+        sortByName(ldb)
+        local keys = {}
+        for i = 1, #own do keys[#keys + 1] = own[i] end
+        for i = 1, #ldb do keys[#keys + 1] = ldb[i] end
         LPS._datatextsSortedKeysCache = keys
     end
-    return LPS._datatextsSortedKeysCache
+    local keys = { "none" }
+    for i = 1, #LPS._datatextsSortedKeysCache do
+        keys[#keys + 1] = LPS._datatextsSortedKeysCache[i]
+    end
+    return keys
 end
 
 LPS.datatextsEventBridge = CreateFrame("Frame")

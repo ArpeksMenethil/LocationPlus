@@ -9,6 +9,7 @@
     <Include file='.\gold.lua'/>
     <Include file='.\guild.lua'/>
     <Include file='.\itemLevel.lua'/>
+    <Include file='.\ldb.lua'/>
     <Include file='.\location.lua'/>
     <Include file='.\mail.lua'/>
     <Include file='.\microBar.lua'/>

@@ -35,7 +35,7 @@ do
 
     LPS:RegisterDatatext({
         key = "volume",
-        nameKey = "Volume",
+        nameKey = "VOLUME",
         events = { "CVAR_UPDATE" },
         clicks = { "LeftButtonUp", "RightButtonUp", "MiddleButtonUp" },
         update = function(f)

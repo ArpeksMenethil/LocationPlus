@@ -210,7 +210,7 @@ LPS:RegisterDatatext({
     create = function(f)
         if f then f._lpsForceWhite = true end
     end,
-    nameKey = "Gold",
+    nameKey = "GOLD",
     events = { "PLAYER_ENTERING_WORLD", "PLAYER_MONEY" },
     update = function(f)
         local oldData = f.text and f.text:GetText()

@@ -244,7 +244,9 @@ function LPS:CreateMainFrame()
     frame:SetMovable(true)
     frame:SetResizable(true)
     frame:SetClampedToScreen(true)
-    frame:SetFrameStrata("HIGH")
+    -- DIALOG: окно настроек всегда на переднем крае (не перекрывается
+    -- другими окнами аддонов — ElvUI, чаты и т.п. из MEDIUM/HIGH)
+    frame:SetFrameStrata("DIALOG")
     frame:EnableMouse(true)
     if frame.SetResizeBounds then
         frame:SetResizeBounds(MIN_WIDTH, MIN_HEIGHT)

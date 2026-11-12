@@ -27,7 +27,7 @@ do
 
     LPS:RegisterDatatext({
         key = "bags",
-        nameKey = "Bags",
+        nameKey = "BAGS",
         events = { "BAG_UPDATE_DELAYED", "BAG_CONTAINER_UPDATE" },
         update = function(f)
             local d = LPS:GetDB()

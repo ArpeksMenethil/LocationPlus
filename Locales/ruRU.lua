@@ -52,6 +52,8 @@ LPS:RegisterLocale("ruRU", {
     LEFT_SLOT_1 = "Левый слот 1",
     SELECT_A_PANEL_FOR_THIS_SLOT = "Выберите панель для этого слота.",
     NONE = "Нет",
+    FRAME_USED = "занято",
+
     LEFT_OFFSET_X_1 = "Левый смещ. X 1",
     LEFT_OFFSET_Y_1 = "Левый смещ. Y 1",
     RIGHT_SLOT_1 = "Правый слот 1",
@@ -335,9 +337,6 @@ LPS:RegisterLocale("ruRU", {
     DURABILITY = "Прочность",
     ITEM_LEVEL = "Уровень предмета",
     MAIL = "Почта",
-    MICRO_BAR = "Микро-меню",
-    THEME_MODERN = "Современная",
-    THEME_MODERN_DESC = "Плоский графит с зелёным акцентом.",
     THEME_VINTAGE = "Винтажная",
     THEME_VINTAGE_DESC = "Орех и латунь с гравированными заголовками.",
     THEME_CLASSIC = "Классическая",

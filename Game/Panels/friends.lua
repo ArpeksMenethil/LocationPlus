@@ -14,7 +14,7 @@ do
 
     LPS:RegisterDatatext({
         key = "friends",
-        nameKey = "Friends",
+        nameKey = "FRIENDS",
         events = { 'BN_FRIEND_ACCOUNT_ONLINE', 'BN_FRIEND_ACCOUNT_OFFLINE', 'BN_FRIEND_INFO_CHANGED', 'FRIENDLIST_UPDATE', 'CHAT_MSG_SYSTEM' },
         update = function(f)
             local onlineFriends = (CF_GetNumOnlineFriends and CF_GetNumOnlineFriends()) or 0

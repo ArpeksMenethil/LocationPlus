@@ -11,7 +11,7 @@ end
 
 LPS:RegisterDatatext({
     key = "time",
-    nameKey = "Time",
+    nameKey = "TIME",
     ticker = 1,
     clicks = { "LeftButtonUp", "RightButtonUp", "MiddleButtonUp" },
     create = function(f)
