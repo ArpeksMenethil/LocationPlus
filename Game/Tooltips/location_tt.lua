@@ -255,8 +255,7 @@ end
 function LPS:BuildLocationTooltip()
     local db = LPS:GetDB()
     local mapID = C_Map.GetBestMapForUnit("player")
-    local mapInfo = mapID and C_Map.GetMapInfo(mapID)
-    local zoneText = (mapInfo and mapInfo.name) or UNKNOWN
+    local zoneText = LPS:GetMapNameByIDAlt(mapID)
 
     local r, g, b = LPS:GetColor("text")
     local rB, gB, bB = LPS:GetColor("tooltipSetting")

@@ -1089,7 +1089,7 @@ function LPS:GetPlayerCoords()
 end
 
 function LPS:GetMapNameByIDAlt(mapID)
-    if not Tourist then return end
+    if not Tourist then return GetZoneText() end
     return Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN
 end
 
