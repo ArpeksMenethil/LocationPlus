@@ -42,11 +42,6 @@ do
             end,
             tooltip = function(tt)
                 local shown = false
-                local logError = function(msg)
-                    if LPS.Print then
-                        LPS:Print(displayName .. " " .. msg)
-                    end
-                end
                 local hasLines = function()
                     return tt:NumLines() > 0
                 end
@@ -55,26 +50,23 @@ do
                 if type(t) == "table" and type(t.show) == "function" then
                     local ok, err = pcall(t.show, obj, tt)
                     shown = ok and hasLines()
-                    if not ok then
-                        logError("tooltip.show: " .. tostring(err))
+                    if not ok and LPS.Print then
+                        LPS:Print(displayName .. " tooltip.show: " .. tostring(err))
                     end
                 end
 
+                --- Callback'и 1.1 вызываем без self (первый аргумент —
+                --- сам tooltip). Ошибки стороннего кода глотаем молча:
+                --- просто отступаем на строку с именем объекта.
                 if not shown and type(obj.OnTooltipShow) == "function" then
-                    local ok, err = pcall(obj.OnTooltipShow, obj, tt)
+                    local ok = pcall(obj.OnTooltipShow, tt)
                     shown = ok and hasLines()
-                    if not ok then
-                        logError("OnTooltipShow: " .. tostring(err))
-                    end
                 end
 
                 local f = LPS.frame and LPS.frame[key]
                 if not shown and type(obj.OnEnter) == "function" and f then
-                    local ok, err = pcall(obj.OnEnter, f)
+                    local ok = pcall(obj.OnEnter, f)
                     shown = ok and hasLines()
-                    if not ok then
-                        logError("OnEnter: " .. tostring(err))
-                    end
                 end
 
                 if not shown then
