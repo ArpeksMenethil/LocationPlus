@@ -70,7 +70,7 @@ LPS.Options.BuildTree.tabs.tooltip = function()
                     fish = {
                         order = 2.1,
                         name = LPS.icons.Fish.." "..L.AREA_FISHING_LEVEL,
-                        desc = L.ENABLE_DISABLE_FISHING_LEVEL_ON_THE_AREA,
+                        desc = L.ENABLE_DISABLE_FISHING_LEVEL_ON_THE_AREA.."\n"..L.FISHING_LEVEL_IS_THE_SKILL_AT_WHICH_EVERY_CAST_IN_THE_ZONE_SUCCESSES,
                         type = "toggle",
 
                         disabled = function() return not LPS:GetOptionDB().tooltips.visibility.enable or LPS.Retail or LPS.Mists end,

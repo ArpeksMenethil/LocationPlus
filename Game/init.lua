@@ -62,8 +62,9 @@ end
 
 --- Уровни зон и уровни рыбалки:
 ---  - minLevel/maxLevel: диапазоны уровней зон;
----  - fishing: уровень рыбалки, с которого броски в зоне успешны (из OpenMap Fishing.lua;
----    для зон с отрицательным base там хранится base + 95, например Elwynn: -70 => 25)
+---  - fishing: уровень рыбалки, при котором каждый бросок в зоне успешен (OpenMap Fishing.lua:
+---    base + 95 ко всем зонам, например Elwynn: -70 + 95 = 25, Stranglethorn: 130 + 95 = 225;
+---    для зон WoW Forever значение оценено по уровневому диапазону зоны)
 LPS.levelTableConst = {
 
     -- Eastern Kingdoms
@@ -73,22 +74,22 @@ LPS.levelTableConst = {
         --[[Loch Modan]]			[1432] = {minLevel = 10,	maxLevel = 20,		fishing = 75,},
         --[[Silverpine Forest]]		[1421] = {minLevel = 10, 	maxLevel = 20,		fishing = 75,},
         --[[Westfall]]				[1436] = {minLevel = 10, 	maxLevel = 20,		fishing = 75,},
-        --[[Redridge Mountains]]	[1433] = {minLevel = 15, 	maxLevel = 25,		fishing = 55,},
-        --[[Duskwood]]				[1431] = {minLevel = 18, 	maxLevel = 30,		fishing = 55,},
-        --[[Hillsbrad Foothills]]	[1424] = {minLevel = 20, 	maxLevel = 30,		fishing = 55,},
-        --[[Wetlands]]				[1437] = {minLevel = 20, 	maxLevel = 30,		fishing = 55,},
-        --[[Alterac Mountains]]		[1416] = {minLevel = 30, 	maxLevel = 40,		fishing = 130,},
-        --[[Arathi Highlands]]		[1417] = {minLevel = 30, 	maxLevel = 40,		fishing = 130,},
-        --[[Stranglethorn Vale]]	[1434] = {minLevel = 30, 	maxLevel = 45,		fishing = 130,},
+        --[[Redridge Mountains]]	[1433] = {minLevel = 15, 	maxLevel = 25,		fishing = 150,},
+        --[[Duskwood]]				[1431] = {minLevel = 18, 	maxLevel = 30,		fishing = 150,},
+        --[[Hillsbrad Foothills]]	[1424] = {minLevel = 20, 	maxLevel = 30,		fishing = 150,},
+        --[[Wetlands]]				[1437] = {minLevel = 20, 	maxLevel = 30,		fishing = 150,},
+        --[[Alterac Mountains]]		[1416] = {minLevel = 30, 	maxLevel = 40,		fishing = 225,},
+        --[[Arathi Highlands]]		[1417] = {minLevel = 30, 	maxLevel = 40,		fishing = 225,},
+        --[[Stranglethorn Vale]]	[1434] = {minLevel = 30, 	maxLevel = 45,		fishing = 225,},
         --[[Badlands]]				[1418] = {minLevel = 35, 	maxLevel = 45,		fishing = 130,},
-        --[[Swamp of Sorrows]]		[1435] = {minLevel = 35, 	maxLevel = 45,		fishing = 130,},
-        --[[The Hinterlands]]		[1425] = {minLevel = 40, 	maxLevel = 50,		fishing = 205,},
+        --[[Swamp of Sorrows]]		[1435] = {minLevel = 35, 	maxLevel = 45,		fishing = 225,},
+        --[[The Hinterlands]]		[1425] = {minLevel = 40, 	maxLevel = 50,		fishing = 300,},
         --[[Blasted Lands]]			[1419] = {minLevel = 45, 	maxLevel = 55,		fishing = 205,},
         --[[Searing Gorge]]			[1427] = {minLevel = 45, 	maxLevel = 50,		fishing = 205,},
-        --[[Burning Steppes]]		[1428] = {minLevel = 50, 	maxLevel = 58,		fishing = 330,},
-        --[[Western Plaguelands]]	[1422] = {minLevel = 51, 	maxLevel = 58,		fishing = 205,},
-        --[[Eastern Plaguelands]]	[1423] = {minLevel = 53, 	maxLevel = 60,		fishing = 330,},
-        --[[Deadwind Pass]]			[1430] = {minLevel = 55, 	maxLevel = 60,		fishing = 330,},
+        --[[Burning Steppes]]		[1428] = {minLevel = 50, 	maxLevel = 58,		fishing = 425,},
+        --[[Western Plaguelands]]	[1422] = {minLevel = 51, 	maxLevel = 58,		fishing = 300,},
+        --[[Eastern Plaguelands]]	[1423] = {minLevel = 53, 	maxLevel = 60,		fishing = 425,},
+        --[[Deadwind Pass]]			[1430] = {minLevel = 55, 	maxLevel = 60,		fishing = 425,},
 
     -- Kalimdor
         --[[Durotar]]				[1411] = {minLevel = 1, 	maxLevel = 10,		fishing = 25,},
@@ -96,25 +97,25 @@ LPS.levelTableConst = {
         --[[Teldrassil]]			[1438] = {minLevel = 1, 	maxLevel = 10,		fishing = 25,},
         --[[Darkshore]]				[1439] = {minLevel = 10,	maxLevel = 20,		fishing = 75,},
         --[[The Barrens]]			[1413] = {minLevel = 10, 	maxLevel = 25,		fishing = 75,},
-        --[[Stonetalon Mountains]]	[1442] = {minLevel = 15, 	maxLevel = 27,		fishing = 55,},
-        --[[Ashenvale]]				[1440] = {minLevel = 18, 	maxLevel = 30,		fishing = 55,},
-        --[[Thousand Needles]]		[1441] = {minLevel = 25, 	maxLevel = 35,		fishing = 130,},
-        --[[Desolace]]				[1443] = {minLevel = 30, 	maxLevel = 40,		fishing = 130,},
-        --[[Dustwallow Marsh]]		[1445] = {minLevel = 35, 	maxLevel = 45,		fishing = 130,},
-        --[[Feralas]]				[1444] = {minLevel = 40, 	maxLevel = 50,		fishing = 205,},
-        --[[Tanaris]]				[1446] = {minLevel = 40, 	maxLevel = 50,		fishing = 205,},
-        --[[Azshara]]				[1447] = {minLevel = 45, 	maxLevel = 55,		fishing = 205,},
-        --[[Felwood]]				[1448] = {minLevel = 48, 	maxLevel = 55,		fishing = 205,},
-        --[[Un'Goro Crater]]		[1449] = {minLevel = 48, 	maxLevel = 55,		fishing = 205,},
-        --[[Moonglade]]				[1450] = {minLevel = 55, 	maxLevel = 60,		fishing = 205,},
-        --[[Silithus]]				[1451] = {minLevel = 55, 	maxLevel = 60,		fishing = 330,},
-        --[[Winterspring]]			[1452] = {minLevel = 55, 	maxLevel = 60,		fishing = 330,},
+        --[[Stonetalon Mountains]]	[1442] = {minLevel = 15, 	maxLevel = 27,		fishing = 150,},
+        --[[Ashenvale]]				[1440] = {minLevel = 18, 	maxLevel = 30,		fishing = 150,},
+        --[[Thousand Needles]]		[1441] = {minLevel = 25, 	maxLevel = 35,		fishing = 225,},
+        --[[Desolace]]				[1443] = {minLevel = 30, 	maxLevel = 40,		fishing = 225,},
+        --[[Dustwallow Marsh]]		[1445] = {minLevel = 35, 	maxLevel = 45,		fishing = 225,},
+        --[[Feralas]]				[1444] = {minLevel = 40, 	maxLevel = 50,		fishing = 300,},
+        --[[Tanaris]]				[1446] = {minLevel = 40, 	maxLevel = 50,		fishing = 300,},
+        --[[Azshara]]				[1447] = {minLevel = 45, 	maxLevel = 55,		fishing = 300,},
+        --[[Felwood]]				[1448] = {minLevel = 48, 	maxLevel = 55,		fishing = 300,},
+        --[[Un'Goro Crater]]		[1449] = {minLevel = 48, 	maxLevel = 55,		fishing = 300,},
+        --[[Moonglade]]				[1450] = {minLevel = 55, 	maxLevel = 60,		fishing = 300,},
+        --[[Silithus]]				[1451] = {minLevel = 55, 	maxLevel = 60,		fishing = 425,},
+        --[[Winterspring]]			[1452] = {minLevel = 55, 	maxLevel = 60,		fishing = 425,},
 
     -- Forever
         --[[Zephras Isle]]			[2521] = {minLevel = 1, 	maxLevel = 12,		fishing = 25,},
-        --[[Riverglades]]			[2548] = {minLevel = 35, 	maxLevel = 45,		fishing = 130,},
-        --[[Shen'dralas]]			[2652] = {minLevel = 35, 	maxLevel = 45,		fishing = 130,},
-        --[[Hyjal]]					[2482] = {minLevel = 60, 	maxLevel = 60,		fishing = 330,},
+        --[[Riverglades]]			[2548] = {minLevel = 35, 	maxLevel = 45,		fishing = 225,},
+        --[[Shen'dralas]]			[2652] = {minLevel = 35, 	maxLevel = 45,		fishing = 225,},
+        --[[Hyjal]]					[2482] = {minLevel = 60, 	maxLevel = 60,		fishing = 425,},
 
     -- Dungeons and Raids
         --[[Wailing Caverns]]		[718]  = {minLevel = 15, 	maxLevel = 25,		fishing = 50,},

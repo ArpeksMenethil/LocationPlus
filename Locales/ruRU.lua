@@ -192,6 +192,7 @@ LPS:RegisterLocale("ruRU", {
     ENABLE_DISABLE_LEVEL_RANGE_ON_TOOLTIP = "Включить/выключить диапазон уровней в подсказке.",
     AREA_FISHING_LEVEL = "Рыбалка в зоне",
     ENABLE_DISABLE_FISHING_LEVEL_ON_THE_AREA = "Включить/выключить уровень рыбалки в зоне.",
+    FISHING_LEVEL_IS_THE_SKILL_AT_WHICH_EVERY_CAST_IN_THE_ZONE_SUCCESSES = "Уровень рыбалки, при котором каждый бросок в зоне успешен.",
     PROFESSIONS = "Профессии",
     ENABLE_DISABLE_THE_PROFESSIONS_ON_TOOLTIP = "Включить/выключить профессии в подсказке.",
     HIDE_CAPPED = "Скрыть на максимуме",

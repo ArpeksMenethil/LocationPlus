@@ -192,6 +192,7 @@ LPS:RegisterLocale("enUS", {
     ENABLE_DISABLE_LEVEL_RANGE_ON_TOOLTIP = "Enable/Disable level range on Tooltip.",
     AREA_FISHING_LEVEL = "Area Fishing level",
     ENABLE_DISABLE_FISHING_LEVEL_ON_THE_AREA = "Enable/Disable fishing level on the area.",
+    FISHING_LEVEL_IS_THE_SKILL_AT_WHICH_EVERY_CAST_IN_THE_ZONE_SUCCESSES = "The fishing skill at which every cast in the zone succeeds.",
     PROFESSIONS = "Professions",
     ENABLE_DISABLE_THE_PROFESSIONS_ON_TOOLTIP = "Enable/Disable the professions, on Tooltip.",
     HIDE_CAPPED = "Hide capped",
