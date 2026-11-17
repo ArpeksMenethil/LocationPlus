@@ -157,9 +157,21 @@ if Minimap and not Minimap._lpsPosHooked then
     end
 end
 
+--- Точка перемещения/привязки: центр фрейма локации — сеточная линия
+--- «падает» в центр панели локации, а не в центр всей строки панелей.
+function LPS:GetSnapPoint()
+    local loc = self.frame and self.frame.location
+    if loc and loc.IsShown and loc:IsShown() then
+        local l, t = loc:GetLeft(), loc:GetTop()
+        if type(l) == "number" and type(t) == "number" then
+            return l + loc:GetWidth()/2, t + loc:GetHeight()/2
+        end
+    end
+    return nil
+end
+
 function LPS:SetMoveMode(enabled)
     local f = LPS.frame.holder
-    f:SetMovable(enabled)
     f:EnableMouse(enabled)
     if enabled then
         f:SetFrameStrata("DIALOG")
@@ -209,10 +221,11 @@ function LPS:SetMoveMode(enabled)
                 return
             end
 
-            local width = self:GetWidth()
-            local height = self:GetHeight()
-            local centerX = left + width/2
-            local centerY = self:GetBottom() + height/2
+            local refX, refY = LPS:GetSnapPoint()
+            if not refX then
+                refX = left + self:GetWidth()/2
+                refY = top + self:GetHeight()/2
+            end
             local screenW = UIParent:GetWidth()
             local screenH = UIParent:GetHeight()
             local stepX = screenW / 10
@@ -220,19 +233,19 @@ function LPS:SetMoveMode(enabled)
 
             local offsetX, offsetY = 0, 0
             if stepX > 0 then
-                local i = math.floor((centerX / stepX) + 0.5)
+                local i = math.floor((refX / stepX) + 0.5)
                 if i < 0 then i = 0 elseif i > 10 then i = 10 end
                 local targetX = stepX * i
-                if math.abs(centerX - targetX) <= snapRange then
-                    offsetX = targetX - centerX
+                if math.abs(refX - targetX) <= snapRange then
+                    offsetX = targetX - refX
                 end
             end
             if stepY > 0 then
-                local j = math.floor((centerY / stepY) + 0.5)
+                local j = math.floor((refY / stepY) + 0.5)
                 if j < 0 then j = 0 elseif j > 10 then j = 10 end
                 local targetY = stepY * j
-                if math.abs(centerY - targetY) <= snapRange then
-                    offsetY = targetY - centerY
+                if math.abs(refY - targetY) <= snapRange then
+                    offsetY = targetY - refY
                 end
             end
 
@@ -261,12 +274,11 @@ function LPS:SetMoveMode(enabled)
         f:SetScript("OnUpdate", function(self, dt)
             local grid = f.grid
             if not grid then return end
-            local left = self:GetLeft()
-            local bottom = self:GetBottom()
-            local width = self:GetWidth()
-            local height = self:GetHeight()
-            local centerX = left + width/2
-            local centerY = bottom + height/2
+            local refX, refY = LPS:GetSnapPoint()
+            if not refX then
+                refX = self:GetLeft() + self:GetWidth()/2
+                refY = self:GetTop() + self:GetHeight()/2
+            end
             local screenW = UIParent:GetWidth()
             local screenH = UIParent:GetHeight()
             local stepX = screenW / 10
@@ -274,20 +286,20 @@ function LPS:SetMoveMode(enabled)
 
             local nearV, nearH
             if stepX > 0 then
-                nearV = math.floor((centerX / stepX) + 0.5)
+                nearV = math.floor((refX / stepX) + 0.5)
                 if nearV < 1 then nearV = 1 elseif nearV > 9 then nearV = 9 end
             end
             if stepY > 0 then
-                nearH = math.floor((centerY / stepY) + 0.5)
+                nearH = math.floor((refY / stepY) + 0.5)
                 if nearH < 1 then nearH = 1 elseif nearH > 9 then nearH = 9 end
             end
 
             local activeV
-            if stepX > 0 and nearV and math.abs(centerX - (stepX * nearV)) <= snapRange then
+            if stepX > 0 and nearV and math.abs(refX - (stepX * nearV)) <= snapRange then
                 activeV = nearV
             end
             local activeH
-            if stepY > 0 and nearH and math.abs(centerY - (stepY * nearH)) <= snapRange then
+            if stepY > 0 and nearH and math.abs(refY - (stepY * nearH)) <= snapRange then
                 activeH = nearH
             end
 

@@ -38,6 +38,9 @@ local params = {
 }
 LPS.frame.holder = LPS:CreateFrame(params)
 LPS.frame.holder:SetFrameStrata("HIGH")
+--- Всегда держим флаг movable: без него клиент отклоняет SetUserPlaced/StartMoving
+--- (в обычном режиме мышь на фрейме выключена, перетаскивание ведёт наш OnDragStart).
+LPS.frame.holder:SetMovable(true)
 
 LPS.Lifecycle = F.Lifecycle:New(LPS, LPS.addon.name)
 LPS.Lifecycle:OnAddonLoaded(function()

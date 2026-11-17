@@ -315,6 +315,16 @@ function LPS:ApplyLayout()
         end
     end
 
+    local loc = frames.location
+    if loc then
+        loc:ClearAllPoints()
+        if LPS:UseHolderAnchor() then
+            loc:SetPoint("CENTER", frames.holder, "CENTER", 0, 0)
+        else
+            loc:SetPoint("TOPLEFT", frames.holder, "TOPLEFT", 9, 3)
+        end
+    end
+
     local showDT = layout.dtshow ~= false
 
     local sideSlots = layout.sideSlots or {}
