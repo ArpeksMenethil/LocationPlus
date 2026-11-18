@@ -14,6 +14,7 @@ function LPS:OnAddonCompartmentEnter(addonName, menuButtonFrame)
     local rb, gb, bb = LPS:GetColor("tooltipSetting")
 
     GameTooltip:SetOwner(UIParent, "ANCHOR_CURSOR")
+    LPS:ApplyTooltipFont(GameTooltip)
     GameTooltip:AddDoubleLine(LPS.addon.name, LPS.addon.version, ry, gy, by, r, g, b)
     GameTooltip:AddLine(" ")
     GameTooltip:AddLine(LPS:GetAddonNotes(), r, g, b)

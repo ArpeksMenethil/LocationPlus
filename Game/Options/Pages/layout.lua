@@ -20,6 +20,32 @@ local function framesUsedInOtherSlots(slotKey)
     return used
 end
 
+--- Выпадающий список шрифта для слота (db.layout.slotFont[slotKey]).
+--- displayName — название слота для точной подписи («Шрифт — Левый слот 1»).
+local function slotFontSelect(slotKey, order, displayName)
+    return {
+        order = order,
+        type = "select",
+        name = displayName and (L.FONT .. " — " .. displayName) or L.FONT,
+        desc = L.FONT_SLOT_DESC,
+        values = function() return LPS:GetFontChoiceMap("slot") end,
+        sorting = function() return LPS:GetFontChoiceOrder("slot") end,
+        get = function()
+            local lay = LPS:GetOptionDB().layout
+            local f = lay and lay.slotFont and lay.slotFont[slotKey]
+            if f == "custom" then return "default" end
+            return f or "default"
+        end,
+        set = function(_, v)
+            local db = LPS:GetOptionDB()
+            db.layout = db.layout or {}
+            db.layout.slotFont = db.layout.slotFont or {}
+            db.layout.slotFont[slotKey] = v
+            LPS:ApplyOptionsRefresh()
+        end,
+    }
+end
+
 
 --- Возвращает вкладку "Layout" дерева настроек (внутренний формат дерева настроек).
 LPS.Options.BuildTree.tabs.layout = function()
@@ -88,6 +114,7 @@ LPS.Options.BuildTree.tabs.layout = function()
                             LPS:ApplyOptionsRefresh()
                         end,
                     },
+                    font = slotFontSelect("location", 3),
                 },
             },
             panels = {
@@ -167,604 +194,620 @@ LPS.Options.BuildTree.tabs.layout = function()
                     },
                 },
             },
-            panelsGroup = {
+            leftGroup = {
                 order = 6,
-                name = L.SIDE_PANELS,
+                name = L.LEFT_PANELS,
                 args = {
-                    leftSlot1 = {
-                        order = 1.1,
-                        name = L.LEFT_SLOT_1,
-                        desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
-                        type = "select",
-                        values = function()
-                            local vals = { none = L.NONE }
-                            if LPS.GetSlotKeyList then
-                                local used = framesUsedInOtherSlots("left1")
-                                for _, k in ipairs(LPS:GetSlotKeyList()) do
-                                    if k ~= "none" then
-                                        local name = LPS:GetDatatextName(k)
-                                        if used[k] and L.FRAME_USED then
-                                            name = name .. "  (" .. L.FRAME_USED .. ")"
-                                        end
-                                        vals[k] = name
+                leftSlot1 = {
+                    order = 1.1,
+                    name = L.LEFT_SLOT_1,
+                    desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
+                    type = "select",
+                    values = function()
+                        local vals = { none = L.NONE }
+                        if LPS.GetSlotKeyList then
+                            local used = framesUsedInOtherSlots("left1")
+                            for _, k in ipairs(LPS:GetSlotKeyList()) do
+                                if k ~= "none" then
+                                    local name = LPS:GetDatatextName(k)
+                                    if used[k] and L.FRAME_USED then
+                                        name = name .. "  (" .. L.FRAME_USED .. ")"
                                     end
+                                    vals[k] = name
                                 end
                             end
-                            return vals
-                        end,
-                        sorting = function()
-                            if LPS.GetSlotKeyList then
-                                return LPS:GetSlotKeyList()
-                            end
-                            return { "none" }
-                        end,
-                        get = function()
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["left1"]
-                            local v = (s and s.frame) or "NONE"
-                            if v == "NONE" or v == "None" or v == "" or v == nil then
-                                return "none"
-                            end
-                            return v
-                        end,
-                        set = function(_, v)
-                            local db = LPS:GetOptionDB()
-                            db.layout.sideSlots = db.layout.sideSlots or {}
-                            local ss = db.layout.sideSlots
-                            ss.left1 = ss.left1 or { offsetX = 0, offsetY = 0 }
-                            local cur = ss.left1
-                            v = v or "none"
-                            if v ~= "none" then
-                                for _, other in pairs(ss) do
-                                    if type(other) == "table" and other ~= cur and other.frame == v then
-                                        other.frame = "NONE"
-                                    end
+                        end
+                        return vals
+                    end,
+                    sorting = function()
+                        if LPS.GetSlotKeyList then
+                            return LPS:GetSlotKeyList()
+                        end
+                        return { "none" }
+                    end,
+                    get = function()
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["left1"]
+                        local v = (s and s.frame) or "NONE"
+                        if v == "NONE" or v == "None" or v == "" or v == nil then
+                            return "none"
+                        end
+                        return v
+                    end,
+                    set = function(_, v)
+                        local db = LPS:GetOptionDB()
+                        db.layout.sideSlots = db.layout.sideSlots or {}
+                        local ss = db.layout.sideSlots
+                        ss.left1 = ss.left1 or { offsetX = 0, offsetY = 0 }
+                        local cur = ss.left1
+                        v = v or "none"
+                        if v ~= "none" then
+                            for _, other in pairs(ss) do
+                                if type(other) == "table" and other ~= cur and other.frame == v then
+                                    other.frame = "NONE"
                                 end
                             end
-                            cur.frame = (v == "none") and "NONE" or v
-                            if v == "none" then LPS:CascadeClearSlots(ss, "left", 1) end
-                            ss.userTouched = ss.userTouched or {}
-                            ss.userTouched["left1"] = true
-                            LPS:ApplyOptionsRefresh()
-                        end,
-                    },
-                    leftOffsetX1 = {
-                        order = 1.11,
-                        name = L.LEFT_OFFSET_X_1,
-                        desc = L.SIDE_SLOT_OFFSET_X_DESC,
-                        type = "range",
-                        min = -200,
-                        max = 200,
-                        step = 1,
-                        get = function()
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["left1"]
-                            return tonumber(s and s.offsetX) or 0
-                        end,
-                        set = function(_, v)
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["left1"]
-                            if s then s.offsetX = v end
-                            LPS:ApplyOptionsRefresh()
-                        end,
-                    },
-                    leftOffsetY1 = {
-                        order = 1.12,
-                        name = L.LEFT_OFFSET_Y_1,
-                        desc = L.SIDE_SLOT_OFFSET_Y_DESC,
-                        type = "range",
-                        min = -200,
-                        max = 200,
-                        step = 1,
-                        get = function()
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["left1"]
-                            return tonumber(s and s.offsetY) or 0
-                        end,
-                        set = function(_, v)
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["left1"]
-                            if s then s.offsetY = v end
-                            LPS:ApplyOptionsRefresh()
-                        end,
-                    },
-                    rightSlot1 = {
-                        order = 1.2,
-                        name = L.RIGHT_SLOT_1,
-                        desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
-                        type = "select",
-                        values = function()
-                            local vals = { none = L.NONE }
-                            if LPS.GetSlotKeyList then
-                                local used = framesUsedInOtherSlots("right1")
-                                for _, k in ipairs(LPS:GetSlotKeyList()) do
-                                    if k ~= "none" then
-                                        local name = LPS:GetDatatextName(k)
-                                        if used[k] and L.FRAME_USED then
-                                            name = name .. "  (" .. L.FRAME_USED .. ")"
-                                        end
-                                        vals[k] = name
+                        end
+                        cur.frame = (v == "none") and "NONE" or v
+                        if v == "none" then LPS:CascadeClearSlots(ss, "left", 1) end
+                        ss.userTouched = ss.userTouched or {}
+                        ss.userTouched["left1"] = true
+                        LPS:ApplyOptionsRefresh()
+                    end,
+                },
+                leftOffsetX1 = {
+                    order = 1.11,
+                    name = L.LEFT_OFFSET_X_1,
+                    desc = L.SIDE_SLOT_OFFSET_X_DESC,
+                    type = "range",
+                    min = -200,
+                    max = 200,
+                    step = 1,
+                    get = function()
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["left1"]
+                        return tonumber(s and s.offsetX) or 0
+                    end,
+                    set = function(_, v)
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["left1"]
+                        if s then s.offsetX = v end
+                        LPS:ApplyOptionsRefresh()
+                    end,
+                },
+                leftOffsetY1 = {
+                    order = 1.12,
+                    name = L.LEFT_OFFSET_Y_1,
+                    desc = L.SIDE_SLOT_OFFSET_Y_DESC,
+                    type = "range",
+                    min = -200,
+                    max = 200,
+                    step = 1,
+                    get = function()
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["left1"]
+                        return tonumber(s and s.offsetY) or 0
+                    end,
+                    set = function(_, v)
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["left1"]
+                        if s then s.offsetY = v end
+                        LPS:ApplyOptionsRefresh()
+                    end,
+                },
+                leftSlot1Font = slotFontSelect("left1", 1.13, L.LEFT_SLOT_1),
+                leftSep1 = { order = 1.5, type = "header", name = "" },
+                leftSlot2 = {
+                    disabled = LPS:MakeSlotDisabledFunc("left", 2),
+                    order = 2.1,
+                    name = L.LEFT_SLOT_2,
+                    desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
+                    type = "select",
+                    values = function()
+                        local vals = { none = L.NONE }
+                        if LPS.GetSlotKeyList then
+                            local used = framesUsedInOtherSlots("left2")
+                            for _, k in ipairs(LPS:GetSlotKeyList()) do
+                                if k ~= "none" then
+                                    local name = LPS:GetDatatextName(k)
+                                    if used[k] and L.FRAME_USED then
+                                        name = name .. "  (" .. L.FRAME_USED .. ")"
                                     end
+                                    vals[k] = name
                                 end
                             end
-                            return vals
-                        end,
-                        sorting = function()
-                            if LPS.GetSlotKeyList then
-                                return LPS:GetSlotKeyList()
-                            end
-                            return { "none" }
-                        end,
-                        get = function()
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["right1"]
-                            local v = (s and s.frame) or "NONE"
-                            if v == "NONE" or v == "None" or v == "" or v == nil then
-                                return "none"
-                            end
-                            return v
-                        end,
-                        set = function(_, v)
-                            local db = LPS:GetOptionDB()
-                            db.layout.sideSlots = db.layout.sideSlots or {}
-                            local ss = db.layout.sideSlots
-                            ss.right1 = ss.right1 or { offsetX = 0, offsetY = 0 }
-                            local cur = ss.right1
-                            v = v or "none"
-                            if v ~= "none" then
-                                for _, other in pairs(ss) do
-                                    if type(other) == "table" and other ~= cur and other.frame == v then
-                                        other.frame = "NONE"
-                                    end
+                        end
+                        return vals
+                    end,
+                    sorting = function()
+                        if LPS.GetSlotKeyList then
+                            return LPS:GetSlotKeyList()
+                        end
+                        return { "none" }
+                    end,
+                    get = function()
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["left2"]
+                        local v = (s and s.frame) or "NONE"
+                        if v == "NONE" or v == "None" or v == "" or v == nil then
+                            return "none"
+                        end
+                        return v
+                    end,
+                    set = function(_, v)
+                        local db = LPS:GetOptionDB()
+                        db.layout.sideSlots = db.layout.sideSlots or {}
+                        local ss = db.layout.sideSlots
+                        ss.left2 = ss.left2 or { offsetX = 0, offsetY = 0 }
+                        local cur = ss.left2
+                        v = v or "none"
+                        if v ~= "none" then
+                            for _, other in pairs(ss) do
+                                if type(other) == "table" and other ~= cur and other.frame == v then
+                                    other.frame = "NONE"
                                 end
                             end
-                            cur.frame = (v == "none") and "NONE" or v
-                            if v == "none" then LPS:CascadeClearSlots(ss, "right", 1) end
-                            ss.userTouched = ss.userTouched or {}
-                            ss.userTouched["right1"] = true
-                            LPS:ApplyOptionsRefresh()
-                        end,
-                    },
-                    rightOffsetX1 = {
-                        order = 1.21,
-                        name = L.RIGHT_OFFSET_X_1,
-                        desc = L.SIDE_SLOT_OFFSET_X_DESC,
-                        type = "range",
-                        min = -200,
-                        max = 200,
-                        step = 1,
-                        get = function()
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["right1"]
-                            return tonumber(s and s.offsetX) or 0
-                        end,
-                        set = function(_, v)
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["right1"]
-                            if s then s.offsetX = v end
-                            LPS:ApplyOptionsRefresh()
-                        end,
-                    },
-                    rightOffsetY1 = {
-                        order = 1.22,
-                        name = L.RIGHT_OFFSET_Y_1,
-                        desc = L.SIDE_SLOT_OFFSET_Y_DESC,
-                        type = "range",
-                        min = -200,
-                        max = 200,
-                        step = 1,
-                        get = function()
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["right1"]
-                            return tonumber(s and s.offsetY) or 0
-                        end,
-                        set = function(_, v)
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["right1"]
-                            if s then s.offsetY = v end
-                            LPS:ApplyOptionsRefresh()
-                        end,
-                    },
-                    leftSlot2 = {
-                        disabled = LPS:MakeSlotDisabledFunc("left", 2),
-                        order = 2.1,
-                        name = L.LEFT_SLOT_2,
-                        desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
-                        type = "select",
-                        values = function()
-                            local vals = { none = L.NONE }
-                            if LPS.GetSlotKeyList then
-                                local used = framesUsedInOtherSlots("left2")
-                                for _, k in ipairs(LPS:GetSlotKeyList()) do
-                                    if k ~= "none" then
-                                        local name = LPS:GetDatatextName(k)
-                                        if used[k] and L.FRAME_USED then
-                                            name = name .. "  (" .. L.FRAME_USED .. ")"
-                                        end
-                                        vals[k] = name
+                        end
+                        cur.frame = (v == "none") and "NONE" or v
+                        if v == "none" then LPS:CascadeClearSlots(ss, "left", 2) end
+                        ss.userTouched = ss.userTouched or {}
+                        ss.userTouched["left2"] = true
+                        LPS:ApplyOptionsRefresh()
+                    end,
+                },
+                leftOffsetX2 = {
+                    disabled = LPS:MakeSlotDisabledFunc("left", 2),
+                    order = 2.11,
+                    name = L.LEFT_OFFSET_X_2,
+                    desc = L.SIDE_SLOT_OFFSET_X_DESC,
+                    type = "range",
+                    min = -200,
+                    max = 200,
+                    step = 1,
+                    get = function()
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["left2"]
+                        return tonumber(s and s.offsetX) or 0
+                    end,
+                    set = function(_, v)
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["left2"]
+                        if s then s.offsetX = v end
+                        LPS:ApplyOptionsRefresh()
+                    end,
+                },
+                leftOffsetY2 = {
+                    disabled = LPS:MakeSlotDisabledFunc("left", 2),
+                    order = 2.12,
+                    name = L.LEFT_OFFSET_Y_2,
+                    desc = L.SIDE_SLOT_OFFSET_Y_DESC,
+                    type = "range",
+                    min = -200,
+                    max = 200,
+                    step = 1,
+                    get = function()
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["left2"]
+                        return tonumber(s and s.offsetY) or 0
+                    end,
+                    set = function(_, v)
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["left2"]
+                        if s then s.offsetY = v end
+                        LPS:ApplyOptionsRefresh()
+                    end,
+                },
+                leftSlot2Font = slotFontSelect("left2", 2.13, L.LEFT_SLOT_2),
+                leftSep2 = { order = 2.5, type = "header", name = "" },
+                leftSlot3 = {
+                    disabled = LPS:MakeSlotDisabledFunc("left", 3),
+                    order = 3.1,
+                    name = L.LEFT_SLOT_3,
+                    desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
+                    type = "select",
+                    values = function()
+                        local vals = { none = L.NONE }
+                        if LPS.GetSlotKeyList then
+                            local used = framesUsedInOtherSlots("left3")
+                            for _, k in ipairs(LPS:GetSlotKeyList()) do
+                                if k ~= "none" then
+                                    local name = LPS:GetDatatextName(k)
+                                    if used[k] and L.FRAME_USED then
+                                        name = name .. "  (" .. L.FRAME_USED .. ")"
                                     end
+                                    vals[k] = name
                                 end
                             end
-                            return vals
-                        end,
-                        sorting = function()
-                            if LPS.GetSlotKeyList then
-                                return LPS:GetSlotKeyList()
-                            end
-                            return { "none" }
-                        end,
-                        get = function()
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["left2"]
-                            local v = (s and s.frame) or "NONE"
-                            if v == "NONE" or v == "None" or v == "" or v == nil then
-                                return "none"
-                            end
-                            return v
-                        end,
-                        set = function(_, v)
-                            local db = LPS:GetOptionDB()
-                            db.layout.sideSlots = db.layout.sideSlots or {}
-                            local ss = db.layout.sideSlots
-                            ss.left2 = ss.left2 or { offsetX = 0, offsetY = 0 }
-                            local cur = ss.left2
-                            v = v or "none"
-                            if v ~= "none" then
-                                for _, other in pairs(ss) do
-                                    if type(other) == "table" and other ~= cur and other.frame == v then
-                                        other.frame = "NONE"
-                                    end
+                        end
+                        return vals
+                    end,
+                    sorting = function()
+                        if LPS.GetSlotKeyList then
+                            return LPS:GetSlotKeyList()
+                        end
+                        return { "none" }
+                    end,
+                    get = function()
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["left3"]
+                        local v = (s and s.frame) or "NONE"
+                        if v == "NONE" or v == "None" or v == "" or v == nil then
+                            return "none"
+                        end
+                        return v
+                    end,
+                    set = function(_, v)
+                        local db = LPS:GetOptionDB()
+                        db.layout.sideSlots = db.layout.sideSlots or {}
+                        local ss = db.layout.sideSlots
+                        ss.left3 = ss.left3 or { offsetX = 0, offsetY = 0 }
+                        local cur = ss.left3
+                        v = v or "none"
+                        if v ~= "none" then
+                            for _, other in pairs(ss) do
+                                if type(other) == "table" and other ~= cur and other.frame == v then
+                                    other.frame = "NONE"
                                 end
                             end
-                            cur.frame = (v == "none") and "NONE" or v
-                            if v == "none" then LPS:CascadeClearSlots(ss, "left", 2) end
-                            ss.userTouched = ss.userTouched or {}
-                            ss.userTouched["left2"] = true
-                            LPS:ApplyOptionsRefresh()
-                        end,
-                    },
-                    leftOffsetX2 = {
-                        disabled = LPS:MakeSlotDisabledFunc("left", 2),
-                        order = 2.11,
-                        name = L.LEFT_OFFSET_X_2,
-                        desc = L.SIDE_SLOT_OFFSET_X_DESC,
-                        type = "range",
-                        min = -200,
-                        max = 200,
-                        step = 1,
-                        get = function()
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["left2"]
-                            return tonumber(s and s.offsetX) or 0
-                        end,
-                        set = function(_, v)
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["left2"]
-                            if s then s.offsetX = v end
-                            LPS:ApplyOptionsRefresh()
-                        end,
-                    },
-                    leftOffsetY2 = {
-                        disabled = LPS:MakeSlotDisabledFunc("left", 2),
-                        order = 2.12,
-                        name = L.LEFT_OFFSET_Y_2,
-                        desc = L.SIDE_SLOT_OFFSET_Y_DESC,
-                        type = "range",
-                        min = -200,
-                        max = 200,
-                        step = 1,
-                        get = function()
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["left2"]
-                            return tonumber(s and s.offsetY) or 0
-                        end,
-                        set = function(_, v)
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["left2"]
-                            if s then s.offsetY = v end
-                            LPS:ApplyOptionsRefresh()
-                        end,
-                    },
-                    rightSlot2 = {
-                        disabled = LPS:MakeSlotDisabledFunc("right", 2),
-                        order = 2.2,
-                        name = L.RIGHT_SLOT_2,
-                        desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
-                        type = "select",
-                        values = function()
-                            local vals = { none = L.NONE }
-                            if LPS.GetSlotKeyList then
-                                local used = framesUsedInOtherSlots("right2")
-                                for _, k in ipairs(LPS:GetSlotKeyList()) do
-                                    if k ~= "none" then
-                                        local name = LPS:GetDatatextName(k)
-                                        if used[k] and L.FRAME_USED then
-                                            name = name .. "  (" .. L.FRAME_USED .. ")"
-                                        end
-                                        vals[k] = name
+                        end
+                        cur.frame = (v == "none") and "NONE" or v
+                        local _ss = LPS:GetOptionDB().layout.sideSlots
+                        _ss.userTouched = _ss.userTouched or {}
+                        _ss.userTouched["left3"] = true
+                        LPS:ApplyOptionsRefresh()
+                    end,
+                },
+                leftOffsetX3 = {
+                    disabled = LPS:MakeSlotDisabledFunc("left", 3),
+                    order = 3.11,
+                    name = L.LEFT_OFFSET_X_3,
+                    desc = L.SIDE_SLOT_OFFSET_X_DESC,
+                    type = "range",
+                    min = -200,
+                    max = 200,
+                    step = 1,
+                    get = function()
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["left3"]
+                        return tonumber(s and s.offsetX) or 0
+                    end,
+                    set = function(_, v)
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["left3"]
+                        if s then s.offsetX = v end
+                        LPS:ApplyOptionsRefresh()
+                    end,
+                },
+                leftOffsetY3 = {
+                    disabled = LPS:MakeSlotDisabledFunc("left", 3),
+                    order = 3.12,
+                    name = L.LEFT_OFFSET_Y_3,
+                    desc = L.SIDE_SLOT_OFFSET_Y_DESC,
+                    type = "range",
+                    min = -200,
+                    max = 200,
+                    step = 1,
+                    get = function()
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["left3"]
+                        return tonumber(s and s.offsetY) or 0
+                    end,
+                    set = function(_, v)
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["left3"]
+                        if s then s.offsetY = v end
+                        LPS:ApplyOptionsRefresh()
+                    end,
+                },
+                leftSlot3Font = slotFontSelect("left3", 3.13, L.LEFT_SLOT_3),
+                },
+            },
+            rightGroup = {
+                order = 6.5,
+                name = L.RIGHT_PANELS,
+                args = {
+                rightSlot1 = {
+                    order = 1.2,
+                    name = L.RIGHT_SLOT_1,
+                    desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
+                    type = "select",
+                    values = function()
+                        local vals = { none = L.NONE }
+                        if LPS.GetSlotKeyList then
+                            local used = framesUsedInOtherSlots("right1")
+                            for _, k in ipairs(LPS:GetSlotKeyList()) do
+                                if k ~= "none" then
+                                    local name = LPS:GetDatatextName(k)
+                                    if used[k] and L.FRAME_USED then
+                                        name = name .. "  (" .. L.FRAME_USED .. ")"
                                     end
+                                    vals[k] = name
                                 end
                             end
-                            return vals
-                        end,
-                        sorting = function()
-                            if LPS.GetSlotKeyList then
-                                return LPS:GetSlotKeyList()
-                            end
-                            return { "none" }
-                        end,
-                        get = function()
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["right2"]
-                            local v = (s and s.frame) or "NONE"
-                            if v == "NONE" or v == "None" or v == "" or v == nil then
-                                return "none"
-                            end
-                            return v
-                        end,
-                        set = function(_, v)
-                            local db = LPS:GetOptionDB()
-                            db.layout.sideSlots = db.layout.sideSlots or {}
-                            local ss = db.layout.sideSlots
-                            ss.right2 = ss.right2 or { offsetX = 0, offsetY = 0 }
-                            local cur = ss.right2
-                            v = v or "none"
-                            if v ~= "none" then
-                                for _, other in pairs(ss) do
-                                    if type(other) == "table" and other ~= cur and other.frame == v then
-                                        other.frame = "NONE"
-                                    end
+                        end
+                        return vals
+                    end,
+                    sorting = function()
+                        if LPS.GetSlotKeyList then
+                            return LPS:GetSlotKeyList()
+                        end
+                        return { "none" }
+                    end,
+                    get = function()
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["right1"]
+                        local v = (s and s.frame) or "NONE"
+                        if v == "NONE" or v == "None" or v == "" or v == nil then
+                            return "none"
+                        end
+                        return v
+                    end,
+                    set = function(_, v)
+                        local db = LPS:GetOptionDB()
+                        db.layout.sideSlots = db.layout.sideSlots or {}
+                        local ss = db.layout.sideSlots
+                        ss.right1 = ss.right1 or { offsetX = 0, offsetY = 0 }
+                        local cur = ss.right1
+                        v = v or "none"
+                        if v ~= "none" then
+                            for _, other in pairs(ss) do
+                                if type(other) == "table" and other ~= cur and other.frame == v then
+                                    other.frame = "NONE"
                                 end
                             end
-                            cur.frame = (v == "none") and "NONE" or v
-                            if v == "none" then LPS:CascadeClearSlots(ss, "right", 2) end
-                            ss.userTouched = ss.userTouched or {}
-                            ss.userTouched["right2"] = true
-                            LPS:ApplyOptionsRefresh()
-                        end,
-                    },
-                    rightOffsetX2 = {
-                        disabled = LPS:MakeSlotDisabledFunc("right", 2),
-                        order = 2.21,
-                        name = L.RIGHT_OFFSET_X_2,
-                        desc = L.SIDE_SLOT_OFFSET_X_DESC,
-                        type = "range",
-                        min = -200,
-                        max = 200,
-                        step = 1,
-                        get = function()
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["right2"]
-                            return tonumber(s and s.offsetX) or 0
-                        end,
-                        set = function(_, v)
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["right2"]
-                            if s then s.offsetX = v end
-                            LPS:ApplyOptionsRefresh()
-                        end,
-                    },
-                    rightOffsetY2 = {
-                        disabled = LPS:MakeSlotDisabledFunc("right", 2),
-                        order = 2.22,
-                        name = L.RIGHT_OFFSET_Y_2,
-                        desc = L.SIDE_SLOT_OFFSET_Y_DESC,
-                        type = "range",
-                        min = -200,
-                        max = 200,
-                        step = 1,
-                        get = function()
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["right2"]
-                            return tonumber(s and s.offsetY) or 0
-                        end,
-                        set = function(_, v)
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["right2"]
-                            if s then s.offsetY = v end
-                            LPS:ApplyOptionsRefresh()
-                        end,
-                    },
-                    leftSlot3 = {
-                        disabled = LPS:MakeSlotDisabledFunc("left", 3),
-                        order = 3.1,
-                        name = L.LEFT_SLOT_3,
-                        desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
-                        type = "select",
-                        values = function()
-                            local vals = { none = L.NONE }
-                            if LPS.GetSlotKeyList then
-                                local used = framesUsedInOtherSlots("left3")
-                                for _, k in ipairs(LPS:GetSlotKeyList()) do
-                                    if k ~= "none" then
-                                        local name = LPS:GetDatatextName(k)
-                                        if used[k] and L.FRAME_USED then
-                                            name = name .. "  (" .. L.FRAME_USED .. ")"
-                                        end
-                                        vals[k] = name
+                        end
+                        cur.frame = (v == "none") and "NONE" or v
+                        if v == "none" then LPS:CascadeClearSlots(ss, "right", 1) end
+                        ss.userTouched = ss.userTouched or {}
+                        ss.userTouched["right1"] = true
+                        LPS:ApplyOptionsRefresh()
+                    end,
+                },
+                rightOffsetX1 = {
+                    order = 1.21,
+                    name = L.RIGHT_OFFSET_X_1,
+                    desc = L.SIDE_SLOT_OFFSET_X_DESC,
+                    type = "range",
+                    min = -200,
+                    max = 200,
+                    step = 1,
+                    get = function()
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["right1"]
+                        return tonumber(s and s.offsetX) or 0
+                    end,
+                    set = function(_, v)
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["right1"]
+                        if s then s.offsetX = v end
+                        LPS:ApplyOptionsRefresh()
+                    end,
+                },
+                rightOffsetY1 = {
+                    order = 1.22,
+                    name = L.RIGHT_OFFSET_Y_1,
+                    desc = L.SIDE_SLOT_OFFSET_Y_DESC,
+                    type = "range",
+                    min = -200,
+                    max = 200,
+                    step = 1,
+                    get = function()
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["right1"]
+                        return tonumber(s and s.offsetY) or 0
+                    end,
+                    set = function(_, v)
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["right1"]
+                        if s then s.offsetY = v end
+                        LPS:ApplyOptionsRefresh()
+                    end,
+                },
+                rightSlot1Font = slotFontSelect("right1", 1.23, L.RIGHT_SLOT_1),
+                rightSep1 = { order = 1.5, type = "header", name = "" },
+                rightSlot2 = {
+                    disabled = LPS:MakeSlotDisabledFunc("right", 2),
+                    order = 2.2,
+                    name = L.RIGHT_SLOT_2,
+                    desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
+                    type = "select",
+                    values = function()
+                        local vals = { none = L.NONE }
+                        if LPS.GetSlotKeyList then
+                            local used = framesUsedInOtherSlots("right2")
+                            for _, k in ipairs(LPS:GetSlotKeyList()) do
+                                if k ~= "none" then
+                                    local name = LPS:GetDatatextName(k)
+                                    if used[k] and L.FRAME_USED then
+                                        name = name .. "  (" .. L.FRAME_USED .. ")"
                                     end
+                                    vals[k] = name
                                 end
                             end
-                            return vals
-                        end,
-                        sorting = function()
-                            if LPS.GetSlotKeyList then
-                                return LPS:GetSlotKeyList()
-                            end
-                            return { "none" }
-                        end,
-                        get = function()
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["left3"]
-                            local v = (s and s.frame) or "NONE"
-                            if v == "NONE" or v == "None" or v == "" or v == nil then
-                                return "none"
-                            end
-                            return v
-                        end,
-                        set = function(_, v)
-                            local db = LPS:GetOptionDB()
-                            db.layout.sideSlots = db.layout.sideSlots or {}
-                            local ss = db.layout.sideSlots
-                            ss.left3 = ss.left3 or { offsetX = 0, offsetY = 0 }
-                            local cur = ss.left3
-                            v = v or "none"
-                            if v ~= "none" then
-                                for _, other in pairs(ss) do
-                                    if type(other) == "table" and other ~= cur and other.frame == v then
-                                        other.frame = "NONE"
-                                    end
+                        end
+                        return vals
+                    end,
+                    sorting = function()
+                        if LPS.GetSlotKeyList then
+                            return LPS:GetSlotKeyList()
+                        end
+                        return { "none" }
+                    end,
+                    get = function()
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["right2"]
+                        local v = (s and s.frame) or "NONE"
+                        if v == "NONE" or v == "None" or v == "" or v == nil then
+                            return "none"
+                        end
+                        return v
+                    end,
+                    set = function(_, v)
+                        local db = LPS:GetOptionDB()
+                        db.layout.sideSlots = db.layout.sideSlots or {}
+                        local ss = db.layout.sideSlots
+                        ss.right2 = ss.right2 or { offsetX = 0, offsetY = 0 }
+                        local cur = ss.right2
+                        v = v or "none"
+                        if v ~= "none" then
+                            for _, other in pairs(ss) do
+                                if type(other) == "table" and other ~= cur and other.frame == v then
+                                    other.frame = "NONE"
                                 end
                             end
-                            cur.frame = (v == "none") and "NONE" or v
-                            local _ss = LPS:GetOptionDB().layout.sideSlots
-                            _ss.userTouched = _ss.userTouched or {}
-                            _ss.userTouched["left3"] = true
-                            LPS:ApplyOptionsRefresh()
-                        end,
-                    },
-                    leftOffsetX3 = {
-                        disabled = LPS:MakeSlotDisabledFunc("left", 3),
-                        order = 3.11,
-                        name = L.LEFT_OFFSET_X_3,
-                        desc = L.SIDE_SLOT_OFFSET_X_DESC,
-                        type = "range",
-                        min = -200,
-                        max = 200,
-                        step = 1,
-                        get = function()
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["left3"]
-                            return tonumber(s and s.offsetX) or 0
-                        end,
-                        set = function(_, v)
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["left3"]
-                            if s then s.offsetX = v end
-                            LPS:ApplyOptionsRefresh()
-                        end,
-                    },
-                    leftOffsetY3 = {
-                        disabled = LPS:MakeSlotDisabledFunc("left", 3),
-                        order = 3.12,
-                        name = L.LEFT_OFFSET_Y_3,
-                        desc = L.SIDE_SLOT_OFFSET_Y_DESC,
-                        type = "range",
-                        min = -200,
-                        max = 200,
-                        step = 1,
-                        get = function()
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["left3"]
-                            return tonumber(s and s.offsetY) or 0
-                        end,
-                        set = function(_, v)
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["left3"]
-                            if s then s.offsetY = v end
-                            LPS:ApplyOptionsRefresh()
-                        end,
-                    },
-                    rightSlot3 = {
-                        disabled = LPS:MakeSlotDisabledFunc("right", 3),
-                        order = 3.2,
-                        name = L.RIGHT_SLOT_3,
-                        desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
-                        type = "select",
-                        values = function()
-                            local vals = { none = L.NONE }
-                            if LPS.GetSlotKeyList then
-                                local used = framesUsedInOtherSlots("right3")
-                                for _, k in ipairs(LPS:GetSlotKeyList()) do
-                                    if k ~= "none" then
-                                        local name = LPS:GetDatatextName(k)
-                                        if used[k] and L.FRAME_USED then
-                                            name = name .. "  (" .. L.FRAME_USED .. ")"
-                                        end
-                                        vals[k] = name
+                        end
+                        cur.frame = (v == "none") and "NONE" or v
+                        if v == "none" then LPS:CascadeClearSlots(ss, "right", 2) end
+                        ss.userTouched = ss.userTouched or {}
+                        ss.userTouched["right2"] = true
+                        LPS:ApplyOptionsRefresh()
+                    end,
+                },
+                rightOffsetX2 = {
+                    disabled = LPS:MakeSlotDisabledFunc("right", 2),
+                    order = 2.21,
+                    name = L.RIGHT_OFFSET_X_2,
+                    desc = L.SIDE_SLOT_OFFSET_X_DESC,
+                    type = "range",
+                    min = -200,
+                    max = 200,
+                    step = 1,
+                    get = function()
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["right2"]
+                        return tonumber(s and s.offsetX) or 0
+                    end,
+                    set = function(_, v)
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["right2"]
+                        if s then s.offsetX = v end
+                        LPS:ApplyOptionsRefresh()
+                    end,
+                },
+                rightOffsetY2 = {
+                    disabled = LPS:MakeSlotDisabledFunc("right", 2),
+                    order = 2.22,
+                    name = L.RIGHT_OFFSET_Y_2,
+                    desc = L.SIDE_SLOT_OFFSET_Y_DESC,
+                    type = "range",
+                    min = -200,
+                    max = 200,
+                    step = 1,
+                    get = function()
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["right2"]
+                        return tonumber(s and s.offsetY) or 0
+                    end,
+                    set = function(_, v)
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["right2"]
+                        if s then s.offsetY = v end
+                        LPS:ApplyOptionsRefresh()
+                    end,
+                },
+                rightSlot2Font = slotFontSelect("right2", 2.23, L.RIGHT_SLOT_2),
+                rightSep2 = { order = 2.5, type = "header", name = "" },
+                rightSlot3 = {
+                    disabled = LPS:MakeSlotDisabledFunc("right", 3),
+                    order = 3.2,
+                    name = L.RIGHT_SLOT_3,
+                    desc = L.SELECT_A_PANEL_FOR_THIS_SLOT,
+                    type = "select",
+                    values = function()
+                        local vals = { none = L.NONE }
+                        if LPS.GetSlotKeyList then
+                            local used = framesUsedInOtherSlots("right3")
+                            for _, k in ipairs(LPS:GetSlotKeyList()) do
+                                if k ~= "none" then
+                                    local name = LPS:GetDatatextName(k)
+                                    if used[k] and L.FRAME_USED then
+                                        name = name .. "  (" .. L.FRAME_USED .. ")"
                                     end
+                                    vals[k] = name
                                 end
                             end
-                            return vals
-                        end,
-                        sorting = function()
-                            if LPS.GetSlotKeyList then
-                                return LPS:GetSlotKeyList()
-                            end
-                            return { "none" }
-                        end,
-                        get = function()
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["right3"]
-                            local v = (s and s.frame) or "NONE"
-                            if v == "NONE" or v == "None" or v == "" or v == nil then
-                                return "none"
-                            end
-                            return v
-                        end,
-                        set = function(_, v)
-                            local db = LPS:GetOptionDB()
-                            db.layout.sideSlots = db.layout.sideSlots or {}
-                            local ss = db.layout.sideSlots
-                            ss.right3 = ss.right3 or { offsetX = 0, offsetY = 0 }
-                            local cur = ss.right3
-                            v = v or "none"
-                            if v ~= "none" then
-                                for _, other in pairs(ss) do
-                                    if type(other) == "table" and other ~= cur and other.frame == v then
-                                        other.frame = "NONE"
-                                    end
+                        end
+                        return vals
+                    end,
+                    sorting = function()
+                        if LPS.GetSlotKeyList then
+                            return LPS:GetSlotKeyList()
+                        end
+                        return { "none" }
+                    end,
+                    get = function()
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["right3"]
+                        local v = (s and s.frame) or "NONE"
+                        if v == "NONE" or v == "None" or v == "" or v == nil then
+                            return "none"
+                        end
+                        return v
+                    end,
+                    set = function(_, v)
+                        local db = LPS:GetOptionDB()
+                        db.layout.sideSlots = db.layout.sideSlots or {}
+                        local ss = db.layout.sideSlots
+                        ss.right3 = ss.right3 or { offsetX = 0, offsetY = 0 }
+                        local cur = ss.right3
+                        v = v or "none"
+                        if v ~= "none" then
+                            for _, other in pairs(ss) do
+                                if type(other) == "table" and other ~= cur and other.frame == v then
+                                    other.frame = "NONE"
                                 end
                             end
-                            cur.frame = (v == "none") and "NONE" or v
-                            local _ss = LPS:GetOptionDB().layout.sideSlots
-                            _ss.userTouched = _ss.userTouched or {}
-                            _ss.userTouched["right3"] = true
-                            LPS:ApplyOptionsRefresh()
-                        end,
-                    },
-                    rightOffsetX3 = {
-                        disabled = LPS:MakeSlotDisabledFunc("right", 3),
-                        order = 3.21,
-                        name = L.RIGHT_OFFSET_X_3,
-                        desc = L.SIDE_SLOT_OFFSET_X_DESC,
-                        type = "range",
-                        min = -200,
-                        max = 200,
-                        step = 1,
-                        get = function()
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["right3"]
-                            return tonumber(s and s.offsetX) or 0
-                        end,
-                        set = function(_, v)
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["right3"]
-                            if s then s.offsetX = v end
-                            LPS:ApplyOptionsRefresh()
-                        end,
-                    },
-                    rightOffsetY3 = {
-                        disabled = LPS:MakeSlotDisabledFunc("right", 3),
-                        order = 3.22,
-                        name = L.RIGHT_OFFSET_Y_3,
-                        desc = L.SIDE_SLOT_OFFSET_Y_DESC,
-                        type = "range",
-                        min = -200,
-                        max = 200,
-                        step = 1,
-                        get = function()
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["right3"]
-                            return tonumber(s and s.offsetY) or 0
-                        end,
-                        set = function(_, v)
-                            local ss = LPS:GetOptionDB().layout.sideSlots
-                            local s = ss and ss["right3"]
-                            if s then s.offsetY = v end
-                            LPS:ApplyOptionsRefresh()
-                        end,
-                    },
+                        end
+                        cur.frame = (v == "none") and "NONE" or v
+                        local _ss = LPS:GetOptionDB().layout.sideSlots
+                        _ss.userTouched = _ss.userTouched or {}
+                        _ss.userTouched["right3"] = true
+                        LPS:ApplyOptionsRefresh()
+                    end,
+                },
+                rightOffsetX3 = {
+                    disabled = LPS:MakeSlotDisabledFunc("right", 3),
+                    order = 3.21,
+                    name = L.RIGHT_OFFSET_X_3,
+                    desc = L.SIDE_SLOT_OFFSET_X_DESC,
+                    type = "range",
+                    min = -200,
+                    max = 200,
+                    step = 1,
+                    get = function()
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["right3"]
+                        return tonumber(s and s.offsetX) or 0
+                    end,
+                    set = function(_, v)
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["right3"]
+                        if s then s.offsetX = v end
+                        LPS:ApplyOptionsRefresh()
+                    end,
+                },
+                rightOffsetY3 = {
+                    disabled = LPS:MakeSlotDisabledFunc("right", 3),
+                    order = 3.22,
+                    name = L.RIGHT_OFFSET_Y_3,
+                    desc = L.SIDE_SLOT_OFFSET_Y_DESC,
+                    type = "range",
+                    min = -200,
+                    max = 200,
+                    step = 1,
+                    get = function()
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["right3"]
+                        return tonumber(s and s.offsetY) or 0
+                    end,
+                    set = function(_, v)
+                        local ss = LPS:GetOptionDB().layout.sideSlots
+                        local s = ss and ss["right3"]
+                        if s then s.offsetY = v end
+                        LPS:ApplyOptionsRefresh()
+                    end,
+                },
+                rightSlot3Font = slotFontSelect("right3", 3.23, L.RIGHT_SLOT_3),
                 },
             },
             spacingGroup = {
@@ -803,6 +846,23 @@ LPS.Options.BuildTree.tabs.layout = function()
                 name = L.STYLE,
                 order = 8,
                 args = {
+                    font = {
+                        type = "select",
+                        name = L.FONT,
+                        desc = L.FONT_GLOBAL_DESC,
+                        order = -1,
+                        values = function() return LPS:GetFontChoiceMap("global") end,
+                        sorting = function() return LPS:GetFontChoiceOrder("global") end,
+                        get = function()
+                            local f = LPS:GetOptionDB().settings.font
+                            if f == "custom" then return "default" end
+                            return f or "default"
+                        end,
+                        set = function(_, v)
+                            LPS:GetOptionDB().settings.font = v
+                            LPS:ApplyOptionsRefresh()
+                        end,
+                    },
                     frameStrata = {
                         type = "select",
                         name = L.FRAME_STRATA,

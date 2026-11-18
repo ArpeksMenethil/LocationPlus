@@ -55,6 +55,7 @@ LPS:RegisterDatatext({
         if tt.time and tt.time.enable == false then return end
         GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
         GameTooltip:ClearLines()
+        LPS:ApplyTooltipFont(GameTooltip)
         LPS:BuildTimeTooltip()
         GameTooltip.isTimeTooltip = true
         GameTooltip:Show()

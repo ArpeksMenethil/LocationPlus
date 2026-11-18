@@ -27,6 +27,7 @@ LPS:RegisterDatatext({
         if tt.system and tt.system.enable == false then return end
         GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
         GameTooltip:ClearLines()
+        LPS:ApplyTooltipFont(GameTooltip)
         if LPS.BuildSystemTooltip then
             LPS:BuildSystemTooltip(GameTooltip)
         end

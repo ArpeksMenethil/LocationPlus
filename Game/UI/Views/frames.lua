@@ -120,7 +120,6 @@ function LPS:CreateFrame(params)
         --- текст в сборке «прыгал» влево-вправо при каждом обновлении любой из
         --- панелей (особенно заметно на FPS-панели с тикером раз в секунду).
         local ghostFontCache
-        local lastMeasureKey
         local function measureText(text)
             if not f.text then return 0, 0 end
             if not LPS._lpsMeasureFS then
@@ -142,11 +141,7 @@ function LPS:CreateFrame(params)
                 end
             end
             if file then
-                local key = tostring(file) .. "|" .. tostring(size) .. "|" .. tostring(flags)
-                if key ~= lastMeasureKey then
-                    lastMeasureKey = key
-                    m:SetFont(file, size or 12, flags or "")
-                end
+                m:SetFont(file, size or 12, flags or "")
             end
             m:SetText(text or "")
             local w = m:GetStringWidth() or 0

@@ -126,12 +126,17 @@ function LPS:CreateDatatextFrame(key)
 
     local builderName = "Build" .. key:gsub("^%l", string.upper) .. "Tooltip"
     if def.customTooltip and def.buildTooltip then
-        params.tooltipFunc = function(self) def.buildTooltip(self) end
+        params.tooltipFunc = function(self)
+            LPS._lpsOursTooltip = nil
+            if LPS.ResetTooltipFont then LPS:ResetTooltipFont(GameTooltip) end
+            def.buildTooltip(self)
+        end
     elseif def.tooltip or LPS[builderName] then
         params.tooltipFunc = function(self)
             if not LPS._DT.tooltipGuard(key) then return end
             GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
             GameTooltip:ClearLines()
+            LPS:ApplyTooltipFont(GameTooltip)
             local built = true
             if LPS[builderName] then
                 built = LPS[builderName](LPS, GameTooltip)
@@ -139,6 +144,8 @@ function LPS:CreateDatatextFrame(key)
                 def.tooltip(GameTooltip)
             end
             if built == false then
+                LPS._lpsOursTooltip = nil
+                if LPS.ResetTooltipFont then LPS:ResetTooltipFont(GameTooltip) end
                 GameTooltip:Hide()
                 return
             end

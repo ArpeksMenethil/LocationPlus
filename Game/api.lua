@@ -278,7 +278,8 @@ function LPS:ApplyLayout()
         .. tostring(layout.slotCount or 2) .. ","
         .. table.concat(LPS:CollectSlotKeys(layout.sideSlots), ";") .. ","
         .. tostring(db.settings and db.settings.fontSize or 12) .. ","
-        .. tostring(layout.chainAnchor)
+        .. tostring(layout.chainAnchor) .. ","
+        .. LPS:PanelFontKey(db)
 
     local forcePass = not (frames.holder and frames.holder._lpsEverApplied)
     if not forcePass and LPS:ConsumePendingRefresh() then forcePass = true end
@@ -304,14 +305,12 @@ function LPS:ApplyLayout()
         frames.location._lpsPaddingX = locPaddingX
         frames.location._lpsPaddingY = locPaddingY
         frames.location._lpsMinWidth = locMinWidth
-        LPS:ForceResizeFrame(frames.location)
     end
     for key, f in pairs(frames) do
         if key ~= "holder" and key ~= "location" and key ~= "minimapButton" and f then
             f._lpsPaddingX = dtPaddingX
             f._lpsPaddingY = dtPaddingY
             f._lpsMinWidth = dtMinWidth
-            LPS:ForceResizeFrame(f)
         end
     end
 
@@ -381,20 +380,41 @@ function LPS:ApplyLayout()
     local flags = defaultFlags or "NONE"
     local fontChanged = false
     local fontSizeChanged = false
-    local fontKey = tostring(fontFile) .. "|" .. tostring(size) .. "|" .. tostring(flags)
-    local styledFrames = {}
-    for key, f in pairs(frames) do
-        if key ~= "holder" and key ~= "minimapButton" and type(f) == "table" and f.text then
-            styledFrames[#styledFrames + 1] = f
+
+    --- Обратная карта: ключ фрейма (datatext) → ключ слота (location / left1..3 / right1..3).
+    local slotOfFrame = { location = "location" }
+    for _, side in ipairs({ "left", "right" }) do
+        for i = 1, math.max(tonumber(layout.slotCount) or 2, 2) do
+            local slotKey = side .. i
+            local cfg = sideSlots[slotKey]
+            if cfg then
+                local fkey = LPS:NormalizeSlotFrameKey(cfg.frame)
+                if fkey ~= "NONE" then
+                    slotOfFrame[fkey] = slotKey
+                end
+            end
         end
     end
-    for _, f in ipairs(styledFrames) do
-        if f and f.text then
+
+    for key, f in pairs(frames) do
+        if key ~= "holder" and key ~= "minimapButton" and type(f) == "table" and f.text then
+            local slot = slotOfFrame[key]
+            local file = fontFile
+            local fl = flags
+            if slot then
+                local ok, resolved = pcall(LPS.ResolveSlotFontFile, LPS, slot)
+                if ok and resolved then
+                    file = resolved
+                    fl = ""
+                end
+            end
+            local fontKey = tostring(file) .. "|" .. tostring(size) .. "|" .. tostring(fl)
             if f._lpsAppliedFontKey ~= fontKey then
+                pcall(f.text.SetFont, f.text, file, size, fl)
                 f._lpsAppliedFontKey = fontKey
-                f.text:SetFont(fontFile, size, flags)
                 fontChanged = true
                 fontSizeChanged = true
+                if f._lpsResizeToFit then f._lpsResizeToFit() end
             elseif f._lpsAppliedFontSize ~= size then
                 fontSizeChanged = true
             end
@@ -419,6 +439,15 @@ function LPS:ApplyLayout()
                     fontChanged = true
                 end
             end
+        end
+    end
+
+    if frames.location then
+        LPS:ForceResizeFrame(frames.location)
+    end
+    for key, f in pairs(frames) do
+        if key ~= "holder" and key ~= "location" and key ~= "minimapButton" and f then
+            LPS:ForceResizeFrame(f)
         end
     end
 

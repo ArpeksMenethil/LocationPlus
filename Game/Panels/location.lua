@@ -114,6 +114,7 @@ function LPS:CreateLocationFrame()
             if not db.tooltips.location.enable then return end
             GameTooltip:SetOwner(self,"ANCHOR_BOTTOM")
             GameTooltip:ClearLines()
+            LPS:ApplyTooltipFont(GameTooltip)
             LPS:BuildLocationTooltip(GameTooltip)
             GameTooltip:Show()
         end,

@@ -250,6 +250,7 @@ LPS:RegisterDatatext({
         if tt.gold and tt.gold.enable == false then return end
         GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
         GameTooltip:ClearLines()
+        LPS:ApplyTooltipFont(GameTooltip)
         if LPS.BuildGoldTooltip then
             LPS:BuildGoldTooltip(GameTooltip)
         end

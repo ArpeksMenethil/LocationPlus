@@ -498,6 +498,29 @@ LPS.Options.BuildTree.tabs.tooltip = function()
                     },
                 },
             },
+            fontGroup = {
+                order = 60,
+                name = L.FONT,
+                args = {
+                    font = {
+                        order = 1,
+                        type = "select",
+                        name = L.FONT,
+                        desc = L.FONT_TOOLTIP_DESC,
+                        values = function() return LPS:GetFontChoiceMap("tooltip") end,
+                        sorting = function() return LPS:GetFontChoiceOrder("tooltip") end,
+                        get = function()
+                            local f = LPS:GetOptionDB().tooltips.font
+                            if f == "custom" then return "default" end
+                            return f or "default"
+                        end,
+                        set = function(_, v)
+                            LPS:GetOptionDB().tooltips.font = v
+                            LPS:ApplyOptionsRefresh()
+                        end,
+                    },
+                },
+            },
         }
     }
 end

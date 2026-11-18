@@ -186,6 +186,9 @@ LPS.defaults = {
     },
 
     tooltips = {
+        font = "default",
+        fontName = "",
+
         visibility = {
             enable = true,
             combat = true,
@@ -267,6 +270,15 @@ LPS.defaults = {
         customColor = 3,
         userColor = { r = 1, g = 1, b = 1 },
         slotCount = 3,
+        slotFont = {
+            location = "default",
+            left1 = "default",
+            left2 = "default",
+            left3 = "default",
+            right1 = "default",
+            right2 = "default",
+            right3 = "default",
+        },
         sideSlots = {
             left1 = { frame = "gold", offsetX = -5, offsetY = 0 },
             left2 = { frame = "NONE", offsetX = 0, offsetY = 0 },
@@ -289,6 +301,8 @@ LPS.defaults = {
 
         fontSize = 12,
         borderSize = 2,
+        font = "default",
+        fontName = "",
     },
 
 }
