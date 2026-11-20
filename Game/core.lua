@@ -348,10 +348,20 @@ function LPS:BuildDebugReport()
         section("API")
         p("Foundry (LPS.F) exists = " .. tostring(LPS.F ~= nil))
         safe("Foundry:version()", function()
-            return (LPS.F and type(LPS.F.version) == "function" and LPS.F:version()) or "n/a"
+            if not LPS.F then return "n/a" end
+            local v = LPS.F.VERSION
+            if not v then return "n/a" end
+            local info = tostring(v)
+            if LPS.F.API_VERSION then
+                info = info .. " (API " .. tostring(LPS.F.API_VERSION) .. ")"
+            end
+            if LPS.F.SOURCE then
+                info = info .. " from " .. tostring(LPS.F.SOURCE)
+            end
+            return info
         end)
-        p("  F.Options=" .. tostring(LPS.F and LPS.F.Options ~= nil)
-            .. " F.Commands=" .. tostring(LPS.F and LPS.F.Commands ~= nil)
+        p("  F.Commands=" .. tostring(LPS.F and LPS.F.Commands ~= nil)
+            .. " F.Events=" .. tostring(LPS.F and LPS.F.Events ~= nil)
             .. " F.Lifecycle=" .. tostring(LPS.F and LPS.F.Lifecycle ~= nil))
         p("Tourist (LPS.Tourist) exists = " .. tostring(LPS.Tourist ~= nil))
         safe("LibDataBroker-1.1", function() return LibStub and (LibStub("LibDataBroker-1.1", true) ~= nil) end)
