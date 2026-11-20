@@ -364,13 +364,22 @@ function LPS:BuildLocationTooltip()
     end
 
     if LPS.Retail or LPS.Forever then
-        local prof1, prof2, archy, fishing, cooking = GetProfessions()
-        if db.tooltips.location.profession and (prof1 or prof2 or archy or fishing or cooking) then
+        local proftable = LPS:PackValues(GetProfessions())
+        local hasProfession = false
+
+        for i = 1, proftable.n do
+            if proftable[i] then
+                hasProfession = true
+                break
+            end
+        end
+
+        if db.tooltips.location.profession and hasProfession then
             GameTooltip:AddLine(" ")
             GameTooltip:AddLine(TRADE_SKILLS..":", rY, gY, bY)
 
-            local proftable = { GetProfessions() }
-            for _, id in ipairs(proftable) do
+            for i = 1, proftable.n do
+                local id = proftable[i]
                 if id then
                     local name, icon, rank, maxRank, _, _, _, rankModifier = GetProfessionInfo(id)
 

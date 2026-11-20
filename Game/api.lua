@@ -1132,6 +1132,22 @@ function LPS:GetMapNameByIDAlt(mapID)
     return Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN
 end
 
+--- Упаковка всех возвращаемых значений вызова в таблицу — аналог `table.pack` из Lua 5.2+,
+--- которого нет в старых клиентах. В отличие от конструктора `{ f() }`, значения после
+--- первого `nil` не отбрасываются: каждое значение записывается в свой индекс,
+--- а их количество (включая nil) хранится в поле `n`.
+--- Использование: `LPS:PackValues(GetProfessions())`.
+--- @param ... any Список возвращаемых значений (вызов другой функции)
+--- @return table Таблица вида `{ [1] = v1, [2] = v2, ..., n = количество_значений }`
+function LPS:PackValues(...)
+    local t = {}
+    for i = 1, select('#', ...) do
+        t[i] = select(i, ...)
+    end
+    t.n = select('#', ...)
+    return t
+end
+
 function LPS:DisableMoveModeIfActive()
     local holder = LPS.frame and LPS.frame.holder
     if holder and holder.isMoving then
