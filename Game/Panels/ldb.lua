@@ -12,7 +12,13 @@ do
         if not name or not obj or not obj.type then return end
         if obj.type ~= "data source" and obj.type ~= "launcher" then return end
 
-        local key = "LDB_" .. tostring(name):gsub("%W", "_")
+        --- Ключ панели: кириллица и латиница сохраняются, только ASCII-
+        --- символы/пробелы заменяются на «_», серии подчёркиваний
+        --- схлопываются. Наивный gsub("%W", "_") превращал кириллицу в
+        --- подчёркивания (Lua 5.1 без UTF-8), из-за чего два брокера с
+        --- русскими именами получали одинаковый ключ, а второй
+        --- замечался без предупреждения.
+        local key = ("LDB_" .. tostring(name):gsub("[%p%s]", "_")):gsub("%_+", "_"):gsub("_+$", "")
         if LPS.datatexts[key] then return end
 
         local displayName = "LDB: " .. tostring(name)

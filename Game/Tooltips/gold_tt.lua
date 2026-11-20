@@ -30,7 +30,6 @@ function LPS:BuildGoldTooltip(tt)
         return tostring(m or 0)
     end
 
-    local function getRealmKey() return LPS:GetGoldRealmKey() end
     local function getGoldRoot() return LPS:GetGoldRoot() end
 
     local function factionIcon(faction)
@@ -69,31 +68,31 @@ function LPS:BuildGoldTooltip(tt)
         end
     end
 
-    local realm = getRealmKey()
     local allChars = {}
     local allyTotal, hordeTotal, realmTotal, accountTotal = 0, 0, 0, 0
     local currentName = LPS:GetPlayerFullName()
 
     local gold = getGoldRoot()
-    if gold and gold.realms and realm ~= "" then
-        local r = gold.realms[realm]
-        if r and r.chars then
-            for name, info in pairs(r.chars) do
-                local money = tonumber(info and info.money) or 0
-                local faction = info and info.faction
-                local classFile = info and info.class
-                allChars[#allChars + 1] = {
-                    name = name,
-                    money = money,
-                    faction = faction,
-                    class = classFile,
-                }
-                realmTotal = realmTotal + money
-                if faction == "Alliance" then
-                    allyTotal = allyTotal + money
-                elseif faction == "Horde" then
-                    hordeTotal = hordeTotal + money
-                end
+    local r
+    if LPS.GetGoldRealmTable then
+        _, r = LPS:GetGoldRealmTable()
+    end
+    if r and r.chars then
+        for name, info in pairs(r.chars) do
+            local money = tonumber(info and info.money) or 0
+            local faction = info and info.faction
+            local classFile = info and info.class
+            allChars[#allChars + 1] = {
+                name = name,
+                money = money,
+                faction = faction,
+                class = classFile,
+            }
+            realmTotal = realmTotal + money
+            if faction == "Alliance" then
+                allyTotal = allyTotal + money
+            elseif faction == "Horde" then
+                hordeTotal = hordeTotal + money
             end
         end
     end

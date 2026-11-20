@@ -36,23 +36,77 @@ end
 local function getRealmKey() return LPS:GetGoldRealmKey() end
 local function getGoldRoot() return LPS:GetGoldRoot() end
 
-local function getGoldRealmTable()
+--- Нормализация ключа сервера для сравнения: без регистра, только буквы и цифры.
+local function normRealmKey(key)
+    if type(key) ~= "string" then return "" end
+    return (key:lower():gsub("[^%w%d]", ""))
+end
+
+--- Клиент может не возвращать имя realm локального персонажа
+--- (GetRealmName() = "" для своего персонажа). Ищет уже сохранённый realm,
+--- содержащий текущего персонажа (сначала по полному имени, затем по короткому).
+local function findRealmByChar(gold)
+    local name = LPS:GetPlayerFullName()
+    if type(name) ~= "string" or name == "" then return end
+    local short = UnitName and UnitName("player") or nil
+    if type(short) ~= "string" or short == "" or short == name then short = nil end
+    local shortHit
+    for key, rt in pairs((gold and gold.realms) or {}) do
+        if type(rt) == "table" and type(rt.chars) == "table" then
+            if rt.chars[name] then
+                return key
+            end
+            if short and rt.chars[short] then
+                shortHit = shortHit or key
+            end
+        end
+    end
+    return shortHit
+end
+
+--- Возвращает (realmKey, realmTable). Если точный ключ отсутствует, ищет уже
+--- сохранённый сервер по совпадающей нормализации (обновление клиента могло
+--- сменить формат имени сервера) и переносит данные на актуальный ключ.
+--- Если клиент не возвращает имя текущего realm (ключ = ""), ищет realm по
+--- имени текущего персонажа и переносит данные на ключ "" (локальный realm).
+function LPS:GetGoldRealmTable()
     local gold = getGoldRoot()
     gold.realms = gold.realms or {}
-
     local realm = getRealmKey()
-    if realm == "" then return end
-    gold.realms[realm] = gold.realms[realm] or { chars = {} }
+    if realm == "" then
+        if not gold.realms[""] then
+            local found = findRealmByChar(gold)
+            if found then
+                gold.realms[""] = gold.realms[found]
+                gold.realms[found] = nil
+            end
+        end
+        gold.realms[""] = gold.realms[""] or { chars = {} }
+        return "", gold.realms[""]
+    end
+    local r = gold.realms[realm]
+    if r then return realm, r end
+    local target = normRealmKey(realm)
+    if target ~= "" then
+        for key, table_ in pairs(gold.realms) do
+            if normRealmKey(key) == target then
+                gold.realms[key] = nil
+                gold.realms[realm] = table_
+                return realm, table_
+            end
+        end
+    end
+    gold.realms[realm] = { chars = {} }
     return realm, gold.realms[realm]
 end
 
-function LPS:UpdateGoldCharacterData()
-    local gold = getGoldRoot()
-    gold.realms = gold.realms or {}
+local function getGoldRealmTable()
+    return LPS:GetGoldRealmTable()
+end
 
-    local realm = getRealmKey()
-    if realm == "" then return end
-    gold.realms[realm] = gold.realms[realm] or { chars = {} }
+function LPS:UpdateGoldCharacterData()
+    local _, realmTable = LPS:GetGoldRealmTable()
+    if not (realmTable and realmTable.chars) then return end
 
     local name = LPS:GetPlayerFullName()
     if not name then return end
@@ -61,7 +115,7 @@ function LPS:UpdateGoldCharacterData()
     local _, classFile = UnitClass("player")
     local money = GetMoney() or 0
 
-    gold.realms[realm].chars[name] = {
+    realmTable.chars[name] = {
         money = money,
         faction = faction,
         class = classFile,

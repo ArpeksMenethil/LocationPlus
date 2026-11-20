@@ -229,6 +229,22 @@ function LPS:onLoaded()
     end
 end
 
+--- Fallback на случай, если Foundry.Lifecycle держит OnAddonLoaded до «разрешения
+--- идентичности» (имя+сервер+фамилия): на клиентах с region-unique именами
+--- (Forever/Camelot) после обновления фамилия может так и не «уладиться», и
+--- onLoaded не срабатывал вообще. Ключ профиля — realm - UnitName (без фамилии),
+--- поэтому запуск по PLAYER_ENTERING_WORLD / при уже вошедшем игроке безопасен.
+LPS._bootFrame = CreateFrame("Frame")
+LPS._bootFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+LPS._bootFrame:SetScript("OnEvent", function(_, ev)
+    if ev == "PLAYER_ENTERING_WORLD" then
+        LPS:onLoaded()
+    end
+end)
+if IsLoggedIn and IsLoggedIn() then
+    LPS:onLoaded()
+end
+
 local cmd = F.Commands:New({
     name = "LocationPlus",
     slashes = { "/lps" },
@@ -276,6 +292,249 @@ cmd:Register({
         if LPS.ResetFramePosition then
             LPS:ResetFramePosition()
         end
+    end,
+})
+function LPS:BuildDebugReport()
+    local lines = {}
+    local function p(msg) lines[#lines + 1] = msg end
+        local function section(title) p("=== " .. title .. " ===") end
+        local function norm(k) return (tostring(k):lower():gsub("[^%w%d]", "")) end
+
+        local function safe(label, fn)
+            local ok, res = pcall(fn)
+            if ok then p(label .. " = " .. tostring(res)) else p(label .. " = ERROR: " .. tostring(res)) end
+        end
+
+        local function keysOf(t)
+            if type(t) ~= "table" then return "(not a table: " .. type(t) .. ")" end
+            local k = {}
+            for key in pairs(t) do k[#k + 1] = tostring(key) end
+            table.sort(k)
+            return #k .. " keys: [" .. (table.concat(k, ", ") or "(empty)") .. "]"
+        end
+
+        local function ptable(t, label)
+            if type(t) ~= "table" then p(label .. " = " .. tostring(t)); return end
+            local list = {}
+            for k, v in pairs(t) do
+                list[#list + 1] = tostring(k) .. "=" .. (type(v) == "table" and "<table>" or tostring(v))
+            end
+            table.sort(list)
+            p(label .. ": " .. (table.concat(list, ", ") or "(empty)"))
+        end
+
+        local function frameShown(f)
+            if type(f) ~= "table" or type(f.IsShown) ~= "function" then return "?" end
+            local ok, shown = pcall(f.IsShown, f)
+            return ok and tostring(shown) or "?"
+        end
+
+        section("LPS DEBUG (v" .. tostring(LPS.addon and LPS.addon.version) .. ")")
+
+        section("CLIENT")
+        safe("wow.patch", function() return LPS.wow and LPS.wow.patch or "?" end)
+        safe("wow.build", function() return LPS.wow and LPS.wow.build or "?" end)
+        safe("wow.date", function() return LPS.wow and LPS.wow.date or "?" end)
+        safe("wow.toc", function() return LPS.wow and LPS.wow.toc or "?" end)
+        safe("wow.project", function() return LPS.wow and LPS.wow.project or "?" end)
+
+        section("ADDON")
+        p("name = " .. tostring(LPS.addon and LPS.addon.name))
+        p("version = " .. tostring(LPS.addon and LPS.addon.version))
+        p("_loaded = " .. tostring(LPS._loaded))
+        safe("IsLoggedIn()", function() return IsLoggedIn() end)
+        safe("InCombatLockdown()", function() return InCombatLockdown() end)
+
+        section("API")
+        p("Foundry (LPS.F) exists = " .. tostring(LPS.F ~= nil))
+        safe("Foundry:version()", function()
+            return (LPS.F and type(LPS.F.version) == "function" and LPS.F:version()) or "n/a"
+        end)
+        p("  F.Options=" .. tostring(LPS.F and LPS.F.Options ~= nil)
+            .. " F.Commands=" .. tostring(LPS.F and LPS.F.Commands ~= nil)
+            .. " F.Lifecycle=" .. tostring(LPS.F and LPS.F.Lifecycle ~= nil))
+        p("Tourist (LPS.Tourist) exists = " .. tostring(LPS.Tourist ~= nil))
+        safe("LibDataBroker-1.1", function() return LibStub and (LibStub("LibDataBroker-1.1", true) ~= nil) end)
+        safe("LibDBIcon-1.0", function() return LibStub and (LibStub("LibDBIcon-1.0", true) ~= nil) end)
+
+        section("PLAYER")
+        safe("GetPlayerFullName()", function() return LPS:GetPlayerFullName() end)
+        safe("UnitName('player')", function() return UnitName("player") end)
+        safe("GetRealmName()", function() return GetRealmName() end)
+        safe("GetNormalizedRealmName()", function() return GetNormalizedRealmName() end)
+        safe("GetGoldRealmKey()", function() return LPS:GetGoldRealmKey() end)
+        safe("GetFaction()", function() return (GetFaction and GetFaction()) or "n/a" end)
+        safe("UnitFactionGroup('player')", function() return UnitFactionGroup("player") end)
+
+        section("MAP")
+        safe("GetBestMapForUnit('player')", function()
+            return (C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")) or "?"
+        end)
+        safe("zone name (C_Map.GetMapInfo)", function()
+            local mapID = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")
+            if not mapID or not C_Map or not C_Map.GetMapInfo then return "?" end
+            local ok, info = pcall(C_Map.GetMapInfo, mapID)
+            return (ok and info and info.name) or "?"
+        end)
+
+        section("DB")
+        p("LPS.db keys: " .. keysOf(LPS.db))
+        p("charKey = [" .. tostring(LPS.db and LPS.db.charKey) .. "]")
+        safe("sv.current profile", function() return LPS:SVGetCurrentProfile() end)
+        safe("AccountDB (global) keys", function() return keysOf(LPS:GetAccountDB()) end)
+        safe("ProfileDB keys", function() return keysOf(LPS:GetDB()) end)
+
+        section("GOLD")
+        local key = LPS:GetGoldRealmKey()
+        local gold = LPS:GetGoldRoot()
+        local realms = gold and gold.realms
+        if not (realms and next(realms)) then
+            p("gold.realms: EMPTY (no characters stored yet)")
+        else
+            local n = 0
+            for rk, rt in pairs(realms) do
+                n = n + 1
+                local ccount, names = 0, {}
+                for cn, ci in pairs((rt and rt.chars) or {}) do
+                    ccount = ccount + 1
+                    names[#names + 1] = tostring(cn) .. "=" .. tostring(ci and ci.money)
+                end
+                p(string.format("  realm[%d]=[%s] chars=%d exact=%s normMatch=%s | %s",
+                    n, tostring(rk), ccount,
+                    tostring(rk == key),
+                    tostring(norm(rk) == norm(key) and norm(key) ~= ""),
+                    table.concat(names, ", ")))
+            end
+        end
+        local dk, dt = LPS:GetGoldRealmTable()
+        local dcount = 0
+        for _ in pairs((dt and dt.chars) or {}) do dcount = dcount + 1 end
+        p("GetGoldRealmTable() -> key=[" .. tostring(dk) .. "] chars=" .. tostring(dcount))
+
+        section("FRAMES (LPS.frame)")
+        p("keys: " .. keysOf(LPS.frame))
+        if type(LPS.frame) == "table" then
+            local names = {}
+            for key2, f in pairs(LPS.frame) do
+                names[#names + 1] = tostring(key2) .. "=" .. frameShown(f)
+            end
+            table.sort(names)
+            p("shown: " .. table.concat(names, ", "))
+        end
+
+        section("DATATEXTS (LPS.datatexts)")
+        p(keysOf(LPS.datatexts))
+
+        section("SETTINGS (profile)")
+        local db = LPS:GetDB()
+        ptable(db and db.show, "show")
+        ptable(db and db.panels, "panels")
+        local tt = db and db.tooltips
+        ptable(tt and tt.visibility, "tooltips.visibility")
+        ptable(tt and tt.gold, "tooltips.gold")
+        ptable(db and db.layout, "layout")
+        ptable(db and db.appearance, "appearance")
+
+        section("END")
+    return table.concat(lines, "\n")
+end
+
+function LPS:ShowDebugWindow()
+    local report = LPS:BuildDebugReport()
+    if type(LPS.CreateProfilePopupBase) ~= "function" then
+        LPS:Print(report, false)
+        return
+    end
+
+    local ok, err = pcall(function()
+    local oneLine = report:gsub("\n", " | ")
+    local W, H = 560, 140
+    local popup, titleFs, bodyFs, okBtn, cancelBtn = LPS:CreateProfilePopupBase(W, H)
+    titleFs:SetText("Location Plus Debug")
+    bodyFs:SetText("Press Ctrl+C to copy the report and send it to the author as a GitHub issue.")
+
+    local editBox = LPS:CreateProfileFieldBox(popup, 12, -58, 528, 24)
+    editBox:SetAutoFocus(true)
+    editBox:EnableMouse(true)
+    editBox:SetText(oneLine)
+
+    local function selectAll()
+        editBox:HighlightText()
+    end
+    local copied = false
+    local function onCopy()
+        if copied then return end
+        copied = true
+        LPS:Print("LocationPlus: debug report copied to the clipboard. Send it to the author as a GitHub issue.", false)
+        C_Timer.After(0.1, function()
+            LPS:CloseActivePopup()
+        end)
+    end
+    pcall(function() editBox:SetScript("OnCopy", onCopy) end)
+    editBox:SetScript("OnTextChanged", function(self)
+        if self:GetText() ~= oneLine then
+            self:SetText(oneLine)
+        end
+        self:SetHeight(24)
+    end)
+    editBox:SetScript("OnMouseDown", function(self)
+        if self:HasFocus() then
+            C_Timer.After(0, selectAll)
+        end
+    end)
+    editBox:SetScript("OnKeyDown", function(self, key)
+        if key == "LCTRL" or key == "RCTRL" or key == "LMETA" or key == "RMETA" then
+            self.ctrlDown = true
+        end
+    end)
+    editBox:SetScript("OnKeyUp", function(self, key)
+        if key == "LCTRL" or key == "RCTRL" or key == "LMETA" or key == "RMETA" then
+            C_Timer.After(0.2, function() self.ctrlDown = nil end)
+            return
+        end
+        if key == "C" and self.ctrlDown then
+            C_Timer.After(0.1, onCopy)
+        end
+    end)
+
+    if cancelBtn then cancelBtn:Hide() end
+    okBtn:SetText("Закрыть")
+    okBtn:SetScript("OnClick", function()
+        LPS:CloseActivePopup()
+    end)
+
+    C_Timer.After(0, selectAll)
+        return popup
+    end)
+    if not ok then
+        pcall(function() LPS:CloseActivePopup() end)
+        LPS:Print(report, false)
+        LPS:Print("LocationPlus: debug window error -> " .. tostring(err), false)
+    end
+end
+
+cmd:Register({
+    name = "debug",
+    help = "Open the diagnostic window (Ctrl+C to copy the report and send it to the author)",
+    handler = function()
+        LPS:ShowDebugWindow()
+    end,
+})
+cmd:Register({
+    name = "clear-all",
+    help = "Delete all LocationPlus data (settings, gold, positions) and reload the interface",
+    handler = function()
+        if InCombatLockdown and InCombatLockdown() then
+            LPS:Print("Cannot clear the data in combat.", false)
+            return
+        end
+        if type(LPS_DB) == "table" then
+            for k in pairs(LPS_DB) do
+                LPS_DB[k] = nil
+            end
+        end
+        LPS:Print("All LocationPlus data has been deleted. Reloading the interface...", false)
+        ReloadUI()
     end,
 })
 LPS.cmd = cmd

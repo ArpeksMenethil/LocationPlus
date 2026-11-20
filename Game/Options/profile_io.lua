@@ -276,7 +276,7 @@ function LPS:CreateProfilePopupBase(width, height)
     end)
     LPS:ThemeApplyFonts(popup)
     LPS:SetActivePopup(popup)
-    return popup, titleFs, bodyFs, okBtn
+    return popup, titleFs, bodyFs, okBtn, cancelBtn
 end
 
 function LPS:CreateProfileFieldBox(popup, x, y, w, h)

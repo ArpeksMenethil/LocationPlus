@@ -163,6 +163,7 @@ local _foundryClass = {}
 --- @field GetFishingLvl fun(self: LPS): number?, number?
 --- @field GetFormattedGameTime fun(self: LPS): string
 --- @field GetGoldRealmKey fun(self: LPS): string
+--- @field GetGoldRealmTable fun(self: LPS): string?, table?
 --- @field GetGoldRoot fun(self: LPS): table?
 --- @field GetGoldSessionData fun(self: LPS): table?
 --- @field GetInstanceImages fun(self: LPS, index: number, raid: boolean?): nil
