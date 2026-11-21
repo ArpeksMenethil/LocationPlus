@@ -408,7 +408,7 @@ LPS:RegisterLocale("ruRU", {
     CMD_UNKNOWN = 'Неизвестная команда: "%s" - введите /lps help, чтобы увидеть список команд.',
     SETTINGS_OPEN_BUTTON = "Открыть настройки",
     SETTINGS_CMD_HINT = "Настройки также можно открыть командой /lps.",
-    DEBUG_COPY_HINT = "Нажмите Ctrl+C, чтобы скопировать отчёт и отправить его автору через GitHub issue.",
+    DEBUG_COPY_HINT = "Нажмите Ctrl+C, чтобы скопировать отчёт, и отправьте его автору на GitHub.",
     DEBUG_WINDOW_TITLE = "Отладка Location Plus",
     DEBUG_CLOSE_BUTTON = "Закрыть",
 })
