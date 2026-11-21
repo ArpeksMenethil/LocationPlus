@@ -408,7 +408,7 @@ CMD_DESCRIPTION = "Location Plus: Einstellungen öffnen, Werte zurücksetzen, Pa
 CMD_UNKNOWN = 'Unbekannter Befehl: "%s" - gib /lps help für die Befehlsliste ein.',
 SETTINGS_OPEN_BUTTON = "Einstellungen öffnen",
 SETTINGS_CMD_HINT = "Einstellungen können auch mit dem Befehl /lps geöffnet werden.",
-DEBUG_COPY_HINT = "Drücke Strg+C, um den Bericht zu kopieren und ihn dem Autor als GitHub-Issue zu senden.",
+DEBUG_COPY_HINT = "Drücke Strg+C, um den Bericht zu kopieren, und sende ihn dem Autor auf GitHub.",
 DEBUG_WINDOW_TITLE = "Location Plus – Debug",
 DEBUG_CLOSE_BUTTON = "Schließen",
 })

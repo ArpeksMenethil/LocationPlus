@@ -408,7 +408,7 @@ CMD_DESCRIPTION = "Location Plus: apri le impostazioni, reimposta i valori, spos
 CMD_UNKNOWN = 'Comando sconosciuto: "%s" - digita /lps help per l\'elenco dei comandi.',
 SETTINGS_OPEN_BUTTON = "Apri impostazioni",
 SETTINGS_CMD_HINT = "Le impostazioni possono essere aperte anche con il comando /lps.",
-DEBUG_COPY_HINT = "Premi Ctrl+C per copiare il report e inviarlo all'autore come issue su GitHub.",
+DEBUG_COPY_HINT = "Premi Ctrl+C per copiare il report e invialo all'autore su GitHub.",
 DEBUG_WINDOW_TITLE = "Debug di Location Plus",
 DEBUG_CLOSE_BUTTON = "Chiudi",
 })

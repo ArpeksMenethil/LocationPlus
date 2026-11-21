@@ -460,7 +460,7 @@ function LPS:ShowDebugWindow()
     local FIELD_H = 340
     local popup, titleFs, bodyFs, okBtn, cancelBtn = LPS:CreateProfilePopupBase(560, 440)
     titleFs:SetText(L.DEBUG_WINDOW_TITLE or "Location Plus Debug")
-    bodyFs:SetText(L.DEBUG_COPY_HINT or "Press Ctrl+C to copy the report and send it to the author as a GitHub issue.")
+    bodyFs:SetText(L.DEBUG_COPY_HINT or "Press Ctrl+C to copy the report and send it to the author on GitHub.")
 
     local scroll = LPS:CreateScrollFrame(popup)
     scroll:SetSize(528, FIELD_H)
