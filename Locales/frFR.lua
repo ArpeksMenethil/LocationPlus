@@ -409,4 +409,6 @@ CMD_UNKNOWN = 'Commande inconnue : "%s" - tapez /lps help pour la liste des comm
 SETTINGS_OPEN_BUTTON = "Ouvrir les réglages",
 SETTINGS_CMD_HINT = "Les réglages peuvent aussi être ouverts avec la commande /lps.",
 DEBUG_COPY_HINT = "Appuyez sur Ctrl+C pour copier le rapport et l'envoyer à l'auteur sous forme de ticket GitHub.",
+DEBUG_WINDOW_TITLE = "Débogage de Location Plus",
+DEBUG_CLOSE_BUTTON = "Fermer",
 })

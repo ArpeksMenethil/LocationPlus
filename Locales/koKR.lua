@@ -409,4 +409,6 @@ CMD_UNKNOWN = '알 수 없는 명령: "%s" - /lps help를 입력하면 명령 �
 SETTINGS_OPEN_BUTTON = "설정 열기",
 SETTINGS_CMD_HINT = "설정은 /lps 명령으로도 열 수 있습니다.",
 DEBUG_COPY_HINT = "Ctrl+C를 눌러 보고서를 복사하고 GitHub issue로 저자에게 보내세요.",
+DEBUG_WINDOW_TITLE = "Location Plus 디버그",
+DEBUG_CLOSE_BUTTON = "닫기",
 })

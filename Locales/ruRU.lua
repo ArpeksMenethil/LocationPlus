@@ -409,4 +409,6 @@ LPS:RegisterLocale("ruRU", {
     SETTINGS_OPEN_BUTTON = "Открыть настройки",
     SETTINGS_CMD_HINT = "Настройки также можно открыть командой /lps.",
     DEBUG_COPY_HINT = "Нажмите Ctrl+C, чтобы скопировать отчёт и отправить его автору через GitHub issue.",
+    DEBUG_WINDOW_TITLE = "Отладка Location Plus",
+    DEBUG_CLOSE_BUTTON = "Закрыть",
 })

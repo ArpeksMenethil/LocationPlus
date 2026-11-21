@@ -459,7 +459,7 @@ function LPS:ShowDebugWindow()
     local ok, err = pcall(function()
     local FIELD_H = 340
     local popup, titleFs, bodyFs, okBtn, cancelBtn = LPS:CreateProfilePopupBase(560, 440)
-    titleFs:SetText("Location Plus Debug")
+    titleFs:SetText(L.DEBUG_WINDOW_TITLE or "Location Plus Debug")
     bodyFs:SetText(L.DEBUG_COPY_HINT or "Press Ctrl+C to copy the report and send it to the author as a GitHub issue.")
 
     local scroll = LPS:CreateScrollFrame(popup)
@@ -528,7 +528,7 @@ function LPS:ShowDebugWindow()
     end)
 
     if cancelBtn then cancelBtn:Hide() end
-    okBtn:SetText("Закрыть")
+    okBtn:SetText(L.DEBUG_CLOSE_BUTTON or "Закрыть")
     okBtn:SetScript("OnClick", function()
         LPS:CloseActivePopup()
     end)

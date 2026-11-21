@@ -409,4 +409,6 @@ CMD_UNKNOWN = '未知命令: "%s" - 输入 /lps help 查看命令列表。',
 SETTINGS_OPEN_BUTTON = "打开设置",
 SETTINGS_CMD_HINT = "设置也可以通过 /lps 命令打开。",
 DEBUG_COPY_HINT = "按 Ctrl+C 复制报告，并以 GitHub issue 的形式发送给作者。",
+DEBUG_WINDOW_TITLE = "Location Plus 调试",
+DEBUG_CLOSE_BUTTON = "关闭",
 })
