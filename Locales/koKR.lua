@@ -408,4 +408,5 @@ CMD_DESCRIPTION = "Location Plus: 설정 열기, 값 초기화, 패널 그룹 �
 CMD_UNKNOWN = '알 수 없는 명령: "%s" - /lps help를 입력하면 명령 목록을 볼 수 있습니다.',
 SETTINGS_OPEN_BUTTON = "설정 열기",
 SETTINGS_CMD_HINT = "설정은 /lps 명령으로도 열 수 있습니다.",
+DEBUG_COPY_HINT = "Ctrl+C를 눌러 보고서를 복사하고 GitHub issue로 저자에게 보내세요.",
 })

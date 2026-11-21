@@ -408,4 +408,5 @@ LPS:RegisterLocale("enUS", {
     CMD_UNKNOWN = 'Unknown command: "%s" - type /lps help for the command list.',
     SETTINGS_OPEN_BUTTON = "Open settings",
     SETTINGS_CMD_HINT = "Settings can also be opened with the /lps command.",
+    DEBUG_COPY_HINT = "Press Ctrl+C to copy the report and send it to the author as a GitHub issue.",
 })

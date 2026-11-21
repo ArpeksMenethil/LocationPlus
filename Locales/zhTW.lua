@@ -408,4 +408,5 @@ CMD_DESCRIPTION = "Location Plus：開啟設定、重設數值、移動面板組
 CMD_UNKNOWN = '未知的指令: "%s" - 輸入 /lps help 檢視指令清單。',
 SETTINGS_OPEN_BUTTON = "開啟設定",
 SETTINGS_CMD_HINT = "設定也可以透過 /lps 指令開啟。",
+DEBUG_COPY_HINT = "按 Ctrl+C 複製報告，並以 GitHub issue 的形式發送給作者。",
 })

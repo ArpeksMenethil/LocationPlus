@@ -457,20 +457,45 @@ function LPS:ShowDebugWindow()
     end
 
     local ok, err = pcall(function()
-    local oneLine = report:gsub("\n", " | ")
-    local W, H = 560, 140
-    local popup, titleFs, bodyFs, okBtn, cancelBtn = LPS:CreateProfilePopupBase(W, H)
+    local FIELD_H = 340
+    local popup, titleFs, bodyFs, okBtn, cancelBtn = LPS:CreateProfilePopupBase(560, 440)
     titleFs:SetText("Location Plus Debug")
-    bodyFs:SetText("Press Ctrl+C to copy the report and send it to the author as a GitHub issue.")
+    bodyFs:SetText(L.DEBUG_COPY_HINT or "Press Ctrl+C to copy the report and send it to the author as a GitHub issue.")
 
-    local editBox = LPS:CreateProfileFieldBox(popup, 12, -58, 528, 24)
-    editBox:SetAutoFocus(true)
-    editBox:EnableMouse(true)
-    editBox:SetText(oneLine)
+    local scroll = LPS:CreateScrollFrame(popup)
+    scroll:SetSize(528, FIELD_H)
+    scroll:SetPoint("TOPLEFT", popup, "TOPLEFT", 12, -58)
+    LPS:ThemeBox(scroll, "field", "border", (LPS:ThemeGet()).windowRadius)
 
-    local function selectAll()
-        editBox:HighlightText()
-    end
+    local text = scroll.content:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    text:SetPoint("TOPLEFT", scroll.content, "TOPLEFT", 8, -8)
+    text:SetWidth(512)
+    text:SetJustifyH("LEFT")
+    text:SetJustifyV("TOP")
+    text:SetWordWrap(true)
+    local fieldText = LPS:GetWidgetColor("text")
+    text:SetTextColor(fieldText.r, fieldText.g, fieldText.b)
+    text:SetText(report)
+    local lineCount = select(2, report:gsub("\n", "")) + 1
+    C_Timer.After(0, function()
+        local h = text:GetHeight() or 0
+        if h < lineCount * 12 then
+            h = (lineCount + math.floor(#report / 70)) * 14
+        end
+        text:SetHeight(h + 2)
+        scroll:SetContentHeight(h + 32)
+        scroll:SetVerticalScroll(0)
+    end)
+
+    local copyBox = CreateFrame("EditBox", nil, popup)
+    copyBox:SetSize(1, 1)
+    copyBox:SetPoint("TOPLEFT", popup, "TOPLEFT", 2, -2)
+    copyBox:SetAlpha(0)
+    copyBox:SetMultiLine(true)
+    copyBox:SetAutoFocus(true)
+    copyBox:EnableMouse(false)
+    copyBox:SetText(report)
+
     local copied = false
     local function onCopy()
         if copied then return end
@@ -480,24 +505,19 @@ function LPS:ShowDebugWindow()
             LPS:CloseActivePopup()
         end)
     end
-    pcall(function() editBox:SetScript("OnCopy", onCopy) end)
-    editBox:SetScript("OnTextChanged", function(self)
-        if self:GetText() ~= oneLine then
-            self:SetText(oneLine)
+    pcall(function() copyBox:SetScript("OnCopy", onCopy) end)
+    copyBox:SetScript("OnTextChanged", function(self)
+        if self:GetText() ~= report then
+            self:SetText(report)
         end
-        self:SetHeight(24)
+        self:SetSize(1, 1)
     end)
-    editBox:SetScript("OnMouseDown", function(self)
-        if self:HasFocus() then
-            C_Timer.After(0, selectAll)
-        end
-    end)
-    editBox:SetScript("OnKeyDown", function(self, key)
+    copyBox:SetScript("OnKeyDown", function(self, key)
         if key == "LCTRL" or key == "RCTRL" or key == "LMETA" or key == "RMETA" then
             self.ctrlDown = true
         end
     end)
-    editBox:SetScript("OnKeyUp", function(self, key)
+    copyBox:SetScript("OnKeyUp", function(self, key)
         if key == "LCTRL" or key == "RCTRL" or key == "LMETA" or key == "RMETA" then
             C_Timer.After(0.2, function() self.ctrlDown = nil end)
             return
@@ -513,7 +533,8 @@ function LPS:ShowDebugWindow()
         LPS:CloseActivePopup()
     end)
 
-    C_Timer.After(0, selectAll)
+    copyBox:HighlightText()
+    C_Timer.After(0, function() copyBox:HighlightText() end)
         return popup
     end)
     if not ok then

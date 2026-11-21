@@ -408,4 +408,5 @@ CMD_DESCRIPTION = "Location Plus: abrir configurações, redefinir valores, move
 CMD_UNKNOWN = 'Comando desconhecido: "%s" - digite /lps help para a lista de comandos.',
 SETTINGS_OPEN_BUTTON = "Abrir configurações",
 SETTINGS_CMD_HINT = "As configurações também podem ser abertas com o comando /lps.",
+DEBUG_COPY_HINT = "Pressione Ctrl+C para copiar o relatório e enviá-lo ao autor como uma issue no GitHub.",
 })
