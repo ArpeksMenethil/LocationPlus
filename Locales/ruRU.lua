@@ -411,4 +411,8 @@ LPS:RegisterLocale("ruRU", {
     DEBUG_COPY_HINT = "Нажмите Ctrl+C, чтобы скопировать отчёт, и отправьте его автору на GitHub.",
     DEBUG_WINDOW_TITLE = "Отладка Location Plus",
     DEBUG_CLOSE_BUTTON = "Закрыть",
+    LPS_NEW_VERSION_AVAILABLE = "Появилась новая версия %s (у вас %s). Обновите Location Plus (версия обнаружена у: %s).",
+    LPS_OUTDATED_NOTICE = "Ваш Location Plus устарел: у вас версия %s, а у %s — %s. Обновите аддон.",
+    LPS_NO_RESPONSE_DEBUG = "Нет ответа о версии Location Plus от: %s (аддон не установлен или сообщения блокируются?)",
+    LPS_GOLD_WIPE_MSG = "Все данные о золоте (все серверы) очищены в новой версии.",
 })

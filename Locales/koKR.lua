@@ -411,4 +411,8 @@ SETTINGS_CMD_HINT = "설정은 /lps 명령으로도 열 수 있습니다.",
 DEBUG_COPY_HINT = "Ctrl+C를 눌러 보고서를 복사하고 GitHub에서 저자에게 보내세요.",
 DEBUG_WINDOW_TITLE = "Location Plus 디버그",
 DEBUG_CLOSE_BUTTON = "닫기",
+LPS_NEW_VERSION_AVAILABLE = "새 버전 %s이(가) 사용 가능합니다 (현재 %s). Location Plus를 업데이트하세요 (버전 확인: %s).",
+LPS_OUTDATED_NOTICE = "Location Plus가 오래되었습니다: 지금 %s이고, %s은(는) %s 버전입니다. 어드온을 업데이트하세요.",
+LPS_NO_RESPONSE_DEBUG = "Location Plus 버전에 대한 응답 없음: %s (어드온이 설치되지 않았거나 메시지가 차단되었음?)",
+LPS_GOLD_WIPE_MSG = "모든 서버의 골드 데이터가 새 버전에서 초기화되었습니다.",
 })

@@ -411,4 +411,8 @@ SETTINGS_CMD_HINT = "設定也可以透過 /lps 指令開啟。",
 DEBUG_COPY_HINT = "按 Ctrl+C 複製報告，並在 GitHub 上發送給作者。",
 DEBUG_WINDOW_TITLE = "Location Plus 除錯",
 DEBUG_CLOSE_BUTTON = "關閉",
+LPS_NEW_VERSION_AVAILABLE = "新版本 %s 現已可用（你目前為 %s）。請更新 Location Plus（版本發現於 %s）。",
+LPS_OUTDATED_NOTICE = "你的 Location Plus 已過期：你的是 %s，而 %s 是 %s。請更新外掛。",
+LPS_NO_RESPONSE_DEBUG = "以下玩家未回覆 Location Plus 版本：%s（外掛未安裝或訊息被封鎖？）",
+LPS_GOLD_WIPE_MSG = "新版本已清除所有伺服器的金幣資料。",
 })

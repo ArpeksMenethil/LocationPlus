@@ -411,4 +411,8 @@ SETTINGS_CMD_HINT = "As configurações também podem ser abertas com o comando 
 DEBUG_COPY_HINT = "Pressione Ctrl+C para copiar o relatório e envie-o ao autor no GitHub.",
 DEBUG_WINDOW_TITLE = "Depuração do Location Plus",
 DEBUG_CLOSE_BUTTON = "Fechar",
+LPS_NEW_VERSION_AVAILABLE = "Uma nova versão %s está disponível (você tem %s). Atualize o Location Plus (versão detectada em %s).",
+LPS_OUTDATED_NOTICE = "Seu Location Plus está desatualizado: você tem %s e %s tem a versão %s. Atualize o addon.",
+LPS_NO_RESPONSE_DEBUG = "Sem resposta sobre a versão do Location Plus de: %s (addon não instalado ou mensagens bloqueadas?)",
+LPS_GOLD_WIPE_MSG = "Todos os dados de ouro (todos os servidores) foram limpos na nova versão.",
 })

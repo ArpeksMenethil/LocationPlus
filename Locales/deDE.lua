@@ -411,4 +411,8 @@ SETTINGS_CMD_HINT = "Einstellungen können auch mit dem Befehl /lps geöffnet we
 DEBUG_COPY_HINT = "Drücke Strg+C, um den Bericht zu kopieren, und sende ihn dem Autor auf GitHub.",
 DEBUG_WINDOW_TITLE = "Location Plus – Debug",
 DEBUG_CLOSE_BUTTON = "Schließen",
+LPS_NEW_VERSION_AVAILABLE = "Eine neue Version %s ist verfügbar (du hast %s). Bitte aktualisiere Location Plus (Version erkannt bei %s).",
+LPS_OUTDATED_NOTICE = "Dein Location Plus ist veraltet: du hast %s, und %s hat Version %s. Bitte aktualisiere das Addon.",
+LPS_NO_RESPONSE_DEBUG = "Keine Antwort zur Location Plus Version von: %s (Addon nicht installiert oder Addon-Nachrichten blockiert?)",
+LPS_GOLD_WIPE_MSG = "Alle Gold-Daten (alle Server) wurden in der neuen Version gelöscht.",
 })

@@ -411,4 +411,8 @@ LPS:RegisterLocale("enUS", {
     DEBUG_COPY_HINT = "Press Ctrl+C to copy the report and send it to the author on GitHub.",
     DEBUG_WINDOW_TITLE = "Location Plus Debug",
     DEBUG_CLOSE_BUTTON = "Close",
+    LPS_NEW_VERSION_AVAILABLE = "A new version %s is available (you have %s). Please update Location Plus (version detected via %s).",
+    LPS_OUTDATED_NOTICE = "Your Location Plus is outdated: you have %s, and %s has version %s. Please update the addon.",
+    LPS_NO_RESPONSE_DEBUG = "No response about the Location Plus version from: %s (the addon is not installed, or addon messages are blocked?)",
+    LPS_GOLD_WIPE_MSG = "All gold data (all servers) has been cleared in the new version.",
 })

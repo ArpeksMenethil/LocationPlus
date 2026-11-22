@@ -411,4 +411,8 @@ SETTINGS_CMD_HINT = "Les réglages peuvent aussi être ouverts avec la commande 
 DEBUG_COPY_HINT = "Appuyez sur Ctrl+C pour copier le rapport et envoyez-le à l'auteur sur GitHub.",
 DEBUG_WINDOW_TITLE = "Débogage de Location Plus",
 DEBUG_CLOSE_BUTTON = "Fermer",
+LPS_NEW_VERSION_AVAILABLE = "Une nouvelle version %s est disponible (vous avez %s). Veuillez mettre à jour Location Plus (version détectée chez %s).",
+LPS_OUTDATED_NOTICE = "Votre Location Plus est obsolète : vous avez %s et %s a la version %s. Veuillez mettre à jour l'addon.",
+LPS_NO_RESPONSE_DEBUG = "Aucune réponse sur la version de Location Plus de : %s (addon non installé ou messages bloqués ?)",
+LPS_GOLD_WIPE_MSG = "Toutes les données d'or (tous les serveurs) ont été effacées dans la nouvelle version.",
 })

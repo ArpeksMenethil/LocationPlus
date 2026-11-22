@@ -6,6 +6,7 @@
     <Include file='.\Config\load.xml'/>
     <Include file='.\UI\Views\load.xml'/>
     <Include file='.\core.lua'/>
+    <Include file='.\versioncheck.lua'/>
     <Include file='.\Options\load.xml'/>
     <Include file='.\Tooltips\load.xml'/>
     <Include file='.\Panels\load.xml'/>

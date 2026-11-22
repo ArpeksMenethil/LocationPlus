@@ -143,6 +143,8 @@ function LPS:GetLevelTable()
 end
 
 LPS.defaults = {
+    UPDATE_2_2_0 = false,
+
     position = {
         point = "TOP",
         relPoint = "TOP",

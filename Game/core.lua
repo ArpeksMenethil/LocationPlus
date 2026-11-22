@@ -180,6 +180,26 @@ function LPS:onLoaded()
 
     local db = LPS:GetDB()
     LPS:ApplyDefaults(db or {}, LPS.defaults)
+
+    --- Одноразовая очистка для тех, кто обновился до этой версии:
+    --- данные о золоте всех персонажей (все серверы); флаг UPDATE_2_2_0
+    --- после очистки становится true.
+    if db.UPDATE_2_2_0 ~= true then
+        local goldRoot = LPS:GetGoldRoot()
+        local wiped = 0
+        for k in pairs(goldRoot) do
+            goldRoot[k] = nil
+            wiped = wiped + 1
+        end
+        db.UPDATE_2_2_0 = true
+        if wiped > 0 then
+            LPS:Print(L.LPS_GOLD_WIPE_MSG or "All gold data (all servers) has been cleared in the new version.", false)
+            if LPS.DEBUG then
+                LPS:Print(format("[debug] gold data wiped: %d entries", wiped), false)
+            end
+        end
+    end
+
     LPS:ApplyTimeFormat()
     LPS:ApplyHolderPosition()
     LPS.frame.location = LPS:CreateLocationFrame()
