@@ -21,8 +21,19 @@ do
         return name
     end
 
+    local function unitSenderName(unit)
+        local name, realm
+        if UnitFullName then
+            name, realm = UnitFullName(unit)
+        else
+            name = UnitName(unit)
+            realm = UnitRealm and UnitRealm(unit)
+        end
+        return toSenderName(name, realm)
+    end
+
     local function mySenderName()
-        return toSenderName(UnitName("player"), UnitRealm and UnitRealm("player"))
+        return unitSenderName("player")
     end
 
     --- Числовое сравнение версий вида "X.Y.Z": 1 (a > b), 0, -1 (a < b).
@@ -94,7 +105,7 @@ do
             local unitPrefix = IsInRaid() and "raid" or "party"
             for i = 1, GetNumGroupMembers() do
                 local unit = unitPrefix .. i
-                local sender = toSenderName(UnitName(unit), UnitRealm and UnitRealm(unit))
+                local sender = unitSenderName(unit)
                 if sender and sender ~= mySenderName() then
                     members[#members + 1] = sender
                 end
@@ -103,7 +114,7 @@ do
         if IsInGuild() and GetGuildMemberByIndex and GetNumGuildMembers then
             for i = 1, GetNumGuildMembers() do
                 local name, _, _, _, online = GetGuildMemberByIndex(i)
-                if online and name and name ~= "" then
+                if name and name ~= "" and online ~= false then
                     members[#members + 1] = name
                 end
             end
@@ -143,7 +154,7 @@ do
         end
     end
 
-    local lastGroupSize, lastGuildSize = 0, 0
+    local lastGroupSize, lastGuildSize = nil, nil
     local frame = CreateFrame("Frame")
     frame:RegisterEvent("CHAT_MSG_ADDON")
     frame:RegisterEvent("GROUP_ROSTER_UPDATE")
@@ -191,7 +202,7 @@ do
             end
         elseif event == "GROUP_ROSTER_UPDATE" then
             local num = GetNumGroupMembers()
-            if num > 1 and num > lastGroupSize then
+            if lastGroupSize ~= nil and num > 1 and num > lastGroupSize then
                 dbg("versioncheck: group roster grew %d -> %d, sending", lastGroupSize, num)
                 C_Timer.After(1, sendVersionCheck)
             end
@@ -199,7 +210,7 @@ do
         elseif event == "GUILD_ROSTER_UPDATE" then
             if IsInGuild() and GetNumGuildMembers then
                 local num = GetNumGuildMembers()
-                if num > lastGuildSize then
+                if lastGuildSize ~= nil and num > lastGuildSize then
                     dbg("versioncheck: guild roster grew %d -> %d, sending", lastGuildSize, num)
                     C_Timer.After(1, sendVersionCheck)
                 end
