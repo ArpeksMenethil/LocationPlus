@@ -1,4 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
 	<Script file="LibStub\LibStub.lua" />
 	<Script file="LibDeflate\LibDeflate.lua" />
+	<Script file="LibLayoutSettings\LibLayoutSettings.lua" />
 </Ui>

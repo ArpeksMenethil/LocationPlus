@@ -3,4 +3,5 @@
     <Include file='.\frames.lua'/>
     <Include file='.\ui.lua'/>
     <Include file='.\compartment.lua'/>
+    <Include file='.\editmode.lua'/>
 </Ui>

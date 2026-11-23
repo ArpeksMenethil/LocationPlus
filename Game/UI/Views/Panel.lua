@@ -364,11 +364,6 @@ function LPS:CreateMainFrame()
 
     end)
     LPS:ThemeApplyFonts(frame)
-    if LPS.DisableMoveModeIfActive then
-        frame:HookScript("OnHide", function()
-            LPS:DisableMoveModeIfActive()
-        end)
-    end
     return frame
 end
 function LPS:PanelOnThemeChanged()

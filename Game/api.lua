@@ -344,7 +344,7 @@ function LPS:ApplyLayout()
         LPS._pendingPanelPrimes = nil
     end
 
-    if frames.location and not frames.location.isMoving then
+    if frames.location then
         if layout.frameStrata then
             frames.location:SetFrameStrata(layout.frameStrata)
         end
@@ -594,7 +594,9 @@ function LPS:ResetAllSettingsToDefaults()
         end
     end
     if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-    LPS:ApplyLocationPosition()
+    if not LPS:EditModeIsEditing() then
+        LPS:ApplyLocationPosition()
+    end
     LPS:ApplyAllSettings()
     if LPS.UpdateMinimapButton then
         LPS:UpdateMinimapButton()
@@ -611,7 +613,7 @@ function LPS:RefreshAfterProfileChange()
     if self.ApplyDefaults then
         self:ApplyDefaults(db or {}, self.defaults)
     end
-    if self.ApplyLocationPosition then
+    if self.ApplyLocationPosition and not self:EditModeIsEditing() then
         self:ApplyLocationPosition()
     end
     if self.ApplyAllSettings then
@@ -707,12 +709,6 @@ end
 function LPS:ResetFramePosition()
     local loc = LPS.frame and LPS.frame.location
     if not loc then return end
-    if loc.isMoving then
-        if LPS.SetMoveMode then
-            LPS:SetMoveMode(false)
-        end
-        loc.isMoving = false
-    end
     local def = (LPS.defaults and LPS.defaults.position) or { point = "TOP", relPoint = "TOP", x = 0, y = -10 }
     local geo = LPS.frame._posGeometry
     if type(geo) == "table" then
@@ -729,15 +725,10 @@ function LPS:ResetFramePosition()
             p[k] = nil
         end
     end
+    if LPS.EditModeCaptureLayout then
+        LPS:EditModeCaptureLayout()
+    end
     LPS:Print("The frame position is reset")
-end
-
-function LPS:ToggleMoveMode()
-    local loc = LPS.frame and LPS.frame.location
-    if not loc then return end
-    local moving = loc.isMoving or false
-    LPS:SetMoveMode(not moving)
-    loc.isMoving = not moving
 end
 
 function LPS:GetContinentID()
@@ -1113,36 +1104,6 @@ function LPS:PackValues(...)
     return t
 end
 
-function LPS:DisableMoveModeIfActive()
-    local loc = LPS.frame and LPS.frame.location
-    if loc and loc.isMoving then
-        if LPS.SetMoveMode then
-            LPS:SetMoveMode(false)
-        end
-        loc.isMoving = false
-    end
-end
-
-function LPS:EnsureOptionsCloseHooks()
-    if not LPS._optionsCloseHooks then
-        LPS._optionsCloseHooks = {}
-    end
-
-    local function hookOnHide(frame, key)
-        if not (frame and frame.HookScript) then return end
-        if LPS._optionsCloseHooks[key] then return end
-        LPS._optionsCloseHooks[key] = true
-        frame:HookScript("OnHide", function()
-            if LPS.DisableMoveModeIfActive then
-                LPS:DisableMoveModeIfActive()
-            end
-        end)
-    end
-
-    hookOnHide(_G.SettingsPanel, "SettingsPanel")
-    hookOnHide(_G.InterfaceOptionsFrame, "InterfaceOptionsFrame")
-end
-
 --- Главное переключение меню: нативное окно настроек
 --- (Game/UI/Views/Panel.lua + Game/Options/options_ui.lua → LPS:ToggleOptionWindow).
 --- Fallback — закрытие стандартных панелей Blizzard.
@@ -1153,16 +1114,10 @@ function LPS:ToggleOptions()
     end
 
     if _G.SettingsPanel and _G.SettingsPanel.IsShown and _G.SettingsPanel:IsShown() then
-        if LPS.DisableMoveModeIfActive then
-            LPS:DisableMoveModeIfActive()
-        end
         _G.SettingsPanel:Hide()
         return
     end
     if _G.InterfaceOptionsFrame and _G.InterfaceOptionsFrame.IsShown and _G.InterfaceOptionsFrame:IsShown() then
-        if LPS.DisableMoveModeIfActive then
-            LPS:DisableMoveModeIfActive()
-        end
         _G.InterfaceOptionsFrame:Hide()
         return
     end

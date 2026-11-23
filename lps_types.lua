@@ -124,12 +124,17 @@
 --- @field ClampAngle fun(self: LPS, angle: number): number
 --- @field CreateDatatextFrame fun(self: LPS, key: LPSPanelKey): Frame?
 --- @field CreateFrame fun(self: LPS, params: LPSFrameParams): Frame?
---- @field CreateGuideLines fun(self: LPS): {vLines: table, hLines: table}
 --- @field CreateLocationFrame fun(self: LPS): Frame?
 --- @field CreateMinimapButton fun(self: LPS): nil
 --- @field FillMinimapTooltip fun(self: LPS, tt: Frame): nil
---- @field DisableMoveModeIfActive fun(self: LPS): nil
---- @field EnsureOptionsCloseHooks fun(self: LPS): nil
+--- @field EditModeCaptureLayout fun(self: LPS): nil
+--- @field EditModeGetLibrary fun(self: LPS): table?
+--- @field EditModeGetPosition fun(self: LPS): string, string, number, number
+--- @field EditModeGetStorage fun(self: LPS): table
+--- @field EditModeIsEditing fun(self: LPS): boolean
+--- @field EditModeRegisterFrame fun(self: LPS): nil
+--- @field EditModeRestoreOwnSettings fun(self: LPS): nil
+--- @field EditModeSetPosition fun(self: LPS, point: string, relPoint: string, x: number, y: number): nil
 --- @field FormatMoney fun(self: LPS, money: number, keepEmptyUnits: boolean?): string
 --- @field FormatMoneySmart fun(self: LPS, amount: number): string
 --- @field FormatTime fun(self: LPS, seconds: number): string
@@ -187,10 +192,8 @@
 --- @field Round fun(self: LPS, num: number, decimals: number?): number
 --- @field ScheduleCollectImages fun(self: LPS): nil
 --- @field ScheduleRefresh fun(self: LPS): nil
---- @field SetMoveMode fun(self: LPS, enabled: boolean): nil
 --- @field PositionMinimapButton fun(self: LPS, btn: Frame): nil
 --- @field ShowGoldResetMenu fun(self: LPS, anchorFrame: Frame): nil
---- @field ToggleMoveMode fun(self: LPS): nil
 --- @field ToggleNativeOptions fun(self: LPS): nil
 --- @field ToggleOptions fun(self: LPS): nil
 --- @field UpdateGoldCharacterData fun(self: LPS): nil

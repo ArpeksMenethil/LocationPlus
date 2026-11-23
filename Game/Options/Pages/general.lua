@@ -175,20 +175,12 @@ LPS.Options.BuildTree.tabs.general = function()
                 name = L.ACTIONS,
                 sortKeys = { "btnOrder" },
                 args = {
-                    moveFrame = {
-                        type = "execute",
-                        name = L.MOVE_FRAME,
-                        desc = L.TOGGLE_MOVE_MODE_FOR_THE_FRAME,
-                        order = 1,
-                        btnOrder = 1,
-                        func = function() LPS:ToggleMoveMode() end,
-                    },
                     resetPosition = {
                         type = "execute",
                         name = L.RESET_POSITION,
                         desc = L.RESET_POSITION_DESC,
                         order = 1,
-                        btnOrder = 2,
+                        btnOrder = 1,
                         func = function()
                             if LPS.ResetFramePosition then
                                 LPS:ResetFramePosition()
@@ -200,7 +192,7 @@ LPS.Options.BuildTree.tabs.general = function()
                         name = L.RESET_VALUES,
                         desc = L.RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES,
                         order = 1,
-                        btnOrder = 3,
+                        btnOrder = 2,
                         func = function()
                             if LPS.ResetAllSettingsToDefaults then
                                 LPS:ResetAllSettingsToDefaults()

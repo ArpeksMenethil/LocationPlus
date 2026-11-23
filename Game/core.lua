@@ -188,6 +188,9 @@ function LPS:onLoaded()
     if LPS.CreateMinimapButton then
         LPS:CreateMinimapButton()
     end
+    if LPS.EditModeRegisterFrame then
+        LPS:EditModeRegisterFrame()
+    end
 
     if LPS.RegisterSettingsCategory then
         LPS:RegisterSettingsCategory()
@@ -200,25 +203,32 @@ function LPS:onLoaded()
     LPS.coreEvents = LPS.Events:New("LPS.Core")
     LPS.coreEvents:Register("PLAYER_ENTERING_WORLD", function()
         LPS:ApplyLayout()
-        LPS:ApplyLocationPosition()
-        LPS:RepairLocationLayoutCache()
+        if not LPS:EditModeIsEditing() then
+            LPS:ApplyLocationPosition()
+            LPS:RepairLocationLayoutCache()
+        end
     end)
 
     if IsLoggedIn and IsLoggedIn() then
         LPS:ApplyLayout()
-        LPS:ApplyLocationPosition()
+        if not LPS:EditModeIsEditing() then
+            LPS:ApplyLocationPosition()
+        end
     end
     --- Клиент применяет свой кэш раскладки (layout-local.txt) по завершении
     --- загрузки мира — это может быть заметно позже PEW. Держим позицию из DB
-    --- под контролем ~35 секунд после логина (во время драга не трогаем).
+    --- под контролем ~35 секунд после логина (не трогаем во время драга из
+    --- редактора интерфейса).
     local loginTicks = 0
     local function runLoginTick()
         loginTicks = loginTicks + 1
         if loginTicks == 1 then
             LPS:ApplyLayout()
         end
-        LPS:ApplyLocationPosition()
-        LPS:RepairLocationLayoutCache()
+        if not LPS:EditModeIsEditing() then
+            LPS:ApplyLocationPosition()
+            LPS:RepairLocationLayoutCache()
+        end
         if loginTicks < 14 then
             C_Timer.After(2.5, runLoginTick)
         end
@@ -349,14 +359,6 @@ defineCommand("resetpanels", function()
     end
 end, {
     help = L.RESET_VALUES,
-})
-
-defineCommand("move", function()
-    if LPS.ToggleMoveMode then
-        LPS:ToggleMoveMode()
-    end
-end, {
-    help = L.TOGGLE_PANEL_MOVE_MODE,
 })
 
 defineCommand("resetpos", function()

@@ -172,11 +172,11 @@ end
 
 --- Применяет сохранённую позицию панели локации (основной фрейм группы):
 --- нормализует запись db.position под настроенную точку привязки и
---- перепривязывает панель к UIParent. Во время перемещения панель не трогаем
---- (позиция пишется в конце драга).
+--- перепривязывает панель к UIParent. Позиция из редактора интерфейса тоже
+--- приходит через этот путь (EditModeSetPosition).
 function LPS:ApplyLocationPosition()
     local loc = self.frame and self.frame.location
-    if not loc or loc.isMoving then return end
+    if not loc then return end
     local db = self:GetDB()
     db.position = db.position or {}
     LPS:MigratePos(db.position)
@@ -211,7 +211,7 @@ end
 --- старый якорь может остаться и замаскировать подмену позиции.
 function LPS:RepairLocationLayoutCache()
     local loc = self.frame and self.frame.location
-    if not loc or loc.isMoving then return end
+    if not loc then return end
     local db = self:GetDB()
     local p = db and db.position
     if not self:IsValidPos(p) then return end

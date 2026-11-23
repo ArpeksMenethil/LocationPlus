@@ -122,7 +122,7 @@ function LPS:CreateLocationFrame()
 
     --- Основной фрейм группы: к нему применяются якоря из настроек,
     --- к его краям цепляются боковые панели, он перетаскивается в
-    --- режиме перемещения (StartMoving требует IsMovable).
+    --- редакторе интерфейса игры (StartMoving требует IsMovable).
     local f = LPS:CreateFrame(params)
     if f then
         f:SetMovable(true)
