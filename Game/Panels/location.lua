@@ -14,7 +14,7 @@ function LPS:CreateLocationFrame()
         parent = LPS.frame.holder,
         --- Статичная точка: location не смещается при добавлении/удалении боковых панелей
         --- (см. UpdateFrameSize: 9 = (4*2 + 10)/2, 3 = 6/2).
-        anchor = {"TOPLEFT", LPS.frame.holder, "TOPLEFT", 9, 3},
+        anchor = {"TOP", LPS.frame.holder, "TOP", 0, 3},
         padding = {((db.layout and db.layout.locPaddingX) or 20), ((db.layout and db.layout.locPaddingY) or 9)},
         fontSize = db.settings.fontSize or 12,
         bgColor = {bgR, bgG, bgB, bgA},

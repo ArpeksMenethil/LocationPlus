@@ -320,7 +320,7 @@ function LPS:ApplyLayout()
         if LPS:UseHolderAnchor() then
             loc:SetPoint("CENTER", frames.holder, "CENTER", 0, 0)
         else
-            loc:SetPoint("TOPLEFT", frames.holder, "TOPLEFT", 9, 3)
+            loc:SetPoint("TOP", frames.holder, "TOP", 0, 3)
         end
     end
 

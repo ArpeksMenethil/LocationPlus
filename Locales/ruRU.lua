@@ -34,6 +34,8 @@ LPS:RegisterLocale("ruRU", {
     SIDE_PANELS_ALWAYS_GROW_ALONG_THEIR_EDGE_LEFT_PANELS_ATTACH_TO_THE_LEFT_SIDE_OF_THE_GROUP_RIGHT_PANELS_ATTACH_TO_THE_RIGHT_SIDE_THIS_OPTION_CONTROLS_WHAT_THE_FIRST_PANEL_OF_EACH_CHAIN_ANCHORS_TO_THE_LOCATION_PANEL_EDGES_DEFAULT_OR_THE_OUTER_EDGES_OF_THE_WHOLE_HOLDER_FRAME = "Боковые панели всегда растут вдоль своего края: левые панели крепятся к ЛЕВОЙ стороне группы, правые — к ПРАВОЙ. Эта настройка определяет, к чему крепится ПЕРВАЯ панель каждой цепочки: к краям панели локации (по умолчанию) или к внешним краям всего фрейма.",
     LOCATION_PANEL_EDGES = "Края панели локации",
     HOLDER_OUTER_EDGES = "Внешние края фрейма",
+    ANCHOR_POINT = "Точка привязки",
+    ANCHOR_POINT_DESC = "Точка группы панелей, по которой на экран сохраняется её позиция: панель остаётся на месте относительно этой точки, когда её размер меняется.",
     LOCATION_PANEL = "Панель локации",
     MINIMUM_WIDTH = "Минимальная ширина",
     SETS_THE_MINIMUM_WIDTH_OF_THE_LOCATION_PANEL = "Установить минимальную ширину панели локации.",

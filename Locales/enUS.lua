@@ -34,6 +34,8 @@ LPS:RegisterLocale("enUS", {
     SIDE_PANELS_ALWAYS_GROW_ALONG_THEIR_EDGE_LEFT_PANELS_ATTACH_TO_THE_LEFT_SIDE_OF_THE_GROUP_RIGHT_PANELS_ATTACH_TO_THE_RIGHT_SIDE_THIS_OPTION_CONTROLS_WHAT_THE_FIRST_PANEL_OF_EACH_CHAIN_ANCHORS_TO_THE_LOCATION_PANEL_EDGES_DEFAULT_OR_THE_OUTER_EDGES_OF_THE_WHOLE_HOLDER_FRAME = "Side panels always grow along their edge: left panels attach to the LEFT side of the group, right panels attach to the RIGHT side. This option controls what the FIRST panel of each chain anchors to: the location panel edges (default) or the outer edges of the whole holder frame.",
     LOCATION_PANEL_EDGES = "Location panel edges",
     HOLDER_OUTER_EDGES = "Holder outer edges",
+    ANCHOR_POINT = "Anchor point",
+    ANCHOR_POINT_DESC = "The point of the panel group used to save its position on screen: the panel stays in place around this point when its size changes.",
     LOCATION_PANEL = "Location Panel",
     MINIMUM_WIDTH = "Minimum width",
     SETS_THE_MINIMUM_WIDTH_OF_THE_LOCATION_PANEL = "Sets the minimum width of the location panel.",

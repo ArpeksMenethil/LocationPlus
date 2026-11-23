@@ -115,6 +115,28 @@ LPS.Options.BuildTree.tabs.layout = function()
                         end,
                     },
                     font = slotFontSelect("location", 3),
+                    anchorPoint = {
+                        order = 4,
+                        type = "select",
+                        name = L.ANCHOR_POINT,
+                        desc = L.ANCHOR_POINT_DESC,
+                        values = {
+                            TOPLEFT = "TOPLEFT",
+                            TOP = "TOP",
+                            TOPRIGHT = "TOPRIGHT",
+                            LEFT = "LEFT",
+                            CENTER = "CENTER",
+                            RIGHT = "RIGHT",
+                            BOTTOMLEFT = "BOTTOMLEFT",
+                            BOTTOM = "BOTTOM",
+                            BOTTOMRIGHT = "BOTTOMRIGHT",
+                        },
+                        get = function() return LPS:GetHolderAnchor() end,
+                        set = function(_, v)
+                            LPS:GetOptionDB().layout.anchorPoint = v
+                            LPS:ApplyOptionsRefresh()
+                        end,
+                    },
                 },
             },
             panels = {

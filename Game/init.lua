@@ -269,6 +269,7 @@ LPS.defaults = {
         locPaddingY = 9,
         spacingAuto = true,
         spacingManual = 20,
+        anchorPoint = "TOP",
         customColor = 3,
         userColor = { r = 1, g = 1, b = 1 },
         slotCount = 3,

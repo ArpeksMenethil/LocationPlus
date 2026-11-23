@@ -446,7 +446,12 @@ function LPS:BuildDebugReport()
         if type(LPS.frame) == "table" then
             local names = {}
             for key2, f in pairs(LPS.frame) do
-                names[#names + 1] = tostring(key2) .. "=" .. frameShown(f)
+                local shown = frameShown(f)
+                if key2 == "_posGeometry" and type(f) == "table" then
+                    shown = "{point=" .. tostring(f.point) .. " relPoint=" .. tostring(f.relPoint)
+                        .. " x=" .. tostring(f.x) .. " y=" .. tostring(f.y) .. "}"
+                end
+                names[#names + 1] = tostring(key2) .. "=" .. shown
             end
             table.sort(names)
             p("shown: " .. table.concat(names, ", "))

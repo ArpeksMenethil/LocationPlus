@@ -25,12 +25,84 @@ end
 
 LPS._holderAttached = false
 
+local ANCHOR_FX = {
+    TOPLEFT = 0, TOP = 0.5, TOPRIGHT = 1,
+    LEFT = 0, CENTER = 0.5, RIGHT = 1,
+    BOTTOMLEFT = 0, BOTTOM = 0.5, BOTTOMRIGHT = 1,
+}
+local ANCHOR_FY = {
+    TOPLEFT = 0, TOP = 0, TOPRIGHT = 0,
+    LEFT = 0.5, CENTER = 0.5, RIGHT = 0.5,
+    BOTTOMLEFT = 1, BOTTOM = 1, BOTTOMRIGHT = 1,
+}
+
+--- Точка привязки holder к UIParent (настройка db.layout.anchorPoint).
+--- @return string
+function LPS:GetHolderAnchor()
+    local db = self:GetDB()
+    local p = db and db.layout and db.layout.anchorPoint
+    if type(p) == "string" and ANCHOR_FX[p] ~= nil then
+        return p
+    end
+    return "TOP"
+end
+
+--- Размер holder для пересчёта позиции: последний, выставленный UpdateFrameSize
+--- (создательный 400x25 на момент логина не используется), иначе оценка
+--- (location + отступы UpdateFrameSize: 18 = 4*2 + 10, 6).
+--- @return number, number
+function LPS:GetHolderSizeEstimate(db)
+    local w, h = self._lastPosW, self._lastPosH
+    local loc = self.frame and self.frame.location
+    if not w or w <= 1 then
+        w = ((loc and loc.IsShown and loc:IsShown() and loc:GetWidth() > 1 and loc:GetWidth())
+            or (db and db.layout and tonumber(db.layout.locMinWidth)) or 200) + 18
+    end
+    if not h or h <= 1 then
+        h = ((loc and loc.IsShown and loc:IsShown() and loc:GetHeight() > 1 and loc:GetHeight()) or 25) + 6
+    end
+    return w, h
+end
+
+--- Сдвиг сохранённой позиции с точки fromPoint на точку toPoint
+--- (положение панели на экране не меняется).
+--- @return boolean
+function LPS:ConvertHolderPos(pos, fromPoint, toPoint, w, h)
+    local fx1, fy1 = ANCHOR_FX[fromPoint], ANCHOR_FY[fromPoint]
+    local fx2, fy2 = ANCHOR_FX[toPoint], ANCHOR_FY[toPoint]
+    if not (fx1 and fx2 and fy1 and fy2) then return false end
+    pos.x = pos.x - fx1 * w + fx2 * w
+    pos.y = pos.y - fy1 * h + fy2 * h
+    pos.point = toPoint
+    pos.relPoint = "TOPLEFT"
+    return true
+end
+
+--- Нормализует сохранённую позицию holder под настроенную точку привязки:
+--- legacy TOPLEFT (до 2.2.1) мигрируется один раз (флаг _posMigrated),
+--- точка, не совпадающая с настройкой (смена/импорт профиля), пересчитывается.
+function LPS:NormalizeHolderPos(db, pos)
+    local want = LPS:GetHolderAnchor()
+    if type(pos.point) ~= "string" or type(pos.x) ~= "number" or type(pos.y) ~= "number" then
+        return
+    end
+    local legacy = (not pos._posMigrated) and (pos.point == "TOPLEFT")
+    if legacy or pos.point ~= want then
+        local w, h = LPS:GetHolderSizeEstimate(db)
+        LPS:ConvertHolderPos(pos, legacy and "TOPLEFT" or pos.point, want, w, h)
+        pos._posMigrated = true
+    end
+end
+
 function LPS:ApplyHolderPosition()
     local holder = self.frame and self.frame.holder
     if not holder then return end
     local db = self:GetDB()
     db.position = db.position or {}
     LPS:MigratePos(db.position)
+
+    local pos = db.position
+    LPS:NormalizeHolderPos(db, pos)
 
     if not LPS._holderAttached then
         local geometry = {}
@@ -81,13 +153,13 @@ function LPS:RepairHolderLayoutCache()
         if type(g) == "table" and type(g.db) == "table" and type(g.db["LPS_Holder"]) == "table" then
             local e = g.db["LPS_Holder"]
             if type(e.point) == "string" and type(e.x) == "number" and type(e.y) == "number" then
-                e.point = "TOPLEFT"
+                e.point = p.point
                 if type(e.relativeTo) == "table" then
                     e.relativeTo = UIParent
                 else
                     e.relativeTo = "UIParent"
                 end
-                e.relPoint = "TOPLEFT"
+                e.relPoint = p.relPoint
                 e.x = p.x
                 e.y = p.y
                 e.w = holder:GetWidth()

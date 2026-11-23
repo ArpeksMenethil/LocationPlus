@@ -249,22 +249,24 @@ function LPS:SetMoveMode(enabled)
                 end
             end
 
+            local cx = self:GetCenter()
             local db = LPS:GetDB()
             db.position = db.position or {}
             local p = db.position
-            p.point = "TOPLEFT"
+            p.point = LPS:GetHolderAnchor()
             p.relPoint = "TOPLEFT"
-            p.x = left + offsetX
+            p.x = cx + offsetX
             p.y = (top - screenH) + offsetY
+            p._posMigrated = true
 
             self:ClearAllPoints()
-            self:SetPoint("TOPLEFT", UIParent, "TOPLEFT", p.x, p.y)
+            self:SetPoint(p.point, UIParent, p.relPoint, p.x, p.y)
             self:SetUserPlaced(true)
 
             local g = LPS.frame and LPS.frame._posGeometry
             if g then
                 for k in pairs(g) do g[k] = nil end
-                g.point, g.relPoint, g.x, g.y = "TOPLEFT", "TOPLEFT", p.x, p.y
+                g.point, g.relPoint, g.x, g.y = p.point, p.relPoint, p.x, p.y
             end
         end
 
