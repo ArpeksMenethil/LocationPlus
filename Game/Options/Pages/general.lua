@@ -60,6 +60,18 @@ LPS.Options.BuildTree.tabs.general = function()
                                     end
                                 end,
                             },
+                            checkForUpdates = {
+                                type = "toggle",
+                                name = L.CHECK_FOR_UPDATES,
+                                desc = L.CHECK_FOR_UPDATES_DESC,
+                                order = 5,
+
+                                get = function()
+                                    local g = LPS:GetOptionDB().general
+                                    return g and g.checkForUpdates ~= false
+                                end,
+                                set = function(_, v) LPS:GetOptionDB().general.checkForUpdates = v end,
+                            },
                         },
                     },
                     right = {

@@ -267,16 +267,10 @@ LPS:RegisterDatatext({
     nameKey = "GOLD",
     events = { "PLAYER_ENTERING_WORLD", "PLAYER_MONEY" },
     update = function(f)
-        local oldData = f.text and f.text:GetText()
         LPS:OnPlayerMoney()
         local data = LPS:GetGoldSessionData()
         if f.text then
             f.text:SetText(data.currentText)
-        end
-        if oldData and oldData ~= data.currentText then
-            if LPS.ScheduleFrameSizeUpdate then
-                LPS:ScheduleFrameSizeUpdate()
-            end
         end
     end,
     onClick = function(self, button)

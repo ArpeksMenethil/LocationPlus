@@ -1,7 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local L = LPS.L
-local F = LPS.F
 
 LPS.datatexts = {}
 
@@ -85,7 +84,7 @@ function LPS:CreateDatatextFrame(key)
     local def = LPS.datatexts[key]
     if not def then return nil end
     local db = LPS:GetDB()
-    if not db or not LPS.frame.holder or not LPS.frame.location then return nil end
+    if not db or not LPS.frame.location then return nil end
     local pCfg = db.panels and db.panels[key]
     if pCfg and pCfg.enable == false then return nil end
 
@@ -95,8 +94,8 @@ function LPS:CreateDatatextFrame(key)
     local params = {
         name = "LPS_" .. key:gsub("^%l", string.upper),
         frameType = "Button",
-        parent = LPS.frame.holder or LPS.frame.location,
-        anchor = { "CENTER", LPS.frame.holder or UIParent, "CENTER", 0, 0 },
+        parent = LPS.frame.location,
+        anchor = { "CENTER", LPS.frame.location, "CENTER", 0, 0 },
         hidden = true,
         padding = { ((db.layout and db.layout.dtPaddingX) or 20), ((db.layout and db.layout.dtPaddingY) or 7) },
         fontSize = db.settings.fontSize or 12,
@@ -177,7 +176,7 @@ function LPS:CreateDatatextFrame(key)
     return f
 end
 
-LPS.datatextsEvents = F.Events:New("LPS.Datatexts")
+LPS.datatextsEvents = LPS.Events:New("LPS.Datatexts")
 LPS.datatextsEvents:RegisterOnce("PLAYER_ENTERING_WORLD", function()
     if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
     if LPS.ApplyLayout then LPS:ApplyLayout() end
@@ -227,7 +226,6 @@ function LPS:GetOrCreatePanelFrame(key)
     creating[key] = nil
     if f then
         frames[key] = f
-        LPS:ScheduleFrameSizeUpdate()
     end
     return f
 end

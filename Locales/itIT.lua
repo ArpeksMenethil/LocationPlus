@@ -7,6 +7,8 @@ LPS._LOADED_LOCALES["itIT"] = true
 LPS:RegisterLocale("itIT", {
 GENERAL = "Generale",
 LOGIN_MESSAGE = "Messaggio di accesso",
+CHECK_FOR_UPDATES = "Controlla gli aggiornamenti",
+CHECK_FOR_UPDATES_DESC = "Avvisa in chat quando è disponibile una nuova versione.",
 SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN = "Mostra un messaggio in chat all'accesso.",
 _24H_TIME_FORMAT = "Formato ora 24h",
 USE_24_HOUR_TIME_FORMAT = "Usa il formato orario 24 ore.",

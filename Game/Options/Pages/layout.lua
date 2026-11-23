@@ -53,21 +53,6 @@ LPS.Options.BuildTree.tabs.layout = function()
         name = L.LAYOUT,
         order = 4,
         args = {
-            chainAnchor = {
-                order = 3,
-                type = "select",
-                name = L.FRAME_ANCHOR_MODE,
-                desc = L.SIDE_PANELS_ALWAYS_GROW_ALONG_THEIR_EDGE_LEFT_PANELS_ATTACH_TO_THE_LEFT_SIDE_OF_THE_GROUP_RIGHT_PANELS_ATTACH_TO_THE_RIGHT_SIDE_THIS_OPTION_CONTROLS_WHAT_THE_FIRST_PANEL_OF_EACH_CHAIN_ANCHORS_TO_THE_LOCATION_PANEL_EDGES_DEFAULT_OR_THE_OUTER_EDGES_OF_THE_WHOLE_HOLDER_FRAME,
-                values = {
-                    chain = L.LOCATION_PANEL_EDGES,
-                    location = L.HOLDER_OUTER_EDGES,
-                },
-                get = function() return LPS:GetOptionDB().layout.chainAnchor or "chain" end,
-                set = function(_, v)
-                    LPS:GetOptionDB().layout.chainAnchor = v
-                    LPS:ApplyOptionsRefresh()
-                end,
-            },
             locpanel = {
                 order = 4,
                 name = L.LOCATION_PANEL,
@@ -131,7 +116,7 @@ LPS.Options.BuildTree.tabs.layout = function()
                             BOTTOM = "BOTTOM",
                             BOTTOMRIGHT = "BOTTOMRIGHT",
                         },
-                        get = function() return LPS:GetHolderAnchor() end,
+                        get = function() return LPS:GetMainAnchor() end,
                         set = function(_, v)
                             LPS:GetOptionDB().layout.anchorPoint = v
                             LPS:ApplyOptionsRefresh()

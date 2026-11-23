@@ -1,16 +1,6 @@
 
 --- @diagnostic disable: undefined-global, create-global, unused-local
 
---- @class Foundry
---- @field Menu any
---- @field List any
---- @field Events any
---- @field Commands any
---- @field Lifecycle any
---- @field Settings any
---- @field Window any
-local _foundryClass = {}
-
 --- @alias LPSColorKey "text" | "bg" | "border" | "tooltip" | "tooltipSetting"
 
 --- @alias LPSPanelKey "location" | "bags" | "combatIndicator" | "coords" | "difficulty" | "durability" | "experience" | "friends" | "gold" | "guild" | "itemLevel" | "mail" | "microBar" | "system" | "time" | "volume"
@@ -34,6 +24,7 @@ local _foundryClass = {}
 --- @field isTitle boolean? Заголовок (разделитель)
 --- @field disabled boolean? Неактивный пункт
 --- @field notCheckable boolean? Не отмечаемый пункт
+--- @field icon string? Путь к иконке пункта
 --- @field func fun()? Вызов при клике
 
 --- @class LPSDT
@@ -50,7 +41,6 @@ local _foundryClass = {}
 --- @field showMenu fun(anchorFrame: Frame, list: {LPSMenuEntry}): nil Контекстное меню
 
 --- @class LPS
---- @field F Foundry
 --- @field Tourist any
 --- @field L any
 --- @field frame any
@@ -72,10 +62,7 @@ local _foundryClass = {}
 --- @field datatextsEventBridge any
 --- @field _datatextsSortedKeysCache table?
 --- @field _datatextsCreateQueueRegistered boolean
---- @field _holderAttached boolean
---- @field _lastPosW number?
---- @field _lastPosH number?
---- @field _sizeUpdatePending boolean
+--- @field _locationAttached boolean
 --- @field coreEvents any
 --- @field _friendsEvents any
 --- @field MapInfo any
@@ -88,13 +75,8 @@ local _foundryClass = {}
 --- @field _addonMemCache any
 --- @field settingsCategory any
 --- @field levelTableConst any
---- @field cmd any
---- @field Lifecycle any
---- @field Menu any
---- @field Dropdown any
---- @field Core any
---- @field Friends any
---- @field Datatexts any
+--- @field Events any
+--- @field Commands any
 --- @field GAME_LOCALE any
 --- @field ACTIVE_LOCALE any
 --- @field _LOADED_LOCALES any
@@ -118,8 +100,8 @@ local _foundryClass = {}
 --- @field ApplyCoordsVisibility fun(self: LPS): nil
 --- @field ApplyDefaults fun(self: LPS, db: table, defaults: table): nil
 --- @field ApplyDTVisibility fun(self: LPS): nil
---- @field ApplyHolderPosition fun(self: LPS): nil
 --- @field ApplyLayout fun(self: LPS): nil
+--- @field ApplyLocationPosition fun(self: LPS): nil
 --- @field ApplyStyle fun(self: LPS): nil
 --- @field ApplyTimeFormat fun(self: LPS): nil
 --- @field ApplyTimeVisibility fun(self: LPS): nil
@@ -204,7 +186,6 @@ local _foundryClass = {}
 --- @field ResetPanelsToDefaults fun(self: LPS): nil
 --- @field Round fun(self: LPS, num: number, decimals: number?): number
 --- @field ScheduleCollectImages fun(self: LPS): nil
---- @field ScheduleFrameSizeUpdate fun(self: LPS): nil
 --- @field ScheduleRefresh fun(self: LPS): nil
 --- @field SetMoveMode fun(self: LPS, enabled: boolean): nil
 --- @field PositionMinimapButton fun(self: LPS, btn: Frame): nil
@@ -212,7 +193,6 @@ local _foundryClass = {}
 --- @field ToggleMoveMode fun(self: LPS): nil
 --- @field ToggleNativeOptions fun(self: LPS): nil
 --- @field ToggleOptions fun(self: LPS): nil
---- @field UpdateFrameSize fun(self: LPS): nil
 --- @field UpdateGoldCharacterData fun(self: LPS): nil
 --- @field UpdateMinimapButton fun(self: LPS): nil
 --- @field UnregisterAddonCompartment fun(self: LPS, data: table): nil
@@ -282,7 +262,6 @@ local _foundryClass = {}
 --- @field GetClassColor fun(self: LPS, classToken: any): any
 --- @field GetDefaultAccentColor fun(self: LPS): any
 --- @field GetDisplayOtherValues fun(self: LPS): any
---- @field GetFMenuController fun(self: LPS): any
 --- @field GetFontFlagValues fun(self: LPS): any
 --- @field GetLibDeflate fun(self: LPS): any
 --- @field GetMeasureFontString fun(self: LPS): any
@@ -371,7 +350,7 @@ local _foundryClass = {}
 --- @field RegisterPanelPage fun(self: LPS, key: any, def: any): any
 --- @field RegisteredLocales any
 --- @field RelayoutMultiline fun(self: LPS, control: any): any
---- @field RepairHolderLayoutCache fun(self: LPS): any
+--- @field RepairLocationLayoutCache fun(self: LPS): any
 --- @field ResolveLayoutFont fun(self: LPS): any
 --- @field ResolveOptionItems fun(self: LPS, entry: any): any
 --- @field RetryThemeFonts fun(self: LPS): any
@@ -418,7 +397,6 @@ local _foundryClass = {}
 --- @field TooltipGuard fun(self: LPS, key: any): any
 --- @field UnescStr fun(self: LPS, s: any): any
 --- @field UseGameFont fun(self: LPS): any
---- @field UseHolderAnchor fun(self: LPS): any
 --- @field WidgetBaseColor fun(self: LPS, key: any): any
 --- @field WidgetRadius fun(self: LPS): any
 --- @field WriteEntryValue fun(self: LPS, entry: any, value: any): any
@@ -432,7 +410,6 @@ local _ldbClass = {}
 
 --- @class ArpeksLPS
 --- @field LPS LPS
---- @field F Foundry
 --- @field Tourist any
 --- @type ArpeksLPS
 ArpeksLPS = ArpeksLPS
@@ -443,5 +420,3 @@ LPS_DB = LPS_DB
 LibStub = LibStub
 --- @type any
 LibDeflate = LibDeflate
---- @type any
-Foundry_1_0 = Foundry_1_0

@@ -7,6 +7,8 @@ LPS._LOADED_LOCALES["esMX"] = true
 LPS:RegisterLocale("esMX", {
 GENERAL = "General",
 LOGIN_MESSAGE = "Mensaje de inicio de sesión",
+CHECK_FOR_UPDATES = "Comprobar actualizaciones",
+CHECK_FOR_UPDATES_DESC = "Avisar en el chat cuando hay una nueva versión.",
 SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN = "Mostrar un mensaje en el chat al iniciar sesión.",
 _24H_TIME_FORMAT = "Formato de hora 24h",
 USE_24_HOUR_TIME_FORMAT = "Usar el formato de hora de 24 horas.",

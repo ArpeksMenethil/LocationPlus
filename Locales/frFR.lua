@@ -7,6 +7,8 @@ LPS._LOADED_LOCALES["frFR"] = true
 LPS:RegisterLocale("frFR", {
 GENERAL = "Général",
 LOGIN_MESSAGE = "Message de connexion",
+CHECK_FOR_UPDATES = "Vérifier les mises à jour",
+CHECK_FOR_UPDATES_DESC = "Notifier dans le chat lorsqu'une nouvelle version est disponible.",
 SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN = "Afficher un message dans la conversation à la connexion.",
 _24H_TIME_FORMAT = "Format 24h",
 USE_24_HOUR_TIME_FORMAT = "Utiliser le format horaire 24 heures.",

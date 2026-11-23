@@ -3,6 +3,7 @@
     <Include file='.\UI\Theme\load.xml'/>
     <Include file='.\UI\Widgets\load.xml'/>
     <Include file='.\UI\Fonts\load.xml'/>
+    <Include file='.\Events.lua'/>
     <Include file='.\Config\load.xml'/>
     <Include file='.\UI\Views\load.xml'/>
     <Include file='.\core.lua'/>

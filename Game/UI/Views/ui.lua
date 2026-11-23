@@ -157,8 +157,8 @@ if Minimap and not Minimap._lpsPosHooked then
     end
 end
 
---- Точка перемещения/привязки: центр фрейма локации — сеточная линия
---- «падает» в центр панели локации, а не в центр всей строки панелей.
+--- Центр панели локации: опорная точка направляющей сетки (средняя линия
+--- привязана к этой точке) и округления позиции при перетаскивании.
 function LPS:GetSnapPoint()
     local loc = self.frame and self.frame.location
     if loc and loc.IsShown and loc:IsShown() then
@@ -170,9 +170,11 @@ function LPS:GetSnapPoint()
     return nil
 end
 
+--- Режим перемещения группы: панель локации — основной перетаскиваемый
+--- фрейм, боковые панели, прицепленные к ней, двигаются вместе с ней.
 function LPS:SetMoveMode(enabled)
-    local f = LPS.frame.holder
-    f:EnableMouse(enabled)
+    local f = LPS.frame and LPS.frame.location
+    if not f then return end
     if enabled then
         f:SetFrameStrata("DIALOG")
         f:SetFrameLevel(999)
@@ -199,138 +201,155 @@ function LPS:SetMoveMode(enabled)
         for _, line in ipairs(f.grid.hLines or {}) do
             line:Show()
         end
+
+        --- Во время перемещения клики и тултип панели выключены,
+        --- чтобы не перехватывали drag группы.
+        f._lpsOnEnter = f:GetScript("OnEnter")
+        f._lpsOnLeave = f:GetScript("OnLeave")
+        f:SetScript("OnEnter", nil)
+        f:SetScript("OnLeave", nil)
+        f:RegisterForClicks()
         f:RegisterForDrag("LeftButton")
 
-        local snapRange = 10
         f._lpsDragging = false
+        f._lpsDragCX = nil
+        f._lpsDragCY = nil
 
         f:SetScript("OnDragStart", function(self)
             self._lpsDragging = true
+            local cx, cy = LPS:GetSnapPoint()
+            if cx then
+                self._lpsDragCX, self._lpsDragCY = cx, cy
+            end
+            local l, t = self:GetLeft(), self:GetTop()
+            local pp, _, rp, px, py = self:GetPoint()
+            local dbp = LPS:GetDB() and LPS:GetDB().position
+            print(string.format(
+                "[LPS] drag start: фактическая (GetLeft/GetTop, от левого НИЖНЕГО угла): %.0f / %.0f (W %.0f, H %.0f, scale %.2f); " ..
+                "якорь GetPoint(): %s %s %.0f %.0f; сохранено (DB): %s %s %.0f %.0f",
+                l, t, self:GetWidth(), self:GetHeight(), self:GetEffectiveScale(),
+                tostring(pp), tostring(rp), px or 0, py or 0,
+                tostring(dbp and dbp.point), tostring(dbp and dbp.relPoint),
+                (dbp and dbp.x) or 0, (dbp and dbp.y) or 0))
             self:StartMoving()
         end)
 
-        local function saveHolderPosition(self)
-            if f._lpsDragging then
+        local function savePosition(self)
+            local wasDragging = f._lpsDragging
+            if wasDragging then
                 self:StopMovingOrSizing()
                 f._lpsDragging = false
             end
+            if not wasDragging then return end
 
+            --- Реальная позиция после драга. GetPoint здесь не годится:
+            --- он может вернуть СТАРЫЙ якорь (позицию до начала драга), и панель
+            --- «выскакивает» на прежнее место. GetLeft/GetTop всегда дают
+            --- текущее положение фрейма на экране (от левого НИЖНЕГО угла:
+            --- left — от левого края, top — от нижнего края, y вверх).
             local left = self:GetLeft()
             local top = self:GetTop()
-            if type(left) ~= "number" or type(top) ~= "number" then
+            if type(left) ~= "number" or type(top) ~= "number" or left ~= left or top ~= top then
+                f._lpsDragCX = nil
+                f._lpsDragCY = nil
                 return
             end
 
-            local refX, refY = LPS:GetSnapPoint()
-            if not refX then
-                refX = left + self:GetWidth()/2
-                refY = top + self:GetHeight()/2
-            end
             local screenW = UIParent:GetWidth()
             local screenH = UIParent:GetHeight()
-            local stepX = screenW / 10
-            local stepY = screenH / 10
+            local w = self:GetWidth()
+            local h = self:GetHeight()
 
-            local offsetX, offsetY = 0, 0
-            if stepX > 0 then
-                local i = math.floor((refX / stepX) + 0.5)
-                if i < 0 then i = 0 elseif i > 10 then i = 10 end
-                local targetX = stepX * i
-                if math.abs(refX - targetX) <= snapRange then
-                    offsetX = targetX - refX
-                end
+            --- Округляем центр панели по сетке (сетка привязана к центру
+            --- панели, поэтому округляем сдвиг от начала драга к шагу ячейки).
+            if f._lpsDragCX then
+                local step = f.grid and f.grid.step or 25
+                local cx = left + w / 2
+                local cy = top + h / 2
+                left = f._lpsDragCX + math.floor((cx - f._lpsDragCX) / step + 0.5) * step - w / 2
+                top = f._lpsDragCY + math.floor((cy - f._lpsDragCY) / step + 0.5) * step - h / 2
             end
-            if stepY > 0 then
-                local j = math.floor((refY / stepY) + 0.5)
-                if j < 0 then j = 0 elseif j > 10 then j = 10 end
-                local targetY = stepY * j
-                if math.abs(refY - targetY) <= snapRange then
-                    offsetY = targetY - refY
-                end
-            end
+            f._lpsDragCX = nil
+            f._lpsDragCY = nil
 
-            local cx = self:GetCenter()
+            --- Держим панель хотя бы частично на экране (отступ 20 пикселей),
+            --- чтобы группа не «исчезала» за краем при перетаскивании.
+            local margin = 20
+            if left < margin - w then left = margin - w end
+            if left > screenW - margin then left = screenW - margin end
+            if top < margin then top = margin end
+            if top > screenH - margin + h then top = screenH - margin + h end
+
             local db = LPS:GetDB()
             db.position = db.position or {}
             local p = db.position
-            p.point = LPS:GetHolderAnchor()
-            p.relPoint = "TOPLEFT"
-            p.x = cx + offsetX
-            p.y = (top - screenH) + offsetY
+            --- Каноническая кодировка (relPoint TOP, как в DEFAULT_POSITION):
+            --- x — смещение точки привязки от ЦЕНТРА экрана по горизонтали;
+            --- y — смещение от верхнего края (как yOfs в SetPoint: положительный
+            --- вверх, т.е. точка ниже верхнего края даёт отрицательное значение).
+            local anchor = LPS:GetMainAnchor()
+            local fx, fy = LPS:GetAnchorFractions(anchor)
+            p.point = anchor
+            p.relPoint = "TOP"
+            p.x = left + fx * w - screenW / 2
+            p.y = top - screenH - fy * h
             p._posMigrated = true
+            p._posVer = 3
 
             self:ClearAllPoints()
             self:SetPoint(p.point, UIParent, p.relPoint, p.x, p.y)
-            self:SetUserPlaced(true)
+            if self.SetUserPlaced then
+                self:SetUserPlaced(false)
+            end
 
             local g = LPS.frame and LPS.frame._posGeometry
             if g then
                 for k in pairs(g) do g[k] = nil end
                 g.point, g.relPoint, g.x, g.y = p.point, p.relPoint, p.x, p.y
             end
+
+            if wasDragging then
+                local l2, t2 = self:GetLeft(), self:GetTop()
+                local pp, _, rp, px, py = self:GetPoint()
+                print(string.format(
+                    "[LPS] drag end: фактическая (GetLeft/GetTop, от левого НИЖНЕГО угла): %.0f / %.0f; " ..
+                    "якорь GetPoint(): %s %s %.0f %.0f; сохранено (DB): %s %s %.0f %.0f",
+                    l2, t2,
+                    tostring(pp), tostring(rp), px or 0, py or 0,
+                    p.point, p.relPoint, p.x, p.y))
+            end
         end
 
-        f:SetScript("OnDragStop", saveHolderPosition)
-        f:SetScript("OnMouseUp", saveHolderPosition)
+        f:SetScript("OnDragStop", savePosition)
+        f:SetScript("OnMouseUp", savePosition)
 
-        f:SetScript("OnUpdate", function(self, dt)
+        --- Сетка всегда привязана к центру панели локации: средняя
+        --- (красная) линия проходит через центр панели.
+        f:SetScript("OnUpdate", function(self)
             local grid = f.grid
             if not grid then return end
-            local refX, refY = LPS:GetSnapPoint()
-            if not refX then
-                refX = self:GetLeft() + self:GetWidth()/2
-                refY = self:GetTop() + self:GetHeight()/2
+            local cx, cy = LPS:GetSnapPoint()
+            if not cx then
+                cx = self:GetLeft() + self:GetWidth() / 2
+                cy = self:GetTop() + self:GetHeight() / 2
             end
             local screenW = UIParent:GetWidth()
             local screenH = UIParent:GetHeight()
-            local stepX = screenW / 10
-            local stepY = screenH / 10
-
-            local nearV, nearH
-            if stepX > 0 then
-                nearV = math.floor((refX / stepX) + 0.5)
-                if nearV < 1 then nearV = 1 elseif nearV > 9 then nearV = 9 end
+            local step = grid.step
+            for i, line in ipairs(grid.vLines) do
+                line:SetPoint("CENTER", UIParent, "CENTER", cx - screenW / 2 + (i - grid.midV) * step, 0)
+                line:Show()
             end
-            if stepY > 0 then
-                nearH = math.floor((refY / stepY) + 0.5)
-                if nearH < 1 then nearH = 1 elseif nearH > 9 then nearH = 9 end
-            end
-
-            local activeV
-            if stepX > 0 and nearV and math.abs(refX - (stepX * nearV)) <= snapRange then
-                activeV = nearV
-            end
-            local activeH
-            if stepY > 0 and nearH and math.abs(refY - (stepY * nearH)) <= snapRange then
-                activeH = nearH
-            end
-
-            if grid._lastActiveV ~= activeV then
-                if grid._lastActiveV then
-                    local old = grid.vLines and grid.vLines[grid._lastActiveV]
-                    if old then old:SetBackdropColor(1, 1, 1, 0.35) end
-                end
-                if activeV then
-                    local line = grid.vLines and grid.vLines[activeV]
-                    if line then line:SetBackdropColor(1, 0, 0, 0.8) end
-                end
-                grid._lastActiveV = activeV
-            end
-            if grid._lastActiveH ~= activeH then
-                if grid._lastActiveH then
-                    local old = grid.hLines and grid.hLines[grid._lastActiveH]
-                    if old then old:SetBackdropColor(1, 1, 1, 0.35) end
-                end
-                if activeH then
-                    local line = grid.hLines and grid.hLines[activeH]
-                    if line then line:SetBackdropColor(1, 0, 0, 0.8) end
-                end
-                grid._lastActiveH = activeH
+            for i, line in ipairs(grid.hLines) do
+                line:SetPoint("CENTER", UIParent, "CENTER", 0, screenH / 2 - cy - (i - grid.midH) * step)
+                line:Show()
             end
         end)
     else
         f:RegisterForDrag()
         f._lpsDragging = false
+        f._lpsDragCX = nil
+        f._lpsDragCY = nil
         f:SetScript("OnDragStart", nil)
         f:SetScript("OnDragStop", nil)
         f:SetScript("OnUpdate", nil)
@@ -345,7 +364,15 @@ function LPS:SetMoveMode(enabled)
         f:SetFrameStrata((layout and layout.frameStrata) or "HIGH")
         f:SetFrameLevel(tonumber(layout and layout.frameLevel) or 1)
         f:SetScript("OnMouseUp", nil)
-        f:EnableMouse(false)
+        f:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+        if f._lpsOnEnter then
+            f:SetScript("OnEnter", f._lpsOnEnter)
+            f._lpsOnEnter = nil
+        end
+        if f._lpsOnLeave then
+            f:SetScript("OnLeave", f._lpsOnLeave)
+            f._lpsOnLeave = nil
+        end
 
         for _, child in ipairs({f:GetChildren()}) do
             child:EnableMouse(true)

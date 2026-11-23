@@ -7,6 +7,8 @@ LPS._LOADED_LOCALES["deDE"] = true
 LPS:RegisterLocale("deDE", {
 GENERAL = "Allgemein",
 LOGIN_MESSAGE = "Anmelde-Nachricht",
+CHECK_FOR_UPDATES = "Updates prüfen",
+CHECK_FOR_UPDATES_DESC = "Im Chat melden, wenn eine neue Version verfügbar ist.",
 SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN = "Eine Nachricht im Chat bei der Anmeldung anzeigen.",
 _24H_TIME_FORMAT = "24h-Zeitanzeige",
 USE_24_HOUR_TIME_FORMAT = "24-Stunden-Zeitanzeige verwenden.",

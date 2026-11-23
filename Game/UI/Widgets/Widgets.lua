@@ -378,7 +378,6 @@ function LPS:CreateSlider(parent, opts)
     s:SetValue(opts.value or opts.min or 0, false)
     return s
 end
-local dropdownListCounter = 0
 function LPS:CreateDropdown(parent, labelText, width, opts)
     opts = opts or {}
     local label = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -458,16 +457,58 @@ function LPS:CreateDropdown(parent, labelText, width, opts)
         dropdown._open = false
         LPS:SetBorderColor(dropdown, "border")
     end
+    local ITEM_HEIGHT = 22
+    local MAX_MENU_HEIGHT = 260
+
+    --- Строка списка: обычный пункт (текст + подсветка строки при наведении),
+    --- без кнопки — как в классическом выпадающем списке.
+    local function GetRow(i)
+        local row = dropdown.rows[i]
+        if not row then
+            row = CreateFrame("Button", nil, dropdown.content)
+            row:SetHeight(ITEM_HEIGHT)
+            row:RegisterForClicks("LeftButtonUp")
+            --- Базовая прозрачная текстура обязательна: фрейм без видимой
+            --- текстуры не получает событий мыши (ни hover, ни клики).
+            row.base = row:CreateTexture(nil, "BACKGROUND")
+            row.base:SetAllPoints(row)
+            row.base:SetColorTexture(1, 1, 1, 0.01)
+            row.hover = row:CreateTexture(nil, "BACKGROUND", nil, 1)
+            row.hover:SetAllPoints(row)
+            row.hover:SetColorTexture(1, 1, 1, 1)
+            LPS:PaintWidgetTexture(row.hover, "hover", 0.8)
+            row.hover:Hide()
+            row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+            row.text:SetPoint("LEFT", row, "LEFT", 8, 0)
+            row.text:SetPoint("RIGHT", row, "RIGHT", -8, 0)
+            row.text:SetJustifyH("LEFT")
+            row:SetScript("OnEnter", function(self)
+                self.hover:Show()
+                LPS:ApplyFontColor(self.text, self._isSelected and "accentGold" or "textPrimary")
+            end)
+            row:SetScript("OnLeave", function(self)
+                self.hover:Hide()
+                LPS:ApplyFontColor(self.text, self._isSelected and "accentGold" or "textMuted")
+            end)
+            dropdown.rows[i] = row
+        end
+        return row
+    end
+
     local function ShowMenu()
         local items = dropdown._items
-        local itemHeight = 22
         local menuWidth = dropdown:GetWidth()
-        local maxHeight = 260
-        local totalHeight = #items * (itemHeight + 2)
+        local totalHeight = #items * ITEM_HEIGHT
         if not dropdown.overlay then
             dropdown.overlay = CreateFrame("Button", nil, UIParent)
             dropdown.overlay:SetFrameStrata("DIALOG")
+            --- Выше окна настроек (DIALOG, уровень 150), чтобы клик по фону
+            --- панели тоже закрывал список.
+            dropdown.overlay:SetFrameLevel(151)
             dropdown.overlay:SetAllPoints(UIParent)
+            local ovTex = dropdown.overlay:CreateTexture(nil, "BACKGROUND")
+            ovTex:SetAllPoints(dropdown.overlay)
+            ovTex:SetColorTexture(0, 0, 0, 0.01)
             dropdown.overlay:SetScript("OnClick", CloseMenu)
         end
         dropdown.overlay:Show()
@@ -477,77 +518,56 @@ function LPS:CreateDropdown(parent, labelText, width, opts)
             dropdown.menu:SetClampedToScreen(true)
             dropdown.menu:EnableMouse(true)
             dropdown.menu.bg = LPS:ThemeBox(dropdown.menu, "window", "border", LPS:WidgetRadius())
+            --- Тот же паттерн, что в LPS:CreateScrollFrame: SetScrollChild +
+            --- ручной обработчик колёсика (у клиента нет SetScrollContent /
+            --- SetScrollDelay). Контент — дочерний фрейм самой полосы.
+            dropdown.scroll = CreateFrame("ScrollFrame", nil, dropdown.menu)
+            dropdown.content = CreateFrame("Frame", nil, dropdown.scroll)
+            dropdown.content:EnableMouse(true)
+            dropdown.content:SetPoint("TOPLEFT")
+            dropdown.scroll:EnableMouse(true)
+            dropdown.scroll:EnableMouseWheel(true)
+            dropdown.scroll:SetScrollChild(dropdown.content)
+            dropdown.scroll:SetScript("OnMouseWheel", function(self, delta)
+                local maxScroll = math.max(0, (dropdown.content:GetHeight() or 0) - self:GetHeight())
+                local new = math.max(0, math.min(maxScroll, self:GetVerticalScroll() - delta * 40))
+                self:SetVerticalScroll(new)
+            end)
+            dropdown.scroll:SetPoint("TOPLEFT", dropdown.menu, "TOPLEFT", 2, -2)
+            dropdown.scroll:SetPoint("BOTTOMRIGHT", dropdown.menu, "BOTTOMRIGHT", -2, 2)
+            dropdown.rows = {}
         end
-        if not dropdown.list then
-            dropdownListCounter = dropdownListCounter + 1
-            dropdown.list = LPS.F.List:New({
-                name = "LPS.Dropdown." .. dropdownListCounter,
-                parent = dropdown.menu,
-                elementType = "Frame",
-                extent = itemHeight,
-                spacing = 2,
-                managedScrollBarVisibility = true,
-                initializer = function(row, item)
-                    local btn = row._btn
-                    if not btn then
-                        btn = LPS:CreateFlatButton(row, 0, 0, "")
-                        btn:SetAllPoints()
-                        row._btn = btn
-                    end
-                    btn._isSelected = (item.value == dropdown._value)
-                    btn:SetText(item.text or item.value or "")
-                    if btn._isSelected then
-                        LPS:ApplyFontColor(btn.text, "accentGold")
-                    else
-                        LPS:ApplyFontColor(btn.text, "textMuted")
-                    end
-                    btn:SetScript("OnEnter", function(self)
-                        if self.bg then
-                            LPS:PaintWidgetTexture(self.bg, "buttonHover")
-                        end
-                        LPS:SetBorderColor(self, "accentGold", 0.95)
-                        if self._isSelected then
-                            LPS:ApplyFontColor(self.text, "accentGold")
-                        else
-                            LPS:ApplyFontColor(self.text, "textPrimary")
-                        end
-                    end)
-                    btn:SetScript("OnLeave", function(self)
-                        if self.bg then
-                            LPS:PaintWidgetTexture(self.bg, "button")
-                        end
-                        LPS:SetBorderColor(self, "border")
-                        if self._isSelected then
-                            LPS:ApplyFontColor(self.text, "accentGold")
-                        else
-                            LPS:ApplyFontColor(self.text, "textMuted")
-                        end
-                    end)
-                    btn:SetScript("OnClick", function()
-                        dropdown:SetValue(item.value, item.text)
-                        CloseMenu()
-                        if dropdown._onChange then
-                            dropdown._onChange(item.value, item.text)
-                        end
-                    end)
-                end,
-            })
-            if dropdown.list then
-                local handles = dropdown.list:GetNativeHandles()
-                handles.scrollBox:SetPoint("TOPLEFT", 1, 0)
-                handles.scrollBox:SetPoint("BOTTOMRIGHT", -10, 0)
-                handles.scrollBar:SetPoint("TOPLEFT", handles.scrollBox, "TOPRIGHT", 4, 0)
-                handles.scrollBar:SetPoint("BOTTOMLEFT", handles.scrollBox, "BOTTOMRIGHT", 4, 0)
-            end
-        end
-        local menuHeight = math.min(totalHeight + 2, maxHeight)
+        local menuHeight = math.min(totalHeight + 4, MAX_MENU_HEIGHT)
         dropdown.menu:SetScale(dropdown:GetEffectiveScale() / UIParent:GetEffectiveScale())
         dropdown.menu:SetSize(menuWidth, menuHeight)
         dropdown.menu:ClearAllPoints()
         dropdown.menu:SetPoint("TOPLEFT", dropdown, "BOTTOMLEFT", 0, -2)
         dropdown.menu:Show()
-        if dropdown.list then
-            dropdown.list:SetData(items)
+        dropdown.content:SetSize(menuWidth - 4, totalHeight)
+        --- Сбрасываем позицию скролла (диапазон выводится из размеров
+        --- контента и полосы автоматически).
+        dropdown.scroll:SetVerticalScroll(0)
+        for i = 1, #items do
+            local item = items[i]
+            local row = GetRow(i)
+            row:ClearAllPoints()
+            row:SetPoint("TOPLEFT", dropdown.content, "TOPLEFT", 0, -(i - 1) * ITEM_HEIGHT)
+            row:SetPoint("RIGHT", dropdown.content, "RIGHT", 0, 0)
+            row._isSelected = (item.value == dropdown._value)
+            row.text:SetText(item.text or item.value or "")
+            row.hover:Hide()
+            LPS:ApplyFontColor(row.text, row._isSelected and "accentGold" or "textMuted")
+            row:SetScript("OnClick", function()
+                dropdown:SetValue(item.value, item.text)
+                CloseMenu()
+                if dropdown._onChange then
+                    dropdown._onChange(item.value, item.text)
+                end
+            end)
+            row:Show()
+        end
+        for i = #items + 1, #dropdown.rows do
+            dropdown.rows[i]:Hide()
         end
         LPS:ThemeApplyFonts(dropdown.menu)
         dropdown._open = true

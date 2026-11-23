@@ -60,30 +60,41 @@ function LPS:BuildSettingsCategoryFrame()
     return panel
 end
 
+--- Регистрация категории аддона в настройках игры (нативный API:
+--- RegisterCanvasLayoutCategory + RegisterAddOnCategory; для клиентов с
+--- canvas-API — запасная сигнатура).
 function LPS:RegisterSettingsCategory()
     if LPS.settingsCategory then
         return LPS.settingsCategory
     end
-    local F = LPS.F
-    if not (F and F.Settings) then
-        return
-    end
     if not (_G.Settings
         and type(_G.Settings.RegisterCanvasLayoutCategory) == "function"
         and type(_G.Settings.RegisterAddOnCategory) == "function") then
-            return
-        end
-    local ok, controller = pcall(function()
-        return F.Settings:New({
-            title = LPS:GetSettingsAddonTitle(),
-            name = "LocationPlus",
-            frame = LPS:BuildSettingsCategoryFrame(),
-        })
-    end)
-    if not ok then
-        print("LocationPlus: settings category failed: " .. tostring(controller))
         return
     end
-    LPS.settingsCategory = controller
-    return controller
+    local title = LPS:GetSettingsAddonTitle()
+    local icon = LPS.icons and LPS.icons.PathLogo
+    local panel = LPS:BuildSettingsCategoryFrame()
+    panel:Hide()
+    local ok, category = pcall(_G.Settings.RegisterCanvasLayoutCategory, panel, title)
+    if not ok then
+        ok, category = pcall(_G.Settings.RegisterCanvasLayoutCategory, title, function(canvas)
+            canvas:SetFrameLevel(1)
+            if type(canvas.CreateTitle) == "function" then
+                canvas:CreateTitle(title)
+            end
+            panel:SetParent(canvas)
+            panel:ClearAllPoints()
+            panel:SetPoint("TOPLEFT", canvas, "TOPLEFT", 8, -26)
+            panel:SetPoint("BOTTOMRIGHT", canvas, "BOTTOMRIGHT", -8, 8)
+            return panel
+        end, 100, icon)
+    end
+    if not ok then
+        print("LocationPlus: settings category failed: " .. tostring(category))
+        return
+    end
+    pcall(_G.Settings.RegisterAddOnCategory, category)
+    LPS.settingsCategory = category
+    return category
 end

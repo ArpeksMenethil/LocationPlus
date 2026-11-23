@@ -7,6 +7,8 @@ LPS._LOADED_LOCALES["koKR"] = true
 LPS:RegisterLocale("koKR", {
 GENERAL = "일반",
 LOGIN_MESSAGE = "로그인 메시지",
+CHECK_FOR_UPDATES = "업데이트 확인",
+CHECK_FOR_UPDATES_DESC = "새 버전이 있으면 채팅으로 알려줍니다.",
 SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN = "로그인 시 채트에 메시지 표시.",
 _24H_TIME_FORMAT = "24시간 형식",
 USE_24_HOUR_TIME_FORMAT = "24시간 형식 사용.",

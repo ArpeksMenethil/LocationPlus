@@ -6,12 +6,6 @@ _G.ArpeksLPS = _G.ArpeksLPS or {}
 _G.ArpeksLPS.LPS = LPS or {}
 LPS_DB = LPS_DB or {}
 
-local F = _G.Foundry_1_0
-if not F then
-    error("LocationPlus requires the Foundry-1.0 library. Please install or enable it.", 0)
-end
-LPS.F = F
-
 LPS.wow = LPS.wow or {}
 LPS.wow.patch, LPS.wow.build, LPS.wow.date, LPS.wow.toc = GetBuildInfo()
 LPS.wow.project = WOW_PROJECT_ID
@@ -154,6 +148,7 @@ LPS.defaults = {
 
     general = {
         loginMessage = true,
+        checkForUpdates = true,
         coordsTimeUpdate = 0.5,
         seconds = true,
         is24H = true,

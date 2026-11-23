@@ -7,6 +7,8 @@ LPS._LOADED_LOCALES["zhCN"] = true
 LPS:RegisterLocale("zhCN", {
 GENERAL = "常规",
 LOGIN_MESSAGE = "登录信息",
+CHECK_FOR_UPDATES = "检查更新",
+CHECK_FOR_UPDATES_DESC = "有新版本时在聊天中提示。",
 SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN = "登录时在聊天框中显示信息。",
 _24H_TIME_FORMAT = "24小时制",
 USE_24_HOUR_TIME_FORMAT = "使用24小时制时间格式。",

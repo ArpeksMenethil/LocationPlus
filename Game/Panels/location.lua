@@ -3,7 +3,7 @@ if not LPS then return end
 
 function LPS:CreateLocationFrame()
     local db = LPS:GetDB()
-    if not db or not LPS.frame.holder then return end
+    if not db then return end
 
     local bgR, bgG, bgB, bgA = LPS:GetColor("bg")
     local bdR, bdG, bdB, bdA = LPS:GetColor("border")
@@ -11,10 +11,10 @@ function LPS:CreateLocationFrame()
     local params = {
         name = "LPS_Location",
         frameType = "Button",
-        parent = LPS.frame.holder,
-        --- Статичная точка: location не смещается при добавлении/удалении боковых панелей
-        --- (см. UpdateFrameSize: 9 = (4*2 + 10)/2, 3 = 6/2).
-        anchor = {"TOP", LPS.frame.holder, "TOP", 0, 3},
+        parent = UIParent,
+        --- Начальная точка: ApplyLocationPosition сразу перепривязывает панель
+        --- к настроенной точке привязки (LPS:GetMainAnchor).
+        anchor = {"TOP", UIParent, "TOP", 0, -10},
         padding = {((db.layout and db.layout.locPaddingX) or 20), ((db.layout and db.layout.locPaddingY) or 9)},
         fontSize = db.settings.fontSize or 12,
         bgColor = {bgR, bgG, bgB, bgA},
@@ -120,5 +120,12 @@ function LPS:CreateLocationFrame()
         end,
     }
 
-    return LPS:CreateFrame(params)
+    --- Основной фрейм группы: к нему применяются якоря из настроек,
+    --- к его краям цепляются боковые панели, он перетаскивается в
+    --- режиме перемещения (StartMoving требует IsMovable).
+    local f = LPS:CreateFrame(params)
+    if f then
+        f:SetMovable(true)
+    end
+    return f
 end

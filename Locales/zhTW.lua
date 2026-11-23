@@ -7,6 +7,8 @@ LPS._LOADED_LOCALES["zhTW"] = true
 LPS:RegisterLocale("zhTW", {
 GENERAL = "常規",
 LOGIN_MESSAGE = "登入訊息",
+CHECK_FOR_UPDATES = "檢查更新",
+CHECK_FOR_UPDATES_DESC = "有新版本時在聊天中提示。",
 SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN = "登入時在對話方塊中顯示訊息。",
 _24H_TIME_FORMAT = "24 小時制",
 USE_24_HOUR_TIME_FORMAT = "使用 24 小時制時間格式。",

@@ -36,6 +36,13 @@ do
         return unitSenderName("player")
     end
 
+    --- Включена ли проверка обновления (настройка «Общие → Проверять обновление»);
+    --- при выключенной версии всё равно отправляются, реакции — нет.
+    local function checkEnabled()
+        local db = LPS.GetDB and LPS:GetDB()
+        return db and db.general and db.general.checkForUpdates ~= false
+    end
+
     --- Числовое сравнение версий вида "X.Y.Z": 1 (a > b), 0, -1 (a < b).
     local function versionCompare(a, b)
         local function toParts(v)
@@ -166,10 +173,11 @@ do
             local sender = string.find(senderOne or "", "-", 1, true) and senderOne or senderTwo
             if not sender or sender == "" or sender == mySenderName() then return end
             message = tostring(message)
+            local enabled = checkEnabled()
 
             if string.sub(message, 1, #OUTDATED_FLAG) == OUTDATED_FLAG then
                 dbg("versioncheck: received 'outdated' notice from %s (their version %s)", sender, string.sub(message, #OUTDATED_FLAG + 1))
-                if not toldMeOutdated then
+                if enabled and not toldMeOutdated then
                     toldMeOutdated = true
                     LPS:Print(format(
                         L.LPS_OUTDATED_NOTICE or "Your Location Plus is outdated: you have %s, and %s has version %s. Please update the addon.",
@@ -181,7 +189,7 @@ do
             responded[sender] = true
             local cmp = versionCompare(message, LPS.addon.version)
             dbg("versioncheck: received version %s from %s (my %s, cmp %d)", message, sender, LPS.addon.version, cmp)
-            if cmp > 0 and not notifiedMe then
+            if enabled and cmp > 0 and not notifiedMe then
                 notifiedMe = true
                 LPS:Print(format(
                     L.LPS_NEW_VERSION_AVAILABLE or "A new version %s is available (you have %s). Please update Location Plus (version detected via %s).",
@@ -189,12 +197,14 @@ do
             end
             if not repliedTo[sender] then
                 if cmp < 0 then
-                    --- Частный ответ устаревшему игроку, чтобы не «обвинить» всех в канале группы.
-                    if C_ChatInfo and C_ChatInfo.SendAddonMessage then
-                        C_ChatInfo.SendAddonMessage(PREFIX, OUTDATED_FLAG .. LPS.addon.version, "WHISPER", sender)
+                    if enabled then
+                        --- Частный ответ устаревшему игроку, чтобы не «обвинить» всех в канале группы.
+                        if C_ChatInfo and C_ChatInfo.SendAddonMessage then
+                            C_ChatInfo.SendAddonMessage(PREFIX, OUTDATED_FLAG .. LPS.addon.version, "WHISPER", sender)
+                        end
+                        dbg("versioncheck: sent 'outdated' whisper to %s (my version %s)", sender, LPS.addon.version)
+                        repliedTo[sender] = true
                     end
-                    dbg("versioncheck: sent 'outdated' whisper to %s (my version %s)", sender, LPS.addon.version)
-                    repliedTo[sender] = true
                 else
                     sendReply(sender, LPS.addon.version)
                     dbg("versioncheck: sent my version %s back to %s", LPS.addon.version, sender)

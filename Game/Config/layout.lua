@@ -12,7 +12,7 @@ function LPS:IsValidPos(p)
         and type(p.y) == "number" and p.y == p.y
 end
 
---- Старый ключ сохранённой позиции relativePoint → новый relPoint (Foundry.Window).
+--- Старый ключ сохранённой позиции relativePoint → новый relPoint.
 --- Мигрируем ТОЛЬКО таблицы без нового ключа: если relPoint уже есть,
 --- legacy-ключ (его мог подмешать ApplyDefaults из defaults) игнорируем,
 --- иначе он бы перезаписал реальную сохранённую позицию.
@@ -23,7 +23,7 @@ function LPS:MigratePos(p)
     end
 end
 
-LPS._holderAttached = false
+LPS._locationAttached = false
 
 local ANCHOR_FX = {
     TOPLEFT = 0, TOP = 0.5, TOPRIGHT = 1,
@@ -36,9 +36,9 @@ local ANCHOR_FY = {
     BOTTOMLEFT = 1, BOTTOM = 1, BOTTOMRIGHT = 1,
 }
 
---- Точка привязки holder к UIParent (настройка db.layout.anchorPoint).
+--- Точка привязки панели локации к UIParent (настройка db.layout.anchorPoint).
 --- @return string
-function LPS:GetHolderAnchor()
+function LPS:GetMainAnchor()
     local db = self:GetDB()
     local p = db and db.layout and db.layout.anchorPoint
     if type(p) == "string" and ANCHOR_FX[p] ~= nil then
@@ -47,166 +47,184 @@ function LPS:GetHolderAnchor()
     return "TOP"
 end
 
---- Размер holder для пересчёта позиции: последний, выставленный UpdateFrameSize
---- (создательный 400x25 на момент логина не используется), иначе оценка
---- (location + отступы UpdateFrameSize: 18 = 4*2 + 10, 6).
+--- Долевые координаты точки на фрейме (x, y от верхнего левого угла).
+--- @param point string
 --- @return number, number
-function LPS:GetHolderSizeEstimate(db)
-    local w, h = self._lastPosW, self._lastPosH
+function LPS:GetAnchorFractions(point)
+    return ANCHOR_FX[point] or 0.5, ANCHOR_FY[point] or 0
+end
+
+--- @param point string
+--- @return boolean
+function LPS:IsAnchorPoint(point)
+    return type(point) == "string" and ANCHOR_FX[point] ~= nil
+end
+
+--- Размер панели локации для пересчёта позиции: реальный размер
+--- (если панель видима), иначе оценка (locMinWidth, 25).
+--- @return number, number
+function LPS:GetLocationSizeEstimate(db)
     local loc = self.frame and self.frame.location
-    if not w or w <= 1 then
-        w = ((loc and loc.IsShown and loc:IsShown() and loc:GetWidth() > 1 and loc:GetWidth())
-            or (db and db.layout and tonumber(db.layout.locMinWidth)) or 200) + 18
-    end
-    if not h or h <= 1 then
-        h = ((loc and loc.IsShown and loc:IsShown() and loc:GetHeight() > 1 and loc:GetHeight()) or 25) + 6
-    end
+    local shown = (loc and loc.IsShown) and loc:IsShown() or false
+    local w = (shown and loc:GetWidth() > 1) and loc:GetWidth()
+        or (db and db.layout and tonumber(db.layout.locMinWidth)) or 200
+    local h = (shown and loc:GetHeight() > 1) and loc:GetHeight() or 25
     return w, h
 end
 
---- Сдвиг сохранённой позиции с точки fromPoint на точку toPoint
+--- Сдвиг сохранённой позиции панели локации с точки fromPoint на точку toPoint
 --- (положение панели на экране не меняется).
 --- @return boolean
-function LPS:ConvertHolderPos(pos, fromPoint, toPoint, w, h)
+function LPS:ConvertLocationPos(pos, fromPoint, toPoint, w, h)
     local fx1, fy1 = ANCHOR_FX[fromPoint], ANCHOR_FY[fromPoint]
     local fx2, fy2 = ANCHOR_FX[toPoint], ANCHOR_FY[toPoint]
     if not (fx1 and fx2 and fy1 and fy2) then return false end
-    pos.x = pos.x - fx1 * w + fx2 * w
-    pos.y = pos.y - fy1 * h + fy2 * h
+    pos.x = pos.x + (fx2 - fx1) * w
+    pos.y = pos.y - (fy2 - fy1) * h
     pos.point = toPoint
-    pos.relPoint = "TOPLEFT"
+    pos.relPoint = "TOP"
     return true
 end
 
---- Нормализует сохранённую позицию holder под настроенную точку привязки:
---- legacy TOPLEFT (до 2.2.1) мигрируется один раз (флаг _posMigrated),
---- точка, не совпадающая с настройкой (смена/импорт профиля), пересчитывается.
-function LPS:NormalizeHolderPos(db, pos)
-    local want = LPS:GetHolderAnchor()
-    if type(pos.point) ~= "string" or type(pos.x) ~= "number" or type(pos.y) ~= "number" then
-        return
+--- Декодирует сохранённую позицию панели локации (любой версии) в координаты
+--- экрана: left — от левого края, top — от НИЖНЕГО края экрана (как у
+--- GetLeft/GetTop: начало в левом нижнем углу, y вверх).
+--- @return number|nil, number|nil (nil, если запись несущественна/за экраном)
+function LPS:DecodeLocationPos(db, pos)
+    if type(pos) ~= "table" or type(pos.point) ~= "string" or not ANCHOR_FX[pos.point]
+        or type(pos.x) ~= "number" or pos.x ~= pos.x
+        or type(pos.y) ~= "number" or pos.y ~= pos.y then
+        return nil
     end
-    local legacy = (not pos._posMigrated) and (pos.point == "TOPLEFT")
-    if legacy or pos.point ~= want then
-        local w, h = LPS:GetHolderSizeEstimate(db)
-        LPS:ConvertHolderPos(pos, legacy and "TOPLEFT" or pos.point, want, w, h)
-        pos._posMigrated = true
+    local fx, fy = ANCHOR_FX[pos.point], ANCHOR_FY[pos.point]
+    local w, h = LPS:GetLocationSizeEstimate(db)
+    local screenW, screenH = UIParent:GetWidth(), UIParent:GetHeight()
+    local left, top
+    if pos._posVer == 3 then
+        --- Каноническая кодировка: y — от верхнего края (положительный вверх,
+        --- как yOfs в SetPoint). x — от центра (relPoint TOP) либо от левого
+        --- края (записи 2.2.1-dev с relPoint TOPLEFT).
+        if pos.relPoint == "TOP" then
+            left = pos.x + screenW / 2 - fx * w
+        else
+            left = pos.x - fx * w
+        end
+        top = screenH + pos.y + fy * h
+    elseif pos._posVer == 2 then
+        left = pos.x - fx * w
+        top = pos.y + fy * h
+    elseif pos._posMigrated then
+        left = pos.x - w / 2
+        top = -pos.y
+    elseif pos.relPoint == "TOP" then
+        left = pos.x + screenW / 2 - fx * w
+        top = screenH + pos.y + fy * h
+    elseif pos.relPoint == "TOPLEFT" then
+        left = pos.x - fx * w
+        top = pos.y + fy * h
+    else
+        left = pos.x - fx * w
+        top = screenH + pos.y + fy * h
     end
+    if left < -w or left > screenW or top < -h or top > screenH then
+        return nil
+    end
+    return left, top
 end
 
-function LPS:ApplyHolderPosition()
-    local holder = self.frame and self.frame.holder
-    if not holder then return end
+--- Нормализует сохранённую позицию панели локации в каноническую кодировку
+--- (relPoint TOP — как в DEFAULT_POSITION: x — от центра экрана, y — от
+--- верхнего края, положительный вверх) и под настроенную точку привязки.
+--- Восстанавливает записи 2.2.1-dev (_posVer 3 с relPoint TOPLEFT,
+--- _posVer 2), 2.2.0 (_posMigrated без _posVer), 2.1 (relPoint TOP) и
+--- legacy TOPLEFT; записи вне экрана сбрасывает в дефолт.
+function LPS:NormalizeLocationPos(db, pos)
+    local want = LPS:GetMainAnchor()
+    if type(pos) ~= "table" then
+        return
+    end
+    if type(pos.point) ~= "string" or not ANCHOR_FX[pos.point] then
+        pos.point = "TOP"
+    end
+    local fx, fy = ANCHOR_FX[pos.point], ANCHOR_FY[pos.point]
+    local w, h = LPS:GetLocationSizeEstimate(db)
+    local screenW, screenH = UIParent:GetWidth(), UIParent:GetHeight()
+
+    local left, top = LPS:DecodeLocationPos(db, pos)
+    if not left then
+        pos.point, pos.relPoint, pos.x, pos.y = "TOP", "TOP", 0, -10
+        pos._posMigrated = true
+        pos._posVer = 3
+        return
+    end
+
+    local from = pos.point
+    pos.point = from
+    pos.relPoint = "TOP"
+    pos.x = left + fx * w - screenW / 2
+    pos.y = top - screenH - fy * h
+    if from ~= want then
+        LPS:ConvertLocationPos(pos, from, want, w, h)
+    end
+    pos._posMigrated = true
+    pos._posVer = 3
+end
+
+--- Применяет сохранённую позицию панели локации (основной фрейм группы):
+--- нормализует запись db.position под настроенную точку привязки и
+--- перепривязывает панель к UIParent. Во время перемещения панель не трогаем
+--- (позиция пишется в конце драга).
+function LPS:ApplyLocationPosition()
+    local loc = self.frame and self.frame.location
+    if not loc or loc.isMoving then return end
     local db = self:GetDB()
     db.position = db.position or {}
     LPS:MigratePos(db.position)
+    LPS:NormalizeLocationPos(db, db.position)
 
-    local pos = db.position
-    LPS:NormalizeHolderPos(db, pos)
+    local g = self.frame._posGeometry
+    if type(g) ~= "table" then
+        g = {}
+        self.frame._posGeometry = g
+    end
+    for k in pairs(g) do g[k] = nil end
+    for k, v in pairs(db.position) do g[k] = v end
 
-    if not LPS._holderAttached then
-        local geometry = {}
-        for k, v in pairs(db.position) do
-            geometry[k] = v
-        end
-        self.frame._posGeometry = geometry
-        LPS._holderAttached = true
-        LPS.F.Window:Attach(holder, {
-            handle = holder,
-            geometry = geometry,
-            default = DEFAULT_POSITION,
-        })
-        if not holder.isMoving then
-            holder:EnableMouse(false)
-        end
-        holder:SetUserPlaced(true)
+    if LPS:IsValidPos(g) then
+        loc:ClearAllPoints()
+        loc:SetPoint(g.point, UIParent, g.relPoint, g.x, g.y)
+    else
+        local d = DEFAULT_POSITION
+        g.point, g.relPoint, g.x, g.y = d[1], d[2], d[3], d[4]
+        loc:ClearAllPoints()
+        loc:SetPoint(d[1], UIParent, d[2], d[3], d[4])
+    end
+end
+
+--- Клиент сам помнит перемещённые фреймы (layout-local.txt, на персонажа)
+--- и по завершении загрузки мира возвращает их по имени, перетирая наш
+--- SetPoint. Панель держим НЕ user-placed (SetUserPlaced(false) после
+--- каждого сохранения позиции), чтобы клиент забыл её место при выходе.
+--- Пока устаревшая запись не пропала — если клиент перетёр позицию,
+--- восстанавливаем её из DB. Сравниваем РЕАЛЬное положение фрейма на
+--- экране (GetLeft/GetTop), а не GetPoint: после внешнего перемещения
+--- старый якорь может остаться и замаскировать подмену позиции.
+function LPS:RepairLocationLayoutCache()
+    local loc = self.frame and self.frame.location
+    if not loc or loc.isMoving then return end
+    local db = self:GetDB()
+    local p = db and db.position
+    if not self:IsValidPos(p) then return end
+    local left, top = loc:GetLeft(), loc:GetTop()
+    if type(left) ~= "number" or type(top) ~= "number" then return end
+    local wantLeft, wantTop = LPS:DecodeLocationPos(db, p)
+    if not wantLeft then return end
+    if math.abs(left - wantLeft) < 6 and math.abs(top - wantTop) < 6 then
         return
     end
-
-    local p = db.position
-    local g = self.frame._posGeometry
-    for k in pairs(g) do g[k] = nil end
-    for k, v in pairs(p) do g[k] = v end
-    if LPS:IsValidPos(g) then
-        if not holder.isMoving then
-            holder:ClearAllPoints()
-            holder:SetPoint(g.point, UIParent, g.relPoint, g.x, g.y)
-            holder:SetUserPlaced(true)
-        end
-    else
-        LPS.F.Window:Reset(holder)
+    loc:ClearAllPoints()
+    loc:SetPoint(p.point, UIParent, p.relPoint, p.x, p.y)
+    if loc.SetUserPlaced then
+        loc:SetUserPlaced(false)
     end
-end
-
---- Игра кэширует позиции user-placed фреймов в собственном SavedVariables
---- (кэш раскладки UIParent) и в районе логина применяет их, перетирая наш
---- SetPoint старой записью «правый край». Находим таблицу кэша, содержащую
---- LPS_Holder, и перезаписываем её запись канонической точкой из DB.
---- Идемпотентно и тихо; вызывается на PEW и на таймерах после загрузки.
-function LPS:RepairHolderLayoutCache()
-    local holder = self.frame and self.frame.holder
-    if not holder then return end
-    local p = self:GetDB() and self:GetDB().position
-    if type(p) ~= "table" or not self:IsValidPos(p) then return end
-    for gName in pairs(_G) do
-        local g = _G[gName]
-        if type(g) == "table" and type(g.db) == "table" and type(g.db["LPS_Holder"]) == "table" then
-            local e = g.db["LPS_Holder"]
-            if type(e.point) == "string" and type(e.x) == "number" and type(e.y) == "number" then
-                e.point = p.point
-                if type(e.relativeTo) == "table" then
-                    e.relativeTo = UIParent
-                else
-                    e.relativeTo = "UIParent"
-                end
-                e.relPoint = p.relPoint
-                e.x = p.x
-                e.y = p.y
-                e.w = holder:GetWidth()
-                e.h = holder:GetHeight()
-            end
-        end
-    end
-end
-
-LPS._lastPosW, LPS._lastPosH = nil, nil
-function LPS:UpdateFrameSize()
-    if not (LPS.frame and LPS.frame.holder) then return end
-    local padding = 4
-    local function w(f)
-        return (f and f:IsShown()) and f:GetWidth() or 0
-    end
-    local function h(f)
-        return (f and f:IsShown()) and f:GetHeight() or 0
-    end
-
-    local width = w(LPS.frame.location)
-    local height = h(LPS.frame.location)
-    for key, f in pairs(LPS.frame) do
-        if key ~= "holder" and key ~= "location" and key ~= "minimapButton"
-            and type(f) == "table" and f.IsShown and f.GetWidth and f:GetParent() == LPS.frame.holder
-            and f:IsShown() then
-                width = width + f:GetWidth()
-                height = math.max(height, f:GetHeight())
-            end
-    end
-    width = width + padding * 2 + 10
-    height = height + 6
-    local uiW, uiH = UIParent:GetWidth(), UIParent:GetHeight()
-    if uiW > 100 then width = math.min(width, uiW - 10) end
-    if uiH > 100 then height = math.min(height, uiH - 10) end
-    if width ~= LPS._lastPosW or height ~= LPS._lastPosH then
-        LPS._lastPosW, LPS._lastPosH = width, height
-        LPS.frame.holder:SetSize(width, height)
-    end
-end
-
-LPS._sizeUpdatePending = false
-function LPS:ScheduleFrameSizeUpdate()
-    if LPS._sizeUpdatePending then return end
-    LPS._sizeUpdatePending = true
-    C_Timer.After(0.05, function()
-        LPS._sizeUpdatePending = false
-        LPS:UpdateFrameSize()
-    end)
 end

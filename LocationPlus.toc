@@ -7,7 +7,6 @@
 ## IconTexture: Interface\AddOns\LocationPlus\Media\Logo.png
 ## X-Curse-Project-ID: 1444011
 
-## Dependencies: Foundry-1.0
 ## Dependencies: LibTourist-3.0 [AllowLoadGameType Standard]
 ## Dependencies: LibTouristClassicEra [AllowLoadGameType Vanilla]
 ## Dependencies: LibTouristClassicBCA [AllowLoadGameType TBC]

@@ -127,7 +127,6 @@ function LPS:NormalizeLayoutDB(raw)
     out.frameLevel  = tonumber(raw.frameLevel)
     out.customColor = raw.customColor
     out.userColor   = raw.userColor
-    out.chainAnchor = raw.chainAnchor
     out.sideSlots   = LPS:CopyLayoutSlots(raw.sideSlots)
     normalizedLayoutCache = { raw = raw, out = out }
     return out
@@ -135,8 +134,8 @@ end
 
 function LPS:InvalidateLayoutCache()
     normalizedLayoutCache = nil
-    local holder = LPS.frame and LPS.frame.holder
-    if holder then holder._lpsLastLayoutKey = nil end
+    local loc = LPS.frame and LPS.frame.location
+    if loc then loc._lpsLastLayoutKey = nil end
 end
 
 function LPS:NormalizeSlotFrameKey(key)
@@ -155,7 +154,7 @@ function LPS:ApplyPanelVisibility(frames, slotList, showDT)
     if not frames then return end
     local shownNow = {}
     for key, f in pairs(frames) do
-        if key ~= "holder" and key ~= "location" and key ~= "minimapButton"
+        if key ~= "location" and key ~= "minimapButton"
             and type(f) == "table" and f.SetShown and f.IsShown then
                 f:SetShown(showDT and LPS:SlotListContains(slotList, key))
                 if f:IsShown() then shownNow[#shownNow + 1] = f end
@@ -225,12 +224,6 @@ function LPS:SlotGetFrameByKey(key)
     return LPS:GetOrCreatePanelFrame(key)
 end
 
-function LPS:UseHolderAnchor()
-    local db = LPS:GetDB()
-    local lay = db and db.layout
-    return lay ~= nil and lay.chainAnchor == "location" and true or false
-end
-
 function LPS:PositionSlotChain(chain, side, frames, spacing)
     local isLeft = (side == "LEFT")
     local ownPoint = isLeft and "RIGHT" or "LEFT"
@@ -248,10 +241,6 @@ function LPS:PositionSlotChain(chain, side, frames, spacing)
                 local ox = tonumber(entry.cfg.offsetX) or 0
                 local oy = tonumber(entry.cfg.offsetY) or 0
                 frame:ClearAllPoints()
-                if idx == 1 and LPS:UseHolderAnchor() then
-                    local base = (frames.holder and frames.holder.IsShown and frames.holder:IsShown()) and frames.holder or frames.location
-                    anchorTo, anchorPoint = base, edgePoint
-                end
                 local dx = ((idx == 1) and 0 or (sign * spacing)) + ox
                 frame:SetPoint(ownPoint, anchorTo, anchorPoint, dx, oy)
                 anchorTo, anchorPoint = frame, edgePoint
@@ -278,17 +267,16 @@ function LPS:ApplyLayout()
         .. tostring(layout.slotCount or 2) .. ","
         .. table.concat(LPS:CollectSlotKeys(layout.sideSlots), ";") .. ","
         .. tostring(db.settings and db.settings.fontSize or 12) .. ","
-        .. tostring(layout.chainAnchor) .. ","
         .. LPS:PanelFontKey(db)
 
-    local forcePass = not (frames.holder and frames.holder._lpsEverApplied)
+    local forcePass = not (frames.location and frames.location._lpsEverApplied)
     if not forcePass and LPS:ConsumePendingRefresh() then forcePass = true end
-    if not forcePass and frames.holder and frames.holder._lpsLastLayoutKey == layoutKey then
+    if not forcePass and frames.location and frames.location._lpsLastLayoutKey == layoutKey then
         return
     end
-    local prevKey = frames.holder and frames.holder._lpsLastLayoutKey
-    if frames.holder then
-        frames.holder._lpsLastLayoutKey = layoutKey
+    local prevKey = frames.location and frames.location._lpsLastLayoutKey
+    if frames.location then
+        frames.location._lpsLastLayoutKey = layoutKey
     end
 
     local defaultsLayout = (LPS.defaults and LPS.defaults.layout) or {}
@@ -307,20 +295,10 @@ function LPS:ApplyLayout()
         frames.location._lpsMinWidth = locMinWidth
     end
     for key, f in pairs(frames) do
-        if key ~= "holder" and key ~= "location" and key ~= "minimapButton" and f then
+        if key ~= "location" and key ~= "minimapButton" and f then
             f._lpsPaddingX = dtPaddingX
             f._lpsPaddingY = dtPaddingY
             f._lpsMinWidth = dtMinWidth
-        end
-    end
-
-    local loc = frames.location
-    if loc then
-        loc:ClearAllPoints()
-        if LPS:UseHolderAnchor() then
-            loc:SetPoint("CENTER", frames.holder, "CENTER", 0, 0)
-        else
-            loc:SetPoint("TOP", frames.holder, "TOP", 0, 3)
         end
     end
 
@@ -366,12 +344,12 @@ function LPS:ApplyLayout()
         LPS._pendingPanelPrimes = nil
     end
 
-    if frames.holder and not frames.holder.isMoving then
+    if frames.location and not frames.location.isMoving then
         if layout.frameStrata then
-            frames.holder:SetFrameStrata(layout.frameStrata)
+            frames.location:SetFrameStrata(layout.frameStrata)
         end
         if layout.frameLevel then
-            frames.holder:SetFrameLevel(tonumber(layout.frameLevel) or 1)
+            frames.location:SetFrameLevel(tonumber(layout.frameLevel) or 1)
         end
     end
 
@@ -397,7 +375,7 @@ function LPS:ApplyLayout()
     end
 
     for key, f in pairs(frames) do
-        if key ~= "holder" and key ~= "minimapButton" and type(f) == "table" and f.text then
+        if key ~= "minimapButton" and type(f) == "table" and f.text then
             local slot = slotOfFrame[key]
             local file = fontFile
             local fl = flags
@@ -446,7 +424,7 @@ function LPS:ApplyLayout()
         LPS:ForceResizeFrame(frames.location)
     end
     for key, f in pairs(frames) do
-        if key ~= "holder" and key ~= "location" and key ~= "minimapButton" and f then
+        if key ~= "location" and key ~= "minimapButton" and f then
             LPS:ForceResizeFrame(f)
         end
     end
@@ -454,7 +432,7 @@ function LPS:ApplyLayout()
     local layoutNumsChanged = ((prevKey ~= nil) and (prevKey ~= layoutKey)) or forcePass
     if fontChanged or fontSizeChanged or layoutNumsChanged or forcePass then
         for key, f in pairs(frames) do
-            if key ~= "holder" and key ~= "minimapButton" and f and f._lpsUpdateFunc then
+            if key ~= "minimapButton" and f and f._lpsUpdateFunc then
                 f._lpsUpdateFunc(f)
             end
         end
@@ -466,19 +444,15 @@ function LPS:ApplyLayout()
             loc._lpsUpdateFunc(loc)
         end
         for key, f in pairs(frames) do
-            if key ~= "holder" and key ~= "location" and key ~= "minimapButton"
+            if key ~= "location" and key ~= "minimapButton"
                 and type(f) == "table" and f._lpsUpdateFunc and f.IsShown and f:IsShown() then
                     f._lpsUpdateFunc(f)
                 end
         end
     end
 
-    if LPS.UpdateFrameSize then
-        LPS:ScheduleFrameSizeUpdate()
-    end
-
-    if frames.holder then
-        frames.holder._lpsEverApplied = true
+    if frames.location then
+        frames.location._lpsEverApplied = true
     end
 end
 
@@ -511,45 +485,42 @@ end
 
 function LPS:ApplyVisibility()
     local db = LPS:GetDB()
-    local holder = LPS.frame and LPS.frame.holder
-    if not db or not holder or not db.show or not db.show.visibility then return end
+    local loc = LPS.frame and LPS.frame.location
+    if not db or not loc or not db.show or not db.show.visibility then return end
 
     local vis = db.show.visibility
 
     if vis.combat then
-        if not holder._lpsCombatVisEvents then
-            holder._lpsCombatVisEvents = true
-            holder:RegisterEvent("PLAYER_REGEN_DISABLED")
-            holder:RegisterEvent("PLAYER_REGEN_ENABLED")
-            holder:HookScript("OnEvent", function()
+        if not loc._lpsCombatVisEvents then
+            loc._lpsCombatVisEvents = true
+            loc:RegisterEvent("PLAYER_REGEN_DISABLED")
+            loc:RegisterEvent("PLAYER_REGEN_ENABLED")
+            loc:HookScript("OnEvent", function()
                 local d = LPS:GetDB()
-                local h = LPS.frame and LPS.frame.holder
-                if not d or not h or not d.show or not d.show.visibility then return end
+                local l = LPS.frame and LPS.frame.location
+                if not d or not l or not d.show or not d.show.visibility then return end
                 if d.show.visibility.combat and InCombatLockdown() then
-                    h:Hide()
+                    l:Hide()
                 else
-                    h:Show()
+                    l:Show()
                 end
             end)
         end
         if InCombatLockdown() then
-            holder:Hide()
+            loc:Hide()
         else
-            holder:Show()
+            loc:Show()
         end
     else
-        if holder._lpsCombatVisEvents then
-            holder._lpsCombatVisEvents = nil
-            holder:UnregisterEvent("PLAYER_REGEN_DISABLED")
-            holder:UnregisterEvent("PLAYER_REGEN_ENABLED")
+        if loc._lpsCombatVisEvents then
+            loc._lpsCombatVisEvents = nil
+            loc:UnregisterEvent("PLAYER_REGEN_DISABLED")
+            loc:UnregisterEvent("PLAYER_REGEN_ENABLED")
         end
-        holder:Show()
+        loc:Show()
     end
 
-    if not holder.isMoving then
-        holder:EnableMouse(false)
-    end
-    holder:SetAlpha(1)
+    loc:SetAlpha(1)
 end
 
 function LPS:ResetPanelsToDefaults()
@@ -572,7 +543,7 @@ function LPS:ResetPanelsToDefaults()
 
     if LPS.frame then
         for k, f in pairs(LPS.frame) do
-            if type(f) == "table" and k ~= "holder" and k ~= "location" and k ~= "minimapButton"
+            if type(f) == "table" and k ~= "location" and k ~= "minimapButton"
                 and LPS.datatexts and LPS.datatexts[k] then
                     f:Hide()
                     if f.UnregisterAllEvents then f:UnregisterAllEvents() end
@@ -590,7 +561,6 @@ function LPS:ResetPanelsToDefaults()
     if LPS.ApplyAllSettings then LPS:ApplyAllSettings() end
     if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
     if LPS.ApplyLayout then LPS:ApplyLayout() end
-    if LPS.UpdateFrameSize then LPS:UpdateFrameSize() end
 end
 
 function LPS:ResetAllSettingsToDefaults()
@@ -624,7 +594,7 @@ function LPS:ResetAllSettingsToDefaults()
         end
     end
     if LPS.InvalidateLayoutCache then LPS:InvalidateLayoutCache() end
-    LPS:ApplyHolderPosition()
+    LPS:ApplyLocationPosition()
     LPS:ApplyAllSettings()
     if LPS.UpdateMinimapButton then
         LPS:UpdateMinimapButton()
@@ -641,8 +611,8 @@ function LPS:RefreshAfterProfileChange()
     if self.ApplyDefaults then
         self:ApplyDefaults(db or {}, self.defaults)
     end
-    if self.ApplyHolderPosition then
-        self:ApplyHolderPosition()
+    if self.ApplyLocationPosition then
+        self:ApplyLocationPosition()
     end
     if self.ApplyAllSettings then
         self:ApplyAllSettings()
@@ -735,21 +705,23 @@ function LPS:GetGoldRoot()
 end
 
 function LPS:ResetFramePosition()
-    local holder = LPS.frame and LPS.frame.holder
-    if not holder then return end
-    if holder.isMoving then
+    local loc = LPS.frame and LPS.frame.location
+    if not loc then return end
+    if loc.isMoving then
         if LPS.SetMoveMode then
             LPS:SetMoveMode(false)
         end
-        holder.isMoving = false
+        loc.isMoving = false
     end
-    if LPS.frame._posGeometry then
-        LPS.F.Window:Reset(holder)
-    else
-        local def = (LPS.defaults and LPS.defaults.position) or { point = "TOP", relPoint = "TOP", x = 0, y = -10 }
-        local rp = def.relPoint or def.relativePoint
-        holder:ClearAllPoints()
-        holder:SetPoint(def.point, UIParent, rp, def.x, def.y)
+    local def = (LPS.defaults and LPS.defaults.position) or { point = "TOP", relPoint = "TOP", x = 0, y = -10 }
+    local geo = LPS.frame._posGeometry
+    if type(geo) == "table" then
+        geo.point, geo.relPoint, geo.x, geo.y = def.point, def.relPoint, def.x, def.y
+    end
+    loc:ClearAllPoints()
+    loc:SetPoint(def.point, UIParent, def.relPoint, def.x, def.y)
+    if loc.SetUserPlaced then
+        loc:SetUserPlaced(false)
     end
     local p = LPS:GetDB().position
     if type(p) == "table" then
@@ -761,11 +733,11 @@ function LPS:ResetFramePosition()
 end
 
 function LPS:ToggleMoveMode()
-    local holder = LPS.frame and LPS.frame.holder
-    if not holder then return end
-    local moving = holder.isMoving or false
+    local loc = LPS.frame and LPS.frame.location
+    if not loc then return end
+    local moving = loc.isMoving or false
     LPS:SetMoveMode(not moving)
-    holder.isMoving = not moving
+    loc.isMoving = not moving
 end
 
 function LPS:GetContinentID()
@@ -1039,7 +1011,6 @@ function LPS:ScheduleRefresh()
         if LPS.ApplyLayout then
             LPS:ApplyLayout()
         end
-        LPS:UpdateFrameSize()
     end)
 end
 
@@ -1065,7 +1036,7 @@ function LPS:ApplyStyle()
     local frames = LPS.frame
     if not frames then return end
     for key, f in pairs(frames) do
-        if key ~= "holder" and key ~= "minimapButton"
+        if key ~= "minimapButton"
             and type(f) == "table" and f.SetBackdropColor then
                 local bs = tonumber(db.settings.borderSize)
                 if not bs then bs = 2 end
@@ -1087,9 +1058,6 @@ function LPS:ApplyStyle()
     if LPS.ApplyLayout then
         LPS:ApplyLayout()
     end
-    if LPS.ScheduleFrameSizeUpdate then
-        LPS:ScheduleFrameSizeUpdate()
-    end
 end
 
 function LPS:ApplyTimeFormat()
@@ -1101,9 +1069,6 @@ function LPS:ApplyTimeFormat()
     end
     if LPS.ApplyLayout then
         LPS:ApplyLayout()
-    end
-    if LPS.ScheduleFrameSizeUpdate then
-        LPS:ScheduleFrameSizeUpdate()
     end
 end
 
@@ -1149,12 +1114,12 @@ function LPS:PackValues(...)
 end
 
 function LPS:DisableMoveModeIfActive()
-    local holder = LPS.frame and LPS.frame.holder
-    if holder and holder.isMoving then
+    local loc = LPS.frame and LPS.frame.location
+    if loc and loc.isMoving then
         if LPS.SetMoveMode then
             LPS:SetMoveMode(false)
         end
-        holder.isMoving = false
+        loc.isMoving = false
     end
 end
 
@@ -1293,46 +1258,128 @@ function LPS:ColorByThreshold(v, good, warn, invert)
     return string.format("|cff%02x%02x%02x%d|r", r * 255, g * 255, b * 255, v)
 end
 
-local fMenuController
-local fMenuTried = false
-
---- Контекстное меню — Foundry.Menu на едином API MenuUtil (есть на всех клиентах).
---- Формат пунктов: {text, isTitle, disabled, notCheckable, func}.
---- @return any?
-function LPS:GetFMenuController()
-    if fMenuTried then
-        return fMenuController
-    end
-    fMenuTried = true
-    if LPS.F and LPS.F.Menu then
-        fMenuController = LPS.F.Menu:New({
-            name = "LPS.Menu",
-            builder = function(owner, rootDescription, entries)
-                for _, entry in ipairs(entries or {}) do
-                    if entry.isTitle then
-                        rootDescription:CreateTitle(entry.text)
-                    elseif entry.disabled then
-                        local btn = rootDescription:CreateButton(entry.text, function() end)
-                        btn:SetEnabled(false)
-                    elseif entry.func then
-                        rootDescription:CreateButton(entry.text, function() entry.func() end)
-                    else
-                        rootDescription:CreateButton(entry.text, function() end)
-                    end
+--- Контекстное меню: единый API MenuUtil (современные клиенты) с fallback на
+--- классические фреймы (старые клиенты). Формат пунктов:
+--- {text, isTitle, disabled, icon, func}.
+--- @param anchorFrame Frame
+--- @param list table[]
+local function ShowNativeMenu(anchorFrame, list)
+    if MenuUtil and MenuUtil.CreateContextMenu
+        and C_ExpandFrame and C_ExpandFrame.CreateMenuEntry then
+        local entries = {}
+        for _, entry in ipairs(list or {}) do
+            if entry.isTitle then
+                entries[#entries + 1] = {
+                    text = entry.text or "",
+                    isTitle = true,
+                    notCheckable = true,
+                }
+            else
+                entries[#entries + 1] = {
+                    text = entry.text or "",
+                    notCheckable = true,
+                    isDisabled = (entry.disabled and true) or nil,
+                    icon = (type(entry.icon) == "string") and entry.icon or nil,
+                    iconWidth = 32,
+                    iconHeight = 32,
+                    func = entry.func,
+                }
+            end
+        end
+        local controller = MenuUtil.CreateContextMenu(
+            entries,
+            1, 1,
+            C_ExpandFrame.CreateMenuEntry,
+            400, 350,
+            function(self, info)
+                if info and info.func then
+                    if self:IsShown() then self:Hide() end
+                    info.func()
                 end
             end,
-        })
+            1
+        )
+        if controller then
+            controller:Open(anchorFrame, "BOTTOMLEFT", 0, -2)
+        end
+        return
     end
-    return fMenuController
+
+    local fMenu = CreateFrame("Frame", "LPS_ShowMenu", UIParent)
+    fMenu:SetFrameStrata("TOOLTIP")
+    fMenu:EnableMouse(true)
+    fMenu:SetClampedToScreen(true)
+    local width, offset = 120, 2
+    for _, entry in ipairs(list or {}) do
+        if entry.isTitle then
+            local fs = fMenu:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            fs:SetPoint("TOPLEFT", fMenu, "TOPLEFT", 10, -offset)
+            fs:SetPoint("TOPRIGHT", fMenu, "TOPRIGHT", -10, -offset)
+            fs:SetJustifyH("LEFT")
+            fs:SetText("|cffffffff" .. (entry.text or "") .. "|r")
+            offset = offset + 18
+        else
+            local text = entry.text or ""
+            if utf8 and utf8.len then
+                width = math.max(width, utf8.len(text) * 7 + 24)
+            end
+            local btn = CreateFrame("Button", nil, fMenu)
+            btn.bg = LPS:ThemeBox(btn, "button", "buttonBorder", LPS:WidgetRadius())
+            local fs = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+            fs:SetPoint("LEFT", btn, "LEFT", 8, 0)
+            fs:SetJustifyH("LEFT")
+            fs:SetText(text)
+            btn.text = fs
+            btn:SetPoint("TOPLEFT", fMenu, "TOPLEFT", 2, -offset)
+            btn:SetPoint("TOPRIGHT", fMenu, "TOPRIGHT", -2, -offset)
+            btn:SetHeight(20)
+            if entry.disabled then
+                btn:SetEnabled(false)
+            elseif entry.func then
+                btn:SetScript("OnClick", function()
+                    fMenu:Hide()
+                    entry.func()
+                end)
+            else
+                btn:SetScript("OnClick", function()
+                    fMenu:Hide()
+                end)
+            end
+            btn:SetScript("OnEnter", function(self)
+                if self:IsEnabled() and self.bg then
+                    LPS:PaintWidgetTexture(self.bg, "buttonHover")
+                    LPS:ApplyFontColor(self.text, "text")
+                end
+            end)
+            btn:SetScript("OnLeave", function(self)
+                if self.bg then
+                    LPS:PaintWidgetTexture(self.bg, "button")
+                    LPS:ApplyFontColor(self.text, "buttonText")
+                end
+            end)
+            offset = offset + 20
+        end
+    end
+    fMenu:SetSize(width, offset)
+    fMenu:SetPoint("TOPLEFT", anchorFrame, "BOTTOMLEFT", 0, -2)
+    fMenu:Show()
+    fMenu:SetScript("OnMouseLeave", function()
+        C_Timer.After(0.5, function()
+            if fMenu:IsShown() then
+                fMenu:Hide()
+            end
+        end)
+    end)
 end
 
+--- Открывает контекстное меню у заданной точки привязки.
 --- @param anchorFrame Frame
 --- @param list {LPSMenuEntry}
 function LPS:ShowMenu(anchorFrame, list)
-    local controller = LPS:GetFMenuController()
-    if controller then
-        controller:CreateContextMenu(anchorFrame, list)
+    if type(anchorFrame) ~= "table" or type(list) ~= "table" then
+        return
     end
+    ShowNativeMenu(anchorFrame, list)
 end
 
 --- @param self Frame

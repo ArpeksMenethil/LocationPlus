@@ -1,7 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local L = LPS.L
-local F = LPS.F
 LPS_DB = LPS_DB or {}
 
 LPS.addon.version = (
@@ -25,27 +24,6 @@ function LPS:GetAddonNotes()
         or getMeta(LPS.addon.name, "Notes") or ""
     return (notes ~= "") and notes or ""
 end
-
----@type LPSFrameParams
-local params = {
-    name = "LPS_Holder",
-    parent = UIParent,
-    frameType = "Frame",
-    size = {400, 25},
-    backdrop = { bgFile = "Interface\\Buttons\\WHITE8x8" },
-    bgColor = {1, 1, 1, 0},
-    borderColor = {1, 1, 1, 0}
-}
-LPS.frame.holder = LPS:CreateFrame(params)
-LPS.frame.holder:SetFrameStrata("HIGH")
---- Всегда держим флаг movable: без него клиент отклоняет SetUserPlaced/StartMoving
---- (в обычном режиме мышь на фрейме выключена, перетаскивание ведёт наш OnDragStart).
-LPS.frame.holder:SetMovable(true)
-
-LPS.Lifecycle = F.Lifecycle:New(LPS, LPS.addon.name)
-LPS.Lifecycle:OnAddonLoaded(function()
-    LPS:onLoaded()
-end)
 
 function LPS:SVGetCurrentProfile()
     return self.db.sv.profileKeys[self.db.charKey] or "Default"
@@ -201,8 +179,8 @@ function LPS:onLoaded()
     end
 
     LPS:ApplyTimeFormat()
-    LPS:ApplyHolderPosition()
     LPS.frame.location = LPS:CreateLocationFrame()
+    LPS:ApplyLocationPosition()
     LPS:ApplyAllSettings()
     if LPS.ApplyAddonCompartmentRegistration then
         LPS:ApplyAddonCompartmentRegistration()
@@ -219,41 +197,43 @@ function LPS:onLoaded()
         SetCVar("timeMgrUseMilitaryTime", 1)
     end
 
-    LPS.coreEvents = F.Events:New("LPS.Core")
+    LPS.coreEvents = LPS.Events:New("LPS.Core")
     LPS.coreEvents:Register("PLAYER_ENTERING_WORLD", function()
-        LPS:UpdateFrameSize()
         LPS:ApplyLayout()
-        LPS:ApplyHolderPosition()
-        LPS:RepairHolderLayoutCache()
+        LPS:ApplyLocationPosition()
+        LPS:RepairLocationLayoutCache()
     end)
 
     if IsLoggedIn and IsLoggedIn() then
-        LPS:UpdateFrameSize()
         LPS:ApplyLayout()
-        LPS:ApplyHolderPosition()
+        LPS:ApplyLocationPosition()
     end
-    C_Timer.After(1, function()
-        LPS:UpdateFrameSize()
-        LPS:ApplyLayout()
-        LPS:ApplyHolderPosition()
-        LPS:RepairHolderLayoutCache()
-    end)
-    C_Timer.After(5, function()
-        LPS:UpdateFrameSize()
-        LPS:ApplyHolderPosition()
-        LPS:RepairHolderLayoutCache()
-    end)
+    --- Клиент применяет свой кэш раскладки (layout-local.txt) по завершении
+    --- загрузки мира — это может быть заметно позже PEW. Держим позицию из DB
+    --- под контролем ~35 секунд после логина (во время драга не трогаем).
+    local loginTicks = 0
+    local function runLoginTick()
+        loginTicks = loginTicks + 1
+        if loginTicks == 1 then
+            LPS:ApplyLayout()
+        end
+        LPS:ApplyLocationPosition()
+        LPS:RepairLocationLayoutCache()
+        if loginTicks < 14 then
+            C_Timer.After(2.5, runLoginTick)
+        end
+    end
+    C_Timer.After(1, runLoginTick)
 
     if db and db.general and db.general.loginMessage then
         LPS:Print(format(L.LOADED_CURRENT_VERSION.." |c%sv%s|r", LPS.addon.textColor, LPS.addon.version), false)
     end
 end
 
---- Fallback на случай, если Foundry.Lifecycle держит OnAddonLoaded до «разрешения
---- идентичности» (имя+сервер+фамилия): на клиентах с region-unique именами
---- (Forever/Camelot) после обновления фамилия может так и не «уладиться», и
---- onLoaded не срабатывал вообще. Ключ профиля — realm - UnitName (без фамилии),
---- поэтому запуск по PLAYER_ENTERING_WORLD / при уже вошедшем игроке безопасен.
+--- Запуск onLoaded по PLAYER_ENTERING_WORLD / при уже вошедшем игроке: на
+--- клиентах с region-unique именами (Forever/Camelot) фамилия может
+--- «уладиться» только после входа в мир. Ключ профиля — realm - UnitName
+--- (без фамилии), поэтому запуск безопасен.
 LPS._bootFrame = CreateFrame("Frame")
 LPS._bootFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 LPS._bootFrame:SetScript("OnEvent", function(_, ev)
@@ -265,54 +245,126 @@ if IsLoggedIn and IsLoggedIn() then
     LPS:onLoaded()
 end
 
-local cmd = F.Commands:New({
-    name = "LocationPlus",
-    slashes = { "/lps" },
-    description = L.CMD_DESCRIPTION,
-    defaultHandler = function()
+--- Слэш-команда /lps: реестр подкоманд с алиасами, автогенерация помощи
+--- (/lps help), fallback на настройки и сообщение об неизвестной команде.
+local commands = {}
+local commandOrder = {}
+
+local function defineCommand(name, handler, opts)
+    local lower = name:lower()
+    if commands[lower] then
+        error("LPS command collision: " .. lower, 2)
+    end
+    local entry = {
+        name = name,
+        handler = handler,
+        aliases = {},
+        help = (opts and opts.help) or "",
+    }
+    commands[lower] = entry
+    commandOrder[#commandOrder + 1] = lower
+    if opts and type(opts.aliases) == "table" then
+        for _, alias in ipairs(opts.aliases) do
+            local al = alias:lower()
+            if commands[al] then
+                error("LPS command alias collision: " .. al, 2)
+            end
+            commands[al] = entry
+            entry.aliases[#entry.aliases + 1] = alias
+        end
+    end
+end
+
+local function findCommand(input)
+    local lowered = input:lower()
+    local best, bestLen
+    for key, entry in pairs(commands) do
+        local klen = #key
+        if (not bestLen or klen > bestLen)
+            and (lowered == key
+                or (lowered:sub(1, klen) == key and lowered:sub(klen + 1, klen + 1) == " ")) then
+            best = entry
+            bestLen = klen
+        end
+    end
+    if not best then return nil end
+    return best, (input:sub(bestLen + 1)):match("^%s*(.-)%s*$")
+end
+
+local function printHelp()
+    LPS:Print(L.CMD_DESCRIPTION)
+    for _, key in ipairs(commandOrder) do
+        local entry = commands[key]
+        local aliases = {}
+        for _, alias in ipairs(entry.aliases) do
+            aliases[#aliases + 1] = alias
+        end
+        table.sort(aliases)
+        local line = "/lps " .. entry.name
+        if #aliases > 0 then
+            line = line .. " (" .. table.concat(aliases, ", ") .. ")"
+        end
+        if entry.help ~= "" then
+            line = line .. "  -- " .. entry.help
+        end
+        LPS:Print(line)
+    end
+end
+
+if not _G["SLASH_" .. "LOCATIONPLUS1"] then
+    _G["SLASH_" .. "LOCATIONPLUS1"] = "/lps"
+end
+SlashCmdList["LOCATIONPLUS"] = function(input)
+    local trimmed = (input or ""):match("^%s*(.-)%s*$")
+    if trimmed == "" then
         LPS:ToggleOptions()
-    end,
-    unknownMessage = function(input)
-        return format(L.CMD_UNKNOWN, input)
-    end,
-})
-cmd:Register({
-    name = "reset",
+        return
+    end
+    local lowered = trimmed:lower()
+    if lowered == "help" or lowered:match("^help%s") then
+        printHelp()
+        return
+    end
+    local entry, args = findCommand(trimmed)
+    if entry then
+        entry.handler(args)
+        return
+    end
+    LPS:Print(format(L.CMD_UNKNOWN, trimmed))
+end
+
+defineCommand("reset", function()
+    if LPS.ResetAllSettingsToDefaults then
+        LPS:ResetAllSettingsToDefaults()
+        LPS:Print(L.RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES)
+    end
+end, {
     help = L.RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES,
-    handler = function()
-        if LPS.ResetAllSettingsToDefaults then
-            LPS:ResetAllSettingsToDefaults()
-            LPS:Print(L.RESET_ALL_ADDON_SETTINGS_TO_DEFAULT_VALUES)
-        end
-    end,
 })
-cmd:Register({
-    name = "resetpanels",
+
+defineCommand("resetpanels", function()
+    if LPS.ResetPanelsToDefaults then
+        LPS:ResetPanelsToDefaults()
+        LPS:Print(L.PANEL_SETTINGS_HAVE_BEEN_RESET_TO_DEFAULTS)
+    end
+end, {
     help = L.RESET_VALUES,
-    handler = function()
-        if LPS.ResetPanelsToDefaults then
-            LPS:ResetPanelsToDefaults()
-            LPS:Print(L.PANEL_SETTINGS_HAVE_BEEN_RESET_TO_DEFAULTS)
-        end
-    end,
 })
-cmd:Register({
-    name = "move",
+
+defineCommand("move", function()
+    if LPS.ToggleMoveMode then
+        LPS:ToggleMoveMode()
+    end
+end, {
     help = L.TOGGLE_PANEL_MOVE_MODE,
-    handler = function()
-        if LPS.ToggleMoveMode then
-            LPS:ToggleMoveMode()
-        end
-    end,
 })
-cmd:Register({
-    name = "resetpos",
+
+defineCommand("resetpos", function()
+    if LPS.ResetFramePosition then
+        LPS:ResetFramePosition()
+    end
+end, {
     help = L.RESET_POSITION_DESC,
-    handler = function()
-        if LPS.ResetFramePosition then
-            LPS:ResetFramePosition()
-        end
-    end,
 })
 function LPS:BuildDebugReport()
     local lines = {}
@@ -366,23 +418,9 @@ function LPS:BuildDebugReport()
         safe("InCombatLockdown()", function() return InCombatLockdown() end)
 
         section("API")
-        p("Foundry (LPS.F) exists = " .. tostring(LPS.F ~= nil))
-        safe("Foundry:version()", function()
-            if not LPS.F then return "n/a" end
-            local v = LPS.F.VERSION
-            if not v then return "n/a" end
-            local info = tostring(v)
-            if LPS.F.API_VERSION then
-                info = info .. " (API " .. tostring(LPS.F.API_VERSION) .. ")"
-            end
-            if LPS.F.SOURCE then
-                info = info .. " from " .. tostring(LPS.F.SOURCE)
-            end
-            return info
-        end)
-        p("  F.Commands=" .. tostring(LPS.F and LPS.F.Commands ~= nil)
-            .. " F.Events=" .. tostring(LPS.F and LPS.F.Events ~= nil)
-            .. " F.Lifecycle=" .. tostring(LPS.F and LPS.F.Lifecycle ~= nil))
+        p("External libraries: none (native Blizzard APIs only)")
+        p("LPS.Events = " .. tostring(type(LPS.Events) == "table"))
+        p("LPS.Commands: " .. (next(commands) and "ok" or "MISSING"))
         p("Tourist (LPS.Tourist) exists = " .. tostring(LPS.Tourist ~= nil))
         safe("LibDataBroker-1.1", function() return LibStub and (LibStub("LibDataBroker-1.1", true) ~= nil) end)
         safe("LibDBIcon-1.0", function() return LibStub and (LibStub("LibDBIcon-1.0", true) ~= nil) end)
@@ -569,28 +607,26 @@ function LPS:ShowDebugWindow()
     end
 end
 
-cmd:Register({
-    name = "debug",
+defineCommand("debug", function()
+    LPS:ShowDebugWindow()
+end, {
     help = "Open the diagnostic window (Ctrl+C to copy the report and send it to the author)",
-    handler = function()
-        LPS:ShowDebugWindow()
-    end,
 })
-cmd:Register({
-    name = "clear-all",
+
+defineCommand("clear-all", function()
+    if InCombatLockdown and InCombatLockdown() then
+        LPS:Print("Cannot clear the data in combat.", false)
+        return
+    end
+    if type(LPS_DB) == "table" then
+        for k in pairs(LPS_DB) do
+            LPS_DB[k] = nil
+        end
+    end
+    LPS:Print("All LocationPlus data has been deleted. Reloading the interface...", false)
+    ReloadUI()
+end, {
     help = "Delete all LocationPlus data (settings, gold, positions) and reload the interface",
-    handler = function()
-        if InCombatLockdown and InCombatLockdown() then
-            LPS:Print("Cannot clear the data in combat.", false)
-            return
-        end
-        if type(LPS_DB) == "table" then
-            for k in pairs(LPS_DB) do
-                LPS_DB[k] = nil
-            end
-        end
-        LPS:Print("All LocationPlus data has been deleted. Reloading the interface...", false)
-        ReloadUI()
-    end,
 })
-LPS.cmd = cmd
+
+LPS.Commands = commands

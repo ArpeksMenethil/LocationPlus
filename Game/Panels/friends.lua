@@ -1,7 +1,6 @@
 local LPS = _G.ArpeksLPS and _G.ArpeksLPS.LPS
 if not LPS then return end
 local DT = LPS._DT
-local F = LPS.F
 
 do
     local format, select = string.format, select
@@ -64,7 +63,7 @@ do
                     or C_EventUtils.IsEventValid(ev)
             end
 
-            local events = F.Events:New("LPS.Friends")
+            local events = LPS.Events:New("LPS.Friends")
             for _, ev in ipairs({
                 'PLAYER_ENTERING_WORLD', 'FRIENDLIST_UPDATE',
                 'BN_FRIEND_ACCOUNT_ONLINE', 'BN_FRIEND_ACCOUNT_OFFLINE',

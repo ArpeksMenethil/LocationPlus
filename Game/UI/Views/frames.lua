@@ -6,29 +6,47 @@ local unpackFn = table.unpack or unpack
 
 local frameEventBridge
 
+--- Направляющая сетка режима перемещения: привязывается к ЦЕНТРУ панели локации —
+--- средняя (красная) линия проходит через центр панели, остальные — каждые
+--- 25 px от центра. Число линий покрывает весь экран при любой позиции панели.
 function LPS:CreateGuideLines()
-    local grid = { vLines = {}, hLines = {} }
+    local step = 25
     local w = UIParent:GetWidth()
     local h = UIParent:GetHeight()
-    local stepX = w / 10
-    local stepY = h / 10
+    local nV = math.ceil(w / step) + 1
+    local nH = math.ceil(h / step) + 1
+    if nV % 2 == 0 then nV = nV + 1 end
+    if nH % 2 == 0 then nH = nH + 1 end
+    local grid = { step = step, midV = (nV + 1) / 2, midH = (nH + 1) / 2, vLines = {}, hLines = {} }
 
-    for i = 1, 9 do
+    for i = 1, nV do
         local vLine = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
         vLine:SetSize(2, h)
-        vLine:SetPoint("CENTER", UIParent, "BOTTOMLEFT", stepX * i, h / 2)
+        vLine:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
         vLine:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8x8" })
-        vLine:SetBackdropColor(1, 1, 1, 0.35)
+        if i == grid.midV then
+            vLine:SetBackdropColor(1, 0, 0, 0.8)
+        else
+            vLine:SetBackdropColor(1, 1, 1, 0.35)
+        end
         vLine:SetFrameStrata("HIGH")
+        vLine:SetFrameLevel(999)
         vLine:Hide()
         grid.vLines[i] = vLine
+    end
 
+    for i = 1, nH do
         local hLine = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
         hLine:SetSize(w, 2)
-        hLine:SetPoint("CENTER", UIParent, "BOTTOMLEFT", w / 2, stepY * i)
+        hLine:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
         hLine:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8x8" })
-        hLine:SetBackdropColor(1, 1, 1, 0.35)
+        if i == grid.midH then
+            hLine:SetBackdropColor(1, 0, 0, 0.8)
+        else
+            hLine:SetBackdropColor(1, 1, 1, 0.35)
+        end
         hLine:SetFrameStrata("HIGH")
+        hLine:SetFrameLevel(999)
         hLine:Hide()
         grid.hLines[i] = hLine
     end
@@ -175,7 +193,6 @@ function LPS:CreateFrame(params)
             if newW ~= lastFitW or newH ~= lastFitH or padKey ~= lastFitPad then
                 lastFitW, lastFitH, lastFitPad = newW, newH, padKey
                 f:SetSize(newW, newH)
-                LPS:ScheduleFrameSizeUpdate()
             end
         end
         f._lpsResizeToFit = resizeToFit
