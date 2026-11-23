@@ -60,18 +60,6 @@ LPS.Options.BuildTree.tabs.general = function()
                                     end
                                 end,
                             },
-                            checkForUpdates = {
-                                type = "toggle",
-                                name = L.CHECK_FOR_UPDATES,
-                                desc = L.CHECK_FOR_UPDATES_DESC,
-                                order = 5,
-
-                                get = function()
-                                    local g = LPS:GetOptionDB().general
-                                    return g and g.checkForUpdates ~= false
-                                end,
-                                set = function(_, v) LPS:GetOptionDB().general.checkForUpdates = v end,
-                            },
                         },
                     },
                     right = {
@@ -167,6 +155,38 @@ LPS.Options.BuildTree.tabs.general = function()
                                 end,
                             },
                         },
+                    },
+                },
+            },
+            systemGroup = {
+                order = 50,
+                name = L.SYSTEM,
+                args = {
+                    checkForUpdates = {
+                        type = "toggle",
+                        name = L.CHECK_FOR_UPDATES,
+                        desc = L.CHECK_FOR_UPDATES_DESC,
+                        order = 1,
+
+                        get = function()
+                            local g = LPS:GetOptionDB().general
+                            return g and g.checkForUpdates ~= false
+                        end,
+                        set = function(_, v) LPS:GetOptionDB().general.checkForUpdates = v end,
+                    },
+                    debugMode = {
+                        type = "toggle",
+                        name = L.DEBUG_MODE,
+                        desc = L.DEBUG_MODE_DESC,
+                        order = 2,
+
+                        hidden = function() return not LPS.IsDev end,
+                        get = function() return LPS.DEBUG end,
+                        set = function(_, v)
+                            LPS.DEBUG = v
+                            local a = LPS:GetAccountDB()
+                            a.debugMode = v
+                        end,
                     },
                 },
             },

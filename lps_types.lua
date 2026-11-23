@@ -94,6 +94,7 @@
 --- @field Mists boolean
 --- @field Forever boolean
 --- @field DEBUG boolean
+--- @field IsDev boolean
 --- @field ApplyAddonCompartmentRegistration fun(self: LPS): nil
 --- @field ApplyAllSettings fun(self: LPS): nil
 --- @field ApplyCoordsUpdateInterval fun(self: LPS): nil

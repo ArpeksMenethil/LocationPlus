@@ -148,6 +148,12 @@ function LPS:onLoaded()
 
     LPS:InitDB()
 
+    --- Тумблер режима отладки (только у разработчика): состояние хранится на аккаунт.
+    if LPS.IsDev then
+        local a = LPS:GetAccountDB()
+        LPS.DEBUG = a.debugMode ~= false
+    end
+
     if LPS.DEBUG then
         LPS:Print("WOW PATCH: "..LPS.wow.patch, false)
         LPS:Print("WOW BUILD: "..LPS.wow.build, false)

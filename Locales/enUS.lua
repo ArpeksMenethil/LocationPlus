@@ -9,6 +9,8 @@ LPS:RegisterLocale("enUS", {
     LOGIN_MESSAGE = "Login message",
     CHECK_FOR_UPDATES = "Check for updates",
     CHECK_FOR_UPDATES_DESC = "Notify in chat when a new version is available.",
+    DEBUG_MODE = "Debug mode",
+    DEBUG_MODE_DESC = "Turn debug output in the chat on or off.",
     SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN = "Show a message in chat on login.",
     _24H_TIME_FORMAT = "24H time format",
     USE_24_HOUR_TIME_FORMAT = "Use 24-hour time format.",

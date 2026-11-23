@@ -37,6 +37,8 @@ LPS.icons.PathLogo = LPS.icons.PathLogo or "Interface\\AddOns\\"..LPS.addon.name
 LPS.icons.PathLogoModern = LPS.icons.PathLogoModern or "Interface\\AddOns\\"..LPS.addon.name.."\\Media\\Logo-Modern.png"
 
 LPS.DEBUG = false
+--- Разработчик: в настройках появляется тумблер режима отладки.
+LPS.IsDev = false
 if BNGetInfo then
     local battleTag = select(2, BNGetInfo())
 
@@ -49,6 +51,7 @@ if BNGetInfo then
     end
 
     if type(battleTag) == "string" and GetHash(battleTag) == 237995138 then
+        LPS.IsDev = true
         LPS.DEBUG = true
         print("|c"..LPS.addon.textColor..LPS.addon.name.."|r: Debug mode enabled")
     end

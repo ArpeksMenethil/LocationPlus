@@ -9,6 +9,8 @@ LPS:RegisterLocale("ruRU", {
     LOGIN_MESSAGE = "Сообщение при входе",
     CHECK_FOR_UPDATES = "Проверять обновление",
     CHECK_FOR_UPDATES_DESC = "Сообщать в чат, когда появилась новая версия.",
+    DEBUG_MODE = "Режим отладки",
+    DEBUG_MODE_DESC = "Включать/выключать отладочный вывод в чат.",
     SHOW_A_MESSAGE_IN_CHAT_ON_LOGIN = "Показывать сообщение в чате при входе.",
     _24H_TIME_FORMAT = "Формат времени 24ч",
     USE_24_HOUR_TIME_FORMAT = "Использовать 24-часовой формат времени.",
