@@ -305,7 +305,7 @@ function LPS:CollectOptionRows(group, out, additionalSortKeys)
                     disabled = LPS:MakeOptionDisabled(node),
                     func = function()
                         local ok = pcall(node.func, false)
-                        if not ok and LPS.DEBUG then print("LPS options execute error: " .. tostring(node.name)) end
+                        if not ok and LPS.DEBUG then LPS:DebugPrint("options execute error: " .. tostring(node.name), false) end
                     end,
                 }
             end

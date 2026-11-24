@@ -226,6 +226,17 @@ function LPS:CreateCircleButton(parent, iconName, isClose)
     end)
     return btn
 end
+--- Версия в заголовке окна: красная, если локальная версия ниже самой
+--- известной проверки, зелёная иначе (актуальная версия или проверка
+--- выключена).
+function LPS:PanelApplyVersionColor()
+    if not frame or not frame.version then return end
+    if LPS.GetVersionStatus and LPS:GetVersionStatus() == "outdated" then
+        frame.version:SetTextColor(1, 0.2, 0.2)
+    else
+        frame.version:SetTextColor(0.2, 1, 0.2)
+    end
+end
 function LPS:CreateMainFrame()
     local themeKey = LPS:ThemeGet() and LPS:GetThemeKey()
     if frame and frame.themeKey == themeKey then
@@ -502,6 +513,7 @@ function LPS:PanelShow()
         return
     end
     LPS:CreateMainFrame()
+    LPS:PanelApplyVersionColor()
     frame:SetFrameStrata("DIALOG")
     frame:SetFrameLevel(150)
     frame:SetScript("OnUpdate", nil)

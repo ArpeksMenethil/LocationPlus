@@ -172,7 +172,12 @@ LPS.Options.BuildTree.tabs.general = function()
                             local g = LPS:GetOptionDB().general
                             return g and g.checkForUpdates ~= false
                         end,
-                        set = function(_, v) LPS:GetOptionDB().general.checkForUpdates = v end,
+                        set = function(_, v)
+                            LPS:GetOptionDB().general.checkForUpdates = v
+                            if LPS.PanelApplyVersionColor then
+                                LPS:PanelApplyVersionColor()
+                            end
+                        end,
                     },
                     debugMode = {
                         type = "toggle",
@@ -186,6 +191,11 @@ LPS.Options.BuildTree.tabs.general = function()
                             LPS.DEBUG = v
                             local a = LPS:GetAccountDB()
                             a.debugMode = v
+                            LPS:Print(
+                                "Debug mode " ..
+                                    (v and (LPS:HexFromRGB(0.2, 1, 0.2) .. "enabled|r")
+                                        or (LPS:HexFromRGB(1, 0.2, 0.2) .. "disabled|r")),
+                                false)
                         end,
                     },
                 },

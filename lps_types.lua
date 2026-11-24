@@ -180,6 +180,7 @@
 --- @field OnPlayerMoney fun(self: LPS): nil
 --- @field PackValues fun(self: LPS, ...: any): table Аналог table.pack (нет в старых клиентах): все возвращаемые значения, включая nil, по индексам 1..n + поле n
 --- @field Print fun(self: LPS, text: string, noPrefix: boolean?): nil
+--- @field DebugPrint fun(self: LPS, text: string, noPrefix: boolean?): nil
 --- @field RefreshAfterProfileChange fun(self: LPS): nil
 --- @field RegisterDatatext fun(self: LPS, def: LPSDatatextDef): nil
 --- @field RegisterSettingsCategory fun(self: LPS): table?

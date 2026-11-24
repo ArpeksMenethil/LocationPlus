@@ -152,14 +152,19 @@ function LPS:onLoaded()
     if LPS.IsDev then
         local a = LPS:GetAccountDB()
         LPS.DEBUG = a.debugMode ~= false
+        LPS:Print(
+            "Debug mode " ..
+                (LPS.DEBUG and (LPS:HexFromRGB(0.2, 1, 0.2) .. "enabled|r")
+                    or (LPS:HexFromRGB(1, 0.2, 0.2) .. "disabled|r")),
+            false)
     end
 
     if LPS.DEBUG then
-        LPS:Print("WOW PATCH: "..LPS.wow.patch, false)
-        LPS:Print("WOW BUILD: "..LPS.wow.build, false)
-        LPS:Print("WOW DATE: "..LPS.wow.date, false)
-        LPS:Print("WOW TOC: "..LPS.wow.toc, false)
-        LPS:Print("WOW PROJECT: "..LPS.wow.project, false)
+        LPS:DebugPrint("WOW PATCH: "..LPS.wow.patch, false)
+        LPS:DebugPrint("WOW BUILD: "..LPS.wow.build, false)
+        LPS:DebugPrint("WOW DATE: "..LPS.wow.date, false)
+        LPS:DebugPrint("WOW TOC: "..LPS.wow.toc, false)
+        LPS:DebugPrint("WOW PROJECT: "..LPS.wow.project, false)
     end
 
     local db = LPS:GetDB()
@@ -179,7 +184,7 @@ function LPS:onLoaded()
         if wiped > 0 then
             LPS:Print(L.LPS_GOLD_WIPE_MSG or "All gold data (all servers) has been cleared in the new version.", false)
             if LPS.DEBUG then
-                LPS:Print(format("[debug] gold data wiped: %d entries", wiped), false)
+                LPS:DebugPrint(format("gold data wiped: %d entries", wiped), false)
             end
         end
     end
@@ -276,6 +281,7 @@ local function defineCommand(name, handler, opts)
         handler = handler,
         aliases = {},
         help = (opts and opts.help) or "",
+        dev = (opts and opts.dev) or false,
     }
     commands[lower] = entry
     commandOrder[#commandOrder + 1] = lower
@@ -311,19 +317,21 @@ local function printHelp()
     LPS:Print(L.CMD_DESCRIPTION)
     for _, key in ipairs(commandOrder) do
         local entry = commands[key]
-        local aliases = {}
-        for _, alias in ipairs(entry.aliases) do
-            aliases[#aliases + 1] = alias
+        if not entry.dev or LPS.IsDev then
+            local aliases = {}
+            for _, alias in ipairs(entry.aliases) do
+                aliases[#aliases + 1] = alias
+            end
+            table.sort(aliases)
+            local line = "/lps " .. entry.name
+            if #aliases > 0 then
+                line = line .. " (" .. table.concat(aliases, ", ") .. ")"
+            end
+            if entry.help ~= "" then
+                line = line .. "  -- " .. entry.help
+            end
+            LPS:Print(line)
         end
-        table.sort(aliases)
-        local line = "/lps " .. entry.name
-        if #aliases > 0 then
-            line = line .. " (" .. table.concat(aliases, ", ") .. ")"
-        end
-        if entry.help ~= "" then
-            line = line .. "  -- " .. entry.help
-        end
-        LPS:Print(line)
     end
 end
 
@@ -343,6 +351,10 @@ SlashCmdList["LOCATIONPLUS"] = function(input)
     end
     local entry, args = findCommand(trimmed)
     if entry then
+        if entry.dev and not LPS.IsDev then
+            LPS:Print(format(L.CMD_UNKNOWN, trimmed))
+            return
+        end
         entry.handler(args)
         return
     end
@@ -635,6 +647,22 @@ defineCommand("clear-all", function()
     ReloadUI()
 end, {
     help = "Delete all LocationPlus data (settings, gold, positions) and reload the interface",
+})
+
+defineCommand("checkversion", function(args)
+    local version = (args or ""):match("^[%s]*(.-)[%s]*$")
+    if not version:match("^%d[%.%d]*$") then
+        LPS:Print("Usage: /lps checkversion <version> (e.g. /lps checkversion 2.1.3)", false)
+        return
+    end
+    if not LPS.SimulateVersionCheck then
+        LPS:Print("Version check is not available.", false)
+        return
+    end
+    LPS:SimulateVersionCheck(version)
+end, {
+    help = "Dev: simulate receiving the given addon version from a group member (e.g. /lps checkversion 2.1.3)",
+    dev = true,
 })
 
 LPS.Commands = commands

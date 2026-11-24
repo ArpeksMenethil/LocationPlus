@@ -120,7 +120,7 @@ function LPS:GetBattlePetLvl(zoneText)
     if plevel ~= nil then
         plevel = format("|cff%02x%02x%02x%s|r", 255, 255, 255, plevel)
     else
-        plevel = "25 "
+        plevel = "25"
     end
 
     return plevel

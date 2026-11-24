@@ -653,6 +653,15 @@ function LPS:Print(msg, isTranslate)
     print("|c"..LPS.addon.textColor..LPS.addon.name.."|r: " .. tostring(msg))
 end
 
+--- @param msg string Сообщение
+--- @param isTranslate boolean? Флаг перевода msg
+function LPS:DebugPrint(msg, isTranslate)
+    if isTranslate ~= false then
+        msg = LPS.L[msg] or msg
+    end
+    print("|c"..LPS.addon.debugTextColor..LPS.addon.name.." Debug|r: " .. tostring(msg))
+end
+
 function LPS:InvalidateDBCache()
     self.profileDB = nil
     self.accountDB = nil

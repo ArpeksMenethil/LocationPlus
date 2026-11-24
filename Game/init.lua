@@ -25,6 +25,8 @@ LPS.RegisteredLocales = LPS.RegisteredLocales or {}
 
 LPS.addon = LPS.addon or {}
 LPS.addon.textColor = LPS.addon.textColor or "ff1784d1"
+--- textColor на 15% светлее — для отладочных сообщений (LPS:DebugPrint).
+LPS.addon.debugTextColor = LPS.addon.debugTextColor or "ff1a98f0"
 LPS.addon.name = LPS.addon.name or addonName
 LPS.addon.version = LPS.addon.version or "?.?.?"
 LPS.addon.title = LPS.addon.title or ""
@@ -53,7 +55,6 @@ if BNGetInfo then
     if type(battleTag) == "string" and GetHash(battleTag) == 237995138 then
         LPS.IsDev = true
         LPS.DEBUG = true
-        print("|c"..LPS.addon.textColor..LPS.addon.name.."|r: Debug mode enabled")
     end
 end
 
