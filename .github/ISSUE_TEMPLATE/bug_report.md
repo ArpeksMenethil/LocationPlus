@@ -1,7 +1,7 @@
 ---
 name: Bug report
 about: Шаблон репорта ошибки / Error report template
-title: "[BUG]"
+title: "[BUG] "
 labels: New
 assignees: ArpeksMenethil
 type: Bug
